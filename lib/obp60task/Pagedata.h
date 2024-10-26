@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <Adafruit_GFX.h> 
 #include "GwApi.h"
 #include <functional>
 #include <vector>
@@ -68,6 +69,7 @@ typedef struct{
   SunData sundata;
   GwApi::BoatValue *time=NULL;
   GwApi::BoatValue *date=NULL;
+  GFXcanvas1 *canvas;  // framebuffer for screenshot feature
 } CommonData;
 
 //a base class that all pages must inherit from

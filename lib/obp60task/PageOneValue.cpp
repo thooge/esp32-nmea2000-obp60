@@ -75,42 +75,42 @@ class PageOneValue : public Page{
         getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
 
         // Show name
-        getdisplay().setTextColor(textcolor);
-        getdisplay().setFont(&Ubuntu_Bold32pt7b);
-        getdisplay().setCursor(20, 100);
-        getdisplay().print(name1);                           // Page name
+        commonData.canvas->setTextColor(textcolor);
+        commonData.canvas->setFont(&Ubuntu_Bold32pt7b);
+        commonData.canvas->setCursor(20, 100);
+        commonData.canvas->print(name1);                           // Page name
 
         // Show unit
-        getdisplay().setTextColor(textcolor);
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
-        getdisplay().setCursor(270, 100);
+        commonData.canvas->setTextColor(textcolor);
+        commonData.canvas->setFont(&Ubuntu_Bold20pt7b);
+        commonData.canvas->setCursor(270, 100);
         if(holdvalues == false){
-            getdisplay().print(unit1);                       // Unit
+            commonData.canvas->print(unit1);                       // Unit
         }
         else{
-            getdisplay().print(unit1old);
+            commonData.canvas->print(unit1old);
         }
 
         // Switch font if format for any values
         if(bvalue1->getFormat() == "formatLatitude" || bvalue1->getFormat() == "formatLongitude"){
-            getdisplay().setFont(&Ubuntu_Bold20pt7b);
-            getdisplay().setCursor(20, 180);
+            commonData.canvas->setFont(&Ubuntu_Bold20pt7b);
+            commonData.canvas->setCursor(20, 180);
         }
         else if(bvalue1->getFormat() == "formatTime" || bvalue1->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold32pt7b);
-            getdisplay().setCursor(20, 200);
+            commonData.canvas->setFont(&Ubuntu_Bold32pt7b);
+            commonData.canvas->setCursor(20, 200);
         }
         else{
-            getdisplay().setFont(&DSEG7Classic_BoldItalic60pt7b);
-            getdisplay().setCursor(20, 240);
+            commonData.canvas->setFont(&DSEG7Classic_BoldItalic60pt7b);
+            commonData.canvas->setCursor(20, 240);
         }
 
         // Show bus data
         if(holdvalues == false){
-            getdisplay().print(svalue1);                                     // Real value as formated string
+            commonData.canvas->print(svalue1);                                     // Real value as formated string
         }
         else{
-            getdisplay().print(svalue1old);                                  // Old value as formated string
+            commonData.canvas->print(svalue1old);                                  // Old value as formated string
         }
         if(valid1 == true){
             svalue1old = svalue1;                                       // Save the old value
@@ -118,20 +118,23 @@ class PageOneValue : public Page{
         }
 
         // Key Layout
-        getdisplay().setTextColor(textcolor);
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        commonData.canvas->setTextColor(textcolor);
+        commonData.canvas->setFont(&Ubuntu_Bold8pt7b);
         if(keylock == false){
-            getdisplay().setCursor(130, 290);
-            getdisplay().print("[  <<<<  " + String(commonData.data.actpage) + "/" + String(commonData.data.maxpage) + "  >>>>  ]");
+            commonData.canvas->setCursor(130, 290);
+            commonData.canvas->print("[  <<<<  " + String(commonData.data.actpage) + "/" + String(commonData.data.maxpage) + "  >>>>  ]");
             if(String(backlightMode) == "Control by Key"){                  // Key for illumination
-                getdisplay().setCursor(343, 290);
-                getdisplay().print("[ILUM]");
+                commonData.canvas->setCursor(343, 290);
+                commonData.canvas->print("[ILUM]");
             }
         }
         else{
-            getdisplay().setCursor(130, 290);
-            getdisplay().print(" [    Keylock active    ]");
+            commonData.canvas->setCursor(130, 290);
+            commonData.canvas->print(" [    Keylock active    ]");
         }
+
+        // transfer framebuffer to display
+        getdisplay().drawBitmap(0, 0, commonData.canvas->getBuffer(), 400, 300, GxEPD_WHITE);
 
         // Update display
         getdisplay().nextPage();    // Partial update (fast)
