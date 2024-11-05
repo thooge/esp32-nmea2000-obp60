@@ -1,3 +1,4 @@
+#include "OBP60canvas.h"
 #include <Arduino.h>
 
 OBP60canvas::OBP60canvas(uint16_t w, uint16_t h)

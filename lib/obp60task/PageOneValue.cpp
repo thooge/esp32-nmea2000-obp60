@@ -2,9 +2,11 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+#include <Adafruit_GFX.h> 
 
 class PageOneValue : public Page{
     bool keylock = false;               // Keylock
+    
 
     public:
     PageOneValue(CommonData &common){
@@ -22,6 +24,7 @@ class PageOneValue : public Page{
     virtual void displayPage(CommonData &commonData, PageData &pageData){
         GwConfigHandler *config = commonData.config;
         GwLog *logger=commonData.logger;
+        GFXcanvas1 canvas(400, 300);
 
         // Old values for hold function
         static String svalue1old = "";
@@ -61,12 +64,7 @@ class PageOneValue : public Page{
         int textcolor = GxEPD_BLACK;
         int pixelcolor = GxEPD_BLACK;
         int bgcolor = GxEPD_WHITE;
-        if(displaycolor == "Normal"){
-            textcolor = GxEPD_BLACK;
-            pixelcolor = GxEPD_BLACK;
-            bgcolor = GxEPD_WHITE;
-        }
-        else{
+        if(displaycolor != "Normal"){
             textcolor = GxEPD_WHITE;
             pixelcolor = GxEPD_WHITE;
             bgcolor = GxEPD_BLACK;
@@ -75,42 +73,42 @@ class PageOneValue : public Page{
         getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
 
         // Show name
-        commonData.canvas->setTextColor(textcolor);
-        commonData.canvas->setFont(&Ubuntu_Bold32pt7b);
-        commonData.canvas->setCursor(20, 100);
-        commonData.canvas->print(name1);                           // Page name
+        canvas.setTextColor(textcolor);
+        canvas.setFont(&Ubuntu_Bold32pt7b);
+        canvas.setCursor(20, 100);
+        canvas.print(name1);                           // Page name
 
         // Show unit
-        commonData.canvas->setTextColor(textcolor);
-        commonData.canvas->setFont(&Ubuntu_Bold20pt7b);
-        commonData.canvas->setCursor(270, 100);
+        canvas.setTextColor(textcolor);
+        canvas.setFont(&Ubuntu_Bold20pt7b);
+        canvas.setCursor(270, 100);
         if(holdvalues == false){
-            commonData.canvas->print(unit1);                       // Unit
+            canvas.print(unit1);                       // Unit
         }
         else{
-            commonData.canvas->print(unit1old);
+            canvas.print(unit1old);
         }
 
         // Switch font if format for any values
         if(bvalue1->getFormat() == "formatLatitude" || bvalue1->getFormat() == "formatLongitude"){
-            commonData.canvas->setFont(&Ubuntu_Bold20pt7b);
-            commonData.canvas->setCursor(20, 180);
+            canvas.setFont(&Ubuntu_Bold20pt7b);
+            canvas.setCursor(20, 180);
         }
         else if(bvalue1->getFormat() == "formatTime" || bvalue1->getFormat() == "formatDate"){
-            commonData.canvas->setFont(&Ubuntu_Bold32pt7b);
-            commonData.canvas->setCursor(20, 200);
+            canvas.setFont(&Ubuntu_Bold32pt7b);
+            canvas.setCursor(20, 200);
         }
         else{
-            commonData.canvas->setFont(&DSEG7Classic_BoldItalic60pt7b);
-            commonData.canvas->setCursor(20, 240);
+            canvas.setFont(&DSEG7Classic_BoldItalic60pt7b);
+            canvas.setCursor(20, 240);
         }
 
         // Show bus data
         if(holdvalues == false){
-            commonData.canvas->print(svalue1);                                     // Real value as formated string
+            canvas.print(svalue1);                                     // Real value as formated string
         }
         else{
-            commonData.canvas->print(svalue1old);                                  // Old value as formated string
+            canvas.print(svalue1old);                                  // Old value as formated string
         }
         if(valid1 == true){
             svalue1old = svalue1;                                       // Save the old value
@@ -118,23 +116,23 @@ class PageOneValue : public Page{
         }
 
         // Key Layout
-        commonData.canvas->setTextColor(textcolor);
-        commonData.canvas->setFont(&Ubuntu_Bold8pt7b);
+        canvas.setTextColor(textcolor);
+        canvas.setFont(&Ubuntu_Bold8pt7b);
         if(keylock == false){
-            commonData.canvas->setCursor(130, 290);
-            commonData.canvas->print("[  <<<<  " + String(commonData.data.actpage) + "/" + String(commonData.data.maxpage) + "  >>>>  ]");
+            canvas.setCursor(130, 290);
+            canvas.print("[  <<<<  " + String(commonData.data.actpage) + "/" + String(commonData.data.maxpage) + "  >>>>  ]");
             if(String(backlightMode) == "Control by Key"){                  // Key for illumination
-                commonData.canvas->setCursor(343, 290);
-                commonData.canvas->print("[ILUM]");
+                canvas.setCursor(343, 290);
+                canvas.print("[ILUM]");
             }
         }
         else{
-            commonData.canvas->setCursor(130, 290);
-            commonData.canvas->print(" [    Keylock active    ]");
+            canvas.setCursor(130, 290);
+            canvas.print(" [    Keylock active    ]");
         }
 
         // transfer framebuffer to display
-        getdisplay().drawBitmap(0, 0, commonData.canvas->getBuffer(), 400, 300, GxEPD_WHITE);
+        getdisplay().drawBitmap(0, 0, canvas.getBuffer(), 400, 300, pixelcolor);
 
         // Update display
         getdisplay().nextPage();    // Partial update (fast)
