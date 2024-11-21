@@ -2,7 +2,6 @@
 #define _OBP60EXTENSIONPORT_H
 
 #include <Arduino.h>
-#include <ESPAsyncWebServer.h>
 #include "OBP60Hardware.h"
 #define FASTLED_ALL_PINS_HARDWARE_SPI
 #define FASTLED_ESP32_SPI_BUS FSPI
