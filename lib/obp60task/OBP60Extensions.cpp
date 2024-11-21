@@ -404,4 +404,23 @@ void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
         getdisplay().print("G");
 }
 
+// Function to handle HTTP image request
+void handleImageRequest(AsyncWebServerRequest *request) {
+
+    const char header[] = "P4\n#Created by OBP60\n400 300\n";
+    uint8_t *buffer = getdisplay().getBuffer();
+    size_t headerSize = sizeof(header) - 1; // We don't want trailing zero
+    size_t imageSize = headerSize + 50 * 300;
+    uint8_t* imageBuffer = new uint8_t[imageSize];
+
+    memcpy(imageBuffer, header, headerSize);
+    memcpy(imageBuffer + headerSize, buffer, 50*300);
+
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-portable-bitmap", (const uint8_t*)imageBuffer, imageSize);
+    response->addHeader("Content-Disposition", "inline; filename=screen.pbm");
+    request->send(response);
+
+    delete[] imageBuffer;
+}
+
 #endif
