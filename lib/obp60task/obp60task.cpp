@@ -1,4 +1,5 @@
 #ifdef BOARD_OBP60S3
+#include <ESPAsyncWebServer.h>
 #include "obp60task.h"
 #include "Pagedata.h"                   // Data exchange for pages
 #include "OBP60Hardware.h"              // PIN definitions
@@ -300,6 +301,10 @@ void OBP60Task(GwApi *api){
     startLedTask(api);
     PageList allPages;
     registerAllPages(allPages);
+
+    AsyncWebServer server(8080);
+    server.on("/screen.pbm", HTTP_GET, handleImageRequest);
+    server.begin();
 
     tN2kMsg N2kMsg;
 
