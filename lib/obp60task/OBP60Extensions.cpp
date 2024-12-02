@@ -404,6 +404,18 @@ void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
         getdisplay().print("G");
 }
 
+    String byteToBinaryString(uint8_t byte) {
+        String binaryString = "";
+        for (int i = 7; i >= 0; --i) {
+            if (byte & (1 << i)) {
+                binaryString += '1';
+            } else {
+                binaryString += '0';
+            }
+        }
+        return binaryString;
+    }
+
 // Function to handle HTTP image request
 void handleImageRequest(AsyncWebServerRequest *request) {
 

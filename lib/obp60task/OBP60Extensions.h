@@ -39,8 +39,6 @@ GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> & getdisplay();
 GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay();
 #endif
 
-void handleImageRequest(AsyncWebServerRequest *request);    // HTTP hande image request
-
 void hardwareInit();
 
 void setPortPin(uint pin, bool value);          // Set port pin for extension port
@@ -71,5 +69,7 @@ void batteryGraphic(uint x, uint y, float percent, int pcolor, int bcolor); // B
 void solarGraphic(uint x, uint y, int pcolor, int bcolor);                  // Solar graphic with fill level
 void generatorGraphic(uint x, uint y, int pcolor, int bcolor);              // Generator graphic with fill level
 void startLedTask(GwApi *api);
+
+void handleImageRequest(AsyncWebServerRequest *request);    // HTTP handle image request
 
 #endif
