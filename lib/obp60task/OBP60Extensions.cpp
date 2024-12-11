@@ -416,6 +416,30 @@ void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
         return binaryString;
     }
 
+// BMP header for black-and-white image (1 bit per pixel)
+const uint8_t bmp_header[] = {
+  // BITMAPFILEHEADER (14 Bytes)
+  0x42, 0x4D,             // bfType 'BM' signature
+  0x36, 0x08, 0x00, 0x00, // File size in bytes (to be adjusted later)
+  0x00, 0x00, 0x00, 0x00, // Reserved
+  0x3E, 0x00, 0x00, 0x00, // Data offset (pixel array starts at byte 62)
+  // BITMAPINFOHEADER (40 Bytes)
+  0x28, 0x00, 0x00, 0x00, // DIB header size
+  (uint8_t)(GxEPD_WIDTH & 0xFF), (uint8_t)((GxEPD_WIDTH >> 8) & 0xFF), 0x00, 0x00, // Image width
+  (uint8_t)(GxEPD_HEIGHT & 0xFF), (uint8_t)((GxEPD_HEIGHT >> 8) & 0xFF), 0x00, 0x00, // Image height
+  0x01, 0x00, // Number of color planes (1)
+  0x01, 0x00, // Color depth (1 bit per pixel)
+  0x00, 0x00, 0x00, 0x00, // Compression (none)
+  0x98, 0x3A, 0x00, 0x00, // Image data size (calculate)
+  0x13, 0x0B, 0x00, 0x00, // Horizontal resolution (2835 pixels/meter)
+  0x13, 0x0B, 0x00, 0x00, // Vertical resolution (2835 pixels/meter)
+  0x02, 0x00, 0x00, 0x00, // Colors in color palette (2)
+  0x00, 0x00, 0x00, 0x00, // Important colors (all)
+  // PALETTE: COLORTRIPLES of RGBQUAD
+  0x00, 0x00, 0x00, 0x00, // Color palette: Black
+  0xFF, 0xFF, 0xFF, 0x00  // Color palette: White
+};
+
 // Function to handle HTTP image request
 void handleImageRequest(AsyncWebServerRequest *request) {
 
