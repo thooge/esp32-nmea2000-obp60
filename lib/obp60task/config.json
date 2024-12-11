@@ -899,10 +899,10 @@
         }
     },
     {
-        "name": "screenshotFormat",
+        "name": "imageFormat",
         "label": "Screenshot Format",
         "type": "list",
-        "default":"pbm",
+        "default":"PBM",
         "description": "Graphics file format for screenshots [BMP|GIF|PBM]",
         "list": [
             "PBM",

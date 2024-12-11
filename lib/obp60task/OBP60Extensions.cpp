@@ -11,6 +11,8 @@
 #include "Pagedata.h"
 #include "OBP60Hardware.h"
 #include "OBP60Extensions.h"
+// #include "GwApi.h"
+
 
 // Character sets
 #include "Ubuntu_Bold8pt7b.h"
@@ -416,44 +418,67 @@ void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
         return binaryString;
     }
 
-// BMP header for black-and-white image (1 bit per pixel)
-const uint8_t bmp_header[] = {
-  // BITMAPFILEHEADER (14 Bytes)
-  0x42, 0x4D,             // bfType 'BM' signature
-  0x36, 0x08, 0x00, 0x00, // File size in bytes (to be adjusted later)
-  0x00, 0x00, 0x00, 0x00, // Reserved
-  0x3E, 0x00, 0x00, 0x00, // Data offset (pixel array starts at byte 62)
-  // BITMAPINFOHEADER (40 Bytes)
-  0x28, 0x00, 0x00, 0x00, // DIB header size
-  (uint8_t)(GxEPD_WIDTH & 0xFF), (uint8_t)((GxEPD_WIDTH >> 8) & 0xFF), 0x00, 0x00, // Image width
-  (uint8_t)(GxEPD_HEIGHT & 0xFF), (uint8_t)((GxEPD_HEIGHT >> 8) & 0xFF), 0x00, 0x00, // Image height
-  0x01, 0x00, // Number of color planes (1)
-  0x01, 0x00, // Color depth (1 bit per pixel)
-  0x00, 0x00, 0x00, 0x00, // Compression (none)
-  0x98, 0x3A, 0x00, 0x00, // Image data size (calculate)
-  0x13, 0x0B, 0x00, 0x00, // Horizontal resolution (2835 pixels/meter)
-  0x13, 0x0B, 0x00, 0x00, // Vertical resolution (2835 pixels/meter)
-  0x02, 0x00, 0x00, 0x00, // Colors in color palette (2)
-  0x00, 0x00, 0x00, 0x00, // Important colors (all)
-  // PALETTE: COLORTRIPLES of RGBQUAD
-  0x00, 0x00, 0x00, 0x00, // Color palette: Black
-  0xFF, 0xFF, 0xFF, 0x00  // Color palette: White
-};
 
 // Function to handle HTTP image request
-void handleImageRequest(AsyncWebServerRequest *request) {
+void doImageRequest(GwApi *api, String imgformat, String filename, AsyncWebServerRequest *request) {
 
-    const char header[] = "P4\n#Created by OBP60\n400 300\n";
+    api->getLogger()->logDebug(GwLog::LOG,"handle image request [%s]: %s ", imgformat, filename);
+
+    // BMP header for black-and-white image (1 bit per pixel)
+    const uint8_t bmp_header[] = {
+      // BITMAPFILEHEADER (14 Bytes)
+      0x42, 0x4D,             // bfType 'BM' signature
+      0xd6, 0x3a, 0x00, 0x00, // File size in bytes (to be adjusted later)
+      0x00, 0x00, 0x00, 0x00, // Reserved
+      0x3E, 0x00, 0x00, 0x00, // Data offset (pixel array starts at byte 62)
+      // BITMAPINFOHEADER (40 Bytes)
+      0x28, 0x00, 0x00, 0x00, // DIB header size
+      (uint8_t)(GxEPD_WIDTH & 0xFF), (uint8_t)((GxEPD_WIDTH >> 8) & 0xFF), 0x00, 0x00, // Image width
+      (uint8_t)(GxEPD_HEIGHT & 0xFF), (uint8_t)((GxEPD_HEIGHT >> 8) & 0xFF), 0x00, 0x00, // Image height
+      0x01, 0x00, // Number of color planes (1)
+      0x01, 0x00, // Color depth (1 bit per pixel)
+      0x00, 0x00, 0x00, 0x00, // Compression (none)
+      0x98, 0x3a, 0x00, 0x00, // Image data size (calculate)
+      0x13, 0x0B, 0x00, 0x00, // Horizontal resolution (2835 pixels/meter)
+      0x13, 0x0B, 0x00, 0x00, // Vertical resolution (2835 pixels/meter)
+      0x02, 0x00, 0x00, 0x00, // Colors in color palette (2)
+      0x00, 0x00, 0x00, 0x00, // Important colors (all)
+      // PALETTE: COLORTRIPLES of RGBQUAD
+      0x00, 0x00, 0x00, 0x00, // Color palette: Black
+      0xFF, 0xFF, 0xFF, 0x00  // Color palette: White
+    };
+    size_t bmp_headerSize = sizeof(bmp_header);
+
+    const char pbm_header[] = "P4\n#Created by OBP60\n400 300\n";
+    size_t pbm_headerSize = sizeof(pbm_header) - 1; // We don't want trailing zero
+
+    uint8_t *header;
+    size_t headerSize;
+    String mimetype;
+    if (imgformat == "GIF") {
+        mimetype = "image/gif";
+        headerSize = 0;
+    }
+    else if (imgformat == "BMP") {
+        mimetype = "image/bmp";
+        headerSize = bmp_headerSize;
+        header = (uint8_t*) bmp_header;
+    }
+    else {
+        mimetype = "image/x-portable-bitmap";
+        headerSize = pbm_headerSize;
+        header = (uint8_t*) pbm_header;
+    }
+
     uint8_t *buffer = getdisplay().getBuffer();
-    size_t headerSize = sizeof(header) - 1; // We don't want trailing zero
     size_t imageSize = headerSize + 50 * 300;
     uint8_t* imageBuffer = new uint8_t[imageSize];
 
     memcpy(imageBuffer, header, headerSize);
     memcpy(imageBuffer + headerSize, buffer, 50*300);
 
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-portable-bitmap", (const uint8_t*)imageBuffer, imageSize);
-    response->addHeader("Content-Disposition", "inline; filename=screen.pbm");
+    AsyncWebServerResponse *response = request->beginResponse_P(200, mimetype, (const uint8_t*)imageBuffer, imageSize);
+    response->addHeader("Content-Disposition", "inline; filename=" + filename);
     request->send(response);
 
     delete[] imageBuffer;
