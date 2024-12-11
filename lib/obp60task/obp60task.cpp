@@ -27,7 +27,7 @@
 
 // Global vars
 bool initComplete = false;      // Initialization complete
-int taskRunCounter = 0;         // Task couter for loop section
+int taskRunCounter = 0;         // Task counter for loop section
 
 // Hardware initialization before start all services
 //####################################################################################
@@ -40,10 +40,9 @@ void OBP60Init(GwApi *api){
     api->getLogger()->logDebug(GwLog::LOG,"obp60init running");
     
     // Check I2C devices
-    
 
     // Init hardware
-    hardwareInit();
+    hardwareInit(api);
 
     // Init power rail 5.0V
     String powermode = api->getConfig()->getConfigItem(api->getConfig()->powerMode,true)->asString();

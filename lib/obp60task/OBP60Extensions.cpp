@@ -6,6 +6,7 @@
 #define FASTLED_ESP32_FLASH_LOCK 1
 #include <PCF8574.h>      // Driver for PCF8574 output modul from Horter
 #include <Wire.h>         // I2C
+#include <Adafruit_FRAM_I2C.h> // I2C FRAM
 #include <RTClib.h>       // Driver for DS1388 RTC
 #include "SunRise.h"      // Lib for sunrise and sunset calculation
 #include "Pagedata.h"
@@ -60,6 +61,9 @@ GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay(){r
 // Horter I2C moduls
 PCF8574 pcf8574_Out(PCF8574_I2C_ADDR1); // First digital output modul PCF8574 from Horter
 
+// FRAM
+Adafruit_FRAM_I2C fram = Adafruit_FRAM_I2C();
+
 // Global vars
 bool blinkingLED = false;       // Enable / disable blinking flash LED
 bool statusLED = false;         // Actual status of flash LED on/off
@@ -69,13 +73,29 @@ int uvDuration = 0;             // Under voltage duration in n x 100ms
 
 LedTaskData *ledTaskData=nullptr;
 
-void hardwareInit()
+void hardwareInit(GwApi *api)
 {
     Wire.begin();
     // Init PCF8574 digital outputs
     Wire.setClock(I2C_SPEED);       // Set I2C clock on 10 kHz
     if(pcf8574_Out.begin()){        // Initialize PCF8574
         pcf8574_Out.write8(255);    // Clear all outputs
+    }
+
+    // FRAM (e.g. MB85RC256V)
+    if (fram.begin(FRAM_I2C_ADDR)) {
+        uint16_t manufacturerID;
+        uint16_t productID;
+        fram.getDeviceID(&manufacturerID, &productID);
+        api->getLogger()->logDebug(GwLog::LOG,"FRAM detected: 0x%s / 0x%s", String(manufacturerID, HEX), String(productID, HEX));
+
+        // Boot counter
+        uint8_t test = fram.read(0x0);
+        api->getLogger()->logDebug(GwLog::LOG,"FRAM-counter=%d", test);
+        fram.write(0x0, test+1);
+    }
+    else {
+        api->getLogger()->logDebug(GwLog::LOG,"NO FRAM detected");
     }
 
 }

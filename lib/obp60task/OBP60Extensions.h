@@ -39,7 +39,7 @@ GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> & getdisplay();
 GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay();
 #endif
 
-void hardwareInit();
+void hardwareInit(GwApi *api);
 
 void setPortPin(uint pin, bool value);          // Set port pin for extension port
 
