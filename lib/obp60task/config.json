@@ -899,6 +899,22 @@
         }
     },
     {
+        "name": "screenshotFormat",
+        "label": "Screenshot Format",
+        "type": "list",
+        "default":"pbm",
+        "description": "Graphics file format for screenshots [BMP|GIF|PBM]",
+        "list": [
+            "PBM",
+            "BMP",
+            "GIF"
+        ],
+        "category":"OBP60 Pages",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
         "name": "page1type",
         "label": "Type",
         "type": "list",
