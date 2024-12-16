@@ -9,6 +9,9 @@
 #include "LedSpiTask.h"
 #include <GxEPD2_BW.h>                  // E-paper lib V2
 
+#define LOBYTE(x) ((x)&0xff)
+#define HIBYTE(x) (((x)>>8)&0xff)
+
 // Fonts declarations for display (#inclues see OBP60Extensions.cpp)
 extern const GFXfont Ubuntu_Bold8pt7b;
 extern const GFXfont Ubuntu_Bold10pt7b;

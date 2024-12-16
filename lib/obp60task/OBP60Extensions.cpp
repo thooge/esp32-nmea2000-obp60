@@ -427,55 +427,70 @@ void doImageRequest(GwApi *api, String imgformat, String filename, AsyncWebServe
     // BMP header for black-and-white image (1 bit per pixel)
     const uint8_t bmp_header[] = {
       // BITMAPFILEHEADER (14 Bytes)
-      0x42, 0x4D,             // bfType 'BM' signature
-      0xd6, 0x3a, 0x00, 0x00, // File size in bytes (to be adjusted later)
-      0x00, 0x00, 0x00, 0x00, // Reserved
-      0x3E, 0x00, 0x00, 0x00, // Data offset (pixel array starts at byte 62)
+      0x42, 0x4D,             // bfType: 'BM' signature
+      0x2e, 0x3d, 0x00, 0x00, // bfSize: file size in bytes
+      0x00, 0x00,             // bfReserved1
+      0x00, 0x00,             // bfReserved2
+      0x3e, 0x00, 0x00, 0x00, // bfOffBits: offset in bytes to pixeldata
       // BITMAPINFOHEADER (40 Bytes)
-      0x28, 0x00, 0x00, 0x00, // DIB header size
-      (uint8_t)(GxEPD_WIDTH & 0xFF), (uint8_t)((GxEPD_WIDTH >> 8) & 0xFF), 0x00, 0x00, // Image width
-      (uint8_t)(GxEPD_HEIGHT & 0xFF), (uint8_t)((GxEPD_HEIGHT >> 8) & 0xFF), 0x00, 0x00, // Image height
-      0x01, 0x00, // Number of color planes (1)
-      0x01, 0x00, // Color depth (1 bit per pixel)
-      0x00, 0x00, 0x00, 0x00, // Compression (none)
-      0x98, 0x3a, 0x00, 0x00, // Image data size (calculate)
-      0x13, 0x0B, 0x00, 0x00, // Horizontal resolution (2835 pixels/meter)
-      0x13, 0x0B, 0x00, 0x00, // Vertical resolution (2835 pixels/meter)
-      0x02, 0x00, 0x00, 0x00, // Colors in color palette (2)
-      0x00, 0x00, 0x00, 0x00, // Important colors (all)
-      // PALETTE: COLORTRIPLES of RGBQUAD
+      0x28, 0x00, 0x00, 0x00, // biSize: DIB header size
+      (uint8_t)LOBYTE(GxEPD_WIDTH), (uint8_t)HIBYTE(GxEPD_WIDTH), 0x00, 0x00,   // biWidth
+      (uint8_t)LOBYTE(GxEPD_HEIGHT), (uint8_t)HIBYTE(GxEPD_HEIGHT), 0x00, 0x00, // biHeight
+      0x01, 0x00, // biPlanes: Number of color planes (1)
+      0x01, 0x00, // biBitCount: Color depth (1 bit per pixel)
+      0x00, 0x00, 0x00, 0x00, // biCompression: Compression (none)
+      0xf0, 0x3c, 0x00, 0x00, // biSizeImage: Image data size (calculate)
+      0x13, 0x0b, 0x00, 0x00, // biXPelsPerMeter: Horizontal resolution (2835 pixels/meter)
+      0x13, 0x0b, 0x00, 0x00, // biYPelsPerMeter: Vertical resolution (2835 pixels/meter)
+      0x02, 0x00, 0x00, 0x00, // biClrUsed: Colors in color palette (2)
+      0x00, 0x00, 0x00, 0x00, // biClrImportant: Important colors (all)
+      // PALETTE: COLORTRIPLES of RGBQUAD (n * 4 Bytes)
       0x00, 0x00, 0x00, 0x00, // Color palette: Black
-      0xFF, 0xFF, 0xFF, 0x00  // Color palette: White
+      0xff, 0xff, 0xff, 0x00  // Color palette: White
     };
     size_t bmp_headerSize = sizeof(bmp_header);
 
     const char pbm_header[] = "P4\n#Created by OBP60\n400 300\n";
     size_t pbm_headerSize = sizeof(pbm_header) - 1; // We don't want trailing zero
 
-    uint8_t *header;
-    size_t headerSize;
+    uint8_t *buffer = getdisplay().getBuffer();     // EPD framebuffer
+    size_t imageSize;                               // calculated later for buffer dimensioning
+    uint8_t* imageBuffer;                           // image in webserver transferbuffer
     String mimetype;
+
     if (imgformat == "GIF") {
         mimetype = "image/gif";
-        headerSize = 0;
+        // TODO GIF for small transfer data size as compressed format
     }
     else if (imgformat == "BMP") {
+        // For BMP the line size has to be a multiple of 4 bytes.
+        // So padding is needed. Also the lines have to be in reverded
+        // order compared to plain buffer
         mimetype = "image/bmp";
-        headerSize = bmp_headerSize;
-        header = (uint8_t*) bmp_header;
+        size_t lineSize = (GxEPD_WIDTH / 8);
+        size_t paddingSize = 0;
+        if (lineSize % 4 != 0) {
+            paddingSize = 4 - lineSize % 4;
+        }
+        imageSize = bmp_headerSize + (lineSize + paddingSize) * GxEPD_HEIGHT;
+        imageBuffer = new uint8_t[imageSize];
+        memcpy(imageBuffer, bmp_header, bmp_headerSize);
+        for (int y = 0; y < GxEPD_HEIGHT; y++) {
+            uint8_t* srcRow = buffer + (y * lineSize);
+            uint8_t* destRow = imageBuffer + bmp_headerSize + ((GxEPD_HEIGHT - 1 - y) * (lineSize + paddingSize));
+            memcpy(destRow, srcRow, lineSize);
+            for (int j = 0; j < paddingSize; j++) {
+                destRow[lineSize + j] = 0x00;
+            }
+        }
     }
     else {
         mimetype = "image/x-portable-bitmap";
-        headerSize = pbm_headerSize;
-        header = (uint8_t*) pbm_header;
+        imageSize = pbm_headerSize + GxEPD_WIDTH / 8 * GxEPD_HEIGHT;
+        imageBuffer = new uint8_t[imageSize];
+        memcpy(imageBuffer, pbm_header, pbm_headerSize);
+        memcpy(imageBuffer + pbm_headerSize, buffer, GxEPD_WIDTH / 8 * GxEPD_HEIGHT);
     }
-
-    uint8_t *buffer = getdisplay().getBuffer();
-    size_t imageSize = headerSize + 50 * 300;
-    uint8_t* imageBuffer = new uint8_t[imageSize];
-
-    memcpy(imageBuffer, header, headerSize);
-    memcpy(imageBuffer + headerSize, buffer, 50*300);
 
     AsyncWebServerResponse *response = request->beginResponse_P(200, mimetype, (const uint8_t*)imageBuffer, imageSize);
     response->addHeader("Content-Disposition", "inline; filename=" + filename);
