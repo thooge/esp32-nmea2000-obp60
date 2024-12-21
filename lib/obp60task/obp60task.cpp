@@ -377,7 +377,6 @@ void OBP60Task(GwApi *api){
     CommonData commonData;
     commonData.logger=logger;
     commonData.config=config;
-    commonData.canvas = new GFXcanvas1(400, 300);
     BoatValueList boatValues; //all the boat values for the api query
     //commonData.distanceformat=config->getString(xxx);
     //add all necessary data to common data

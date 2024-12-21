@@ -2,11 +2,9 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
-#include <Adafruit_GFX.h> 
 
 class PageOneValue : public Page{
     bool keylock = false;               // Keylock
-    
 
     public:
     PageOneValue(CommonData &common){
@@ -24,7 +22,6 @@ class PageOneValue : public Page{
     virtual void displayPage(CommonData &commonData, PageData &pageData){
         GwConfigHandler *config = commonData.config;
         GwLog *logger=commonData.logger;
-        GFXcanvas1 canvas(400, 300);
 
         // Old values for hold function
         static String svalue1old = "";
@@ -73,42 +70,42 @@ class PageOneValue : public Page{
         getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
 
         // Show name
-        canvas.setTextColor(textcolor);
-        canvas.setFont(&Ubuntu_Bold32pt7b);
-        canvas.setCursor(20, 100);
-        canvas.print(name1);                           // Page name
+        getdisplay().setTextColor(textcolor);
+        getdisplay().setFont(&Ubuntu_Bold32pt7b);
+        getdisplay().setCursor(20, 100);
+        getdisplay().print(name1);                           // Page name
 
         // Show unit
-        canvas.setTextColor(textcolor);
-        canvas.setFont(&Ubuntu_Bold20pt7b);
-        canvas.setCursor(270, 100);
+        getdisplay().setTextColor(textcolor);
+        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setCursor(270, 100);
         if(holdvalues == false){
-            canvas.print(unit1);                       // Unit
+            getdisplay().print(unit1);                       // Unit
         }
         else{
-            canvas.print(unit1old);
+            getdisplay().print(unit1old);
         }
 
         // Switch font if format for any values
         if(bvalue1->getFormat() == "formatLatitude" || bvalue1->getFormat() == "formatLongitude"){
-            canvas.setFont(&Ubuntu_Bold20pt7b);
-            canvas.setCursor(20, 180);
+            getdisplay().setFont(&Ubuntu_Bold20pt7b);
+            getdisplay().setCursor(20, 180);
         }
         else if(bvalue1->getFormat() == "formatTime" || bvalue1->getFormat() == "formatDate"){
-            canvas.setFont(&Ubuntu_Bold32pt7b);
-            canvas.setCursor(20, 200);
+            getdisplay().setFont(&Ubuntu_Bold32pt7b);
+            getdisplay().setCursor(20, 200);
         }
         else{
-            canvas.setFont(&DSEG7Classic_BoldItalic60pt7b);
-            canvas.setCursor(20, 240);
+            getdisplay().setFont(&DSEG7Classic_BoldItalic60pt7b);
+            getdisplay().setCursor(20, 240);
         }
 
         // Show bus data
         if(holdvalues == false){
-            canvas.print(svalue1);                                     // Real value as formated string
+            getdisplay().print(svalue1);                                     // Real value as formated string
         }
         else{
-            canvas.print(svalue1old);                                  // Old value as formated string
+            getdisplay().print(svalue1old);                                  // Old value as formated string
         }
         if(valid1 == true){
             svalue1old = svalue1;                                       // Save the old value
@@ -116,23 +113,20 @@ class PageOneValue : public Page{
         }
 
         // Key Layout
-        canvas.setTextColor(textcolor);
-        canvas.setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setTextColor(textcolor);
+        getdisplay().setFont(&Ubuntu_Bold8pt7b);
         if(keylock == false){
-            canvas.setCursor(130, 290);
-            canvas.print("[  <<<<  " + String(commonData.data.actpage) + "/" + String(commonData.data.maxpage) + "  >>>>  ]");
+            getdisplay().setCursor(130, 290);
+            getdisplay().print("[  <<<<  " + String(commonData.data.actpage) + "/" + String(commonData.data.maxpage) + "  >>>>  ]");
             if(String(backlightMode) == "Control by Key"){                  // Key for illumination
-                canvas.setCursor(343, 290);
-                canvas.print("[ILUM]");
+                getdisplay().setCursor(343, 290);
+                getdisplay().print("[ILUM]");
             }
         }
         else{
-            canvas.setCursor(130, 290);
-            canvas.print(" [    Keylock active    ]");
+            getdisplay().setCursor(130, 290);
+            getdisplay().print(" [    Keylock active    ]");
         }
-
-        // transfer framebuffer to display
-        getdisplay().drawBitmap(0, 0, canvas.getBuffer(), 400, 300, pixelcolor);
 
         // Update display
         getdisplay().nextPage();    // Partial update (fast)
