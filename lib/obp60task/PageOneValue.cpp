@@ -2,11 +2,9 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
-#include <Adafruit_GFX.h> 
 
 class PageOneValue : public Page{
     bool keylock = false;               // Keylock
-    
 
     public:
     PageOneValue(CommonData &common){
@@ -24,7 +22,6 @@ class PageOneValue : public Page{
     virtual void displayPage(CommonData &commonData, PageData &pageData){
         GwConfigHandler *config = commonData.config;
         GwLog *logger=commonData.logger;
-        GFXcanvas1 canvas(400, 300);
 
         // Old values for hold function
         static String svalue1old = "";
