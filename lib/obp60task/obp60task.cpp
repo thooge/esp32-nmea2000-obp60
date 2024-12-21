@@ -299,13 +299,6 @@ void OBP60Task(GwApi *api){
         doImageRequest(api, imgformat, filename, request);
     });
 
-    String imgformat = config->getConfigItem(config->imageFormat,true)->asString();
-    String filename = "screen." + imgformat;
-    filename.toLowerCase();
-    api->registerRequestHandler(filename, [api, imgformat, filename](AsyncWebServerRequest *request) {
-        doImageRequest(api, imgformat, filename, request);
-    });
-
     tN2kMsg N2kMsg;
 
     LOG_DEBUG(GwLog::LOG,"obp60task started");
