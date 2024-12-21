@@ -58,6 +58,9 @@ void setBuzzerPower(uint power);                // Set buzzer power
 
 String xdrDelete(String input);                 // Delete xdr prefix from string
 
+void drawTextCenter(int16_t cx, int16_t cy, String text);
+void drawTextRalign(int16_t x, int16_t y, String text);
+
 void displayTrendHigh(int16_t x, int16_t y, uint16_t size, uint16_t color);
 void displayTrendLow(int16_t x, int16_t y, uint16_t size, uint16_t color);
 

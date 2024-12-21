@@ -246,6 +246,8 @@ void registerAllPages(PageList &list){
     list.add(&registerPageXTETrack);
     extern PageDescription registerPageFluid;
     list.add(&registerPageFluid);
+    extern PageDescription registerPageBarograph;
+    list.add(&registerPageBarograph);
 }
 
 // Undervoltage detection for shutdown display

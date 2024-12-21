@@ -179,6 +179,24 @@ String xdrDelete(String input){
     return input;
 }
 
+// Draw centered text
+void drawTextCenter(int16_t cx, int16_t cy, String text) {
+    int16_t x1, y1;
+    uint16_t w, h;
+    getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
+    getdisplay().setCursor(cx - w / 2, cy + h / 2);
+    getdisplay().print(text);
+}
+
+// Draw right aligned text
+void drawTextRalign(int16_t x, int16_t y, String text) {
+    int16_t x1, y1;
+    uint16_t w, h;
+    getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
+    getdisplay().setCursor(x - w, y);
+    getdisplay().print(text);
+}
+
 // Show a triangle for trend direction high (x, y is the left edge)
 void displayTrendHigh(int16_t x, int16_t y, uint16_t size, uint16_t color){
     getdisplay().fillTriangle(x, y, x+size*2, y, x+size, y-size*2, color);
