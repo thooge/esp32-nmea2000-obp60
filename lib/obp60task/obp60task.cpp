@@ -13,6 +13,10 @@
 #include "OBP60Extensions.h"            // Functions lib for extension board
 #include "OBP60Keypad.h"                // Functions for keypad
 
+#include <FS.h> // SD-Card access
+#include <SD.h>
+#include <SPI.h>
+
 // True type character sets includes
 // See OBP60ExtensionPort.cpp
 
@@ -409,6 +413,26 @@ void OBP60Task(GwApi *api){
     api->registerRequestHandler("screenshot", [api, &pageNumber, pages](AsyncWebServerRequest *request) {
         doImageRequest(api, &pageNumber, pages, request);
     });
+
+    // SD-Card: init an check
+    SPI.begin(SD_SPI_CLK, SD_SPI_MISO, SD_SPI_MOSI, SD_SPI_CS);
+    if (SD.begin(SDCARD_CS_PIN)) {
+        String sdtype = "unknown";
+        uint8_t cardType = SD.cardType();
+        switch (cardType) {
+            case CARD_MMC:
+               sdtype = "MMC";
+               break;
+            case CARD_SD:
+               sdtype = "SDSC";
+               break;
+            case CARD_SDHC:
+               sdtype = "SDHC";
+               break;
+        }
+        uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+        LOG_DEBUG(GwLog::DEBUG,"SD card type %s of size %d MB detected", sdtype, cardSize);
+    }
 
     //now we have prepared the page data
     //we start a separate task that will fetch our keys...
