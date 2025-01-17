@@ -27,8 +27,6 @@
 #include "OBP60QRWiFi.h"                // Functions lib for WiFi QR code
 #include "OBPSensorTask.h"              // Functions lib for sensor data
 
-#include "LedSpiTask.h"
-
 // Global vars
 bool initComplete = false;      // Initialization complete
 int taskRunCounter = 0;         // Task couter for loop section
@@ -320,7 +318,9 @@ void OBP60Task(GwApi *api){
 //    return;
     GwLog *logger=api->getLogger();
     GwConfigHandler *config=api->getConfig();
+#ifdef HARDWARE_V21
     startLedTask(api);
+#endif
     PageList allPages;
     registerAllPages(allPages);
     CommonData commonData;

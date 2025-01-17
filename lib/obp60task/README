@@ -9,3 +9,27 @@ THIS BRANCH IS NOT INTENDED TO MERGE INTO "master"!
 
 platformio.ini adapted to compile directly
 
+Differences to OBP60
+--------------------
+
+- no GPS
+- no RTC
+- no LEDs
+- no environment sensor
+- no key lock
+- no swipe
+- only 5 keys
+
++ SD card interface
+
+
+Keyboard
+--------
+
+Keycode   Key              Function
+-------- ---------------- -------------------------
+  1       Menu key         Key 1 of OBP60 (left)
+  2       Exit key         Key 2 of OBP60
+  3       Jog-Dial press
+  9       Jog-Dial down    Next page
+ 10       Jog-Dial up      Previous page
