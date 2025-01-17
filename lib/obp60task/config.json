@@ -297,7 +297,7 @@
         "name": "useRTC",
         "label": "RTC Modul",
         "type": "list",
-        "default": "DS1388",
+        "default": "off",
         "description": "Use internal RTC module type [off|DS1388]",
         "list": [
             "off",
@@ -312,7 +312,7 @@
         "name": "useGPS",
         "label": "GPS Sensor",
         "type": "list",
-        "default": "ATGM336H",
+        "default": "off",
         "description": "Use internal GPS module type [off|NEO-6M|NEO-M8N|ATGM336H]",
         "list": [
             "off",
@@ -343,7 +343,7 @@
         "name": "useEnvSensor",
         "label": "Env. Sensor",
         "type": "list",
-        "default": "BMP280",
+        "default": "off",
         "description": "Use internal or external environment sensor via I2C bus [off|BME280|BMP280|BMP180|BMP085|HTU21|SHT21]",
         "list": [
             "off",
@@ -933,7 +933,7 @@
         "name": "page1type",
         "label": "Type",
         "type": "list",
-        "default": "Voltage",
+        "default": "Clock",
         "description": "Type of page for page 1",
         "list": [
             "BME280",
@@ -1193,7 +1193,7 @@
         "name": "page2type",
         "label": "Type",
         "type": "list",
-        "default": "WindRose",
+        "default": "Wind",
         "description": "Type of page for page 2",
         "list": [
             "BME280",
@@ -2691,7 +2691,7 @@
         "name": "page8type",
         "label": "Type",
         "type": "list",
-        "default": "Clock",
+        "default": "Fluid",
         "description": "Type of page for page 8",
         "list": [
             "BME280",
