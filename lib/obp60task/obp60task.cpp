@@ -416,7 +416,7 @@ void OBP60Task(GwApi *api){
 
     // SD-Card: init an check
     SPI.begin(SD_SPI_CLK, SD_SPI_MISO, SD_SPI_MOSI, SD_SPI_CS);
-    if (SD.begin(SDCARD_CS_PIN)) {
+    if (SD.begin(SD_SPI_CS)) {
         String sdtype = "unknown";
         uint8_t cardType = SD.cardType();
         switch (cardType) {
