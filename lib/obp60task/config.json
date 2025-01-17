@@ -574,6 +574,21 @@
         }
     },
     {
+        "name": "useSDCard",
+        "label": "SD Card",
+        "type": "boolean",
+        "default": "off",
+        "description": "Use internal SD card interface [off|on]",
+        "list": [
+            "off",
+            "on"
+        ],
+        "category": "OBP60 Hardware",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
         "name": "powerMode",
         "label": "Power Mode",
         "type": "list",
