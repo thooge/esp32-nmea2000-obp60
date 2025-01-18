@@ -23,6 +23,18 @@ Differences to OBP60
 + SD card interface
 
 
+GPIO assignments
+----------------
+
+NMEA0183
+  IO9  - RS485 TX
+  IO14 - RS485 RX
+
+NMEA2000/CAN
+  IO15 - CAN TX
+  IO16 - CAN RX
+
+
 Keyboard
 --------
 
