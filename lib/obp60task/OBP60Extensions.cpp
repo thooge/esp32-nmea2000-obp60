@@ -326,12 +326,14 @@ void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatVa
         usbRxOld = commonData.status.usbRx;
         usbTxOld = commonData.status.usbTx;
 
+#ifdef HARDWARE_V21
         // Display key lock status
         if (commonData.keylock) {
             getdisplay().drawXBitmap(170, 1, lock_bits, icon_width, icon_height, commonData.fgcolor);
         } else {
             getdisplay().drawXBitmap(166, 1, swipe_bits, swipe_width, swipe_height, commonData.fgcolor);
         }
+#endif
 
         // Heartbeat as dot
         getdisplay().setTextColor(commonData.fgcolor);

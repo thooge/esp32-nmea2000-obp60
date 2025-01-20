@@ -327,8 +327,10 @@ void OBP60Task(GwApi *api){
     commonData.logger=logger;
     commonData.config=config;
 
+#ifdef HARDWARE_V21
     // Keyboard coordinates for page footer
     initKeys(commonData);
+#endif
 
     tN2kMsg N2kMsg;
 
@@ -686,10 +688,12 @@ void OBP60Task(GwApi *api){
                     }
                     //call the page code
                     LOG_DEBUG(GwLog::DEBUG,"calling page %d",pageNumber);
+#ifdef HARDWARE_V21
                     // Show footer if enabled (together with header)
                     if (pages[pageNumber].description && pages[pageNumber].description->header){
                         displayFooter(commonData);
                     }
+#endif
                     currentPage->displayPage(pages[pageNumber].parameters);
                 }
             }

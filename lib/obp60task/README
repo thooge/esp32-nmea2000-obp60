@@ -7,7 +7,12 @@ Important information:
 THIS BRANCH IS NOT INTENDED TO MERGE INTO "master"!
 ***************************************************
 
-platformio.ini adapted to compile directly
+platformio.ini adapted to compile directly. For compile use matching
+environent:
+    pio run -e obp40
+
+for upload to device:
+    pio run -e obp40 -t upload
 
 Differences to OBP60
 --------------------
