@@ -439,6 +439,17 @@ void displayFooter(CommonData &commonData) {
             getdisplay().drawCircle(x0 + i * (r * 2 + space), 290, r, commonData.fgcolor);
         }
     }
+    // key indicators
+    // left side = top key "menu"
+    getdisplay().drawLine(0, 280, 10, 280, commonData.fgcolor);
+    getdisplay().drawLine(55, 280, 65, 280, commonData.fgcolor);
+    getdisplay().drawLine(65, 280, 65, 299, commonData.fgcolor);
+    drawTextCenter(33, 291, commonData.keydata[0].label);
+    // right side = bottom key "exit"
+    getdisplay().drawLine(390, 280, 399, 280, commonData.fgcolor);
+    getdisplay().drawLine(335, 280, 345, 280, commonData.fgcolor);
+    getdisplay().drawLine(335, 280, 335, 399, commonData.fgcolor);
+    drawTextCenter(366, 291, commonData.keydata[1].label);
 #endif
 }
 
