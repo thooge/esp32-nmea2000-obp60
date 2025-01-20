@@ -688,12 +688,10 @@ void OBP60Task(GwApi *api){
                     }
                     //call the page code
                     LOG_DEBUG(GwLog::DEBUG,"calling page %d",pageNumber);
-#ifdef HARDWARE_V21
                     // Show footer if enabled (together with header)
                     if (pages[pageNumber].description && pages[pageNumber].description->header){
                         displayFooter(commonData);
                     }
-#endif
                     currentPage->displayPage(pages[pageNumber].parameters);
                 }
             }

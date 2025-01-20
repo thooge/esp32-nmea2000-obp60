@@ -378,6 +378,7 @@ void displayFooter(CommonData &commonData) {
     getdisplay().setFont(&Atari16px);
     getdisplay().setTextColor(commonData.fgcolor);
 
+#ifdef HARDWARE_V21
     // Frame around key icon area
     if (! commonData.keylock) {
         // horizontal elements
@@ -424,6 +425,21 @@ void displayFooter(CommonData &commonData) {
         getdisplay().setCursor(65, 295);
         getdisplay().print("Press 1 and 6 fast to unlock keys");
     }
+#endif
+#ifdef HARDWARE_LIGHT
+    // grapical page indicator
+    static const uint16_t r = 5;
+    static const uint16_t space = 4;
+    uint16_t w = commonData.data.maxpage * r * 2 + (commonData.data.maxpage - 1) * space;
+    uint16_t x0 = (GxEPD_WIDTH - w) / 2 + r * 2;
+    for (int i = 0; i < commonData.data.maxpage; i++) {
+        if (i == (commonData.data.actpage - 1)) {
+            getdisplay().fillCircle(x0 + i * (r * 2 + space), 290, r, commonData.fgcolor);
+        } else {
+            getdisplay().drawCircle(x0 + i * (r * 2 + space), 290, r, commonData.fgcolor);
+        }
+    }
+#endif
 }
 
 // Sunset und sunrise calculation
