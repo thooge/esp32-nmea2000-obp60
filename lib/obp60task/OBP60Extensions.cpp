@@ -328,7 +328,7 @@ void displayTrendLow(int16_t x, int16_t y, uint16_t size, uint16_t color){
 }
 
 // Show header informations
-void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatValue *time, GwApi::BoatValue *hdop){
+void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *date, GwApi::BoatValue *time, GwApi::BoatValue *hdop){
 
     static bool heartbeat = false;
     static unsigned long usbRxOld = 0;
@@ -342,31 +342,70 @@ void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatVa
     static unsigned long n2kRxOld = 0;
     static unsigned long n2kTxOld = 0;
 
+    uint16_t symbol_x = 2;
+    static const uint16_t symbol_offset = 20;
+
     if(commonData.config->getBool(commonData.config->statusLine) == true){
+
+       if (symbolmode) {
+           commonData.logger->logDebug(GwLog::LOG,"Header: Symbolmode");
+       } else {
+           commonData.logger->logDebug(GwLog::LOG,"Header: Textmode");
+        }
 
         // Show status info
         getdisplay().setTextColor(commonData.fgcolor);
         getdisplay().setFont(&Ubuntu_Bold8pt7b);
         getdisplay().setCursor(0, 15);
-        if(commonData.status.wifiApOn){
-        getdisplay().print(" AP ");
+        if (commonData.status.wifiApOn) {
+            if (symbolmode) {
+                getdisplay().drawXBitmap(symbol_x, 1, iconmap["AP"], icon_width, icon_height, commonData.fgcolor);
+                symbol_x += symbol_offset;
+            } else {
+                getdisplay().print(" AP ");
+            }
         }
         // If receive new telegram data then display bus name
         if(commonData.status.tcpClRx != tcpClRxOld || commonData.status.tcpClTx != tcpClTxOld || commonData.status.tcpSerRx != tcpSerRxOld || commonData.status.tcpSerTx != tcpSerTxOld){
-        getdisplay().print("TCP ");
+            if (symbolmode) {
+                getdisplay().drawXBitmap(symbol_x, 1, iconmap["TCP"], icon_width, icon_height, commonData.fgcolor);
+                symbol_x += symbol_offset;
+            } else {
+                getdisplay().print("TCP ");
+            }
         }
         if(commonData.status.n2kRx != n2kRxOld || commonData.status.n2kTx != n2kTxOld){
-        getdisplay().print("N2K ");
+            if (symbolmode) {
+                getdisplay().drawXBitmap(symbol_x, 1, iconmap["N2K"], icon_width, icon_height, commonData.fgcolor);
+                symbol_x += symbol_offset;
+            } else {
+                getdisplay().print("N2K ");
+            }
         }
         if(commonData.status.serRx != serRxOld || commonData.status.serTx != serTxOld){
-        getdisplay().print("183 ");
+            if (symbolmode) {
+                getdisplay().drawXBitmap(symbol_x, 1, iconmap["0183"], icon_width, icon_height, commonData.fgcolor);
+                symbol_x += symbol_offset;
+            } else {
+                getdisplay().print("183 ");
+            }
         }
         if(commonData.status.usbRx != usbRxOld || commonData.status.usbTx != usbTxOld){
-        getdisplay().print("USB ");
+            if (symbolmode) {
+                getdisplay().drawXBitmap(symbol_x, 1, iconmap["USB"], icon_width, icon_height, commonData.fgcolor);
+                symbol_x += symbol_offset;
+            } else {
+                getdisplay().print("USB ");
+            }
         }
         double gpshdop = formatValue(hdop, commonData).value;
         if(commonData.config->getString(commonData.config->useGPS) != "off" &&  gpshdop <= commonData.config->getInt(commonData.config->hdopAccuracy) && hdop->valid == true){
-        getdisplay().print("GPS");
+            if (symbolmode) {
+                getdisplay().drawXBitmap(symbol_x, 1, iconmap["GPS"], icon_width, icon_height, commonData.fgcolor);
+                symbol_x += symbol_offset;
+            } else {
+                getdisplay().print("GPS");
+            }
         }
         // Save old telegram counter
         tcpClRxOld = commonData.status.tcpClRx;

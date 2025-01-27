@@ -409,6 +409,7 @@ void OBP60Task(GwApi *api){
     String systemname = api->getConfig()->getConfigItem(api->getConfig()->systemName,true)->asString();
     String wifipass = api->getConfig()->getConfigItem(api->getConfig()->apPassword,true)->asString();
     bool refreshmode = api->getConfig()->getConfigItem(api->getConfig()->refresh,true)->asBoolean();
+    bool symbolmode = (config->getString(config->headerFormat) == "ICON");
     String fastrefresh = api->getConfig()->getConfigItem(api->getConfig()->fastRefresh,true)->asString();
     uint fullrefreshtime = uint(api->getConfig()->getConfigItem(api->getConfig()->fullRefreshTime,true)->asInt());
     #ifdef BOARD_OBP40S3
@@ -789,7 +790,7 @@ void OBP60Task(GwApi *api){
                 // Show header if enabled
                 if (pages[pageNumber].description && pages[pageNumber].description->header or systemPage){
                     // build header using commonData
-                    displayHeader(commonData, date, time, hdop);  // Show page header
+                    displayHeader(commonData, symbolmode, date, time, hdop);  // Show page header
                 }
 
                 // Call the particular page
