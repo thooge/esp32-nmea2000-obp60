@@ -220,6 +220,17 @@
         }
     },
     {
+        "name": "calOffsetDBT",
+        "label": "Offset DBT",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for depth transducer; positive for depth from surface, negative for depth below keel",
+        "category": "OBP60 Settings",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
         "name": "lengthFormat",
         "label": "Length Format",
         "type": "list",
@@ -687,6 +698,86 @@
         }
     },
     {
+        "name": "calInstance1",
+        "label": "Calibration Data Instance 1",
+        "type": "list",
+        "default": "",
+        "description": "Data instance for calibration",
+        "list": [
+            "AWA",
+            "AWS",
+            "HDM",
+            "STW",
+            "WTemp"
+        ],
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calOffset1",
+        "label": "Calibration Data Instance 1 Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 1",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calSlope1",
+        "label": "Calibration Data Instance 1 Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 1",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calInstance2",
+        "label": "Calibration Data Instance 2",
+        "type": "list",
+        "default": "",
+        "description": "Data instance for calibration",
+        "list": [
+            "AWA",
+            "AWS",
+            "HDM",
+            "STW",
+            "WTemp"
+        ],
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calOffset2",
+        "label": "Calibration Data Instance 2 Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 2",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calSlope2",
+        "label": "Calibration Data Instance 2 Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 2",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+{
         "name": "display",
         "label": "Display Mode",
         "type": "list",

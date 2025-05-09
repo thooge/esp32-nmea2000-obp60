@@ -12,6 +12,7 @@
 #include <GxEPD2_BW.h>                  // GxEPD2 lib for b/w E-Ink displays
 #include "OBP60Extensions.h"            // Functions lib for extension board
 #include "OBP60Keypad.h"                // Functions for keypad
+#include "BoatDataCalibration.h"        // Functions lib for data instance calibration
 
 #ifdef BOARD_OBP40S3
 #include "driver/rtc_io.h"              // Needs for weakup from deep sleep
@@ -384,6 +385,10 @@ void OBP60Task(GwApi *api){
     CommonData commonData;
     commonData.logger=logger;
     commonData.config=config;
+
+    // Read all calibration data settings from config
+    CalibrationDataList::readConfig(config, logger);
+    LOG_DEBUG(GwLog::LOG,"Calibration data read from config");
 
 #ifdef HARDWARE_V21
     // Keyboard coordinates for page footer
