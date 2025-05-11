@@ -220,17 +220,6 @@
         }
     },
     {
-        "name": "calOffsetDBT",
-        "label": "Offset DBT",
-        "type": "number",
-        "default": "0.00",
-        "description": "Offset for depth transducer; positive for depth from surface, negative for depth below keel",
-        "category": "OBP60 Settings",
-        "capabilities": {
-            "obp60":"true"
-        }
-    },
-    {
         "name": "lengthFormat",
         "label": "Length Format",
         "type": "list",
@@ -706,6 +695,7 @@
         "list": [
             "AWA",
             "AWS",
+            "DBT",
             "HDM",
             "STW",
             "WTemp"
@@ -746,6 +736,7 @@
         "list": [
             "AWA",
             "AWS",
+            "DBT",
             "HDM",
             "STW",
             "WTemp"
@@ -772,6 +763,47 @@
         "type": "number",
         "default": "1.00",
         "description": "Slope for data instance 2",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calInstance3",
+        "label": "Calibration Data Instance 3",
+        "type": "list",
+        "default": "",
+        "description": "Data instance for calibration",
+        "list": [
+            "AWA",
+            "AWS",
+            "DBT",
+            "HDM",
+            "STW",
+            "WTemp"
+        ],
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calOffset3",
+        "label": "Calibration Data Instance 3 Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 3",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calSlope3",
+        "label": "Calibration Data Instance 3 Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 3",
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"

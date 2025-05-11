@@ -46,7 +46,7 @@ class PageThreeValues : public Page
         name1 = name1.substring(0, 6);                  // String length limit for value name
         double value1 = bvalue1->value;                 // Value as double in SI unit
         bool valid1 = bvalue1->valid;                   // Valid information 
-        CalibrationDataList::calibrateInstance(name1, bvalue1, logger); // Check if boat data value is to be calibrated
+        calibrationData.calibrateInstance(name1, bvalue1, logger); // Check if boat data value is to be calibrated
         String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
 
@@ -56,7 +56,7 @@ class PageThreeValues : public Page
         name2 = name2.substring(0, 6);                  // String length limit for value name
         double value2 = bvalue2->value;                 // Value as double in SI unit
         bool valid2 = bvalue2->valid;                   // Valid information 
-        CalibrationDataList::calibrateInstance(name2, bvalue2, logger); // Check if boat data value is to be calibrated
+        calibrationData.calibrateInstance(name2, bvalue2, logger); // Check if boat data value is to be calibrated
         String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
 
@@ -66,7 +66,7 @@ class PageThreeValues : public Page
         name3 = name3.substring(0, 6);                  // String length limit for value name
         double value3 = bvalue3->value;                 // Value as double in SI unit
         bool valid3 = bvalue3->valid;                   // Valid information 
-        CalibrationDataList::calibrateInstance(name3, bvalue3, logger); // Check if boat data value is to be calibrated
+        calibrationData.calibrateInstance(name3, bvalue3, logger); // Check if boat data value is to be calibrated
         String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit3 = formatValue(bvalue3, *commonData).unit;        // Unit of value
 

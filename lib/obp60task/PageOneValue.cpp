@@ -40,9 +40,9 @@ class PageOneValue : public Page
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
         String name1 = xdrDelete(bvalue1->getName());   // Value name
         name1 = name1.substring(0, 6);                  // String length limit for value name
-        double value1 = bvalue1->value;                 // Value as double in SI unit
-        bool valid1 = bvalue1->valid;                   // Valid information 
-        CalibrationDataList::calibrateInstance(name1, bvalue1, logger); // Check if boat data value is to be calibrated
+//        double value1 = bvalue1->value;                 // Value as double in SI unit
+        bool valid1 = bvalue1->valid;                   // Valid information
+        calibrationData.calibrateInstance(name1, bvalue1, logger); // Check if boat data value is to be calibrated
         String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
 
@@ -54,7 +54,7 @@ class PageOneValue : public Page
 
         // Logging boat values
         if (bvalue1 == NULL) return;
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageOneValue, %s: %f", name1.c_str(), value1);
+        LOG_DEBUG(GwLog::LOG,"Drawing at PageOneValue, %s: %f", name1.c_str(), bvalue1);
 
         // Draw page
         //***********************************************************

@@ -386,10 +386,6 @@ void OBP60Task(GwApi *api){
     commonData.logger=logger;
     commonData.config=config;
 
-    // Read all calibration data settings from config
-    CalibrationDataList::readConfig(config, logger);
-    LOG_DEBUG(GwLog::LOG,"Calibration data read from config");
-
 #ifdef HARDWARE_V21
     // Keyboard coordinates for page footer
     initKeys(commonData);
@@ -528,6 +524,9 @@ void OBP60Task(GwApi *api){
     }
     // add out of band system page (always available)
     Page *syspage = allPages.pages[0]->creator(commonData);
+
+    // Read all calibration data settings from config
+    calibrationData.readConfig(config, logger);
 
     // Display screenshot handler for HTTP request
     // http://192.168.15.1/api/user/OBP60Task/screenshot

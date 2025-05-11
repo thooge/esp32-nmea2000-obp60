@@ -25,7 +25,6 @@ public:
     static void calibrateInstance(String instance, GwApi::BoatValue* boatDataValue, GwLog* logger);
 
 private:
-//    GwLog* logger;
 };
 
 extern CalibrationDataList calibrationData; // this list holds all calibration data
