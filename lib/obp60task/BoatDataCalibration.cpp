@@ -34,7 +34,7 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
         calibrationData.list[i].slope = (config->getString(slope, "")).toFloat();
 
         // Convert calibration values to internal standard formats
-        if (calibrationData.list[i].instance == "AWS") {
+        if (calibrationData.list[i].instance == "AWS" || calibrationData.list[i].instance == "TWS") {
             if (windspeedFormat == "m/s") {
                 // No conversion needed
             } else if (windspeedFormat == "km/h") {
@@ -45,7 +45,7 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
                 calibrationData.list[i].offset *= 0.5; // Convert Bft to m/s (approx) -> to be improved
             }
 
-        } else if (calibrationData.list[i].instance == "AWA" || calibrationData.list[i].instance == "HDM") {
+        } else if (calibrationData.list[i].instance == "AWA" || calibrationData.list[i].instance == "TWA" ||calibrationData.list[i].instance == "TWD" || calibrationData.list[i].instance == "HDM") {
             calibrationData.list[i].offset *= M_PI / 180; // Convert deg to rad
 
         } else if (calibrationData.list[i].instance == "DBT") {
