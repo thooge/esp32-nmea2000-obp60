@@ -48,6 +48,13 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
         } else if (calibrationData.list[i].instance == "AWA" || calibrationData.list[i].instance == "HDM") {
             calibrationData.list[i].offset *= M_PI / 180; // Convert deg to rad
 
+        } else if (calibrationData.list[i].instance == "DBT") {
+            if (lengthFormat == "m") {
+                // No conversion needed
+            } else if (lengthFormat == "ft") {
+                calibrationData.list[i].offset /= 3.28084; // Convert ft to m
+            }
+ 
         } else if (calibrationData.list[i].instance == "STW") {
             if (speedFormat == "m/s") {
                 // No conversion needed
