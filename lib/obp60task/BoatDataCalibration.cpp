@@ -22,10 +22,10 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
         String instance = "calInstance" + String(i+1);
         String offset = "calOffset" + String(i+1);
         String slope = "calSlope" + String(i+1);
-        calibrationData.list[i] = { "", 0.0f, 1.0f, 0.0f, false };
+        calibrationData.list[i] = { "---", 0.0f, 1.0f, 0.0f, false };
 
-        calibrationData.list[i].instance = config->getString(instance, "");
-        if (calibrationData.list[i].instance == "") {
+        calibrationData.list[i].instance = config->getString(instance, "---");
+        if (calibrationData.list[i].instance == "---") {
             LOG_DEBUG(GwLog::LOG, "no calibration data for instance no. %d", i+1);
             continue;
         }
@@ -45,7 +45,8 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
                 calibrationData.list[i].offset *= 0.5; // Convert Bft to m/s (approx) -> to be improved
             }
 
-        } else if (calibrationData.list[i].instance == "AWA" || calibrationData.list[i].instance == "TWA" ||calibrationData.list[i].instance == "TWD" || calibrationData.list[i].instance == "HDM") {
+        } else if (calibrationData.list[i].instance == "AWA" || calibrationData.list[i].instance == "TWA" ||calibrationData.list[i].instance == "TWD" || calibrationData.list[i].instance == "HDM" ||
+                    calibrationData.list[i].instance == "PRPOS" || calibrationData.list[i].instance == "RPOS") {
             calibrationData.list[i].offset *= M_PI / 180; // Convert deg to rad
 
         } else if (calibrationData.list[i].instance == "DBT") {
