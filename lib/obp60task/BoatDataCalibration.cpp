@@ -10,6 +10,14 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
 // Initial load of calibration data into internal list
 // This method is called once at init phase of <OBP60task> to read the configuration values
 {
+    String instance;
+    double offset;
+    double slope;
+
+    String calInstance = "";
+    String calOffset = "";
+    String calSlope = "";
+
     // Load user format configuration values
     String lengthFormat = config->getString(config->lengthFormat); // [m|ft]
     String distanceFormat = config->getString(config->distanceFormat); // [m|km|nm]
@@ -19,60 +27,62 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
 
     // Read calibration settings for data instances
     for (int i = 0; i < maxCalibrationData; i++) {
-        String instance = "calInstance" + String(i+1);
-        String offset = "calOffset" + String(i+1);
-        String slope = "calSlope" + String(i+1);
+        calInstance = "calInstance" + String(i+1);
+        calOffset = "calOffset" + String(i+1);
+        calSlope = "calSlope" + String(i+1);
         calibrationData.list[i] = { "---", 0.0f, 1.0f, 0.0f, false };
 
-        calibrationData.list[i].instance = config->getString(instance, "---");
-        if (calibrationData.list[i].instance == "---") {
+        instance = config->getString(calInstance, "---");
+        if (instance == "---") {
             LOG_DEBUG(GwLog::LOG, "no calibration data for instance no. %d", i+1);
             continue;
         }
-
-        calibrationData.list[i].offset = (config->getString(offset, "")).toFloat();
-        calibrationData.list[i].slope = (config->getString(slope, "")).toFloat();
+        offset = (config->getString(calOffset, "")).toFloat();
+        slope = (config->getString(calSlope, "")).toFloat();
 
         // Convert calibration values to internal standard formats
-        if (calibrationData.list[i].instance == "AWS" || calibrationData.list[i].instance == "TWS") {
+        if (instance == "AWS" || instance == "TWS") {
             if (windspeedFormat == "m/s") {
                 // No conversion needed
             } else if (windspeedFormat == "km/h") {
-                calibrationData.list[i].offset /= 3.6; // Convert km/h to m/s
+                offset /= 3.6; // Convert km/h to m/s
             } else if (windspeedFormat == "kn") {
-                calibrationData.list[i].offset /= 1.94384; // Convert kn to m/s
+                offset /= 1.94384; // Convert kn to m/s
             } else if (windspeedFormat == "bft") {
-                calibrationData.list[i].offset *= 0.5; // Convert Bft to m/s (approx) -> to be improved
+                offset *= 0.5; // Convert Bft to m/s (approx) -> to be improved
             }
 
-        } else if (calibrationData.list[i].instance == "AWA" || calibrationData.list[i].instance == "TWA" ||calibrationData.list[i].instance == "TWD" || calibrationData.list[i].instance == "HDM" ||
-                    calibrationData.list[i].instance == "PRPOS" || calibrationData.list[i].instance == "RPOS") {
-            calibrationData.list[i].offset *= M_PI / 180; // Convert deg to rad
+        } else if (instance == "AWA" || instance == "TWA" ||instance == "TWD" || instance == "HDM" ||
+                   instance == "PRPOS" || instance == "RPOS") {
+            offset *= M_PI / 180; // Convert deg to rad
 
-        } else if (calibrationData.list[i].instance == "DBT") {
+        } else if (instance == "DBT") {
             if (lengthFormat == "m") {
                 // No conversion needed
             } else if (lengthFormat == "ft") {
-                calibrationData.list[i].offset /= 3.28084; // Convert ft to m
+                offset /= 3.28084; // Convert ft to m
             }
  
-        } else if (calibrationData.list[i].instance == "STW") {
+        } else if (instance == "STW") {
             if (speedFormat == "m/s") {
                 // No conversion needed
             } else if (speedFormat == "km/h") {
-                calibrationData.list[i].offset /= 3.6; // Convert km/h to m/s
+                offset /= 3.6; // Convert km/h to m/s
             } else if (speedFormat == "kn") {
-                calibrationData.list[i].offset /= 1.94384; // Convert kn to m/s
+                offset /= 1.94384; // Convert kn to m/s
             }
 
-        } else if (calibrationData.list[i].instance == "WTemp") {
+        } else if (instance == "WTemp") {
             if (tempFormat == "K" || tempFormat == "C") {
                 // No conversion needed
             } else if (tempFormat == "F") {
-                calibrationData.list[i].offset *= 9.0 / 5.0; // Convert °F to K
-                calibrationData.list[i].slope *= 9.0 / 5.0; // Convert °F to K
+                offset *= 9.0 / 5.0; // Convert °F to K
+                slope *= 9.0 / 5.0; // Convert °F to K
             }
         }
+        calibrationData.list[i].instance = instance;
+        calibrationData.list[i].offset = offset;
+        calibrationData.list[i].slope = slope;
         calibrationData.list[i].isCalibrated = false;
         LOG_DEBUG(GwLog::LOG, "stored calibration data: %s, offset: %f, slope: %f", calibrationData.list[i].instance.c_str(), calibrationData.list[i].offset, calibrationData.list[i].slope);
     }
@@ -121,7 +131,7 @@ void CalibrationDataList::calibrateInstance(String instance, GwApi::BoatValue* b
             return;
         } else {
             dataValue = boatDataValue->value;
-            LOG_DEBUG(GwLog::LOG, "BoatDataCalibration: name: %s: value: %f format: %s", boatDataValue->getName().c_str(), boatDataValue->value, boatDataValue->getFormat().c_str());
+            LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: name: %s: value: %f format: %s", boatDataValue->getName().c_str(), boatDataValue->value, boatDataValue->getFormat().c_str());
 
             if (boatDataValue->getFormat() == "formatWind") { // instance is of type angle
                 dataValue = (dataValue * slope) + offset;
