@@ -46,19 +46,19 @@ public:
         bool valid1 = bvalue1->valid;                   // Valid information 
         String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
+
         if(valid1 == true){
             value1old = value1;   	                    // Save old value
             unit1old = unit1;                           // Save old unit
+        } else {
+            if(simulation == true){
+                value1 = (3 + float(random(0, 50)) / 10.0)/360*2*PI;
+                unit1 = "Deg";
+            }
+            else{
+                value1 = 0;
+            }
         }
-
-        if(simulation == true){
-            value1 = (3 + float(random(0, 50)) / 10.0)/360*2*PI;
-            unit1 = "Deg";
-        }
-        else{
-            value1 = 0;
-        }
-
 
         // Optical warning by limit violation (unused)
         if(String(flashLED) == "Limit Violation"){
