@@ -713,7 +713,7 @@
     },
     {
         "name": "calOffset1",
-        "label": "Calibration Data Instance 1 Offset",
+        "label": "Data Instance 1 Calibration Offset",
         "type": "number",
         "default": "0.00",
         "description": "Offset for data instance 1",
@@ -724,10 +724,24 @@
     },
     {
         "name": "calSlope1",
-        "label": "Calibration Data Instance 1 Slope",
+        "label": "Data Instance 1 Calibration Slope",
         "type": "number",
         "default": "1.00",
         "description": "Slope for data instance 1",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calSmooth1",
+        "label": "Data Instance 1 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 9,
+        "description": "Smoothing factor for data instance 1",
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
@@ -760,7 +774,7 @@
     },
     {
         "name": "calOffset2",
-        "label": "Calibration Data Instance 2 Offset",
+        "label": "Data Instance 2 Calibration Offset",
         "type": "number",
         "default": "0.00",
         "description": "Offset for data instance 2",
@@ -771,10 +785,24 @@
     },
     {
         "name": "calSlope2",
-        "label": "Calibration Data Instance 2 Slope",
+        "label": "Data Instance 2 Calibration Slope",
         "type": "number",
         "default": "1.00",
         "description": "Slope for data instance 2",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calSmooth2",
+        "label": "Data Instance 2 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 9,
+        "description": "Smoothing factor for data instance 2",
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
@@ -807,7 +835,7 @@
     },
     {
         "name": "calOffset3",
-        "label": "Calibration Data Instance 3 Offset",
+        "label": "Data Instance 3 Calibration Offset",
         "type": "number",
         "default": "0.00",
         "description": "Offset for data instance 3",
@@ -818,7 +846,7 @@
     },
     {
         "name": "calSlope3",
-        "label": "Calibration Data Instance 3 Slope",
+        "label": "Data Instance 3 Calibration Slope",
         "type": "number",
         "default": "1.00",
         "description": "Slope for data instance 3",
@@ -827,7 +855,21 @@
             "obp60":"true"
         }
     },
-{
+    {
+        "name": "calSmooth3",
+        "label": "Data Instance 3 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 9,
+        "description": "Smoothing factor for data instance 3",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
         "name": "display",
         "label": "Display Mode",
         "type": "list",

@@ -10,6 +10,7 @@ typedef struct {
     String instance; // data type/instance to be calibrated
     double offset; // calibration offset
     double slope; // calibration slope
+    double smooth; // smoothing factor
     double value; // calibrated data value
     bool isCalibrated; // is data instance value calibrated?
 } CalibData;
@@ -23,6 +24,7 @@ public:
     static void readConfig(GwConfigHandler* config, GwLog* logger);
     static int getInstanceListNo(String instance);
     static void calibrateInstance(String instance, GwApi::BoatValue* boatDataValue, GwLog* logger);
+    void smoothInstance(String instance, double &dataValue, GwLog* logger);
 
 private:
 };
