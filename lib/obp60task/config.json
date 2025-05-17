@@ -740,7 +740,7 @@
         "default": "0",
         "check": "checkMinMax",
         "min": 0,
-        "max": 9,
+        "max": 10,
         "description": "Smoothing factor for data instance 1",
         "category": "OBP60 Calibrations",
         "capabilities": {
@@ -801,7 +801,7 @@
         "default": "0",
         "check": "checkMinMax",
         "min": 0,
-        "max": 9,
+        "max": 10,
         "description": "Smoothing factor for data instance 2",
         "category": "OBP60 Calibrations",
         "capabilities": {
@@ -862,7 +862,7 @@
         "default": "0",
         "check": "checkMinMax",
         "min": 0,
-        "max": 9,
+        "max": 10,
         "description": "Smoothing factor for data instance 3",
         "category": "OBP60 Calibrations",
         "capabilities": {
