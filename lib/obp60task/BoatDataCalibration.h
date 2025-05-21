@@ -21,9 +21,9 @@ class CalibrationDataList {
 public:
     CalibData list[maxCalibrationData]; // list of calibration data instances
 
-    static void readConfig(GwConfigHandler* config, GwLog* logger);
-    static int getInstanceListNo(String instance);
-    static void calibrateInstance(String instance, GwApi::BoatValue* boatDataValue, GwLog* logger);
+    void readConfig(GwConfigHandler* config, GwLog* logger);
+    int getInstanceListNo(String instance);
+    void calibrateInstance(String instance, GwApi::BoatValue* boatDataValue, GwLog* logger);
     void smoothInstance(String instance, double &dataValue, GwLog* logger);
 
 private:
