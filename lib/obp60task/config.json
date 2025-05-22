@@ -720,7 +720,19 @@
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "calInstance1": "AWA" },
+            { "calInstance1": "AWS" },
+            { "calInstance1": "DBT" },
+            { "calInstance1": "HDM" },
+            { "calInstance1": "PRPOS" },
+            { "calInstance1": "RPOS" },
+            { "calInstance1": "STW" },
+            { "calInstance1": "TWA" },
+            { "calInstance1": "TWS" },
+            { "calInstance1": "TWD" },
+            { "calInstance1": "WTemp" } ]
     },
     {
         "name": "calSlope1",
@@ -731,7 +743,19 @@
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "calInstance1": "AWA" },
+            { "calInstance1": "AWS" },
+            { "calInstance1": "DBT" },
+            { "calInstance1": "HDM" },
+            { "calInstance1": "PRPOS" },
+            { "calInstance1": "RPOS" },
+            { "calInstance1": "STW" },
+            { "calInstance1": "TWA" },
+            { "calInstance1": "TWS" },
+            { "calInstance1": "TWD" },
+            { "calInstance1": "WTemp" }  ]
     },
     {
         "name": "calSmooth1",
@@ -745,7 +769,19 @@
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "calInstance1": "AWA" },
+            { "calInstance1": "AWS" },
+            { "calInstance1": "DBT" },
+            { "calInstance1": "HDM" },
+            { "calInstance1": "PRPOS" },
+            { "calInstance1": "RPOS" },
+            { "calInstance1": "STW" },
+            { "calInstance1": "TWA" },
+            { "calInstance1": "TWS" },
+            { "calInstance1": "TWD" },
+            { "calInstance1": "WTemp" }  ]
     },
     {
         "name": "calInstance2",
@@ -781,7 +817,19 @@
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "calInstance2": "AWA" },
+            { "calInstance2": "AWS" },
+            { "calInstance2": "DBT" },
+            { "calInstance2": "HDM" },
+            { "calInstance2": "PRPOS" },
+            { "calInstance2": "RPOS" },
+            { "calInstance2": "STW" },
+            { "calInstance2": "TWA" },
+            { "calInstance2": "TWS" },
+            { "calInstance2": "TWD" },
+            { "calInstance2": "WTemp" } ]
     },
     {
         "name": "calSlope2",
@@ -792,7 +840,19 @@
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "calInstance2": "AWA" },
+            { "calInstance2": "AWS" },
+            { "calInstance2": "DBT" },
+            { "calInstance2": "HDM" },
+            { "calInstance2": "PRPOS" },
+            { "calInstance2": "RPOS" },
+            { "calInstance2": "STW" },
+            { "calInstance2": "TWA" },
+            { "calInstance2": "TWS" },
+            { "calInstance2": "TWD" },
+            { "calInstance2": "WTemp" } ]
     },
     {
         "name": "calSmooth2",
@@ -806,7 +866,19 @@
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "calInstance2": "AWA" },
+            { "calInstance2": "AWS" },
+            { "calInstance2": "DBT" },
+            { "calInstance2": "HDM" },
+            { "calInstance2": "PRPOS" },
+            { "calInstance2": "RPOS" },
+            { "calInstance2": "STW" },
+            { "calInstance2": "TWA" },
+            { "calInstance2": "TWS" },
+            { "calInstance2": "TWD" },
+            { "calInstance2": "WTemp" } ]
     },
     {
         "name": "calInstance3",
@@ -842,7 +914,19 @@
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "calInstance3": "AWA" },
+            { "calInstance3": "AWS" },
+            { "calInstance3": "DBT" },
+            { "calInstance3": "HDM" },
+            { "calInstance3": "PRPOS" },
+            { "calInstance3": "RPOS" },
+            { "calInstance3": "STW" },
+            { "calInstance3": "TWA" },
+            { "calInstance3": "TWS" },
+            { "calInstance3": "TWD" },
+            { "calInstance3": "WTemp" } ]
     },
     {
         "name": "calSlope3",
@@ -853,7 +937,19 @@
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "calInstance3": "AWA" },
+            { "calInstance3": "AWS" },
+            { "calInstance3": "DBT" },
+            { "calInstance3": "HDM" },
+            { "calInstance3": "PRPOS" },
+            { "calInstance3": "RPOS" },
+            { "calInstance3": "STW" },
+            { "calInstance3": "TWA" },
+            { "calInstance3": "TWS" },
+            { "calInstance3": "TWD" },
+            { "calInstance3": "WTemp" } ]
     },
     {
         "name": "calSmooth3",
@@ -867,7 +963,19 @@
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "calInstance3": "AWA" },
+            { "calInstance3": "AWS" },
+            { "calInstance3": "DBT" },
+            { "calInstance3": "HDM" },
+            { "calInstance3": "PRPOS" },
+            { "calInstance3": "RPOS" },
+            { "calInstance3": "STW" },
+            { "calInstance3": "TWA" },
+            { "calInstance3": "TWS" },
+            { "calInstance3": "TWD" },
+            { "calInstance3": "WTemp" } ]
     },
     {
         "name": "display",
