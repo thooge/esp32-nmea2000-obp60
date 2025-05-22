@@ -9,12 +9,20 @@ CalibrationDataList calibrationData;
 
 void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
 // Initial load of calibration data into internal list
-// This method is called once at init phase of <OBP60task> to read the configuration values
+// This method is called once at init phase of <obp60task> to read the configuration values
 {
     String instance;
     double offset;
     double slope;
     double smooth;
+
+    // Approximate mid-range values in m/s for Beaufort scale 0–12
+    // hier geht's weiter mit den Bft-Werten: was muss ich bei welcher Windstärke addieren bzw. wie ist der Multiplikator?
+/*    static const std::array<std::pair<double, double>, 12> mps = {{
+            {0.2, 1.3}, {1.5, 1.8}, {3.3, 2.1}, {5.4, 2.5},
+            {7.9, 2.8}, {10.7, 3.1}, {13.8, 3.3}, {17.1, 3.6},
+            {20.7, 3.7}, {24.4, 4.0}, {28.4, 4.2}, {32.6, 4.2}
+        }}; */
 
     String calInstance = "";
     String calOffset = "";
@@ -43,7 +51,7 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
         }
         offset = (config->getString(calOffset, "")).toFloat();
         slope = (config->getString(calSlope, "")).toFloat();
-        smooth = (config->getString(calSmooth, "")).toInt();
+        smooth = (config->getString(calSmooth, "")).toInt(); // user input is int; further math is done with double
 
         // Convert calibration values to internal standard formats
         if (instance == "AWS" || instance == "TWS") {
@@ -54,7 +62,7 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
             } else if (windspeedFormat == "kn") {
                 offset /= 1.94384; // Convert kn to m/s
             } else if (windspeedFormat == "bft") {
-                offset *= 0.5; // Convert Bft to m/s (approx) -> to be improved
+                offset *= 2 + (offset / 2); // Convert Bft to m/s (approx) -> to be improved
             }
 
         } else if (instance == "AWA" || instance == "TWA" || instance == "TWD" || instance == "HDM" || instance == "PRPOS" || instance == "RPOS") {
@@ -92,7 +100,6 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
             if (smooth > 10) {
                 smooth = 10;
             }
-            //        calibrationData.list[i].smooth = 1 - (smooth / 10.0); // smooth factor is between 0 and 1
             smooth = 0.3 + ((smooth - 0.01) * (0.95 - 0.3) / (10 - 0.01));
         }
         smooth = 1 - smooth;
@@ -120,17 +127,6 @@ int CalibrationDataList::getInstanceListNo(String instance)
     return -1; // instance not found
 }
 
-/* void CalibrationDataList::updateBoatDataValidity(String instance)
-{
-    for (int i = 0; i < maxCalibrationData; i++) {
-        if (calibrationData.list[i].instance == instance) {
-            // test for boat data value validity - to be implemented
-            calibrationData.list[i].isValid = true;
-            return;
-        }
-    }
-} */
-
 void CalibrationDataList::calibrateInstance(String instance, GwApi::BoatValue* boatDataValue, GwLog* logger)
 // Method to calibrate the boat data value
 {
@@ -147,6 +143,7 @@ void CalibrationDataList::calibrateInstance(String instance, GwApi::BoatValue* b
         slope = calibrationData.list[listNo].slope;
 
         if (!boatDataValue->valid) { // no valid boat data value, so we don't want to apply calibration data
+            calibrationData.list[listNo].isCalibrated = false;
             return;
         } else {
             dataValue = boatDataValue->value;
@@ -161,7 +158,7 @@ void CalibrationDataList::calibrateInstance(String instance, GwApi::BoatValue* b
                     dataValue += (2 * M_PI);
                 }
             } else if (boatDataValue->getFormat() == "formatCourse") { // instance is of type direction
-                dataValue = (dataValue * slope) + offset;
+            dataValue = (dataValue * slope) + offset;
                 dataValue = fmod(dataValue, 2 * M_PI);
                 if (dataValue < 0) {
                     dataValue += (2 * M_PI);
