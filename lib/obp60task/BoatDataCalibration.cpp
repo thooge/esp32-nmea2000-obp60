@@ -18,11 +18,11 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
 
     // Approximate mid-range values in m/s for Beaufort scale 0–12
     // hier geht's weiter mit den Bft-Werten: was muss ich bei welcher Windstärke addieren bzw. wie ist der Multiplikator?
-/*    static const std::array<std::pair<double, double>, 12> mps = {{
-            {0.2, 1.3}, {1.5, 1.8}, {3.3, 2.1}, {5.4, 2.5},
-            {7.9, 2.8}, {10.7, 3.1}, {13.8, 3.3}, {17.1, 3.6},
-            {20.7, 3.7}, {24.4, 4.0}, {28.4, 4.2}, {32.6, 4.2}
-        }}; */
+    /*    static const std::array<std::pair<double, double>, 12> mps = {{
+                {0.2, 1.3}, {1.5, 1.8}, {3.3, 2.1}, {5.4, 2.5},
+                {7.9, 2.8}, {10.7, 3.1}, {13.8, 3.3}, {17.1, 3.6},
+                {20.7, 3.7}, {24.4, 4.0}, {28.4, 4.2}, {32.6, 4.2}
+            }}; */
 
     String calInstance = "";
     String calOffset = "";
@@ -158,7 +158,7 @@ void CalibrationDataList::calibrateInstance(String instance, GwApi::BoatValue* b
                     dataValue += (2 * M_PI);
                 }
             } else if (boatDataValue->getFormat() == "formatCourse") { // instance is of type direction
-            dataValue = (dataValue * slope) + offset;
+                dataValue = (dataValue * slope) + offset;
                 dataValue = fmod(dataValue, 2 * M_PI);
                 if (dataValue < 0) {
                     dataValue += (2 * M_PI);
@@ -169,32 +169,42 @@ void CalibrationDataList::calibrateInstance(String instance, GwApi::BoatValue* b
                 dataValue = (dataValue * slope) + offset;
             }
 
-            calibrationData.smoothInstance(instance, dataValue, logger); // smooth the boat data value
-            calibrationData.list[listNo].value = dataValue;
             calibrationData.list[listNo].isCalibrated = true;
             boatDataValue->value = dataValue;
+
+            calibrationData.smoothInstance(instance, boatDataValue, logger); // smooth the boat data value
+            calibrationData.list[listNo].value = boatDataValue->value; // store the calibrated + smoothed value in the list
+            
             LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: Offset: %f, Slope: %f, Result: %f", instance.c_str(), offset, slope, boatDataValue->value);
         }
     }
 }
 
-void CalibrationDataList::smoothInstance(String instance, double& dataValue, GwLog* logger)
+void CalibrationDataList::smoothInstance(String instance, GwApi::BoatValue* boatDataValue, GwLog* logger)
 // Method to smoothen the boat data value
 {
     // array for last values of smoothed boat data values
     static std::unordered_map<std::string, double> lastValue;
 
     double oldValue = 0;
-    double smoothFactor = calibrationData.list[getInstanceListNo(instance)].smooth;
+    double dataValue = boatDataValue->value;
 
-    if (lastValue.find(instance.c_str()) != lastValue.end()) {
-        oldValue = lastValue[instance.c_str()];
+    if (!boatDataValue->valid) { // no valid boat data value, so we don't want to smoothen value
+        return;
+    } else {
 
-        dataValue = oldValue + (smoothFactor * (dataValue - oldValue)); // exponential smoothing algorithm
+        double smoothFactor = calibrationData.list[getInstanceListNo(instance)].smooth;
+
+        if (lastValue.find(instance.c_str()) != lastValue.end()) {
+            oldValue = lastValue[instance.c_str()];
+
+            dataValue = oldValue + (smoothFactor * (dataValue - oldValue)); // exponential smoothing algorithm
+        }
+        lastValue[instance.c_str()] = dataValue; // store the new value for next cycle; first time, store only the current value and return
+        boatDataValue->value = dataValue; // set the smoothed value to the boat data value
+
+        LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: Smoothing factor: %f, Smoothed value: %f", instance.c_str(), smoothFactor, dataValue);
     }
-    lastValue[instance.c_str()] = dataValue; // store the new value for next cycle; first time, store only the current value and return
-
-    LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: Smoothing factor: %f, Smoothed value: %f", instance.c_str(), smoothFactor, dataValue);
 }
 
 #endif

@@ -24,7 +24,8 @@ public:
     void readConfig(GwConfigHandler* config, GwLog* logger);
     int getInstanceListNo(String instance);
     void calibrateInstance(String instance, GwApi::BoatValue* boatDataValue, GwLog* logger);
-    void smoothInstance(String instance, double &dataValue, GwLog* logger);
+//    void smoothInstance(String instance, double &dataValue, GwLog* logger);
+    void smoothInstance(String instance, GwApi::BoatValue* boatDataValue, GwLog* logger);
 
 private:
 };
