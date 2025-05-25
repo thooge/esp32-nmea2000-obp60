@@ -6,12 +6,13 @@
 #include <unordered_map>
 
 CalibrationDataList calibrationData;
+std::unordered_map<std::string, TypeCalibData> CalibrationDataList::calibMap; // list of calibration data instances
 
 void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
 // Initial load of calibration data into internal list
 // This method is called once at init phase of <obp60task> to read the configuration values
 {
-    String instance;
+    std::string instance;
     double offset;
     double slope;
     double smooth;
@@ -37,18 +38,18 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
     String tempFormat = config->getString(config->tempFormat); // [K|C|F]
 
     // Read calibration settings for data instances
-    for (int i = 0; i < maxCalibrationData; i++) {
+    for (int i = 0; i < MAX_CALIBRATION_DATA; i++) {
         calInstance = "calInstance" + String(i + 1);
         calOffset = "calOffset" + String(i + 1);
         calSlope = "calSlope" + String(i + 1);
         calSmooth = "calSmooth" + String(i + 1);
-        calibrationData.list[i] = { "---", 0.0f, 1.0f, 1, 0.0f, false };
 
-        instance = config->getString(calInstance, "---");
+        instance = std::string(config->getString(calInstance, "---").c_str());
         if (instance == "---") {
             LOG_DEBUG(GwLog::LOG, "no calibration data for instance no. %d", i + 1);
             continue;
         }
+        calibMap[instance] = { 0.0f, 1.0f, 1.0f, 0.0f, false };
         offset = (config->getString(calOffset, "")).toFloat();
         slope = (config->getString(calSlope, "")).toFloat();
         smooth = (config->getString(calSmooth, "")).toInt(); // user input is int; further math is done with double
@@ -104,21 +105,37 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
         }
         smooth = 1 - smooth;
 
-        calibrationData.list[i].instance = instance;
-        calibrationData.list[i].offset = offset;
-        calibrationData.list[i].slope = slope;
-        calibrationData.list[i].smooth = smooth;
-        calibrationData.list[i].isCalibrated = false;
-        LOG_DEBUG(GwLog::LOG, "stored calibration data: %s, offset: %f, slope: %f, smoothing: %f", calibrationData.list[i].instance.c_str(),
-            calibrationData.list[i].offset, calibrationData.list[i].slope, calibrationData.list[i].smooth);
+        calibMap[instance].offset = offset;
+        calibMap[instance].slope = slope;
+        calibMap[instance].smooth = smooth;
+        calibMap[instance].isCalibrated = false;
+        LOG_DEBUG(GwLog::LOG, "stored calibration data: %s, offset: %f, slope: %f, smoothing: %f", instance.c_str(),
+            calibMap[instance].offset, calibMap[instance].slope, calibMap[instance].smooth);
     }
     LOG_DEBUG(GwLog::LOG, "all calibration data read");
 }
 
-int CalibrationDataList::getInstanceListNo(String instance)
+/*
+int CalibrationDataList::getInstanceListNo(std::string instance)
 // Method to get the index of the requested instance in the list
 {
     // Check if instance is in the list
+    auto it = calibrationData.list.begin();
+    std::advance(it, 1); // Move iterator to the second element
+    if (it != calibrationData.list.end()) {
+        std::string secondKey = it->first; // Get the key of the second value pair
+        LOG_DEBUG(GwLog::DEBUG, "Second key in calibration data list: %s", secondKey.c_str());
+    } else {
+        LOG_DEBUG(GwLog::DEBUG, "Calibration data list has less than two elements.");
+    }
+
+    // Iterate through the map and retrieve keys
+    for (const auto& pair : list) {
+        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+    }
+
+
+
     for (int i = 0; i < maxCalibrationData; i++) {
         if (calibrationData.list[i].instance == instance) {
             return i;
@@ -126,81 +143,83 @@ int CalibrationDataList::getInstanceListNo(String instance)
     }
     return -1; // instance not found
 }
+*/
 
-void CalibrationDataList::calibrateInstance(String instance, GwApi::BoatValue* boatDataValue, GwLog* logger)
+void CalibrationDataList::calibrateInstance(GwApi::BoatValue* boatDataValue, GwLog* logger)
 // Method to calibrate the boat data value
 {
+    std::string instance = boatDataValue->getName().c_str();
     double offset = 0;
     double slope = 1.0;
     double dataValue = 0;
+    std::string format = "";
 
-    int listNo = getInstanceListNo(instance);
-    if (listNo < 0) {
+    if (calibMap.find(instance) == calibMap.end()) {
         LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s not found in calibration data list", instance.c_str());
         return;
+    } else if (!boatDataValue->valid) { // no valid boat data value, so we don't want to apply calibration data
+        calibMap[instance].isCalibrated = false;
+        return;
     } else {
-        offset = calibrationData.list[listNo].offset;
-        slope = calibrationData.list[listNo].slope;
+        offset = calibMap[instance].offset;
+        slope = calibMap[instance].slope;
+        dataValue = boatDataValue->value;
+        format = boatDataValue->getFormat().c_str();
+        LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: value: %f, format: %s", instance.c_str(), dataValue, format.c_str());
 
-        if (!boatDataValue->valid) { // no valid boat data value, so we don't want to apply calibration data
-            calibrationData.list[listNo].isCalibrated = false;
-            return;
-        } else {
-            dataValue = boatDataValue->value;
-            LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: value: %f, format: %s", boatDataValue->getName().c_str(), boatDataValue->value, boatDataValue->getFormat().c_str());
-
-            if (boatDataValue->getFormat() == "formatWind") { // instance is of type angle
-                dataValue = (dataValue * slope) + offset;
-                dataValue = fmod(dataValue, 2 * M_PI);
-                if (dataValue > (M_PI)) {
-                    dataValue -= (2 * M_PI);
-                } else if (dataValue < (M_PI * -1)) {
-                    dataValue += (2 * M_PI);
-                }
-            } else if (boatDataValue->getFormat() == "formatCourse") { // instance is of type direction
-                dataValue = (dataValue * slope) + offset;
-                dataValue = fmod(dataValue, 2 * M_PI);
-                if (dataValue < 0) {
-                    dataValue += (2 * M_PI);
-                }
-            } else if (boatDataValue->getFormat() == "kelvinToC") { // instance is of type temperature
-                dataValue = ((dataValue - 273.15) * slope) + offset + 273.15;
-            } else {
-                dataValue = (dataValue * slope) + offset;
+        if (format == "formatWind") { // instance is of type angle
+            dataValue = (dataValue * slope) + offset;
+            dataValue = fmod(dataValue, 2 * M_PI);
+            if (dataValue > (M_PI)) {
+                dataValue -= (2 * M_PI);
+            } else if (dataValue < (M_PI * -1)) {
+                dataValue += (2 * M_PI);
             }
-
-            calibrationData.list[listNo].isCalibrated = true;
-            boatDataValue->value = dataValue;
-
-            calibrationData.smoothInstance(instance, boatDataValue, logger); // smooth the boat data value
-            calibrationData.list[listNo].value = boatDataValue->value; // store the calibrated + smoothed value in the list
-            
-            LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: Offset: %f, Slope: %f, Result: %f", instance.c_str(), offset, slope, boatDataValue->value);
+        } else if (format == "formatCourse") { // instance is of type direction
+            dataValue = (dataValue * slope) + offset;
+            dataValue = fmod(dataValue, 2 * M_PI);
+            if (dataValue < 0) {
+                dataValue += (2 * M_PI);
+            }
+        } else if (format == "kelvinToC") { // instance is of type temperature
+            dataValue = ((dataValue - 273.15) * slope) + offset + 273.15;
+        } else {
+            dataValue = (dataValue * slope) + offset;
         }
+
+        calibMap[instance].isCalibrated = true;
+        boatDataValue->value = dataValue;
+
+        calibrationData.smoothInstance(boatDataValue, logger); // smooth the boat data value
+        calibMap[instance].value = boatDataValue->value; // store the calibrated + smoothed value in the list
+
+        LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: Offset: %f, Slope: %f, Result: %f", instance.c_str(), offset, slope, calibMap[instance].value);
     }
 }
 
-void CalibrationDataList::smoothInstance(String instance, GwApi::BoatValue* boatDataValue, GwLog* logger)
+void CalibrationDataList::smoothInstance(GwApi::BoatValue* boatDataValue, GwLog* logger)
 // Method to smoothen the boat data value
 {
-    // array for last values of smoothed boat data values
-    static std::unordered_map<std::string, double> lastValue;
+    static std::unordered_map<std::string, double> lastValue; // array for last values of smoothed boat data values
 
+    std::string instance = boatDataValue->getName().c_str();
     double oldValue = 0;
     double dataValue = boatDataValue->value;
+    double smoothFactor = 0;
 
     if (!boatDataValue->valid) { // no valid boat data value, so we don't want to smoothen value
         return;
+    } else if (calibMap.find(instance) == calibMap.end()) {
+        LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: smooth factor for %s not found in calibration data list", instance.c_str());
+        return;
     } else {
+        smoothFactor = calibMap[instance].smooth;
 
-        double smoothFactor = calibrationData.list[getInstanceListNo(instance)].smooth;
-
-        if (lastValue.find(instance.c_str()) != lastValue.end()) {
-            oldValue = lastValue[instance.c_str()];
-
+        if (lastValue.find(instance) != lastValue.end()) {
+            oldValue = lastValue[instance];
             dataValue = oldValue + (smoothFactor * (dataValue - oldValue)); // exponential smoothing algorithm
         }
-        lastValue[instance.c_str()] = dataValue; // store the new value for next cycle; first time, store only the current value and return
+        lastValue[instance] = dataValue; // store the new value for next cycle; first time, store only the current value and return
         boatDataValue->value = dataValue; // set the smoothed value to the boat data value
 
         LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: Smoothing factor: %f, Smoothed value: %f", instance.c_str(), smoothFactor, dataValue);

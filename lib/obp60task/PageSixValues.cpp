@@ -61,7 +61,7 @@ class PageSixValues : public Page
                 bvalue = pageData.values[i];
                 DataName[i] = xdrDelete(bvalue->getName());
                 DataName[i] = DataName[i].substring(0, 6);                  // String length limit for value name
-                calibrationData.calibrateInstance(DataName[i], bvalue, logger); // Check if boat data value is to be calibrated
+                calibrationData.calibrateInstance(bvalue, logger);          // Check if boat data value is to be calibrated
                 DataValue[i] = bvalue->value;                 // Value as double in SI unit
                 DataValid[i] = bvalue->valid;
                 DataText[i] = formatValue(bvalue, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
