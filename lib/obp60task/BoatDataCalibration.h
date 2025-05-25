@@ -10,7 +10,6 @@
 #define MAX_CALIBRATION_DATA 3 // maximum number of calibration data instances
 
 typedef struct {
-//    String instance; // data type/instance to be calibrated
     double offset; // calibration offset
     double slope; // calibration slope
     double smooth; // smoothing factor
@@ -20,11 +19,9 @@ typedef struct {
 
 class CalibrationDataList {
 public:
-//    CalibData list[maxCalibrationData]; // list of calibration data instances
     static std::unordered_map<std::string, TypeCalibData> calibMap; // list of calibration data instances
 
     void readConfig(GwConfigHandler* config, GwLog* logger);
-//    int getInstanceListNo(std::string instance);
     void calibrateInstance(GwApi::BoatValue* boatDataValue, GwLog* logger);
     void smoothInstance(GwApi::BoatValue* boatDataValue, GwLog* logger);
 

@@ -17,14 +17,6 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
     double slope;
     double smooth;
 
-    // Approximate mid-range values in m/s for Beaufort scale 0–12
-    // hier geht's weiter mit den Bft-Werten: was muss ich bei welcher Windstärke addieren bzw. wie ist der Multiplikator?
-    /*    static const std::array<std::pair<double, double>, 12> mps = {{
-                {0.2, 1.3}, {1.5, 1.8}, {3.3, 2.1}, {5.4, 2.5},
-                {7.9, 2.8}, {10.7, 3.1}, {13.8, 3.3}, {17.1, 3.6},
-                {20.7, 3.7}, {24.4, 4.0}, {28.4, 4.2}, {32.6, 4.2}
-            }}; */
-
     String calInstance = "";
     String calOffset = "";
     String calSlope = "";
@@ -66,7 +58,7 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
                 offset *= 2 + (offset / 2); // Convert Bft to m/s (approx) -> to be improved
             }
 
-        } else if (instance == "AWA" || instance == "TWA" || instance == "TWD" || instance == "HDM" || instance == "PRPOS" || instance == "RPOS") {
+        } else if (instance == "AWA" || instance == "COG" || instance == "TWA" || instance == "TWD" || instance == "HDM" || instance == "PRPOS" || instance == "RPOS") {
             offset *= M_PI / 180; // Convert deg to rad
 
         } else if (instance == "DBT") {
@@ -76,7 +68,7 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
                 offset /= 3.28084; // Convert ft to m
             }
 
-        } else if (instance == "STW") {
+        } else if (instance == "SOG" || instance == "STW") {
             if (speedFormat == "m/s") {
                 // No conversion needed
             } else if (speedFormat == "km/h") {
@@ -114,36 +106,6 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
     }
     LOG_DEBUG(GwLog::LOG, "all calibration data read");
 }
-
-/*
-int CalibrationDataList::getInstanceListNo(std::string instance)
-// Method to get the index of the requested instance in the list
-{
-    // Check if instance is in the list
-    auto it = calibrationData.list.begin();
-    std::advance(it, 1); // Move iterator to the second element
-    if (it != calibrationData.list.end()) {
-        std::string secondKey = it->first; // Get the key of the second value pair
-        LOG_DEBUG(GwLog::DEBUG, "Second key in calibration data list: %s", secondKey.c_str());
-    } else {
-        LOG_DEBUG(GwLog::DEBUG, "Calibration data list has less than two elements.");
-    }
-
-    // Iterate through the map and retrieve keys
-    for (const auto& pair : list) {
-        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-    }
-
-
-
-    for (int i = 0; i < maxCalibrationData; i++) {
-        if (calibrationData.list[i].instance == instance) {
-            return i;
-        }
-    }
-    return -1; // instance not found
-}
-*/
 
 void CalibrationDataList::calibrateInstance(GwApi::BoatValue* boatDataValue, GwLog* logger)
 // Method to calibrate the boat data value
@@ -184,6 +146,7 @@ void CalibrationDataList::calibrateInstance(GwApi::BoatValue* boatDataValue, GwL
         } else if (format == "kelvinToC") { // instance is of type temperature
             dataValue = ((dataValue - 273.15) * slope) + offset + 273.15;
         } else {
+
             dataValue = (dataValue * slope) + offset;
         }
 
