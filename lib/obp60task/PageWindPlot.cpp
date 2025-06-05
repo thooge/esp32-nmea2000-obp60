@@ -9,9 +9,7 @@
 class CircularBuffer {
     // provides a circular buffer to store wind history values
 private:
-    //    static const int SIZE = 202;
     int SIZE;
-    //    int buffer[SIZE];
     std::vector<int> buffer;
     int head = 0; // points to the next insertion index
     int count = 0; // number of valid elements
@@ -26,11 +24,6 @@ public:
         SIZE = size;
         buffer.resize(size); // allocate buffer
         return true;
-    }
-
-    ~CircularBuffer()
-    {
-        //        delete[] buffer; // Free allocated memory
     }
 
     void add(int value)
@@ -58,6 +51,12 @@ public:
         return count;
     }
 
+    int getSIZE() const
+    // Get number of SIZE
+    {
+        return SIZE;
+    }
+
     void mvStart(int start)
     // Move the start index for the buffer forward by <start> positions
     {
@@ -70,7 +69,6 @@ public:
 };
 
 class PageWindPlot : public Page {
-    //    int16_t lp = 80; // Pointer length
 
 public:
     PageWindPlot(CommonData& common)
@@ -109,7 +107,6 @@ public:
         int width = getdisplay().width(); // Get screen width
         int height = getdisplay().height(); // Get screen height
         int cHeight = height - 98; // height of chart area
-        //        int cHeight = 50; // height of chart area
         int xCenter = width / 2; // Center of screen in x direction
         static const int yOffset = 76; // Offset for y coordinate to center chart area vertically
         static const float radToDeg = 180.0 / M_PI; // Conversion factor from radians to degrees
@@ -119,6 +116,8 @@ public:
         static int wndRight; // chart wind right value position
         static int chrtRng; // Range of wind values from mid wind value to min/max wind value in degrees
         int diffRng; // Difference between mid and current wind value
+        static bool plotShift = false; // Flag to indicate if the plot has been shifted
+
         int x, y; // x and y coordinates for drawing
         static int lastX, lastY; // Last x and y coordinates for drawing
         int chrtScl; // Scale for wind values in pixels per degree
@@ -126,13 +125,14 @@ public:
         int count; // index for next wind value in buffer
 
         static CircularBuffer windValues; // Circular buffer to store wind values
-        //        CircularBuffer::SIZE = 202; // Set buffer size to 202 values
-        if (!windValues.begin(cHeight)) { // buffer holds as many values as the height of the chart area
-            logger->logDebug(GwLog::ERROR, "Failed to initialize wind values buffer");
-            return;
+        if (windValues.size() == 0) {
+            if (!windValues.begin(cHeight)) { // buffer holds as many values as the height of the chart area
+                logger->logDebug(GwLog::ERROR, "Failed to initialize wind values buffer");
+                return;
+            }
         }
 
-        LOG_DEBUG(GwLog::LOG, "Display page WindPlot");
+        LOG_DEBUG(GwLog::LOG, "Display page WindPlot, SIZE = %d", windValues.getSIZE());
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
@@ -226,7 +226,6 @@ public:
             wndRight = wndCenter + chrtRng;
             if (wndRight >= 360)
                 wndRight -= 360;
-
             LOG_DEBUG(GwLog::LOG, "PageWindPlot: wndCenter + chrtRng initialized");
         }
         diffRng = abs(windValues.get(count - 1) - wndCenter);
@@ -304,8 +303,14 @@ public:
 
         // Draw wind values in chart
         //***********************************************************
-        lastX = xCenter;
-        lastY = yOffset + cHeight;
+        if (plotShift) { // If plot was shifted, set lastX to 1st chart wind value
+            lastX = windValues.get(0); // set to new start of buffer
+            plotShift = false;
+        } else {
+            lastX = xCenter;
+        }
+        lastY = yOffset + cHeight; // Reset lastY to bottom of chart
+
         for (int i = 0; i < count; i++) {
             chrtVal = windValues.get(i); // Get value from buffer
             chrtScl = xCenter / chrtRng; // current scale
@@ -318,6 +323,7 @@ public:
             //            LOG_DEBUG(GwLog::LOG, "PageWindPlot: loop-Counter: %d, X: %d, Y: %d", count, x, y);
             if (i == (cHeight - 1)) { // Reaching chart area top end
                 windValues.mvStart(40); // virtually delete 40 values from buffer
+                plotShift = true; // Set flag to shift plot
                 continue;
             }
         }
