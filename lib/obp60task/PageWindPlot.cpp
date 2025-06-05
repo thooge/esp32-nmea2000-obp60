@@ -51,12 +51,6 @@ public:
         return count;
     }
 
-    int getSIZE() const
-    // Get number of SIZE
-    {
-        return SIZE;
-    }
-
     void mvStart(int start)
     // Move the start index for the buffer forward by <start> positions
     {
@@ -93,16 +87,16 @@ public:
         GwConfigHandler* config = commonData->config;
         GwLog* logger = commonData->logger;
 
-        static String svalue1old = "";
-        static String unit1old = "";
-        static String svalue2old = "";
-        static String unit2old = "";
-        static String svalue3old = "";
-        static String unit3old = "";
-        static String svalue4old = "";
-        static String unit4old = "";
-        static String svalue5old = "";
-        static String unit5old = "";
+        const int numCfgValues = 5;
+        GwApi::BoatValue* bvalue;
+        String dataName[numCfgValues];
+        double dataValue[numCfgValues];
+        bool dataValid[numCfgValues];
+        String dataSValue[numCfgValues];
+        String dataUnit[numCfgValues];
+        String dataSValueOld[numCfgValues];
+        String dataUnitOld[numCfgValues];
+        //        String dataFormat[numCfgValues];
 
         int width = getdisplay().width(); // Get screen width
         int height = getdisplay().height(); // Get screen height
@@ -132,7 +126,7 @@ public:
             }
         }
 
-        LOG_DEBUG(GwLog::LOG, "Display page WindPlot, SIZE = %d", windValues.getSIZE());
+        LOG_DEBUG(GwLog::LOG, "Display page WindPlot");
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
@@ -141,79 +135,24 @@ public:
         String flashLED = config->getString(config->flashLED);
         String backlightMode = config->getString(config->backlight);
 
-        // Get boat values for TWD
-        GwApi::BoatValue* bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
-        String name1 = xdrDelete(bvalue1->getName()); // Value name
-        name1 = name1.substring(0, 6); // String length limit for value name
-        calibrationData.calibrateInstance(name1, bvalue1, logger); // Check if boat data value is to be calibrated
-        double value1 = bvalue1->value; // Value as double in SI unit
-        bool valid1 = bvalue1->valid; // Valid information
-        value1 = formatValue(bvalue1, *commonData).value; // Format only nesaccery for simulation data for pointer
-        String svalue1 = formatValue(bvalue1, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
-        String unit1 = formatValue(bvalue1, *commonData).unit; // Unit of value
-        if (valid1 == true) {
-            svalue1old = svalue1; // Save old value
-            unit1old = unit1; // Save old unit
-        }
-
-        // Get boat values for TWS
-        GwApi::BoatValue* bvalue2 = pageData.values[1]; // First element in list (only one value by PageOneValue)
-        String name2 = xdrDelete(bvalue2->getName()); // Value name
-        name2 = name2.substring(0, 6); // String length limit for value name
-        calibrationData.calibrateInstance(name2, bvalue2, logger); // Check if boat data value is to be calibrated
-        double value2 = bvalue2->value; // Value as double in SI unit
-        bool valid2 = bvalue2->valid; // Valid information
-        String svalue2 = formatValue(bvalue2, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
-        String unit2 = formatValue(bvalue2, *commonData).unit; // Unit of value
-        if (valid2 == true) {
-            svalue2old = svalue2; // Save old value
-            unit2old = unit2; // Save old unit
-        }
-
-        // Get boat values TWA
-        GwApi::BoatValue* bvalue3 = pageData.values[2]; // Second element in list (only one value by PageOneValue)
-        String name3 = xdrDelete(bvalue3->getName()); // Value name
-        name3 = name3.substring(0, 6); // String length limit for value name
-        calibrationData.calibrateInstance(name3, bvalue3, logger); // Check if boat data value is to be calibrated
-        double value3 = bvalue3->value; // Value as double in SI unit
-        bool valid3 = bvalue3->valid; // Valid information
-        String svalue3 = formatValue(bvalue3, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
-        String unit3 = formatValue(bvalue3, *commonData).unit; // Unit of value
-        if (valid3 == true) {
-            svalue3old = svalue3; // Save old value
-            unit3old = unit3; // Save old unit
-        }
-
-        // Get boat values AWA
-        GwApi::BoatValue* bvalue4 = pageData.values[3]; // Second element in list (only one value by PageOneValue)
-        String name4 = xdrDelete(bvalue4->getName()); // Value name
-        name4 = name4.substring(0, 6); // String length limit for value name
-        calibrationData.calibrateInstance(name4, bvalue4, logger); // Check if boat data value is to be calibrated
-        double value4 = bvalue4->value; // Value as double in SI unit
-        bool valid4 = bvalue4->valid; // Valid information
-        String svalue4 = formatValue(bvalue4, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
-        String unit4 = formatValue(bvalue4, *commonData).unit; // Unit of value
-        if (valid4 == true) {
-            svalue4old = svalue4; // Save old value
-            unit4old = unit4; // Save old unit
-        }
-
-        // Get boat values HDM
-        GwApi::BoatValue* bvalue5 = pageData.values[4]; // Second element in list (only one value by PageOneValue)
-        String name5 = xdrDelete(bvalue5->getName()); // Value name
-        name5 = name5.substring(0, 6); // String length limit for value name
-        calibrationData.calibrateInstance(name5, bvalue5, logger); // Check if boat data value is to be calibrated
-        double value5 = bvalue5->value; // Value as double in SI unit
-        bool valid5 = bvalue5->valid; // Valid information
-        String svalue5 = formatValue(bvalue5, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
-        String unit5 = formatValue(bvalue5, *commonData).unit; // Unit of value
-        if (valid5 == true) {
-            svalue5old = svalue5; // Save old value
-            unit5old = unit5; // Save old unit
+        for (int i = 0; i < numCfgValues; i++) {
+            bvalue = pageData.values[i];
+            dataName[i] = xdrDelete(bvalue->getName());
+            dataName[i] = dataName[i].substring(0, 6); // String length limit for value name
+            dataValue[i] = bvalue->value; // Value as double in SI unit
+            calibrationData.calibrateInstance(dataName[i], bvalue, logger); // Check if boat data value is to be calibrated
+            dataValid[i] = bvalue->valid;
+            dataSValue[i] = formatValue(bvalue, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
+            dataUnit[i] = formatValue(bvalue, *commonData).unit;
+            //            dataFormat[i] = bvalue->getFormat(); // Unit of value
+            if (dataValid[i]) {
+                dataSValueOld[i] = dataSValue[i]; // Save old value
+                dataUnitOld[i] = dataUnit[i]; // Save old unit
+            }
         }
 
         // Store wind value in buffer
-        windValues.add(int((value3 * radToDeg) + 0.5)); // Store TWA value (degree) in buffer (rounded to integer)
+        windValues.add(int((dataValue[2] * radToDeg) + 0.5)); // Store TWA value (degree) in buffer (rounded to integer)
         count = windValues.size(); // Get number of valid elements in buffer; maximum is cHeight
 
         // specify and check chart border values
@@ -238,7 +177,7 @@ public:
             if (wndRight >= 360)
                 wndRight -= 360;
         }
-        LOG_DEBUG(GwLog::LOG, "PageWindPlot Value3: %f, windValue: %d, count: %d, Range: %d, ChartRng: %d", float(value3 * radToDeg), windValues.get(count - 1), count, diffRng, chrtRng);
+        LOG_DEBUG(GwLog::LOG, "PageWindPlot dataValue[2]: %f, windValue: %d, count: %d, Range: %d, ChartRng: %d", float(dataValue[2] * radToDeg), windValues.get(count - 1), count, diffRng, chrtRng);
 
         // was, wenn alle Werte kleiner als current wind range sind?
         // passe wndCenter an, wenn chrtRng > std und alle Werte > oder < wndCenter sind
@@ -250,10 +189,10 @@ public:
         }
 
         // Logging boat values
-        if (bvalue1 == NULL)
+        if (bvalue == NULL)
             return;
-        LOG_DEBUG(GwLog::LOG, "PageWindPlot, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f, cnt: %d, wind: %f", name1.c_str(), value1, name2.c_str(),
-            value2, name3.c_str(), value3, name4.c_str(), value4, name5.c_str(), value5, count, windValues.get(count - 1));
+//        LOG_DEBUG(GwLog::LOG, "PageWindPlot, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f, cnt: %d, wind: %f", dataName[0].c_str(), dataValue[0], name2.c_str(),
+//            value2, name3.c_str(), value3, name4.c_str(), value4, name5.c_str(), value5, count, windValues.get(count - 1));
 
         // Draw page
         //***********************************************************
@@ -267,17 +206,17 @@ public:
         // Show TWS value on top right
         getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
         getdisplay().setCursor(252, 58);
-        getdisplay().print(svalue2); // Value
+        getdisplay().print(dataSValue[1]); // Value
         getdisplay().setFont(&Ubuntu_Bold12pt7b);
         getdisplay().setCursor(334, 48);
-        getdisplay().print(name2); // Name
+        getdisplay().print(dataName[1]); // Name
         getdisplay().setFont(&Ubuntu_Bold8pt7b);
         getdisplay().setCursor(330, 59);
         getdisplay().print(" ");
         if (holdvalues == false) {
-            getdisplay().print(unit2); // Unit
+            getdisplay().print(dataUnit[1]); // Unit
         } else {
-            getdisplay().print(unit2old); // Unit
+            getdisplay().print(dataUnitOld[1]); // Unit
         }
 
         // chart lines
@@ -287,7 +226,7 @@ public:
         // chart labels
         getdisplay().setFont(&Ubuntu_Bold10pt7b);
         getdisplay().setCursor(xCenter - 68, yOffset - 3);
-        getdisplay().print(name3); // Wind name
+        getdisplay().print(dataName[2]); // Wind name
         getdisplay().setCursor(xCenter - 18, yOffset - 3);
         getdisplay().print(wndCenter); // Wind center value
         getdisplay().drawCircle(xCenter + 19, 63, 2, commonData->fgcolor); // <degree> symbol
