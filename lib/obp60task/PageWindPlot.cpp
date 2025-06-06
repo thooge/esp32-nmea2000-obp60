@@ -11,6 +11,7 @@ class CircularBuffer {
 private:
     int SIZE;
     std::vector<int> buffer;
+    int first = 0; // points to the first valid element
     int head = 0; // points to the next insertion index
     int count = 0; // number of valid elements
 
@@ -31,17 +32,22 @@ public:
     {
         buffer[head] = value;
         head = (head + 1) % SIZE;
-        if (count < SIZE)
+        if (count < SIZE) {
             count++;
+        } else {
+            first = head - 1; // When buffer is full, first points to the oldest value
+        }
     }
 
     int get(int index) const
     // Get value by index (0 = oldest, count-1 = newest)
     {
+        int realIndex;
+
         if (index < 0 || index >= count) {
             return -1; // Invalid index
         }
-        int realIndex = (head + SIZE - count + index) % SIZE;
+        realIndex = (first + index) % SIZE;
         return buffer[realIndex];
     }
 
@@ -52,9 +58,9 @@ public:
     }
 
     void mvStart(int start)
-    // Move the start index for the buffer forward by <start> positions
+    // Move the start index of buffer forward by <start> positions
     {
-        head = (head + start) % SIZE;
+        first = (first + start) % SIZE;
         if (count > start)
             count -= start;
         else
@@ -63,7 +69,6 @@ public:
 };
 
 class PageWindPlot : public Page {
-
 public:
     PageWindPlot(CommonData& common)
     {
@@ -102,7 +107,7 @@ public:
         int height = getdisplay().height(); // Get screen height
         int cHeight = height - 98; // height of chart area
         int xCenter = width / 2; // Center of screen in x direction
-        static const int yOffset = 76; // Offset for y coordinate to center chart area vertically
+        static const int yOffset = 76; // Offset for y coordinates of chart area
         static const float radToDeg = 180.0 / M_PI; // Conversion factor from radians to degrees
 
         static int wndCenter = -400; // chart wind center value position; init value indicates that wndCenter is not set yet
@@ -110,23 +115,48 @@ public:
         static int wndRight; // chart wind right value position
         static int chrtRng; // Range of wind values from mid wind value to min/max wind value in degrees
         int diffRng; // Difference between mid and current wind value
-        static bool plotShift = false; // Flag to indicate if the plot has been shifted
 
         int x, y; // x and y coordinates for drawing
         static int lastX, lastY; // Last x and y coordinates for drawing
-        int chrtScl; // Scale for wind values in pixels per degree
+        static int chrtScl; // Scale for wind values in pixels per degree
         int chrtVal; // Current wind value
         int count; // index for next wind value in buffer
 
-        static CircularBuffer windValues; // Circular buffer to store wind values
+        // Circular buffer to store wind values
+        static CircularBuffer windValues;
         if (windValues.size() == 0) {
             if (!windValues.begin(cHeight)) { // buffer holds as many values as the height of the chart area
+                //                if (!windValues.begin(60)) { // buffer holds as many values as the height of the chart area
                 logger->logDebug(GwLog::ERROR, "Failed to initialize wind values buffer");
                 return;
             }
         }
 
         LOG_DEBUG(GwLog::LOG, "Display page WindPlot");
+
+        /*        // Fill windValues buffer with sequential values from 1 to 60 and back to 1 for cHeight values
+                int num = 60;
+                windValues.begin(num + 20);
+                int seq = 1;
+                int dir = 1;
+                for (int i = 0; i < num; i++) {
+                    windValues.add(seq);
+                    seq += dir;
+                    if (seq == 60)
+                        dir = -1;
+                    if (seq == 1)
+                        dir = 1;
+                }
+
+                for (int i = 0; i < num; i += 4) {
+                    LOG_DEBUG(GwLog::LOG, "WindValues[%d]: %d;  [%d]: %d;    [%d]: %d    [%d]: %d", i, windValues.get(i), i + 1, windValues.get(i + 1), i + 2, windValues.get(i + 2), i + 3, windValues.get(i + 3));
+                }
+                windValues.mvStart(20);
+                for (int i = 0; i < num; i += 4) {
+                    LOG_DEBUG(GwLog::LOG, "Shifted WindValues[%d]: %d;  [%d]: %d;    [%d]: %d    [%d]: %d", i, windValues.get(i), i + 1, windValues.get(i + 1), i + 2, windValues.get(i + 2), i + 3, windValues.get(i + 3));
+                }
+                return; // Return early for testing purposes
+        */
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
@@ -177,7 +207,7 @@ public:
             if (wndRight >= 360)
                 wndRight -= 360;
         }
-        LOG_DEBUG(GwLog::LOG, "PageWindPlot dataValue[2]: %f, windValue: %d, count: %d, Range: %d, ChartRng: %d", float(dataValue[2] * radToDeg), windValues.get(count - 1), count, diffRng, chrtRng);
+        LOG_DEBUG(GwLog::LOG, "PageWindPlot dataValue[0]: %f, windValue: %d, count: %d, Range: %d, ChartRng: %d", float(dataValue[0] * radToDeg), windValues.get(count - 1), count, diffRng, chrtRng);
 
         // was, wenn alle Werte kleiner als current wind range sind?
         // passe wndCenter an, wenn chrtRng > std und alle Werte > oder < wndCenter sind
@@ -191,8 +221,8 @@ public:
         // Logging boat values
         if (bvalue == NULL)
             return;
-//        LOG_DEBUG(GwLog::LOG, "PageWindPlot, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f, cnt: %d, wind: %f", dataName[0].c_str(), dataValue[0], name2.c_str(),
-//            value2, name3.c_str(), value3, name4.c_str(), value4, name5.c_str(), value5, count, windValues.get(count - 1));
+        //        LOG_DEBUG(GwLog::LOG, "PageWindPlot, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f, cnt: %d, wind: %f", dataName[0].c_str(), dataValue[0], name2.c_str(),
+        //            value2, name3.c_str(), value3, name4.c_str(), value4, name5.c_str(), value5, count, windValues.get(count - 1));
 
         // Draw page
         //***********************************************************
@@ -201,17 +231,17 @@ public:
         getdisplay().setPartialWindow(0, 0, width, height); // Set partial update
         getdisplay().setTextColor(commonData->fgcolor);
 
-        getdisplay().fillRect(0, 20, width, 1, commonData->fgcolor); // Horizontal top line for orientation -> to be deleted
-
+        // Horizontal top line for orientation -> to be deleted
+        // getdisplay().fillRect(0, 20, width, 1, commonData->fgcolor);
         // Show TWS value on top right
         getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
-        getdisplay().setCursor(252, 58);
+        getdisplay().setCursor(252, 52);
         getdisplay().print(dataSValue[1]); // Value
         getdisplay().setFont(&Ubuntu_Bold12pt7b);
-        getdisplay().setCursor(334, 48);
+        getdisplay().setCursor(334, 38);
         getdisplay().print(dataName[1]); // Name
         getdisplay().setFont(&Ubuntu_Bold8pt7b);
-        getdisplay().setCursor(330, 59);
+        getdisplay().setCursor(330, 53);
         getdisplay().print(" ");
         if (holdvalues == false) {
             getdisplay().print(dataUnit[1]); // Unit
@@ -224,30 +254,29 @@ public:
         getdisplay().fillRect(xCenter - 1, yOffset, 2, cHeight, commonData->fgcolor);
 
         // chart labels
+        char sWndLbl[4]; // Wind label
         getdisplay().setFont(&Ubuntu_Bold10pt7b);
         getdisplay().setCursor(xCenter - 68, yOffset - 3);
         getdisplay().print(dataName[0]); // Wind name
-        getdisplay().setCursor(xCenter - 18, yOffset - 3);
-        getdisplay().print(wndCenter); // Wind center value
-        getdisplay().drawCircle(xCenter + 19, 63, 2, commonData->fgcolor); // <degree> symbol
-        getdisplay().drawCircle(xCenter + 19, 63, 3, commonData->fgcolor); // <degree> symbol
-        getdisplay().setCursor(5, yOffset - 3);
-        getdisplay().print(wndLeft); // Wind left value
-        getdisplay().drawCircle(44, 63, 2, commonData->fgcolor); // <degree> symbol
-        getdisplay().drawCircle(44, 63, 3, commonData->fgcolor); // <degree> symbol
-        getdisplay().setCursor(width - 45, yOffset - 3);
-        getdisplay().print(wndRight); // Wind right value
+        getdisplay().setCursor(xCenter - 16, yOffset - 3);
+        snprintf(sWndLbl, 4, "%03d", wndCenter);
+        getdisplay().print(sWndLbl); // Wind center value
+        getdisplay().drawCircle(xCenter + 21, 63, 2, commonData->fgcolor); // <degree> symbol
+        getdisplay().drawCircle(xCenter + 21, 63, 3, commonData->fgcolor); // <degree> symbol
+        getdisplay().setCursor(2, yOffset - 3);
+        snprintf(sWndLbl, 4, "%03d", wndLeft);
+        getdisplay().print(sWndLbl); // Wind left value
+        getdisplay().drawCircle(39, 63, 2, commonData->fgcolor); // <degree> symbol
+        getdisplay().drawCircle(39, 63, 3, commonData->fgcolor); // <degree> symbol
+        getdisplay().setCursor(width - 43, yOffset - 3);
+        snprintf(sWndLbl, 4, "%03d", wndRight);
+        getdisplay().print(sWndLbl); // Wind right value
         getdisplay().drawCircle(width - 6, 63, 2, commonData->fgcolor); // <degree> symbol
         getdisplay().drawCircle(width - 6, 63, 3, commonData->fgcolor); // <degree> symbol
 
         // Draw wind values in chart
         //***********************************************************
-        if (plotShift) { // If plot was shifted, set lastX to 1st chart wind value
-            lastX = windValues.get(0); // set to new start of buffer
-            plotShift = false;
-        } else {
-            lastX = xCenter;
-        }
+        lastX = xCenter + ((windValues.get(0) - wndCenter) * chrtScl);
         lastY = yOffset + cHeight; // Reset lastY to bottom of chart
 
         for (int i = 0; i < count; i++) {
@@ -259,10 +288,9 @@ public:
             getdisplay().drawLine(lastX, lastY - 1, x, y - 1, commonData->fgcolor);
             lastX = x;
             lastY = y;
-            //            LOG_DEBUG(GwLog::LOG, "PageWindPlot: loop-Counter: %d, X: %d, Y: %d", count, x, y);
+            //            LOG_DEBUG(GwLog::LOG, "PageWindPlot: loop-Counter: %d, X: %d, Y: %d, lastX: %d, lastY: %d", count, x, y, lastX, lastY);
             if (i == (cHeight - 1)) { // Reaching chart area top end
                 windValues.mvStart(40); // virtually delete 40 values from buffer
-                plotShift = true; // Set flag to shift plot
                 continue;
             }
         }
