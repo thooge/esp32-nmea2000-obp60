@@ -151,8 +151,8 @@ public:
             }
         }
 
-        // Store wind value in buffer
-        windValues.add(int((dataValue[2] * radToDeg) + 0.5)); // Store TWA value (degree) in buffer (rounded to integer)
+        // Store TWD wind value in buffer
+        windValues.add(int((dataValue[0] * radToDeg) + 0.5)); // Store TWD value (degree) in buffer (rounded to integer)
         count = windValues.size(); // Get number of valid elements in buffer; maximum is cHeight
 
         // specify and check chart border values
@@ -226,7 +226,7 @@ public:
         // chart labels
         getdisplay().setFont(&Ubuntu_Bold10pt7b);
         getdisplay().setCursor(xCenter - 68, yOffset - 3);
-        getdisplay().print(dataName[2]); // Wind name
+        getdisplay().print(dataName[0]); // Wind name
         getdisplay().setCursor(xCenter - 18, yOffset - 3);
         getdisplay().print(wndCenter); // Wind center value
         getdisplay().drawCircle(xCenter + 19, 63, 2, commonData->fgcolor); // <degree> symbol
