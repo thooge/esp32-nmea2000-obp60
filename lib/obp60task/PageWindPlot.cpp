@@ -250,10 +250,10 @@ public:
 
         int width = getdisplay().width(); // Get screen width
         int height = getdisplay().height(); // Get screen height
-        int cHeight = height - 98; // height of chart area
+        static const int yOffset = 48; // Offset for y coordinates of chart area    76
+        int cHeight = height - yOffset - 22; // height of chart area  98
         // int cHeight = 80; // height of chart area
         int xCenter = width / 2; // Center of screen in x direction
-        static const int yOffset = 76; // Offset for y coordinates of chart area
         // static bool plotShift = false; // Flag to indicate if chartplot data have been shifted
         static const float radToDeg = 180.0 / M_PI; // Conversion factor from radians to degrees
 
@@ -326,6 +326,9 @@ public:
             // Try to calculate TWD value from other data, if available
             //    wndDataValid = windValues.calcTWD(&twdValue, dataValue[1], dataValue[2], dataValue[3], dataValue[4], dataValue[5], dataValue[6]);
         }
+
+
+// ************* falsche Position <isTimeforUpd> ****************
         if (isTimeforUpd) {
             if (wndDataValid) {
                 windValues.add(twdValue);
@@ -391,46 +394,30 @@ public:
         // Horizontal top line for orientation -> to be deleted
         // getdisplay().fillRect(0, 20, width, 1, commonData->fgcolor);
 
-        // Show TWS value on top right
-        getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
-        getdisplay().setCursor(252, 52);
-        getdisplay().print(dataSValue[2]); // Value
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
-        getdisplay().setCursor(334, 38);
-        getdisplay().print(dataName[2]); // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
-        getdisplay().setCursor(330, 53);
-        getdisplay().print(" ");
-        if (holdValues == false) {
-            getdisplay().print(dataUnit[2]); // Unit
-        } else {
-            getdisplay().print(dataUnitOld[2]); // Unit
-        }
-
         // chart lines
         getdisplay().fillRect(0, yOffset, width, 2, commonData->fgcolor);
         getdisplay().fillRect(xCenter - 1, yOffset, 2, cHeight, commonData->fgcolor);
 
         // chart labels
         char sWndLbl[4]; // char buffer for Wind angle label
-        getdisplay().setFont(&Ubuntu_Bold10pt7b);
-        getdisplay().setCursor(xCenter - 80, yOffset - 3);
+        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setCursor(xCenter - 88, yOffset - 3);
         getdisplay().print("TWD"); // Wind name
-        getdisplay().setCursor(xCenter - 16, yOffset - 3);
+        getdisplay().setCursor(xCenter - 20, yOffset - 3);
         snprintf(sWndLbl, 4, "%03d", (wndCenter < 0) ? (wndCenter + 360) : wndCenter);
         getdisplay().print(sWndLbl); // Wind center value
-        getdisplay().drawCircle(xCenter + 21, 63, 2, commonData->fgcolor); // <degree> symbol
-        getdisplay().drawCircle(xCenter + 21, 63, 3, commonData->fgcolor); // <degree> symbol
+        getdisplay().drawCircle(xCenter + 25, yOffset - 16, 2, commonData->fgcolor); // <degree> symbol  63
+        getdisplay().drawCircle(xCenter + 25, yOffset - 16, 3, commonData->fgcolor); // <degree> symbol
         getdisplay().setCursor(2, yOffset - 3);
         snprintf(sWndLbl, 4, "%03d", (wndLeft < 0) ? (wndLeft + 360) : wndLeft);
         getdisplay().print(sWndLbl); // Wind left value
-        getdisplay().drawCircle(39, 63, 2, commonData->fgcolor); // <degree> symbol
-        getdisplay().drawCircle(39, 63, 3, commonData->fgcolor); // <degree> symbol
-        getdisplay().setCursor(width - 43, yOffset - 3);
+        getdisplay().drawCircle(47, yOffset - 16, 2, commonData->fgcolor); // <degree> symbol
+        getdisplay().drawCircle(47, yOffset - 16, 3, commonData->fgcolor); // <degree> symbol
+        getdisplay().setCursor(width - 51, yOffset - 3);
         snprintf(sWndLbl, 4, "%03d", (wndRight < 0) ? (wndRight + 360) : wndRight);
         getdisplay().print(sWndLbl); // Wind right value
-        getdisplay().drawCircle(width - 6, 63, 2, commonData->fgcolor); // <degree> symbol
-        getdisplay().drawCircle(width - 6, 63, 3, commonData->fgcolor); // <degree> symbol
+        getdisplay().drawCircle(width - 5, yOffset - 16, 2, commonData->fgcolor); // <degree> symbol
+        getdisplay().drawCircle(width - 5, yOffset - 16, 3, commonData->fgcolor); // <degree> symbol
 
         // Draw wind values in chart
         //***********************************************************
@@ -473,17 +460,40 @@ public:
             // No valid data available
             LOG_DEBUG(GwLog::LOG, "PageWindPlot: No valid data available");
             getdisplay().setFont(&Ubuntu_Bold10pt7b);
-            getdisplay().setCursor(xCenter - 54, height / 2);
+            getdisplay().setCursor(xCenter - 66, height / 2);
             getdisplay().print("No sensor data");
         }
 
+        // Print TWS value
+        int yPosTws = yOffset + 40; // Y position for TWS value
+        int xPosTws = width - 145; // X position for TWS value
+        if ((prevY < yPosTws) && prevX > xPosTws) {
+            // If chart line enters TWS value area, move TWS value to the left side
+            xPosTws = 20 ;
+        }
+        getdisplay().fillRect(xPosTws - 3, yPosTws - 35, 138, 40, commonData->bgcolor); // Clear area for TWS value
+        getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
+        getdisplay().setCursor(xPosTws, yPosTws); // 252, 52
+        getdisplay().print(dataSValue[2]); // Value
+        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setCursor(xPosTws + 82, yPosTws - 14); // 334, 38
+        getdisplay().print(dataName[2]); // Name
+        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setCursor(xPosTws + 78, yPosTws + 1); // 330, 53
+        getdisplay().print(" ");
+        if (holdValues == false) {
+            getdisplay().print(dataUnit[2]); // Unit
+        } else {
+            getdisplay().print(dataUnitOld[2]); // Unit
+        }
+
         // chart Y axis labels
-        char sWndYAx[3]; // char buffer for wind Y axis labels
+        char sWndYAx[4]; // char buffer for wind Y axis labels
         int yPos; // Y position for label
         getdisplay().setFont(&Ubuntu_Bold8pt7b);
-        for (int i = 3; i > 0; i--) {
-            yPos = yOffset + cHeight - (i * 60); // Y position for label
-            getdisplay().fillRect(0, yPos - 7, 28, 15, commonData->bgcolor); // Clear small area to remove potential chart lines
+        for (int i = 4; i > 0; i--) {
+            yPos = yOffset + cHeight - (i * 59) + 14; // Y position for label
+            getdisplay().fillRect(0, yPos - 6, 28, 15, commonData->bgcolor); // Clear small area to remove potential chart lines
             getdisplay().fillRect(0, yPos, 8, 2, commonData->fgcolor);
             getdisplay().setCursor(9, yPos + 5);
             snprintf(sWndYAx, 4, "%2d", i * updTime);
