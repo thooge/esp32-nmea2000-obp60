@@ -20,7 +20,7 @@ public:
     bool begin(int size)
     // specifies buffer size
     {
-        if (size <= 0 || size > 1000) {
+        if (size <= 0 || size > 10000) {
             return false;
         }
         SIZE = size;
@@ -155,10 +155,6 @@ public:
             return false; // Buffer is empty
         }
 
-        int twdMin = getMin();
-        int twdMax = getMax();
-        int twdMid = getMid();
-
         // Calculate TWD based on TWA and HDM
         return true;
     }
@@ -169,9 +165,9 @@ class PageWindPlot : public Page {
 
     bool keylock = false; // Keylock
     //    int16_t lp = 80; // Pointer length
-    char mode = 'D'; // Chart mode: 'D' for TWD, 'S' for TWS
-    int updTime = 1; // Update interval for wind history chart:
-                     // (1)|(2)|(3)|(5) seconds for 3, 7, 10, 15 min. history chart
+    char chrtMode = 'D'; // Chart mode: 'D' for TWD, 'S' for TWS, 'B' for both06121990
+    int dataInterv = 1; // Update interval for wind history chart:
+                        // (1)|(2)|(3)|(4) seconds for 4, 8, 12, 16 min. history chart
     bool showTWS = true; // Show TWS value in chart area
 
 public:
@@ -194,25 +190,26 @@ public:
     {
         // Set chart mode TWD | TWS
         if (key == 1) {
-            if (mode == 'D') {
-                mode = 'S';
+            if (chrtMode == 'D') {
+                chrtMode = 'S';
+            } else if (chrtMode == 'S') {
+                chrtMode = 'B';
             } else {
-                mode = 'D';
+                chrtMode = 'D';
             }
-            // setupKeys(); // Update key labels
             return 0; // Commit the key
         }
 
         // Set interval for wind history chart update time
         if (key == 2) {
-            if (updTime == 1) {
-                updTime = 2;
-            } else if (updTime == 2) {
-                updTime = 3;
-            } else if (updTime == 3) {
-                updTime = 5;
+            if (dataInterv == 1) {
+                dataInterv = 2;
+            } else if (dataInterv == 2) {
+                dataInterv = 3;
+            } else if (dataInterv == 3) {
+                dataInterv = 4;
             } else {
-                updTime = 1;
+                dataInterv = 1;
             }
             return 0; // Commit the key
         }
@@ -236,7 +233,8 @@ public:
         GwConfigHandler* config = commonData->config;
         GwLog* logger = commonData->logger;
 
-        static wndHistory windValues; // Circular buffer to store wind values
+        static wndHistory windDirHstry; // Circular buffer to store wind direction values
+        static wndHistory windSpdHstry; // Circular buffer to store wind speed values
 
         GwApi::BoatValue* bvalue;
         const int numCfgValues = 9;
@@ -247,6 +245,7 @@ public:
         String dataUnit[numCfgValues];
         String dataSValueOld[numCfgValues];
         String dataUnitOld[numCfgValues];
+        static const int bufMinutes = 16; // Buffer size in minutes for wind history chart
         bool wndDataValid = false; // Flag to indicate if wind data is valid
         bool simulation = false;
         bool holdValues = false;
@@ -255,12 +254,10 @@ public:
         int height = getdisplay().height(); // Get screen height
         static const int yOffset = 48; // Offset for y coordinates of chart area
         int cHeight = height - yOffset - 22; // height of chart area
-        // int cHeight = 60; // height of chart area
         int xCenter = width / 2; // Center of screen in x direction
-        // static bool plotShift = false; // Flag to indicate if chartplot data have been shifted
         static const float radToDeg = 180.0 / M_PI; // Conversion factor from radians to degrees
 
-        static int wndCenter = -400; // chart wind center value position; init value indicates that wndCenter is not set yet
+        static int wndCenter = INT_MIN; // chart wind center value position; init value indicates that wndCenter is not set yet
         static int wndLeft; // chart wind left value position
         static int wndRight; // chart wind right value position
         static int chrtRng; // Range of wind values from mid wind value to min/max wind value in degrees
@@ -279,26 +276,26 @@ public:
 
         static int updCnt = 0; // update counter for wind history chart in seconds
         bool isTimeforUpd = true; // Flag to indicate if it is time for chart update
-        bool TwsFlipped = false; // Flag to indicate if TWS value flipped
 
         LOG_DEBUG(GwLog::LOG, "Display page WindPlot");
 
-        if (windValues.getSize() == 0) {
-            if (!windValues.begin(cHeight)) {
+        if (windDirHstry.getSize() == 0) {
+//            if (!windDirValues.begin(bufMinutes * 60)) {
+            if (!windDirHstry.begin(cHeight)) {
                 logger->logDebug(GwLog::ERROR, "Failed to initialize wind values buffer");
                 return;
             }
         }
 
-        if (updCnt < updTime) {
-            // Next update interval not reached yet
-            updCnt++;
-            isTimeforUpd = false;
-        } else {
-            isTimeforUpd = true;
-            updCnt = 1; // Data update is now; reset counter
-        }
-
+        /*        if (updCnt < updTime) {
+                    // Next update interval not reached yet
+                    updCnt++;
+                    isTimeforUpd = false;
+                } else {
+                    isTimeforUpd = true;
+                    updCnt = 1; // Data update is now; reset counter
+                }
+        */
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
         simulation = config->getBool(config->useSimuData);
@@ -332,24 +329,20 @@ public:
             //    wndDataValid = windValues.calcTWD(&twdValue, dataValue[1], dataValue[2], dataValue[3], dataValue[4], dataValue[5], dataValue[6]);
         }
 
-        // ************* falsche Position <isTimeforUpd> ****************
-        if (isTimeforUpd) {
-            if (wndDataValid) {
-                windValues.add(twdValue);
-            }
-
-            if (simulation) {
-                // Simulate data if simulation is enabled; use default simulation values for TWS
-                simWnd += random(simStep * -1, simStep); // random value between -simStep and +simStep
-                if (simWnd < 0)
-                    simWnd += 360;
-                simWnd = simWnd % 360;
-                windValues.add(simWnd);
-                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot simulation data: windValue: %d, windSpeed: %s", simWnd, dataSValue[2].c_str());
-            }
+        if (simulation) {
+            // Simulate data if simulation is enabled; use default simulation values for TWS
+            simWnd += random(simStep * -1, simStep); // random value between -simStep and +simStep
+            if (simWnd < 0)
+                simWnd += 360;
+            simWnd = simWnd % 360;
+            windDirHstry.add(simWnd);
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot simulation data: windValue: %d, windSpeed: %s", simWnd, dataSValue[2].c_str());
+        } else if (wndDataValid) {
+            windDirHstry.add(twdValue);
         }
-        count = windValues.getSize(); // Get number of valid elements in buffer; maximum is cHeight
-        LOG_DEBUG(GwLog::ERROR, "PageWindPlot: Data 0 valid - dataValue[0]: %f, TWD: %d, cnt: %d, valid0: %d", dataValue[0] * radToDeg, twdValue, count, dataValid[0]);
+
+        count = windDirHstry.getSize(); // Get number of valid elements in buffer; maximum is cHeight
+        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Data 0 valid - dataValue[0]: %f, TWD: %d, cnt: %d, valid0: %d", dataValue[0] * radToDeg, twdValue, count, dataValid[0]);
 
         // Optical warning by limit violation (unused)
         if (String(flashLED) == "Limit Violation") {
@@ -357,39 +350,39 @@ public:
             setFlashLED(false);
         }
 
-        // if (bvalue == NULL)
-        //     return;
+        if (bvalue == NULL)
+            return;
         LOG_DEBUG(GwLog::LOG, "PageWindPlot, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f, %s:%f, %s:%f, %s:%f, %s:%f, cnt: %d, valid0: %d", dataName[0].c_str(), dataValue[0],
             dataName[1].c_str(), dataValue[1], dataName[2].c_str(), dataValue[2], dataName[3].c_str(), dataValue[3], dataName[4].c_str(), dataValue[4],
             dataName[5].c_str(), dataValue[5], dataName[6].c_str(), dataValue[6], dataName[7].c_str(), dataValue[7], dataName[8].c_str(), dataValue[8], count, dataValid[0]);
 
         // initialize chart range values
-        if (wndCenter == -400) {
-            wndCenter = (windValues.get(0) < 0 ? 0 : windValues.get(0));
+        if (wndCenter == INT_MIN) {
+            wndCenter = (windDirHstry.get(0) < 0 ? 0 : windDirHstry.get(0));
             wndCenter = int((wndCenter + (wndCenter >= 0 ? 5 : -5)) / 10) * 10; // Set new center value; round to nearest 10 degree value
             diffRng = 30;
             chrtRng = 30;
             LOG_DEBUG(GwLog::DEBUG, "PageWindPlot initialized. wndCenter: %d, chrtRng: %d ", wndCenter, chrtRng);
 
         } else {
-            diffRng = windValues.getRng(wndCenter);
+            diffRng = windDirHstry.getRng(wndCenter);
             diffRng = (diffRng < 0 ? 0 : diffRng); // If no data in buffer, set range to 0
             if (diffRng > chrtRng) {
                 chrtRng = int((diffRng + (diffRng >= 0 ? 9 : -1)) / 10) * 10; // Round up to next 10 degree value
             } else if (diffRng + 10 < chrtRng) { // Reduce chart range for higher resolution if possible
                 chrtRng = max(30, int((diffRng + (diffRng >= 0 ? 9 : -1)) / 10) * 10);
             }
-            LOG_DEBUG(GwLog::ERROR, "PageWindPlot range adjusted. wndCenter: %d, chrtRng: %d ", wndCenter, chrtRng);
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot range adjusted. wndCenter: %d, chrtRng: %d ", wndCenter, chrtRng);
         }
         chrtScl = float(width) / float(chrtRng) / 2.0; // chart scale: pixels per degree
         wndLeft = wndCenter - chrtRng;
         if (wndLeft < 0)
             wndLeft += 360;
-        wndRight = wndCenter + chrtRng;
+        wndRight = wndCenter + chrtRng - 1;
         if (wndRight >= 360)
             wndRight -= 360;
-        LOG_DEBUG(GwLog::ERROR, "PageWindPlot dataValue[0]: %f, windValue: %d, count: %d, diffRng: %d, chartRng: %d, Center: %d, scale: %f", double(dataValue[0] * radToDeg),
-            (!windValues.get(count - 1) < 0 ? 0 : windValues.get(count - 1)), count, diffRng, chrtRng, wndCenter, chrtScl);
+        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot dataValue[0]: %f, windValue: %d, count: %d, diffRng: %d, chartRng: %d, Center: %d, scale: %f", double(dataValue[0] * radToDeg),
+            (!windDirHstry.get(count - 1) < 0 ? 0 : windDirHstry.get(count - 1)), count, diffRng, chrtRng, wndCenter, chrtScl);
 
         // Draw page
         //***********************************************************
@@ -413,7 +406,7 @@ public:
         getdisplay().setCursor(xCenter - 20, yOffset - 3);
         snprintf(sWndLbl, 4, "%03d", (wndCenter < 0) ? (wndCenter + 360) : wndCenter);
         getdisplay().print(sWndLbl); // Wind center value
-        getdisplay().drawCircle(xCenter + 25, yOffset - 16, 2, commonData->fgcolor); // <degree> symbol  63
+        getdisplay().drawCircle(xCenter + 25, yOffset - 16, 2, commonData->fgcolor); // <degree> symbol
         getdisplay().drawCircle(xCenter + 25, yOffset - 16, 3, commonData->fgcolor); // <degree> symbol
         getdisplay().setCursor(2, yOffset - 3);
         snprintf(sWndLbl, 4, "%03d", (wndLeft < 0) ? (wndLeft + 360) : wndLeft);
@@ -429,46 +422,46 @@ public:
         // Draw wind values in chart
         //***********************************************************
         if (wndDataValid || holdValues || simulation) {
-            LOG_DEBUG(GwLog::ERROR, "PageWindPlot Draw: prevX: %d, chrtPrevVal: %d, wndLeft: %d, chrtScl: %f, count: %d", prevX, chrtPrevVal, wndLeft, chrtScl, count);
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Draw: prevX: %d, chrtPrevVal: %d, wndLeft: %d, chrtScl: %f, count: %d", prevX, chrtPrevVal, wndLeft, chrtScl, count);
 
             for (int i = 0; i < count; i++) {
-                chrtVal = windValues.get(i);
+                chrtVal = windDirHstry.get(i);
+                //                if (i == 0)
+                //                    chrtPrevVal = chrtVal;
                 x = ((chrtVal - wndLeft + 360) % 360) * chrtScl;
                 y = yOffset + cHeight - i; // Position in chart area
 
-                if ((abs(chrtVal - wndCenter) > 180) && !rngFlipped) { // If range exceeds 180 degrees, value plotted on other side of chart
-                    rngFlipped = true;
-                    prevX = x; // don't print connecting line to previous value
-                    prevY = y;
-                }
                 if (i == 0) { // just a dot for 1st chart point
                     prevX = x;
                     prevY = y;
+                    chrtPrevVal = chrtVal;
+                } else if (((chrtPrevVal >= wndLeft) && (chrtVal <= wndLeft)) || ((chrtPrevVal <= wndRight) && (chrtVal >= wndRight)) && !((chrtPrevVal < wndCenter && chrtVal >= wndCenter) || (chrtPrevVal >= wndCenter && chrtVal <= wndCenter))) {
+                    // If current value crosses chart edges, compared to previous value, and does not cross "0" line, draw a dot only, no line
+                    prevX = x; // don't print connecting line to previous value
+                    prevY = y;
                 }
-//                if (i < 30)
-//                    LOG_DEBUG(GwLog::ERROR, "PageWindPlot Chart: x: %d, y: %d prevX: %d, prevY: %d, loop-Counter: %d", x, y, prevX, prevY, count);
+                if ((chrtVal > 350 || chrtVal < 10) || (chrtVal > 170 && chrtVal < 190)) // data debugging
+                    LOG_DEBUG(GwLog::ERROR, "PageWindPlot Chart: chrtVal: %d, x: %d, y: %d prevX: %d, prevY: %d, loop-Counter: %d, Flipped: %d", chrtVal, x, y, prevX, prevY, count, rngFlipped);
+
                 // Draw line with 2 pixels width + make sure vertical line are drawn correctly
                 getdisplay().drawLine(prevX, prevY, x, y, commonData->fgcolor);
                 getdisplay().drawLine(prevX, prevY - 1, ((x != prevX) ? x : x - 1), ((x != prevX) ? y - 1 : y), commonData->fgcolor);
-                // chrtPrevVal = chrtVal;
+                chrtPrevVal = chrtVal;
                 prevX = x;
                 prevY = y;
 
                 if (i == (cHeight - 1)) { // Reaching chart area top end
-                    windValues.mvStart(40); // virtually delete 40 values from buffer
-                    if ((windValues.getMin() > wndCenter) || (windValues.getMax() < wndCenter)) {
+                    windDirHstry.mvStart(40); // virtually delete 40 values from buffer
+                    if ((windDirHstry.getMin() > wndCenter) || (windDirHstry.getMax() < wndCenter)) {
                         // Check if all wind value are left or right of center value -> optimize chart range
-                        int mid = windValues.getMid();
+                        int mid = windDirHstry.getMid();
                         wndCenter = int((mid + (mid >= 0 ? 5 : -5)) / 10) * 10; // Set new center value; round to nearest 10 degree value
                         rngFlipped = false; // chart value within standard 180 degree range
-                        chrtPrevVal = (windValues.get(0) < 0 ? 0 : windValues.get(0));
                     }
-                    LOG_DEBUG(GwLog::ERROR, "PageWindPlot Shift: Min: %d, Max: %d, Mid: %d, new Center: %d", windValues.getMin(), windValues.getMax(), windValues.getMid(), wndCenter);
                     break;
                 }
             }
-            LOG_DEBUG(GwLog::ERROR, "PageWindPlot chart end: x: %d, y: %d prevX: %d, prevY: %d, chrtPrevVal: %d, loop-Counter: %d", x, y, prevX, prevY, chrtPrevVal, count);
-
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot chart end: chrtVal: %d, x: %d, y: %d prevX: %d, prevY: %d, loop-Counter: %d", chrtVal, x, y, prevX, prevY, count);
         } else if (!wndDataValid) {
             // No valid data available
             LOG_DEBUG(GwLog::LOG, "PageWindPlot: No valid data available");
@@ -480,14 +473,22 @@ public:
 
         // Print TWS value
         if (showTWS) {
-            int xPosTws = width - 145;
-            int yPosTws = yOffset + 40;
-            if ((prevY > yPosTws - 36) && (prevY < yPosTws) && (prevX > xPosTws) && !TwsFlipped) {
-                // If chart line enters TWS value area, move TWS value to the other side
-                xPosTws = (xPosTws == width - 145) ? 30 : width - 145;
-                TwsFlipped = true;
+            static bool flipTws = false;
+            static int lastZone = -1;
+            int xPosTws = flipTws ? 30 : width - 145;
+            static const int yPosTws = yOffset + 40;
+
+            int currentZone = (y > yPosTws - 36 && y < yPosTws) ? 1 : 0; // Define zone for TWS value
+
+            if (currentZone != lastZone) {
+                // Only flip when y moves to a different zone
+                if ((y > yPosTws - 36) && (y < yPosTws) && ((!flipTws && (x > xPosTws)) || (flipTws && (x > xPosTws) && (x < (xPosTws + 145))))) {
+                    flipTws = !flipTws;
+                    xPosTws = flipTws ? 30 : width - 145;
+                }
             }
-            TwsFlipped = false; // Reset flag for next display update
+            lastZone = currentZone;
+
             getdisplay().fillRect(xPosTws - 4, yPosTws - 38, 142, 44, commonData->bgcolor); // Clear area for TWS value
             getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
             getdisplay().setCursor(xPosTws, yPosTws);
@@ -515,7 +516,7 @@ public:
             getdisplay().fillRect(0, yPos - 6, 26, 15, commonData->bgcolor); // Clear small area to remove potential chart lines
             getdisplay().fillRect(0, yPos, 8, 2, commonData->fgcolor);
             getdisplay().setCursor(9, yPos + 4);
-            snprintf(sWndYAx, 4, "%2d", i * updTime);
+            snprintf(sWndYAx, 4, "%2d", i * dataInterv);
             getdisplay().print(sWndYAx); // Wind value label
         }
 
