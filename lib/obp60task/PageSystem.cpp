@@ -10,6 +10,7 @@
 #define STRINGIZE(x) STRINGIZE_IMPL(x)
 #define VERSINFO STRINGIZE(GWDEVVERSION)
 #define BOARDINFO STRINGIZE(BOARD)
+#define PCBINFO STRINGIZE(PCBVERS)
 #define DISPLAYINFO STRINGIZE(EPDTYPE)
 
 /*
@@ -49,7 +50,9 @@ public:
         }
         chipid = ESP.getEfuseMac();
         simulation = common.config->getBool(common.config->useSimuData);
+#ifdef BOARD_OBP40S3
         sdcard = common.config->getBool(common.config->useSDCard);
+#endif
         buzzer_mode = common.config->getString(common.config->buzzerMode);
         buzzer_mode.toLowerCase();
         buzzer_power = common.config->getInt(common.config->buzzerPower);
@@ -125,12 +128,12 @@ public:
         // s is pixel size of a single box
         QRCode qrcode;
         uint8_t qrcodeData[qrcode_getBufferSize(4)];
-        #ifdef BOARD_OBP40S3
+#ifdef BOARD_OBP40S3
         String prefix = "OBP40:SN:";
-        #endif
-        #ifdef BOARD_OBP60S3
+#endif
+#ifdef BOARD_OBP60S3
         String prefix = "OBP60:SN:";
-        #endif
+#endif
         qrcode_initText(&qrcode, qrcodeData, 4, 0, (prefix + serialno).c_str());
         int16_t x0 = x;
         for (uint8_t j = 0; j < qrcode.size; j++) {
@@ -179,65 +182,88 @@ public:
             getdisplay().drawXBitmap(320, 25, logo64_bits, logo64_width, logo64_height, commonData->fgcolor);
 
             getdisplay().setFont(&Ubuntu_Bold8pt7b);
-            y0 = 120;
+            y0 = 155;
 
             char ssid[13];
             snprintf(ssid, 13, "%04X%08X", (uint16_t)(chipid >> 32), (uint32_t)chipid);
             displayBarcode(String(ssid), 320, 200, 2);
             getdisplay().setCursor(8, 70);
-            getdisplay().print(String("MUDEVICE-") + String(ssid));
+            getdisplay().print(String("MCUDEVICE-") + String(ssid));
 
-            getdisplay().setCursor(8, 100);
-            getdisplay().print("Firmware Version: ");
-            getdisplay().setCursor(160, 100);
+            getdisplay().setCursor(8, 95);
+            getdisplay().print("Firmware version: ");
+            getdisplay().setCursor(160, 95);
             getdisplay().print(VERSINFO);
 
-            getdisplay().setCursor(8, 120);
+            getdisplay().setCursor(8, 113);
             getdisplay().print("Board version: ");
-            getdisplay().setCursor(160, 120);
+            getdisplay().setCursor(160, 113);
             getdisplay().print(BOARDINFO);
+            getdisplay().print(String(" HW ") + String(PCBINFO));
 
-            getdisplay().setCursor(8, 140);
+            getdisplay().setCursor(8, 131);
             getdisplay().print("Display version: ");
-            getdisplay().setCursor(160, 140);
+            getdisplay().setCursor(160, 131);
             getdisplay().print(DISPLAYINFO);
 
             getdisplay().setCursor(8, 265);
-            #ifdef BOARD_OBP60S3
+#ifdef BOARD_OBP60S3
             getdisplay().print("Press STBY to enter deep sleep mode");
-            #endif
-            #ifdef BOARD_OBP40S3
+#endif
+#ifdef BOARD_OBP40S3
             getdisplay().print("Press wheel to enter deep sleep mode");
-            #endif
+#endif
 
-            // total RAM free
-            int Heap_free = esp_get_free_heap_size();
-            getdisplay().setCursor(8, y0 + 64);
-            getdisplay().print("Total free:");
-            getdisplay().setCursor(120, y0 + 64);
-            getdisplay().print(String(Heap_free));
+            // Flash memory size
+            uint32_t flash_size = ESP.getFlashChipSize();
+            getdisplay().setCursor(8, y0);
+            getdisplay().print("FLASH:");
+            getdisplay().setCursor(90, y0);
+            getdisplay().print(String(flash_size / 1024) + String(" kB"));
+
+            // PSRAM memory size
+            uint32_t psram_size = ESP.getPsramSize();
+            getdisplay().setCursor(8, y0 + 16);
+            getdisplay().print("PSRAM:");
+            getdisplay().setCursor(90, y0 + 16);
+            getdisplay().print(String(psram_size / 1024) + String(" kB"));
+
+            // FRAM available / status
+            getdisplay().setCursor(8, y0 + 32);
+            getdisplay().print("FRAM:");
+            getdisplay().setCursor(90, y0 + 32);
+            getdisplay().print(hasFRAM ? "available" : "not found");
+
+#ifdef BOARD_OBP40S3
+            // SD-Card
+            getdisplay().setCursor(8, y0 + 48);
+            getdisplay().print("SD-Card:");
+            getdisplay().setCursor(90, y0 + 48);
+            getdisplay().print(sdcard ? "on" : "off");
+#endif
 
             // CPU speed config / active
-            getdisplay().setCursor(8, y0 + 48);
+            getdisplay().setCursor(202, y0);
             getdisplay().print("CPU speed:");
-            getdisplay().setCursor(120, y0 + 48);
+            getdisplay().setCursor(300, y0);
             getdisplay().print(cpuspeed);
             getdisplay().print(" / ");
             int cpu_freq = esp_clk_cpu_freq() / 1000000;
             getdisplay().print(String(cpu_freq));
 
+            // total RAM free
+            int Heap_free = esp_get_free_heap_size();
+            getdisplay().setCursor(202, y0 + 16);
+            getdisplay().print("Total free:");
+            getdisplay().setCursor(300, y0 + 16);
+            getdisplay().print(String(Heap_free));
+
             // RAM free for task
             int RAM_free = uxTaskGetStackHighWaterMark(NULL);
-            getdisplay().setCursor(8, y0 + 80);
+            getdisplay().setCursor(202, y0 + 32);
             getdisplay().print("Task free:");
-            getdisplay().setCursor(120, y0 + 80);
+            getdisplay().setCursor(300, y0 + 32);
             getdisplay().print(String(RAM_free));
-
-            // FRAM available / status
-            getdisplay().setCursor(8, y0 + 96);
-            getdisplay().print("FRAM:");
-            getdisplay().setCursor(120, y0 + 96);
-            getdisplay().print(hasFRAM ? "available" : "not found");
 
 
         } else if (mode == 'S') {
@@ -301,11 +327,7 @@ public:
             getdisplay().print(gen_sensor);
 
             // Gyro sensor
-            // SD-Card
-            getdisplay().setCursor(202, y0 + 64);
-            getdisplay().print("SD-Card:");
-            getdisplay().setCursor(320, y0 + 64);
-            getdisplay().print(sdcard ? "on" : "off");
+
 
         } else {
             // NMEA2000 device list
