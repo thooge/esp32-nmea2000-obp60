@@ -616,12 +616,8 @@
         "name": "useSDCard",
         "label": "SD Card",
         "type": "boolean",
-        "default": "off",
+        "default": "false",
         "description": "Use internal SD card interface [off|on]",
-        "list": [
-            "off",
-            "on"
-        ],
         "category": "OBP40 Hardware",
         "capabilities": {
             "obp40": "true"

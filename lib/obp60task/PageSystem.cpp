@@ -6,6 +6,11 @@
 #include <esp32/clk.h>
 #include "qrcode.h"
 
+#ifdef BOARD_OBP40S3
+#include <SD.h>
+#include <FS.h>
+#endif
+
 #define STRINGIZE_IMPL(x) #x
 #define STRINGIZE(x) STRINGIZE_IMPL(x)
 #define VERSINFO STRINGIZE(GWDEVVERSION)
@@ -39,7 +44,7 @@ String solar_sensor;
 String gen_sensor;
 String rot_sensor;
 
-char mode = 'N'; // (N)ormal, (S)ettings, (D)evice list
+char mode = 'N'; // (N)ormal, (S)ettings, (D)evice list, (C)ard
 
 public:
     PageSystem(CommonData &common){
@@ -63,7 +68,7 @@ public:
         batt_sensor = common.config->getString(common.config->usePowSensor1);
         solar_sensor = common.config->getString(common.config->usePowSensor2);
         gen_sensor = common.config->getString(common.config->usePowSensor3);
-        gen_sensor = common.config->getString(common.config->useRotSensor);
+        rot_sensor = common.config->getString(common.config->useRotSensor);
     }
 
     virtual void setupKeys(){
@@ -84,6 +89,12 @@ public:
                 mode = 'S';
             } else if (mode == 'S') {
                 mode = 'D';
+            } else if (mode == 'D') {
+                if (sdcard) {
+                    mode = 'C';
+                } else {
+                    mode = 'N';
+                }
             } else {
                 mode = 'N';
             }
@@ -239,7 +250,12 @@ public:
             getdisplay().setCursor(8, y0 + 48);
             getdisplay().print("SD-Card:");
             getdisplay().setCursor(90, y0 + 48);
-            getdisplay().print(sdcard ? "on" : "off");
+            if (sdcard) {
+                uint64_t cardsize = SD.cardSize() / (1024 * 1024);
+                getdisplay().print(String(cardsize) + String(" MB"));
+            } else {
+                getdisplay().print("off");
+            }
 #endif
 
             // CPU speed config / active
@@ -264,7 +280,6 @@ public:
             getdisplay().print("Task free:");
             getdisplay().setCursor(300, y0 + 32);
             getdisplay().print(String(RAM_free));
-
 
         } else if (mode == 'S') {
             // Settings
@@ -327,6 +342,19 @@ public:
             getdisplay().print(gen_sensor);
 
             // Gyro sensor
+
+        } else if (mode == 'C') {
+            // Card info
+            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setCursor(8, 48);
+            getdisplay().print("SD Card info");
+
+            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+
+            x0 = 20;
+            y0 = 72;
+            getdisplay().setCursor(x0, y0);
+            getdisplay().print("Work in progress...");
 
 
         } else {
