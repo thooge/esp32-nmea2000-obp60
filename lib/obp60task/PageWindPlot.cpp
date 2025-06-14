@@ -12,19 +12,24 @@ class wndHistory {
 private:
     int SIZE;
     std::vector<int> buffer;
-    int first = 0; // points to the first valid element
-    int head = 0; // points to the next insertion index
-    int count = 0; // number of valid elements
+    int first; // points to the first (oldest) valid element
+    int last; // points to the last (newest) valid element
+    int head; // points to the next insertion index
+    int count; // number of valid elements
 
 public:
     bool begin(int size)
-    // specifies buffer size
+    // start buffer
     {
         if (size <= 0 || size > 10000) {
             return false;
         }
         SIZE = size;
         buffer.resize(size, INT_MIN); // allocate buffer
+        head = 0;
+        first = 0;
+        last = 0;
+        count = 0;
         return true;
     }
 
@@ -32,6 +37,7 @@ public:
     // Add a new value; store in [0..360 deg] format
     {
         buffer[head] = value;
+        last = head;
         head = (head + 1) % SIZE;
         if (count < SIZE) {
             count++;
@@ -80,7 +86,7 @@ public:
     }
 
     int getMin() const
-    // Get minimum value in the buffer
+    // Get minimum value of buffer
     {
         if (count == 0) {
             return -1; // Buffer is empty
@@ -95,8 +101,46 @@ public:
         }
     }
 
+    /*    int getMin(int amount) const
+        // Get minimum value of the last <amount> values of buffer
+        {
+            if (count == 0 || amount <= 0) {
+                return -1;
+            } else if (amount > count) {
+                amount = count; // Limit to available values
+            }
+
+            if (last + amount <= SIZE) {
+                // No wrap-around
+                return *std::min_element(buffer.begin() + last, buffer.begin() + (last + amount));
+            } else {
+                // Wrap-around
+                int min1 = *std::min_element(buffer.begin() + ((last - amount) % last), buffer.begin() + last);
+                int min2 = *std::min_element(buffer.end() - (count - amount - last > 0 ? amount - last : 0), buffer.end());
+                return std::min(min1, min2);
+            }
+        } */
+
+    int getMin(int amount) const
+    // Get minimum value of the last <amount> values of buffer
+    {
+        if (count == 0 || amount <= 0)
+            return -1;
+        if (amount > count)
+            amount = count;
+
+        int minVal = INT_MAX;
+        // Start from the newest value (last) and go backwards x times
+        for (int i = 0; i < amount; ++i) {
+            int idx = (last - i + SIZE) % SIZE;
+            if (buffer[idx] < minVal)
+                minVal = buffer[idx];
+        }
+        return minVal;
+    }
+
     int getMax() const
-    // Get maximum value in the buffer
+    // Get maximum value of buffer
     {
         if (count == 0) {
             return -1; // Buffer is empty
@@ -111,6 +155,44 @@ public:
         }
     }
 
+    int getMax(int amount) const
+    // Get minimum value of the last <amount> values of buffer
+    {
+        if (count == 0 || amount <= 0)
+            return -1;
+        if (amount > count)
+            amount = count;
+
+        int maxVal = INT_MIN;
+        // Start from the newest value (last) and go backwards x times
+        for (int i = 0; i < amount; ++i) {
+            int idx = (last - i + SIZE) % SIZE;
+            if (buffer[idx] > maxVal)
+                maxVal = buffer[idx];
+        }
+        return maxVal;
+    }
+
+    /*    int getMax(int amount) const
+        // Get maximum value of the last <amount> values of buffer
+        {
+            if (count == 0 || amount <= 0) {
+                return -1;
+            } else if (amount > count) {
+                amount = count; // Limit to available values
+            }
+
+            if (first + count <= SIZE) {
+                // No wrap-around
+                return *std::max_element(buffer.begin() + last, buffer.begin() + (last + amount));
+            } else {
+                // Wrap-around
+                int max1 = *std::max_element(buffer.begin() + ((last - amount) % last), buffer.begin() + last);
+                int max2 = *std::max_element(buffer.end(), buffer.end() - (amount - last > 0 ? amount - last : 0);
+                return std::max(max1, max2);
+            }
+        } */
+
     int getMid() const
     // Get middle value in the buffer
     {
@@ -120,16 +202,15 @@ public:
         return (getMin() + getMax()) / 2;
     }
 
-    int getRng(int center)
-    // Get range of values in the buffer relative to a center value
+    int getRng(int center, int amount) const
+    // Get maximum difference of last <amount> of buffer values to center value
     {
         if (count == 0) {
             return -1; // Buffer is empty
         }
 
-        int min = getMin();
-        int max = getMax();
-        //        int rng = std::max(abs((min - center + 540) % 360 - 180), abs((max - center + 540) % 360 - 180));
+        int min = getMin(amount);
+        int max = getMax(amount);
         int rng = std::max(abs(min - center), abs(max - center));
         if (rng > 180) { // should never happen, but just in case
             rng = 180;
@@ -145,6 +226,10 @@ public:
             count -= start;
         else
             count = 0;
+        if (first == 0)
+            last = count;
+        else
+            last = first - 1;
     }
 
     // TWA, TWS, HDM, AWA, AWS, STW
@@ -167,7 +252,7 @@ class PageWindPlot : public Page {
     //    int16_t lp = 80; // Pointer length
     char chrtMode = 'D'; // Chart mode: 'D' for TWD, 'S' for TWS, 'B' for both06121990
     int dataInterv = 1; // Update interval for wind history chart:
-                        // (1)|(2)|(3)|(4) seconds for 4, 8, 12, 16 min. history chart
+                        // (1)|(2)|(3)|(4) seconds for approx. 4, 8, 12, 16 min. history chart
     bool showTWS = true; // Show TWS value in chart area
 
 public:
@@ -245,16 +330,18 @@ public:
         String dataUnit[numCfgValues];
         String dataSValueOld[numCfgValues];
         String dataUnitOld[numCfgValues];
-        static const int bufMinutes = 16; // Buffer size in minutes for wind history chart
         bool wndDataValid = false; // Flag to indicate if wind data is valid
         bool simulation = false;
         bool holdValues = false;
 
         int width = getdisplay().width(); // Get screen width
         int height = getdisplay().height(); // Get screen height
+        int xCenter = width / 2; // Center of screen in x direction
         static const int yOffset = 48; // Offset for y coordinates of chart area
         int cHeight = height - yOffset - 22; // height of chart area
-        int xCenter = width / 2; // Center of screen in x direction
+        static int bufSize = cHeight * 4; // Buffer size: 920 values for appox. 16 min. history chart
+        int intvBufSize; // Buffer size currently used for user selected time interval
+        int count; // current size of buffer
         static const float radToDeg = 180.0 / M_PI; // Conversion factor from radians to degrees
 
         static int wndCenter = INT_MIN; // chart wind center value position; init value indicates that wndCenter is not set yet
@@ -272,32 +359,19 @@ public:
         static float chrtScl; // Scale for wind values in pixels per degree
         int chrtVal; // Current wind value
         static int chrtPrevVal; // Last wind value in chart area for check if value crosses 180 degree line
-        int count; // index for next wind value in buffer
-
-        static int updCnt = 0; // update counter for wind history chart in seconds
-        bool isTimeforUpd = true; // Flag to indicate if it is time for chart update
+        int numWndValues; // number of wind values available for current interval selection
 
         LOG_DEBUG(GwLog::LOG, "Display page WindPlot");
 
         if (windDirHstry.getSize() == 0) {
-//            if (!windDirValues.begin(bufMinutes * 60)) {
-            if (!windDirHstry.begin(cHeight)) {
-                logger->logDebug(GwLog::ERROR, "Failed to initialize wind values buffer");
+            if (!windDirHstry.begin(bufSize)) {
+                logger->logDebug(GwLog::ERROR, "Failed to initialize wind direction history buffer");
                 return;
             }
         }
 
-        /*        if (updCnt < updTime) {
-                    // Next update interval not reached yet
-                    updCnt++;
-                    isTimeforUpd = false;
-                } else {
-                    isTimeforUpd = true;
-                    updCnt = 1; // Data update is now; reset counter
-                }
-        */
         // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
+        // String lengthformat = config->getString(config->lengthFormat);
         simulation = config->getBool(config->useSimuData);
         holdValues = config->getBool(config->holdvalues);
         String flashLED = config->getString(config->flashLED);
@@ -341,8 +415,10 @@ public:
             windDirHstry.add(twdValue);
         }
 
-        count = windDirHstry.getSize(); // Get number of valid elements in buffer; maximum is cHeight
-        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Data 0 valid - dataValue[0]: %f, TWD: %d, cnt: %d, valid0: %d", dataValue[0] * radToDeg, twdValue, count, dataValid[0]);
+        intvBufSize = cHeight * dataInterv; // Get buffer size for current interval selection
+        count = windDirHstry.getSize();
+        numWndValues = min(count, intvBufSize);
+        LOG_DEBUG(GwLog::ERROR, "PageWindPlot: User Interval: %d, intvBufSize: %d, count: %d, TWD: %d", dataInterv, intvBufSize, count, twdValue);
 
         // Optical warning by limit violation (unused)
         if (String(flashLED) == "Limit Violation") {
@@ -358,14 +434,14 @@ public:
 
         // initialize chart range values
         if (wndCenter == INT_MIN) {
-            wndCenter = (windDirHstry.get(0) < 0 ? 0 : windDirHstry.get(0));
+            wndCenter = windDirHstry.get(count - intvBufSize < 0 ? 0 : count - intvBufSize);
             wndCenter = int((wndCenter + (wndCenter >= 0 ? 5 : -5)) / 10) * 10; // Set new center value; round to nearest 10 degree value
             diffRng = 30;
             chrtRng = 30;
             LOG_DEBUG(GwLog::DEBUG, "PageWindPlot initialized. wndCenter: %d, chrtRng: %d ", wndCenter, chrtRng);
 
         } else {
-            diffRng = windDirHstry.getRng(wndCenter);
+            diffRng = windDirHstry.getRng(wndCenter, numWndValues);
             diffRng = (diffRng < 0 ? 0 : diffRng); // If no data in buffer, set range to 0
             if (diffRng > chrtRng) {
                 chrtRng = int((diffRng + (diffRng >= 0 ? 9 : -1)) / 10) * 10; // Round up to next 10 degree value
@@ -422,26 +498,27 @@ public:
         // Draw wind values in chart
         //***********************************************************
         if (wndDataValid || holdValues || simulation) {
-            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Draw: prevX: %d, chrtPrevVal: %d, wndLeft: %d, chrtScl: %f, count: %d", prevX, chrtPrevVal, wndLeft, chrtScl, count);
+            int threshold = 90;
 
-            for (int i = 0; i < count; i++) {
-                chrtVal = windDirHstry.get(i);
-                //                if (i == 0)
-                //                    chrtPrevVal = chrtVal;
+            for (int i = 0; i < numWndValues; i++) {
+                chrtVal = windDirHstry.get(count - numWndValues + (i * dataInterv));
+                if (i < 12)
+                    LOG_DEBUG(GwLog::ERROR, "PageWindPlot Draw: i: %d, numWndValues: %d, chrtVal: %d, count: %d", i, numWndValues, chrtVal, count);
                 x = ((chrtVal - wndLeft + 360) % 360) * chrtScl;
                 y = yOffset + cHeight - i; // Position in chart area
 
                 if (i == 0) { // just a dot for 1st chart point
                     prevX = x;
                     prevY = y;
-                    chrtPrevVal = chrtVal;
-                } else if (((chrtPrevVal >= wndLeft) && (chrtVal <= wndLeft)) || ((chrtPrevVal <= wndRight) && (chrtVal >= wndRight)) && !((chrtPrevVal < wndCenter && chrtVal >= wndCenter) || (chrtPrevVal >= wndCenter && chrtVal <= wndCenter))) {
-                    // If current value crosses chart edges, compared to previous value, and does not cross "0" line, draw a dot only, no line
-                    prevX = x; // don't print connecting line to previous value
-                    prevY = y;
+                } else if (((chrtPrevVal >= wndLeft) && (chrtVal <= wndLeft)) || ((chrtPrevVal <= wndRight) && (chrtVal >= wndRight))) {
+//                    if (!((chrtPrevVal > 180) && (chrtVal < 180)) || ((chrtPrevVal < 180) && (chrtVal > 180))) {
+                    if (!((chrtPrevVal >= 360 - threshold) && (chrtVal < threshold)) || ((chrtPrevVal < threshold) && (chrtVal >= 360 - threshold))) {
+                        // If current value crosses chart edges, compared to previous value, and does not cross "0" line, draw a dot only, no line
+                        prevX = x; // don't print connecting line to previous value
+                        prevY = y;
+                        LOG_DEBUG(GwLog::ERROR, "PageWindPlot Chart: chrtVal: %d, chrtPrevVal: %d, 0-Crossing: %d", chrtVal, chrtPrevVal, ((chrtPrevVal > 180 && chrtVal < 180) || (chrtPrevVal < 180 && chrtVal > 180)));
+                    }
                 }
-                if ((chrtVal > 350 || chrtVal < 10) || (chrtVal > 170 && chrtVal < 190)) // data debugging
-                    LOG_DEBUG(GwLog::ERROR, "PageWindPlot Chart: chrtVal: %d, x: %d, y: %d prevX: %d, prevY: %d, loop-Counter: %d, Flipped: %d", chrtVal, x, y, prevX, prevY, count, rngFlipped);
 
                 // Draw line with 2 pixels width + make sure vertical line are drawn correctly
                 getdisplay().drawLine(prevX, prevY, x, y, commonData->fgcolor);
@@ -452,7 +529,7 @@ public:
 
                 if (i == (cHeight - 1)) { // Reaching chart area top end
                     windDirHstry.mvStart(40); // virtually delete 40 values from buffer
-                    if ((windDirHstry.getMin() > wndCenter) || (windDirHstry.getMax() < wndCenter)) {
+                    if ((windDirHstry.getMin(numWndValues) > wndCenter) || (windDirHstry.getMax(numWndValues) < wndCenter)) {
                         // Check if all wind value are left or right of center value -> optimize chart range
                         int mid = windDirHstry.getMid();
                         wndCenter = int((mid + (mid >= 0 ? 5 : -5)) / 10) * 10; // Set new center value; round to nearest 10 degree value
@@ -478,11 +555,12 @@ public:
             int xPosTws = flipTws ? 30 : width - 145;
             static const int yPosTws = yOffset + 40;
 
-            int currentZone = (y > yPosTws - 36 && y < yPosTws) ? 1 : 0; // Define zone for TWS value
-
+            //            int currentZone = (y > yPosTws - 36 && y < yPosTws) ? 1 : 0; // Define zone for TWS value
+            int currentZone = (x > xPosTws) && (x < (xPosTws + 145)) ? 1 : 0; // Define zone for TWS value
             if (currentZone != lastZone) {
                 // Only flip when y moves to a different zone
-                if ((y > yPosTws - 36) && (y < yPosTws) && ((!flipTws && (x > xPosTws)) || (flipTws && (x > xPosTws) && (x < (xPosTws + 145))))) {
+                //                if ((y > yPosTws - 36) && (y < yPosTws) && ((!flipTws && (x > xPosTws)) || (flipTws && (x > xPosTws) && (x < (xPosTws + 145))))) {
+                if ((y > yPosTws - 36) && (y < yPosTws) && (x > xPosTws) && (x < (xPosTws + 145))) {
                     flipTws = !flipTws;
                     xPosTws = flipTws ? 30 : width - 145;
                 }
@@ -513,7 +591,7 @@ public:
         for (int i = 3; i > 0; i--) {
             yPos = yOffset + cHeight - (i * 60) + 14; // Y position for label
             getdisplay().fillRect(0, yPos, width, 1, commonData->fgcolor);
-            getdisplay().fillRect(0, yPos - 6, 26, 15, commonData->bgcolor); // Clear small area to remove potential chart lines
+            getdisplay().fillRect(0, yPos - 9, 26, 16, commonData->bgcolor); // Clear small area to remove potential chart lines
             getdisplay().fillRect(0, yPos, 8, 2, commonData->fgcolor);
             getdisplay().setCursor(9, yPos + 4);
             snprintf(sWndYAx, 4, "%2d", i * dataInterv);
