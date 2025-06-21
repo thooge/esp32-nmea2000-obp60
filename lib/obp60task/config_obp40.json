@@ -1021,6 +1021,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -1281,6 +1282,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -1539,6 +1541,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -1793,6 +1796,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -2044,6 +2048,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -2292,6 +2297,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -2537,6 +2543,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -2779,6 +2786,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -3018,6 +3026,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -3254,6 +3263,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
