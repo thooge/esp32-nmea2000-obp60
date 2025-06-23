@@ -1,0 +1,356 @@
+#include "OBPRingBuffer.h"
+
+template <typename T>
+RingBuffer<T>::RingBuffer(size_t size)
+    : capacity(size)
+    , head(0)
+    , first(0)
+    , last(0)
+    , count(0)
+    , is_Full(false)
+{
+    if (size == 0) {
+        // return false;
+    }
+
+    MIN_VAL = std::numeric_limits<T>::lowest();
+    MAX_VAL = std::numeric_limits<T>::max();
+    buffer.resize(size, MIN_VAL);
+
+    // return true;
+}
+
+// Add a new value to the buffer
+template <typename T>
+void RingBuffer<T>::add(const T& value)
+{
+    buffer[head] = value;
+    last = head;
+
+    if (is_Full) {
+        first = (first + 1) % capacity; // Move pointer to oldest element when overwriting
+    } else {
+        count++;
+        if (count == capacity) {
+            is_Full = true;
+        }
+    }
+
+    head = (head + 1) % capacity;
+}
+
+// Get value at specific position (0-based index from oldest to newest)
+template <typename T>
+T RingBuffer<T>::get(size_t index) const
+{
+    if (isEmpty()) {
+        throw std::runtime_error("Buffer is empty");
+    }
+    if (index < 0 || index >= count) {
+        return MIN_VAL;
+    //    throw std::out_of_range("Index out of range");
+    }
+
+    size_t realIndex = (first + index) % capacity;
+    return buffer[realIndex];
+}
+
+// Operator[] for convenient access (same as get())
+template <typename T>
+T RingBuffer<T>::operator[](size_t index) const
+{
+    return get(index);
+}
+
+// Get the first (oldest) value in the buffer
+template <typename T>
+T RingBuffer<T>::getFirst() const
+{
+    if (isEmpty()) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+    return buffer[first];
+}
+
+// Get the last (newest) value in the buffer
+template <typename T>
+T RingBuffer<T>::getLast() const
+{
+    if (isEmpty()) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+    return buffer[last];
+}
+
+// Get the lowest value in the buffer
+template <typename T>
+T RingBuffer<T>::getMin() const
+{
+    if (isEmpty()) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+
+    T minVal = get(first);
+    T value;
+    for (size_t i = 0; i < count; i++) {
+        value = get(i);
+        if (value < minVal) {
+            minVal = value;
+        }
+    }
+    return minVal;
+}
+
+// Get minimum value of the last <amount> values of buffer
+template <typename T>
+T RingBuffer<T>::getMin(size_t amount) const
+{
+    if (isEmpty() || amount <= 0) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+    if (amount > count)
+        amount = count;
+
+    T minVal = get(last);
+    T value;
+    for (size_t i = 0; i < amount; i++) {
+        value = get((last + capacity - i) % capacity);
+        if (value < minVal && value != MIN_VAL) {
+            minVal = value;
+        }
+    }
+    return minVal;
+}
+
+// Get the highest value in the buffer
+template <typename T>
+T RingBuffer<T>::getMax() const
+{
+    if (isEmpty()) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+
+    T maxVal = get(first);
+    T value;
+    for (size_t i = 0; i < count; i++) {
+        value = get(i);
+        if (value > maxVal) {
+            maxVal = value;
+        }
+    }
+    return maxVal;
+}
+
+// Get maximum value of the last <amount> values of buffer
+template <typename T>
+T RingBuffer<T>::getMax(size_t amount) const
+{
+    if (isEmpty() || amount <= 0) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+    if (amount > count)
+        amount = count;
+
+    T maxVal = get(last);
+    T value;
+    for (size_t i = 0; i < amount; i++) {
+        value = get((last + capacity - i) % capacity);
+        if (value > maxVal && value != MIN_VAL) {
+            maxVal = value;
+        }
+    }
+    return maxVal;
+}
+
+// Get mid value between <min> and <max> value in the buffer
+template <typename T>
+T RingBuffer<T>::getMid() const
+{
+    if (isEmpty()) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+
+    return (getMin() + getMax()) / static_cast<T>(2);
+}
+
+// Get mid value between <min> and <max> value of the last <amount> values of buffer
+template <typename T>
+T RingBuffer<T>::getMid(size_t amount) const
+{
+    if (isEmpty() || amount <= 0) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+
+    if (amount > count)
+        amount = count;
+
+    return (getMin(amount) + getMax(amount)) / static_cast<T>(2);
+}
+
+// ******************* works for wind direction only -> move out of here   *******************************
+// Get maximum difference of last <amount> of buffer values to center value
+template <typename T>
+T RingBuffer<T>::getRng(T center, size_t amount) const
+{
+    if (isEmpty() || amount <= 0) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+    if (amount > count)
+        amount = count;
+
+    T value = 0;
+    T rng = 0;
+    T maxRng = MIN_VAL;
+    // Start from the newest value (last) and go backwards x times
+    for (size_t i = 0; i < amount; i++) {
+        value = get((last + capacity - i) % capacity);
+        if (value == MIN_VAL) {
+            continue;
+        }
+        rng = abs(((value - center + 540) % 360) - 180);
+        if (rng > maxRng)
+            maxRng = rng;
+    }
+    if (maxRng > 180) {
+        maxRng = 180;
+    }
+    return maxRng;
+}
+
+// Get the median value in the buffer
+template <typename T>
+T RingBuffer<T>::getMedian() const
+{
+    if (isEmpty()) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+
+    // Create a temporary vector with current valid elements
+    std::vector<T> temp;
+    temp.reserve(count);
+
+    for (size_t i = 0; i < count; i++) {
+        temp.push_back(get(i));
+    }
+
+    // Sort to find median
+    std::sort(temp.begin(), temp.end());
+
+    if (count % 2 == 1) {
+        // Odd number of elements
+        return temp[count / 2];
+    } else {
+        // Even number of elements - return average of middle two
+        // Note: For integer types, this truncates. For floating point, it's exact.
+        return (temp[count / 2 - 1] + temp[count / 2]) / 2;
+    }
+}
+
+// Get the median value of the last <amount> values of buffer
+template <typename T>
+T RingBuffer<T>::getMedian(size_t amount) const
+{
+    if (isEmpty() || amount <= 0) {
+        return MIN_VAL;
+        // throw std::runtime_error("Buffer is empty");
+    }
+    if (amount > count)
+        amount = count;
+
+    // Create a temporary vector with current valid elements
+    std::vector<T> temp;
+    temp.reserve(amount);
+
+    for (size_t i = 0; i < amount; i++) {
+        temp.push_back(get(i));
+    }
+
+    // Sort to find median
+    std::sort(temp.begin(), temp.end());
+
+    if (amount % 2 == 1) {
+        // Odd number of elements
+        return temp[amount / 2];
+    } else {
+        // Even number of elements - return average of middle two
+        // Note: For integer types, this truncates. For floating point, it's exact.
+        return (temp[amount / 2 - 1] + temp[amount / 2]) / 2;
+    }
+}
+
+// Get the buffer capacity (maximum size)
+template <typename T>
+size_t RingBuffer<T>::getCapacity() const
+{
+    return capacity;
+}
+
+// Get the current number of elements in the buffer
+template <typename T>
+size_t RingBuffer<T>::getCurrentSize() const
+{
+    return count;
+}
+
+// Check if buffer is empty
+template <typename T>
+bool RingBuffer<T>::isEmpty() const
+{
+    return count == 0;
+}
+
+// Check if buffer is full
+template <typename T>
+bool RingBuffer<T>::isFull() const
+{
+    return is_Full;
+}
+
+// Get lowest possible value for buffer; used for initialized buffer data
+template <typename T>
+T RingBuffer<T>::getMinVal()
+{
+    return MIN_VAL;
+}
+
+// Get highest possible value for buffer
+template <typename T>
+T RingBuffer<T>::getMaxVal()
+{
+    return MAX_VAL;
+}
+
+// Clear buffer
+template <typename T>
+void RingBuffer<T>::clear()
+{
+    head = 0;
+    first = 0;
+    last = 0;
+    count = 0;
+    is_Full = false;
+}
+
+// Get all current values as a vector
+template <typename T>
+std::vector<T> RingBuffer<T>::getAllValues() const
+{
+    std::vector<T> result;
+    result.reserve(count);
+
+    for (size_t i = 0; i < count; i++) {
+        result.push_back(get(i));
+    }
+
+    return result;
+}

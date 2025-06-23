@@ -3,11 +3,12 @@
 #include "BoatDataCalibration.h"
 #include "OBP60Extensions.h"
 #include "Pagedata.h"
+#include "OBPRingBuffer.h"
 
 #include <vector>
 
 // ****************************************************************
-class wndHistory {
+class OldwndHistory {
     // provides a circular buffer to store wind history values
 private:
     int SIZE;
@@ -273,9 +274,6 @@ public:
         GwConfigHandler* config = commonData->config;
         GwLog* logger = commonData->logger;
 
-        static wndHistory windDirHstry; // Circular buffer to store wind direction values
-        static wndHistory windSpdHstry; // Circular buffer to store wind speed values
-
         GwApi::BoatValue* bvalue;
         const int numCfgValues = 9;
         String dataName[numCfgValues];
@@ -325,15 +323,18 @@ public:
         int distVals; // helper to check wndCenter crossing
         int distMid; // helper to check wndCenter crossing
 
+        static RingBuffer<int> windDirHstry(bufSize); // Circular buffer to store wind direction values
+        static RingBuffer<int>windSpdHstry(bufSize); // Circular buffer to store wind speed values
+
         LOG_DEBUG(GwLog::LOG, "Display page WindPlot");
         unsigned long start = millis();
 
         // Data initialization
-        if (windDirHstry.getSize() == 0) {
-            if (!windDirHstry.begin(bufSize)) {
+        if (windDirHstry.getCurrentSize() == 0) {
+        /*    if (!windDirHstry.begin(bufSize)) {
                 logger->logDebug(GwLog::ERROR, "Failed to initialize wind direction history buffer");
                 return;
-            }
+            } */
             simWnd = 0;
             simTWS = 0;
             twdValue = 0;
@@ -363,7 +364,6 @@ public:
             dataName[i] = dataName[i].substring(0, 6); // String length limit for value name
             calibrationData.calibrateInstance(dataName[i], bvalue, logger); // Check if boat data value is to be calibrated
             dataValue[i] = bvalue->value; // Value as double in SI unit
-            calibrationData.calibrateInstance(dataName[i], bvalue, logger); // Check if boat data value is to be calibrated
             dataValid[i] = bvalue->valid;
             dataSValue[i] = formatValue(bvalue, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
             dataUnit[i] = formatValue(bvalue, *commonData).unit;
@@ -396,7 +396,7 @@ public:
 
         // Identify buffer sizes and buffer position to print on the chart
         intvBufSize = cHeight * dataIntv;
-        count = windDirHstry.getSize();
+        count = windDirHstry.getCurrentSize();
         numWndValues = min(count, intvBufSize);
         newDate++;
         if (dataIntv != oldDataIntv) {
@@ -522,7 +522,6 @@ public:
                 if (i == (cHeight - 1)) { // Reaching chart area top end ()
                     linesToShow -= min(40, cHeight); // free top 40 lines of chart for new values
                     bufStart = max(0, count - (linesToShow * dataIntv)); // next start value in buffer to show
-                    //    windDirHstry.mvStart(); // virtually delete 40 values from buffer
                     if ((windDirHstry.getMin(numWndValues) > wndCenter) || (windDirHstry.getMax(numWndValues) < wndCenter)) {
                         // Check if all wind value are left or right of center value -> optimize chart range
                         int mid = windDirHstry.getMid(numWndValues);

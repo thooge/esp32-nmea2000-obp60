@@ -17,6 +17,7 @@
 #include "ObpNmea0183.h"                // Check NMEA0183 sentence for uncorrect content
 #include "OBP60Extensions.h"            // Lib for hardware extensions
 #include "movingAvg.h"                  // Lib for moving average building
+#include "OBPRingBuffer.h"              // Lib with ring buffer for history storage of some boat data
 #include "time.h"                       // For getting NTP time
 #include <ESP32Time.h>                  // Internal ESP32 RTC clock
 
