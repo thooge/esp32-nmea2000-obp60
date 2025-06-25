@@ -4,5 +4,6 @@
         "stdexcept": "cpp",
         "limits": "cpp",
         "functional": "cpp"
-    }
+    },
+    "github.copilot.nextEditSuggestions.enabled": false
 }

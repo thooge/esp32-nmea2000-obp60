@@ -2,8 +2,8 @@
 
 #include "BoatDataCalibration.h"
 #include "OBP60Extensions.h"
-#include "Pagedata.h"
 #include "OBPRingBuffer.h"
+#include "Pagedata.h"
 
 #include <vector>
 
@@ -201,12 +201,44 @@ public:
     }
 };
 
+// Get maximum difference of last <amount> of TWD ringbuffer values to center chart
+int getRng(const RingBuffer<int16_t>& windDirHstry, int center, size_t amount)
+{
+    int minVal = windDirHstry.getMinVal();
+    size_t count = windDirHstry.getCurrentSize();
+    size_t capacity = windDirHstry.getCapacity();
+    size_t last = windDirHstry.getLastIdx();
+
+    if (windDirHstry.isEmpty() || amount <= 0) {
+        return minVal;
+    }
+    if (amount > count)
+        amount = count;
+
+    int value = 0;
+    int rng = 0;
+    int maxRng = minVal;
+    // Start from the newest value (last) and go backwards x times
+    for (size_t i = 0; i < amount; i++) {
+        value = windDirHstry.get((last + capacity - i) % capacity);
+        if (value == minVal) {
+            continue;
+        }
+        rng = abs(((value - center + 540) % 360) - 180);
+        if (rng > maxRng)
+            maxRng = rng;
+    }
+    if (maxRng > 180) {
+        maxRng = 180;
+    }
+    return maxRng;
+}
+
 // ****************************************************************
 class PageWindPlot : public Page {
 
     bool keylock = false; // Keylock
-    //    int16_t lp = 80; // Pointer length
-    char chrtMode = 'D'; // Chart mode: 'D' for TWD, 'S' for TWS, 'B' for both06121990
+    char chrtMode = 'D'; // Chart mode: 'D' for TWD, 'S' for TWS, 'B' for both
     int dataIntv = 1; // Update interval for wind history chart:
                       // (1)|(2)|(3)|(4) seconds for approx. 4, 8, 12, 16 min. history chart
     bool showTWS = true; // Show TWS value in chart area
@@ -323,18 +355,18 @@ public:
         int distVals; // helper to check wndCenter crossing
         int distMid; // helper to check wndCenter crossing
 
-        static RingBuffer<int> windDirHstry(bufSize); // Circular buffer to store wind direction values
-        static RingBuffer<int>windSpdHstry(bufSize); // Circular buffer to store wind speed values
+        static RingBuffer<int16_t> windDirHstry(bufSize); // Circular buffer to store wind direction values
+        static RingBuffer<int16_t> windSpdHstry(bufSize); // Circular buffer to store wind speed values
 
         LOG_DEBUG(GwLog::LOG, "Display page WindPlot");
         unsigned long start = millis();
 
         // Data initialization
         if (windDirHstry.getCurrentSize() == 0) {
-        /*    if (!windDirHstry.begin(bufSize)) {
-                logger->logDebug(GwLog::ERROR, "Failed to initialize wind direction history buffer");
-                return;
-            } */
+            /*    if (!windDirHstry.begin(bufSize)) {
+                    logger->logDebug(GwLog::ERROR, "Failed to initialize wind direction history buffer");
+                    return;
+                } */
             simWnd = 0;
             simTWS = 0;
             twdValue = 0;
@@ -420,13 +452,13 @@ public:
 
         // initialize chart range values
         if (wndCenter == INT_MIN) {
-            wndCenter = max(0, windDirHstry.get(numWndValues - intvBufSize)); // get 1st value of current data interval
+            wndCenter = max(0, int(windDirHstry.get(numWndValues - intvBufSize))); // get 1st value of current data interval
             wndCenter = (int((wndCenter + (wndCenter >= 0 ? 5 : -5)) / 10) * 10) % 360; // Set new center value; round to nearest 10 degree value; 360° -> 0°
             diffRng = dfltRng;
             chrtRng = dfltRng;
         } else {
             // check and adjust range between left, center, and right chart limit
-            diffRng = windDirHstry.getRng(wndCenter, numWndValues);
+            diffRng = getRng(windDirHstry, wndCenter, numWndValues);
             diffRng = (diffRng == INT_MIN ? 0 : diffRng);
             if (diffRng > chrtRng) {
                 chrtRng = int((diffRng + (diffRng >= 0 ? 9 : -1)) / 10) * 10; // Round up to next 10 degree value

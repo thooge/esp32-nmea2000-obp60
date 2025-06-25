@@ -3,6 +3,7 @@
 #include <limits>
 #include <stdexcept>
 #include <vector>
+#include "WString.h"
 
 template <typename T>
 class RingBuffer {
@@ -18,12 +19,16 @@ private:
     T MAX_VAL; // highest possible value of buffer of type <T>
 
     // metadata for buffer
+    String dataName; // Name of boat data in buffer
+    String dataFmt; // Format of boat data in buffer
     int updFreq; // Update frequency in milliseconds
     int smallest; // Value range of buffer: smallest value
-    int biggest; // Value range of buffer: biggest value
+    int largest; // Value range of buffer: biggest value
 
 public:
     RingBuffer(size_t size);
+    void setMetaData(String name, String format, int updateFrequency, int minValue, int maxValue); // Set meta data for buffer
+    bool getMetaData(String& name, String& format, int& updateFrequency, int& minValue, int& maxValue); // Get meta data of buffer
     void add(const T& value); // Add a new value to  buffer
     T get(size_t index) const; // Get value at specific position (0-based index from oldest to newest)
     T getFirst() const; // Get the first (oldest) value in buffer
@@ -39,12 +44,13 @@ public:
     T getMedian(size_t amount) const; // Get the median value of the last <amount> values of buffer
     size_t getCapacity() const; // Get the buffer capacity (maximum size)
     size_t getCurrentSize() const; // Get the current number of elements in buffer
+    size_t getLastIdx() const; // Get the last index of buffer
     bool isEmpty() const; // Check if buffer is empty
     bool isFull() const; // Check if buffer is full
-    T getMinVal(); // Get lowest possible value for buffer; used for initialized buffer data
-    T getMaxVal(); // Get highest possible value for buffer
+    T getMinVal() const; // Get lowest possible value for buffer; used for initialized buffer data
+    T getMaxVal() const; // Get highest possible value for buffer
     void clear(); // Clear buffer
-    T operator[](size_t index) const;
+    T operator[](size_t index);
     std::vector<T> getAllValues() const; // Operator[] for convenient access (same as get())
 
 };
