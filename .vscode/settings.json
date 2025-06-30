@@ -3,7 +3,8 @@
     "files.associations": {
         "stdexcept": "cpp",
         "limits": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "*.tpp": "cpp"
     },
     "github.copilot.nextEditSuggestions.enabled": false
 }

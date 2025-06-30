@@ -1,4 +1,5 @@
 #pragma once
+#include "GwSynchronized.h"
 #include <algorithm>
 #include <limits>
 #include <stdexcept>
@@ -8,6 +9,7 @@
 template <typename T>
 class RingBuffer {
 private:
+    SemaphoreHandle_t locker;
     std::vector<T> buffer;
     size_t capacity;
     size_t head; // Points to the next insertion position
@@ -39,7 +41,6 @@ public:
     T getMax(size_t amount) const; // Get maximum value of the last <amount> values of buffer
     T getMid() const; // Get mid value between <min> and <max> value in buffer
     T getMid(size_t amount) const; // Get mid value between <min> and <max> value of the last <amount> values of buffer
-    T getRng(T center, size_t amount) const; // Get maximum difference of last <amount> of buffer values to center value
     T getMedian() const; // Get the median value in buffer
     T getMedian(size_t amount) const; // Get the median value of the last <amount> values of buffer
     size_t getCapacity() const; // Get the buffer capacity (maximum size)
@@ -50,9 +51,8 @@ public:
     T getMinVal() const; // Get lowest possible value for buffer; used for initialized buffer data
     T getMaxVal() const; // Get highest possible value for buffer
     void clear(); // Clear buffer
-    T operator[](size_t index);
-    std::vector<T> getAllValues() const; // Operator[] for convenient access (same as get())
-
+    T operator[](size_t index); // Operator[] for convenient access (same as get())
+    std::vector<T> getAllValues() const; // Get all current values as a vector
 };
 
 #include "OBPRingBuffer.tpp"
