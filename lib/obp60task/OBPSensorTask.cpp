@@ -498,10 +498,12 @@ void sensorTask(void *param){
         // Send supply voltage value all 1s
         if(millis() > starttime5 + 1000 && String(powsensor1) == "off"){
             starttime5 = millis();
-            #ifdef VOLTAGE_SENSOR
-            float rawVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.53) * 2;   // Vin = 1/2 for OBP40
-            #else
-            float rawVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.17) * 20;   // Vin = 1/20 for OBP60    
+            float rawVoltage = 0;
+            #ifdef BOARD_OBP40S3 && VOLTAGE_SENSOR
+            rawVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.53) * 2;   // Vin = 1/2 for OBP40
+            #endif
+            #ifdef BOARD_OBP60S3
+            rawVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.17) * 20;   // Vin = 1/20 for OBP60    
             #endif
             sensors.batteryVoltage = rawVoltage * vslope + voffset; // Calibration
             // Save new data in average array
@@ -510,7 +512,7 @@ void sensorTask(void *param){
             sensors.batteryVoltage10 = batV.getAvg(10) / 100.0;
             sensors.batteryVoltage60 = batV.getAvg(60) / 100.0;
             sensors.batteryVoltage300 = batV.getAvg(300) / 100.0;
-            #if defined LIPO_ACCU_1200 && defined VOLTAGE_SENSOR
+            #if BOARD_OBP40S3 && defined LIPO_ACCU_1200 && defined VOLTAGE_SENSOR
             // Polynomfit for LiPo capacity calculation for 3,7V LiPo accus, 0...100%
             sensors.batteryLevelLiPo = sensors.batteryVoltage60 * 203.8312 -738.1635;
             // Limiter
