@@ -499,7 +499,7 @@ void sensorTask(void *param){
         if(millis() > starttime5 + 1000 && String(powsensor1) == "off"){
             starttime5 = millis();
             float rawVoltage = 0;
-            #ifdef BOARD_OBP40S3 && VOLTAGE_SENSOR
+            #if defined(BOARD_OBP40S3) && defined(VOLTAGE_SENSOR)
             rawVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.53) * 2;   // Vin = 1/2 for OBP40
             #endif
             #ifdef BOARD_OBP60S3
