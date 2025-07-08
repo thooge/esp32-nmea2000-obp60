@@ -186,13 +186,13 @@ public:
 
         if (mode == 'N') {
 
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(8, 48);
             getdisplay().print("System Information");
 
             getdisplay().drawXBitmap(320, 25, logo64_bits, logo64_width, logo64_height, commonData->fgcolor);
 
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             y0 = 155;
 
             char ssid[13];
@@ -284,11 +284,11 @@ public:
         } else if (mode == 'S') {
             // Settings
             
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(x0, 48);
             getdisplay().print("System settings");
 
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             x0 = 8;
             y0 = 72;
 
@@ -345,11 +345,11 @@ public:
 
         } else if (mode == 'C') {
             // Card info
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(8, 48);
             getdisplay().print("SD Card info");
 
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
 
             x0 = 20;
             y0 = 72;
@@ -359,11 +359,11 @@ public:
 
         } else {
             // NMEA2000 device list
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(8, 48);
             getdisplay().print("NMEA2000 device list");
 
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(20, 80);
             getdisplay().print("RxD: ");
             getdisplay().print(String(commonData->status.n2kRx));

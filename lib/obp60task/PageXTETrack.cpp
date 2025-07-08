@@ -94,7 +94,7 @@ class PageXTETrack : public Page
         getdisplay().setTextColor(commonData->fgcolor);
 
         // descriptions
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(50, 188);
         getdisplay().print("Cross-track error");
         getdisplay().setCursor(270, 188);
@@ -148,7 +148,7 @@ class PageXTETrack : public Page
             sval_wpname = "Tonne 122";
         }
 
-        getdisplay().setFont(&Ubuntu_Bold10pt7b);
+        getdisplay().setFont(&Ubuntu_Bold10pt8b);
         getdisplay().getTextBounds(sval_wpname, 0, 150, &x, &y, &w, &h);
         // TODO if text don't fix use smaller font size.
         // if smallest size does not fit use 2 lines

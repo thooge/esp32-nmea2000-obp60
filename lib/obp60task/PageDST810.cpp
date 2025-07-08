@@ -98,12 +98,12 @@ public:
         // ############### Value 1 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(20, 55);
         getdisplay().print("Depth");                         // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 90);
         if(holdvalues == false){
             getdisplay().print(unit1);                       // Unit
@@ -136,12 +136,12 @@ public:
         // ############### Value 2 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(20, 145);
         getdisplay().print("Speed");                         // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 180);
         if(holdvalues == false){
             getdisplay().print(unit2);                       // Unit
@@ -174,12 +174,12 @@ public:
         // ############### Value 3 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 220);
         getdisplay().print("Log");                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(20, 240);
         if(holdvalues == false){
             getdisplay().print(unit3);                       // Unit
@@ -212,12 +212,12 @@ public:
         // ############### Value 4 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(220, 220);
         getdisplay().print("Temp");                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(220, 240);
         if(holdvalues == false){
             getdisplay().print(unit4);                       // Unit

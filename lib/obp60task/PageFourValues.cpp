@@ -103,12 +103,12 @@ class PageFourValues : public Page
         // ############### Value 1 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().setCursor(20, 45);
         getdisplay().print(name1);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(20, 65);
         if(holdvalues == false){
             getdisplay().print(unit1);                       // Unit
@@ -119,11 +119,11 @@ class PageFourValues : public Page
 
         // Switch font if format for any values
         if(bvalue1->getFormat() == "formatLatitude" || bvalue1->getFormat() == "formatLongitude"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(120, 55);
         }
         else if(bvalue1->getFormat() == "formatTime" || bvalue1->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(150, 58);
         }
         else{
@@ -151,12 +151,12 @@ class PageFourValues : public Page
         // ############### Value 2 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().setCursor(20, 113);
         getdisplay().print(name2);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(20, 133);
         if(holdvalues == false){
             getdisplay().print(unit2);                       // Unit
@@ -167,11 +167,11 @@ class PageFourValues : public Page
 
         // Switch font if format for any values
         if(bvalue2->getFormat() == "formatLatitude" || bvalue2->getFormat() == "formatLongitude"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(120, 123);
         }
         else if(bvalue2->getFormat() == "formatTime" || bvalue2->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(150, 123);
         }
         else{
@@ -199,12 +199,12 @@ class PageFourValues : public Page
         // ############### Value 3 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().setCursor(20, 181);
         getdisplay().print(name3);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(20, 201);
         if(holdvalues == false){
             getdisplay().print(unit3);                       // Unit
@@ -215,11 +215,11 @@ class PageFourValues : public Page
 
         // Switch font if format for any values
         if(bvalue3->getFormat() == "formatLatitude" || bvalue3->getFormat() == "formatLongitude"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(120, 191);
         }
         else if(bvalue3->getFormat() == "formatTime" || bvalue3->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(150, 191);
         }
         else{
@@ -247,12 +247,12 @@ class PageFourValues : public Page
         // ############### Value 4 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().setCursor(20, 249);
         getdisplay().print(name4);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(20, 269);
         if(holdvalues == false){
             getdisplay().print(unit4);                       // Unit
@@ -263,11 +263,11 @@ class PageFourValues : public Page
 
         // Switch font if format for any values
         if(bvalue4->getFormat() == "formatLatitude" || bvalue4->getFormat() == "formatLongitude"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(120, 259);
         }
         else if(bvalue4->getFormat() == "formatTime" || bvalue4->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(150, 259);
         }
         else{

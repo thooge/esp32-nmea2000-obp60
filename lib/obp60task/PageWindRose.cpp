@@ -155,10 +155,10 @@ public:
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
         getdisplay().setCursor(10, 65);
         getdisplay().print(svalue1);                     // Value
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(10, 95);
         getdisplay().print(name1);                       // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(10, 115);
         getdisplay().print(" ");
         if(holdvalues == false){
@@ -175,10 +175,10 @@ public:
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
         getdisplay().setCursor(10, 270);
         getdisplay().print(svalue2);                     // Value
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(10, 220);
         getdisplay().print(name2);                       // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(10, 190);
         getdisplay().print(" ");
         if(holdvalues == false){
@@ -197,10 +197,10 @@ public:
         else{
             getdisplay().print("---");                   // Value
         }
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(335, 95);
         getdisplay().print(name3);                       // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(335, 115);
         getdisplay().print(" ");
         if(holdvalues == false){
@@ -217,10 +217,10 @@ public:
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
         getdisplay().setCursor(295, 270);
         getdisplay().print(svalue4);                     // Value
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(335, 220);
         getdisplay().print(name4);                       // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(335, 190);
         getdisplay().print(" ");
         if(holdvalues == false){
@@ -270,7 +270,7 @@ public:
             getdisplay().getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
             getdisplay().setCursor(x-w/2, y+h/2);
             if(i % 30 == 0){
-                getdisplay().setFont(&Ubuntu_Bold8pt7b);
+                getdisplay().setFont(&Ubuntu_Bold8pt8b);
                 getdisplay().print(ii);
             }
 
@@ -333,7 +333,7 @@ public:
         getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
         getdisplay().setCursor(160, 200);
         getdisplay().print(svalue5);                     // Value
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(190, 215);
         getdisplay().print(" ");
         if(holdvalues == false){
@@ -347,7 +347,7 @@ public:
         getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
         getdisplay().setCursor(160, 130);
         getdisplay().print(svalue6);                     // Value
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(190, 90);
         getdisplay().print(" ");
         if(holdvalues == false){

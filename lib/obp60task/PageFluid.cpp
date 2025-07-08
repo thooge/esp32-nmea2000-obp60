@@ -143,7 +143,7 @@ class PageFluid : public Page
         getdisplay().setTextColor(commonData->fgcolor);
 
         // descriptions
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 60);
         getdisplay().print("Fluid");
 
@@ -201,7 +201,7 @@ class PageFluid : public Page
         Point p, pr;
 
         // scale texts
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         p = {c.x, c.y - r + 30};
         drawTextCenter(p.x, p.y, "1/2");
         pr = rotatePoint(c, p, -60);
@@ -210,7 +210,7 @@ class PageFluid : public Page
         drawTextCenter(pr.x, pr.y, "3/4");
 
         // empty and full
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         p = rotatePoint(c, {c.x, c.y - r + 30}, -130);
         drawTextCenter(p.x, p.y, "E");
         p = rotatePoint(c, {c.x, c.y - r + 30}, 130);

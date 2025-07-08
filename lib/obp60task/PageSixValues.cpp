@@ -4,10 +4,6 @@
 #include "OBP60Extensions.h"
 #include "BoatDataCalibration.h"
 
-#include "DSEG7Classic-BoldItalic26pt7b.h"
-
-extern const GFXfont DSEG7Classic_BoldItalic30pt7b;
-
 const int SixValues_x1 = 5;
 const int SixValues_DeltaX = 200;
 
@@ -96,12 +92,12 @@ class PageSixValues : public Page
                     LOG_DEBUG(GwLog::LOG,"Drawing at PageSixValue: %d %s %f %s",  ValueIndex,  DataName[ValueIndex], DataValue[ValueIndex], DataFormat[ValueIndex] );
     
            // Show name
-                    getdisplay().setFont(&Ubuntu_Bold12pt7b);
+                    getdisplay().setFont(&Ubuntu_Bold12pt8b);
                     getdisplay().setCursor(x0, y0+25);
                     getdisplay().print(DataName[ValueIndex]);                           // Page name
     
             // Show unit
-                    getdisplay().setFont(&Ubuntu_Bold8pt7b);
+                    getdisplay().setFont(&Ubuntu_Bold8pt8b);
                     getdisplay().setCursor(x0, y0+72);
                     if(holdvalues == false){
                         getdisplay().print(DataUnits[ValueIndex]);                       // Unit
@@ -112,11 +108,11 @@ class PageSixValues : public Page
     
             // Switch font if format for any values
                     if(DataFormat[ValueIndex] == "formatLatitude" || DataFormat[ValueIndex] == "formatLongitude"){
-                        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+                        getdisplay().setFont(&Ubuntu_Bold12pt8b);
                         getdisplay().setCursor(x0+10, y0+60);
                         }
                     else if(DataFormat[ValueIndex] == "formatTime" || DataFormat[ValueIndex] == "formatDate"){
-                        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+                        getdisplay().setFont(&Ubuntu_Bold16pt8b);
                         getdisplay().setCursor(x0+20,y0+55);
                         } 
             // pressure in hPa          
