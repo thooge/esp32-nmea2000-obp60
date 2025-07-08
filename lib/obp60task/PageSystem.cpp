@@ -43,6 +43,8 @@ String batt_sensor;
 String solar_sensor;
 String gen_sensor;
 String rot_sensor;
+double homelat;
+double homelon;
 
 char mode = 'N'; // (N)ormal, (S)ettings, (D)evice list, (C)ard
 
@@ -69,6 +71,8 @@ public:
         solar_sensor = common.config->getString(common.config->usePowSensor2);
         gen_sensor = common.config->getString(common.config->usePowSensor3);
         rot_sensor = common.config->getString(common.config->useRotSensor);
+        homelat = common.config->getString(common.config->homeLAT).toDouble();
+        homelon = common.config->getString(common.config->homeLON).toDouble();
     }
 
     virtual void setupKeys(){
@@ -295,33 +299,43 @@ public:
             // left column
             getdisplay().setCursor(x0, y0);
             getdisplay().print("Simulation:");
-            getdisplay().setCursor(140, y0);
+            getdisplay().setCursor(120, y0);
             getdisplay().print(simulation ? "on" : "off");
 
             getdisplay().setCursor(x0, y0 + 16);
             getdisplay().print("Environment:");
-            getdisplay().setCursor(140, y0 + 16);
+            getdisplay().setCursor(120, y0 + 16);
             getdisplay().print(env_module);
 
             getdisplay().setCursor(x0, y0 + 32);
             getdisplay().print("Buzzer:");
-            getdisplay().setCursor(140, y0 + 32);
+            getdisplay().setCursor(120, y0 + 32);
             getdisplay().print(buzzer_mode);
 
             getdisplay().setCursor(x0, y0 + 64);
             getdisplay().print("GPS:");
-            getdisplay().setCursor(140, y0 + 64);
+            getdisplay().setCursor(120, y0 + 64);
             getdisplay().print(gps_module);
 
             getdisplay().setCursor(x0, y0 + 80);
             getdisplay().print("RTC:");
-            getdisplay().setCursor(140, y0 + 80);
+            getdisplay().setCursor(120, y0 + 80);
             getdisplay().print(rtc_module);
 
             getdisplay().setCursor(x0, y0 + 96);
             getdisplay().print("Wifi:");
-            getdisplay().setCursor(140, y0 + 96);
+            getdisplay().setCursor(120, y0 + 96);
             getdisplay().print(commonData->status.wifiApOn ? "on" : "off");
+
+            // Home location
+            getdisplay().setCursor(x0, y0 + 128);
+            getdisplay().print("Home Lat.:");
+            getdisplay().setCursor(120, y0 + 128);
+            getdisplay().print(formatLatitude(homelat));
+            getdisplay().setCursor(x0, y0 + 144);
+            getdisplay().print("Home Lon.:");
+            getdisplay().setCursor(120, y0 + 144);
+            getdisplay().print(formatLongitude(homelon));
 
             // right column
             getdisplay().setCursor(202, y0);
