@@ -370,7 +370,7 @@ public:
             // Original example code with scaling circle
 
             // Show values AWS/TWS
-            getdisplay().setFont(&Ubuntu_Bold20pt7b);
+            getdisplay().setFont(&Ubuntu_Bold20pt8b);
             getdisplay().setCursor(20, 50);
             getdisplay().print(name1);                       // Value name
             getdisplay().print(": ");
@@ -386,7 +386,7 @@ public:
             }
 
             // Show values AWD/TWD
-            getdisplay().setFont(&Ubuntu_Bold20pt7b);
+            getdisplay().setFont(&Ubuntu_Bold20pt8b);
             getdisplay().setCursor(20, 260);
             getdisplay().print(name2);                       // Value name
             getdisplay().print(": ");
@@ -420,7 +420,7 @@ public:
                 };
                 fillPoly4(rotatePoints(c, pts, RadToDeg(value2)), commonData->fgcolor);
             } else {
-                getdisplay().setFont(&Ubuntu_Bold12pt7b);
+                getdisplay().setFont(&Ubuntu_Bold12pt8b);
                 drawTextCenter(c.x, c.y, "no data");
             }
 
@@ -438,7 +438,7 @@ public:
             };
             int angle;
 
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
 
             // starbord
             // text with line
@@ -475,7 +475,7 @@ public:
             }
 
             // data source
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(8, 50);
             if (source == 'A') {
                 getdisplay().print("APP");
@@ -510,7 +510,7 @@ public:
                 fillPoly4(rotatePoints(c, pts, alpha), commonData->fgcolor);
                 getdisplay().fillCircle(c.x, c.y, 6, commonData->bgcolor);
             } else {
-                getdisplay().setFont(&Ubuntu_Bold12pt7b);
+                getdisplay().setFont(&Ubuntu_Bold12pt8b);
                 drawTextCenter(c.x, c.y, "no data");
             }
 
@@ -523,7 +523,7 @@ public:
                 getdisplay().print(svalue1old);
             }
             // unit
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(220, 265);
             getdisplay().print("kts");
         }
@@ -531,7 +531,7 @@ public:
             // Normal mode
 
             // data source
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(8, 50);
             if (source == 'A') {
                 getdisplay().print("APP");
@@ -595,7 +595,7 @@ public:
                 getdisplay().print(svalue1old);
             }
             // unit
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(220, 265);
             getdisplay().print("kts");
 
@@ -612,7 +612,7 @@ public:
                 fillPoly4(rotatePoints(c, pts, alpha), commonData->fgcolor);
                 getdisplay().fillCircle(c.x, c.y, 6, commonData->bgcolor);
             } else {
-                getdisplay().setFont(&Ubuntu_Bold12pt7b);
+                getdisplay().setFont(&Ubuntu_Bold12pt8b);
                 drawTextCenter(c.x, c.y, "no data");
             }
 
