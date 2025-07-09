@@ -26,18 +26,18 @@ extern Adafruit_FRAM_I2C fram;
 extern bool hasFRAM;
 
 // Fonts declarations for display (#includes see OBP60Extensions.cpp)
-extern const GFXfont Ubuntu_Bold8pt7b;
-extern const GFXfont Ubuntu_Bold10pt7b;
-extern const GFXfont Ubuntu_Bold12pt7b;
-extern const GFXfont Ubuntu_Bold16pt7b;
-extern const GFXfont Ubuntu_Bold20pt7b;
-extern const GFXfont Ubuntu_Bold20pt8b;
-extern const GFXfont Ubuntu_Bold32pt7b;
 extern const GFXfont DSEG7Classic_BoldItalic16pt7b;
 extern const GFXfont DSEG7Classic_BoldItalic20pt7b;
+extern const GFXfont DSEG7Classic_BoldItalic26pt7b;
 extern const GFXfont DSEG7Classic_BoldItalic30pt7b;
 extern const GFXfont DSEG7Classic_BoldItalic42pt7b;
 extern const GFXfont DSEG7Classic_BoldItalic60pt7b;
+extern const GFXfont Ubuntu_Bold8pt8b;
+extern const GFXfont Ubuntu_Bold10pt8b;
+extern const GFXfont Ubuntu_Bold12pt8b;
+extern const GFXfont Ubuntu_Bold16pt8b;
+extern const GFXfont Ubuntu_Bold20pt8b;
+extern const GFXfont Ubuntu_Bold32pt8b;
 extern const GFXfont Atari16px;
 
 // Global functions

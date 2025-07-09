@@ -115,11 +115,11 @@ class PageCompass : public Page
         // Horizontal line 2 pix top & bottom
         // Print data on top half
         getdisplay().fillRect(0, 130, 400, 2, commonData->fgcolor); 
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(10, 70);
         getdisplay().print(DataName[WhichDataDisplay]);                         // Page name
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(10, 120);
         getdisplay().print(DataUnits[WhichDataDisplay]); 
         getdisplay().setCursor(190, 120);
@@ -148,7 +148,7 @@ class PageCompass : public Page
         char buffer[bsize+1];
         buffer[0]=0;              
 
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().setCursor(10, Compass_Y0-60);
         getdisplay().print(DataName[WhichDataCompass]);                         // Page name
  

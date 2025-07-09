@@ -83,7 +83,7 @@ class PageTwoValues : public Page
         getdisplay().print(name1);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 130);
         if(holdvalues == false){
             getdisplay().print(unit1);                       // Unit
@@ -131,7 +131,7 @@ class PageTwoValues : public Page
         getdisplay().print(name2);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 240);
         if(holdvalues == false){
             getdisplay().print(unit2);                       // Unit

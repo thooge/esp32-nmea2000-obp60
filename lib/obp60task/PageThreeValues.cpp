@@ -95,7 +95,7 @@ class PageThreeValues : public Page
         getdisplay().print(name1);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 90);
         if(holdvalues == false){
             getdisplay().print(unit1);                       // Unit
@@ -143,7 +143,7 @@ class PageThreeValues : public Page
         getdisplay().print(name2);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 180);
         if(holdvalues == false){
             getdisplay().print(unit2);                       // Unit
@@ -191,7 +191,7 @@ class PageThreeValues : public Page
         getdisplay().print(name3);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 270);
         if(holdvalues == false){
             getdisplay().print(unit3);                       // Unit

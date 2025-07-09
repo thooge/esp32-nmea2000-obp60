@@ -64,7 +64,7 @@ class PageOneValue : public Page
 
         // Show name
         getdisplay().setTextColor(commonData->fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold32pt7b);
+        getdisplay().setFont(&Ubuntu_Bold32pt8b);
         getdisplay().setCursor(20, 100);
         getdisplay().print(name1);                           // Page name
 
@@ -84,7 +84,7 @@ class PageOneValue : public Page
             getdisplay().setCursor(20, 180);
         }
         else if(bvalue1->getFormat() == "formatTime" || bvalue1->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold32pt7b);
+            getdisplay().setFont(&Ubuntu_Bold32pt8b);
             getdisplay().setCursor(20, 200);
         }
         else{

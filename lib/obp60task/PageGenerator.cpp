@@ -88,10 +88,10 @@ public:
         getdisplay().setTextColor(commonData->fgcolor);
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(10, 65);
         getdisplay().print("Power");
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(12, 82);
         getdisplay().print("Generator");
 
@@ -102,7 +102,7 @@ public:
         if(String(batVoltage) == "12V") bvoltage = 12;
         else bvoltage = 24;
         getdisplay().print(bvoltage);
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().print("V");
 
         // Show solar power
@@ -110,12 +110,12 @@ public:
         getdisplay().setCursor(10, 200);
         if(genPower <= 999) getdisplay().print(genPower, 0);
         if(genPower > 999) getdisplay().print(float(genPower/1000.0), 1);
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         if(genPower <= 999) getdisplay().print("W");
         if(genPower > 999) getdisplay().print("kW");
 
         // Show info
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(10, 235);
         getdisplay().print("Installed");
         getdisplay().setCursor(10, 255);
@@ -128,15 +128,15 @@ public:
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
         getdisplay().setCursor(150, 200);
         getdisplay().print(genPercentage);
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().print("%");
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(150, 235);
         getdisplay().print("Load");
 
         // Show sensor type info
         String i2cAddr = "";
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(270, 60);
         if(powerSensor == "off") getdisplay().print("Internal");
         if(powerSensor == "INA219"){
@@ -176,7 +176,7 @@ public:
             getdisplay().print("---");                       // Missing bus data
             }
         }
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().print("V");
 
         // Show actual current in A
@@ -188,7 +188,7 @@ public:
             if(value2 > 99.9) getdisplay().print(value2, 0);
         }
         else  getdisplay().print("---");
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().print("A");
 
         // Show actual consumption in W
@@ -200,7 +200,7 @@ public:
             if(value3 > 99.9) getdisplay().print(value3, 0);
         }
         else  getdisplay().print("---");
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().print("W");
 
         // Update display

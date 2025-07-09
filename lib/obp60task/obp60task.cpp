@@ -336,10 +336,10 @@ void underVoltageDetection(GwApi *api, CommonData &common){
         //getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
         getdisplay().fillScreen(common.bgcolor);// Clear screen
         getdisplay().setTextColor(common.fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(65, 150);
         getdisplay().print("Undervoltage");
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(65, 175);
         getdisplay().print("Charge battery and restart system");
         getdisplay().nextPage();                // Partial update
@@ -356,10 +356,10 @@ void underVoltageDetection(GwApi *api, CommonData &common){
         getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
         getdisplay().fillScreen(common.bgcolor);// Clear screen
         getdisplay().setTextColor(common.fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(65, 150);
         getdisplay().print("Undervoltage");
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(65, 175);
         getdisplay().print("To wake up repower system");
         getdisplay().nextPage();                // Partial update
