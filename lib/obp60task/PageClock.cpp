@@ -31,6 +31,15 @@ bool homevalid = false; // homelat and homelon are valid
     PageClock(CommonData &common){
         commonData = &common;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageClock");
+
+        // WIP time source
+#ifdef BOARD_OBP60S3
+        String use_rtc = common.config->getString(common.config->useRTC);
+        if (use_rtc == "off") {
+            source = 'G';
+        }
+#endif
+
         simulation = common.config->getBool(common.config->useSimuData);
         timezone = common.config->getString(common.config->timeZone).toDouble();
         homelat = common.config->getString(common.config->homeLAT).toDouble();
@@ -100,9 +109,10 @@ bool homevalid = false; // homelat and homelon are valid
         static String svalue5old = "";
         static String svalue6old = "";
 
-        double value1 = 0;
-        double value2 = 0;
-        double value3 = 0;
+        double value1 = 0; // GPS time
+        double value2 = 0; // GPS date FIXME date defined as uint32_t!
+        double value3 = 0; // HDOP
+        bool gpsvalid = false;
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
@@ -155,6 +165,9 @@ bool homevalid = false; // homelat and homelon are valid
             unit3old = unit3;                           // Save old unit
         }
 
+        // GPS date and time are valid and can be used
+        gpsvalid = (valid1 && valid2 && valid3);
+
         // Optical warning by limit violation (unused)
         if(String(flashLED) == "Limit Violation"){
             setBlinkingLED(false);
@@ -163,7 +176,7 @@ bool homevalid = false; // homelat and homelon are valid
 
         // Logging boat values
         if (bvalue1 == NULL) return;
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageClock, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
+        LOG_DEBUG(GwLog::LOG,"Drawing at PageClock, %s:%f,  %s:%f, %s:%f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3);
 
         // Draw page
         //***********************************************************
@@ -231,7 +244,7 @@ bool homevalid = false; // homelat and homelon are valid
 
         // Show values sunrise
         String sunrise = "---";
-        if ((valid1 and valid2 and valid3 == true) or (homevalid and commonData->data.rtcValid)) {
+        if (((source == 'G') and gpsvalid) or (homevalid and commonData->data.rtcValid)) {
             sunrise = String(commonData->sundata.sunriseHour) + ":" + String(commonData->sundata.sunriseMinute + 100).substring(1);
             svalue5old = sunrise;
         } else if (simulation) {
@@ -251,7 +264,7 @@ bool homevalid = false; // homelat and homelon are valid
 
         // Show values sunset
         String sunset = "---";
-        if ((valid1 and valid2 and valid3 == true) or (homevalid and commonData->data.rtcValid)) {
+        if (((source == 'G') and gpsvalid) or (homevalid and commonData->data.rtcValid)) {
             sunset = String(commonData->sundata.sunsetHour) + ":" +  String(commonData->sundata.sunsetMinute + 100).substring(1);
             svalue6old = sunset;
         } else if (simulation) {
