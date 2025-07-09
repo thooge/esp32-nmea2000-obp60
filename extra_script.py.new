@@ -535,7 +535,7 @@ for taskdir in userTaskDirs:
         print("#extra task script for '{}'".format(taskname))
         with open(script) as fh:
             try:
-                code = compile(fh.read(), task, 'exec')
+                code = compile(fh.read(), taskname, 'exec')
             except SyntaxError:
                 print("#ERROR: script does not compile")
                 continue
