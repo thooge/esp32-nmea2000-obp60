@@ -17,6 +17,7 @@
 #define BOARDINFO STRINGIZE(BOARD)
 #define PCBINFO STRINGIZE(PCBVERS)
 #define DISPLAYINFO STRINGIZE(EPDTYPE)
+#define GXEPD2INFO STRINGIZE(GXEPD2VERS)
 
 /*
  * Special system page, called directly with fast key sequence 5,4
@@ -207,19 +208,21 @@ public:
 
             getdisplay().setCursor(8, 95);
             getdisplay().print("Firmware version: ");
-            getdisplay().setCursor(160, 95);
+            getdisplay().setCursor(150, 95);
             getdisplay().print(VERSINFO);
 
             getdisplay().setCursor(8, 113);
             getdisplay().print("Board version: ");
-            getdisplay().setCursor(160, 113);
+            getdisplay().setCursor(150, 113);
             getdisplay().print(BOARDINFO);
             getdisplay().print(String(" HW ") + String(PCBINFO));
 
             getdisplay().setCursor(8, 131);
             getdisplay().print("Display version: ");
-            getdisplay().setCursor(160, 131);
+            getdisplay().setCursor(150, 131);
             getdisplay().print(DISPLAYINFO);
+            getdisplay().print("; GxEPD2 v");
+            getdisplay().print(GXEPD2INFO);
 
             getdisplay().setCursor(8, 265);
 #ifdef BOARD_OBP60S3
