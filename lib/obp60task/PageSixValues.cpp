@@ -4,10 +4,6 @@
 #include "OBP60Extensions.h"
 #include "BoatDataCalibration.h"
 
-#include "DSEG7Classic-BoldItalic26pt7b.h"
-
-extern const GFXfont DSEG7Classic_BoldItalic30pt7b;
-
 const int SixValues_x1 = 5;
 const int SixValues_DeltaX = 200;
 
@@ -61,8 +57,8 @@ class PageSixValues : public Page
                 bvalue = pageData.values[i];
                 DataName[i] = xdrDelete(bvalue->getName());
                 DataName[i] = DataName[i].substring(0, 6);                  // String length limit for value name
+                calibrationData.calibrateInstance(bvalue, logger);          // Check if boat data value is to be calibrated
                 DataValue[i] = bvalue->value;                 // Value as double in SI unit
-                calibrationData.calibrateInstance(DataName[i], bvalue, logger); // Check if boat data value is to be calibrated
                 DataValid[i] = bvalue->valid;
                 DataText[i] = formatValue(bvalue, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
                 DataUnits[i] = formatValue(bvalue, *commonData).unit;   
@@ -85,9 +81,10 @@ class PageSixValues : public Page
             getdisplay().setTextColor(commonData->fgcolor);
 
             for (int i = 0; i < ( HowManyValues / 2 ); i++){
-       // Horizontal line 3 pix
-                getdisplay().fillRect(0, SixValues_y1+i*SixValues_DeltaY, 400, 3, commonData->fgcolor);
-    
+                if (i < (HowManyValues / 2) - 1) {          // Don't draw horizontal line after last line of values -> standard design
+                   // Horizontal line 3 pix
+                    getdisplay().fillRect(0, SixValues_y1+(i+1)*SixValues_DeltaY, 400, 3, commonData->fgcolor);
+                }
                 for (int j = 0; j < 2; j++){
                     int ValueIndex = i * 2 + j;
                     int x0 = SixValues_x1 + j * SixValues_DeltaX;
@@ -95,12 +92,12 @@ class PageSixValues : public Page
                     LOG_DEBUG(GwLog::LOG,"Drawing at PageSixValue: %d %s %f %s",  ValueIndex,  DataName[ValueIndex], DataValue[ValueIndex], DataFormat[ValueIndex] );
     
            // Show name
-                    getdisplay().setFont(&Ubuntu_Bold12pt7b);
+                    getdisplay().setFont(&Ubuntu_Bold12pt8b);
                     getdisplay().setCursor(x0, y0+25);
                     getdisplay().print(DataName[ValueIndex]);                           // Page name
     
             // Show unit
-                    getdisplay().setFont(&Ubuntu_Bold8pt7b);
+                    getdisplay().setFont(&Ubuntu_Bold8pt8b);
                     getdisplay().setCursor(x0, y0+72);
                     if(holdvalues == false){
                         getdisplay().print(DataUnits[ValueIndex]);                       // Unit
@@ -111,11 +108,11 @@ class PageSixValues : public Page
     
             // Switch font if format for any values
                     if(DataFormat[ValueIndex] == "formatLatitude" || DataFormat[ValueIndex] == "formatLongitude"){
-                        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+                        getdisplay().setFont(&Ubuntu_Bold12pt8b);
                         getdisplay().setCursor(x0+10, y0+60);
                         }
                     else if(DataFormat[ValueIndex] == "formatTime" || DataFormat[ValueIndex] == "formatDate"){
-                        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+                        getdisplay().setFont(&Ubuntu_Bold16pt8b);
                         getdisplay().setCursor(x0+20,y0+55);
                         } 
             // pressure in hPa          
@@ -151,7 +148,6 @@ class PageSixValues : public Page
                    // Vertical line 3 pix
             getdisplay().fillRect(SixValues_x1+SixValues_DeltaX-8, SixValues_y1+i*SixValues_DeltaY, 3, SixValues_DeltaY, commonData->fgcolor);
             }
-            getdisplay().fillRect(0, SixValues_y1+3*SixValues_DeltaY, 400, 3, commonData->fgcolor);
     
             // Update display
             getdisplay().nextPage();    // Partial update (fast)

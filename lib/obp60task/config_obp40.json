@@ -616,12 +616,8 @@
         "name": "useSDCard",
         "label": "SD Card",
         "type": "boolean",
-        "default": "off",
+        "default": "false",
         "description": "Use internal SD card interface [off|on]",
-        "list": [
-            "off",
-            "on"
-        ],
         "category": "OBP40 Hardware",
         "capabilities": {
             "obp40": "true"
@@ -696,6 +692,189 @@
         "type": "number",
         "default": "1.00",
         "description": "Slope for internal voltage sensor (ESP32)",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calInstance1",
+        "label": "Calibration Data Instance 1",
+        "type": "list",
+        "default": "---",
+        "description": "Data instance for calibration",
+        "list": [
+            "---",
+            "AWA",
+            "AWS",
+            "DBT",
+            "HDM",
+            "PRPOS",
+            "RPOS",
+            "STW",
+            "TWA",
+            "TWS",
+            "TWD",
+            "WTemp"
+        ],
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calOffset1",
+        "label": "Data Instance 1 Calibration Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 1",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calSlope1",
+        "label": "Data Instance 1 Calibration Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 1",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calSmooth1",
+        "label": "Data Instance 1 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 10,
+        "description": "Smoothing factor for data instance 1",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calInstance2",
+        "label": "Calibration Data Instance 2",
+        "type": "list",
+        "default": "---",
+        "description": "Data instance for calibration",
+        "list": [
+            "---",
+            "AWA",
+            "AWS",
+            "DBT",
+            "HDM",
+            "PRPOS",
+            "RPOS",
+            "STW",
+            "TWA",
+            "TWS",
+            "TWD",
+            "WTemp"
+        ],
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calOffset2",
+        "label": "Data Instance 2 Calibration Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 2",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calSlope2",
+        "label": "Data Instance 2 Calibration Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 2",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calSmooth2",
+        "label": "Data Instance 2 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 10,
+        "description": "Smoothing factor for data instance 2",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calInstance3",
+        "label": "Calibration Data Instance 3",
+        "type": "list",
+        "default": "---",
+        "description": "Data instance for calibration",
+        "list": [
+            "---",
+            "AWA",
+            "AWS",
+            "DBT",
+            "HDM",
+            "PRPOS",
+            "RPOS",
+            "STW",
+            "TWA",
+            "TWS",
+            "TWD",
+            "WTemp"
+        ],
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calOffset3",
+        "label": "Data Instance 3 Calibration Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 3",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calSlope3",
+        "label": "Data Instance 3 Calibration Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 3",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calSmooth3",
+        "label": "Data Instance 3 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 10,
+        "description": "Smoothing factor for data instance 3",
         "category": "OBP40 Calibrations",
         "capabilities": {
             "obp40": "true"
@@ -950,6 +1129,7 @@
         "min": 1,
         "max": 10,
         "default":"10",
+        "description": "Number of visible data pages [1...10]",
         "category":"OBP40 Pages",
         "capabilities": {
             "obp40": "true"
@@ -963,6 +1143,7 @@
         "min": 1,
         "max": 10,
         "default":"1",
+        "description": "First page number to display after device startup",
         "category":"OBP40 Pages",
         "capabilities": {
             "obp40": "true"
@@ -1006,6 +1187,7 @@
             "Battery",
             "Battery2",
             "Clock",
+            "Compass",
             "DST810",
             "Fluid",
             "FourValues",
@@ -1015,6 +1197,7 @@
             "OneValue",
             "RollPitch",
             "RudderPosition",
+            "SixValues",
             "Solar",
             "ThreeValues",
             "TwoValues",
@@ -1075,6 +1258,9 @@
         },
         "condition": [
             {
+                "page1type": "Fluid"
+            },
+            {
                 "page1type": "FourValues"
             },
             {
@@ -1087,6 +1273,9 @@
                 "page1type": "RollPitch"
             },
             {
+                "page1type": "SixValues"
+            },
+            {
                 "page1type": "ThreeValues"
             },
             {
@@ -1094,9 +1283,6 @@
             },
             {
                 "page1type": "WindRoseFlex"
-            },
-            {
-                "page1type": "Fluid"
             }
         ]
     },
@@ -1119,6 +1305,9 @@
             },
             {
                 "page1type": "RollPitch"
+            },
+            {
+                "page1type": "SixValues"
             },
             {
                 "page1type": "ThreeValues"
@@ -1149,6 +1338,9 @@
                 "page1type": "FourValues2"
             },
             {
+                "page1type": "SixValues"
+            },
+            {
                 "page1type": "ThreeValues"
             },
             {
@@ -1174,6 +1366,9 @@
                 "page1type": "FourValues2"
             },
             {
+                "page1type": "SixValues"
+            },
+            {
                 "page1type": "WindRoseFlex"
             }
         ]
@@ -1190,6 +1385,9 @@
         },
         "condition": [
             {
+                "page1type": "SixValues"
+            },
+            {
                 "page1type": "WindRoseFlex"
             }
         ]
@@ -1205,6 +1403,9 @@
             "obp40": "true"
         },
         "condition": [
+            {
+                "page1type": "SixValues"
+            },
             {
                 "page1type": "WindRoseFlex"
             }
@@ -1267,6 +1468,7 @@
             "Battery",
             "Battery2",
             "Clock",
+            "Compass",
             "DST810",
             "Fluid",
             "FourValues",
@@ -1276,6 +1478,7 @@
             "OneValue",
             "RollPitch",
             "RudderPosition",
+            "SixValues",
             "Solar",
             "ThreeValues",
             "TwoValues",
@@ -1333,6 +1536,9 @@
         },
         "condition": [
             {
+                "page2type": "Fluid"
+            },
+            {
                 "page2type": "FourValues"
             },
             {
@@ -1345,6 +1551,9 @@
                 "page2type": "RollPitch"
             },
             {
+                "page2type": "SixValues"
+            },
+            {
                 "page2type": "ThreeValues"
             },
             {
@@ -1352,11 +1561,7 @@
             },
             {
                 "page2type": "WindRoseFlex"
-            },
-            {
-                "page2type": "Fluid"
             }
-
         ]
     },
     {
@@ -1378,6 +1583,9 @@
             },
             {
                 "page2type": "RollPitch"
+            },
+            {
+                "page2type": "SixValues"
             },
             {
                 "page2type": "ThreeValues"
@@ -1408,6 +1616,9 @@
                 "page2type": "FourValues2"
             },
             {
+                "page2type": "SixValues"
+            },
+            {
                 "page2type": "ThreeValues"
             },
             {
@@ -1433,6 +1644,9 @@
                 "page2type": "FourValues2"
             },
             {
+                "page2type": "SixValues"
+            },
+            {
                 "page2type": "WindRoseFlex"
             }
         ]
@@ -1449,6 +1663,9 @@
         },
         "condition": [
             {
+                "page2type": "SixValues"
+            },
+            {
                 "page2type": "WindRoseFlex"
             }
         ]
@@ -1464,6 +1681,9 @@
             "obp40": "true"
         },
         "condition": [
+            {
+                "page2type": "SixValues"
+            },
             {
                 "page2type": "WindRoseFlex"
             }
@@ -1526,6 +1746,7 @@
             "Battery",
             "Battery2",
             "Clock",
+            "Compass",
             "DST810",
             "Fluid",
             "FourValues",
@@ -1535,6 +1756,7 @@
             "OneValue",
             "RollPitch",
             "RudderPosition",
+            "SixValues",
             "Solar",
             "ThreeValues",
             "TwoValues",
@@ -1589,6 +1811,9 @@
         },
         "condition": [
             {
+                "page3type": "Fluid"
+            },
+            {
                 "page3type": "FourValues"
             },
             {
@@ -1601,6 +1826,9 @@
                 "page3type": "RollPitch"
             },
             {
+                "page3type": "SixValues"
+            },
+            {
                 "page3type": "ThreeValues"
             },
             {
@@ -1608,9 +1836,6 @@
             },
             {
                 "page3type": "WindRoseFlex"
-            },
-            {
-                "page3type": "Fluid"
             }
         ]
     },
@@ -1633,6 +1858,9 @@
             },
             {
                 "page3type": "RollPitch"
+            },
+            {
+                "page3type": "SixValues"
             },
             {
                 "page3type": "ThreeValues"
@@ -1663,6 +1891,9 @@
                 "page3type": "FourValues2"
             },
             {
+                "page3type": "SixValues"
+            },
+            {
                 "page3type": "ThreeValues"
             },
             {
@@ -1688,6 +1919,9 @@
                 "page3type": "FourValues2"
             },
             {
+                "page3type": "SixValues"
+            },
+            {
                 "page3type": "WindRoseFlex"
             }
         ]
@@ -1704,6 +1938,9 @@
         },
         "condition": [
             {
+                "page3type": "SixValues"
+            },
+            {
                 "page3type": "WindRoseFlex"
             }
         ]
@@ -1719,6 +1956,9 @@
             "obp40": "true"
         },
         "condition": [
+            {
+                "page3type": "SixValues"
+            },
             {
                 "page3type": "WindRoseFlex"
             }
@@ -1781,6 +2021,7 @@
             "Battery",
             "Battery2",
             "Clock",
+            "Compass",
             "DST810",
             "Fluid",
             "FourValues",
@@ -1790,6 +2031,7 @@
             "OneValue",
             "RollPitch",
             "RudderPosition",
+            "SixValues",
             "Solar",
             "ThreeValues",
             "TwoValues",
@@ -1841,6 +2083,9 @@
         },
         "condition": [
             {
+                "page4type": "Fluid"
+            },
+            {
                 "page4type": "FourValues"
             },
             {
@@ -1853,6 +2098,9 @@
                 "page4type": "RollPitch"
             },
             {
+                "page4type": "SixValues"
+            },
+            {
                 "page4type": "ThreeValues"
             },
             {
@@ -1860,9 +2108,6 @@
             },
             {
                 "page4type": "WindRoseFlex"
-            },
-            {
-                "page4type": "Fluid"
             }
         ]
     },
@@ -1885,6 +2130,9 @@
             },
             {
                 "page4type": "RollPitch"
+            },
+            {
+                "page4type": "SixValues"
             },
             {
                 "page4type": "ThreeValues"
@@ -1915,6 +2163,9 @@
                 "page4type": "FourValues2"
             },
             {
+                "page4type": "SixValues"
+            },
+            {
                 "page4type": "ThreeValues"
             },
             {
@@ -1940,6 +2191,9 @@
                 "page4type": "FourValues2"
             },
             {
+                "page4type": "SixValues"
+            },
+            {
                 "page4type": "WindRoseFlex"
             }
         ]
@@ -1956,6 +2210,9 @@
         },
         "condition": [
             {
+                "page4type": "SixValues"
+            },
+            {
                 "page4type": "WindRoseFlex"
             }
         ]
@@ -1971,6 +2228,9 @@
             "obp40": "true"
         },
         "condition": [
+            {
+                "page4type": "SixValues"
+            },
             {
                 "page4type": "WindRoseFlex"
             }
@@ -2033,6 +2293,7 @@
             "Battery",
             "Battery2",
             "Clock",
+            "Compass",
             "DST810",
             "Fluid",
             "FourValues",
@@ -2042,6 +2303,7 @@
             "OneValue",
             "RollPitch",
             "RudderPosition",
+            "SixValues",
             "Solar",
             "ThreeValues",
             "TwoValues",
@@ -2090,6 +2352,9 @@
         },
         "condition": [
             {
+                "page5type": "Fluid"
+            },
+            {
                 "page5type": "FourValues"
             },
             {
@@ -2102,6 +2367,9 @@
                 "page5type": "RollPitch"
             },
             {
+                "page5type": "SixValues"
+            },
+            {
                 "page5type": "ThreeValues"
             },
             {
@@ -2109,9 +2377,6 @@
             },
             {
                 "page5type": "WindRoseFlex"
-            },
-            {
-                "page5type": "Fluid"
             }
         ]
     },
@@ -2134,6 +2399,9 @@
             },
             {
                 "page5type": "RollPitch"
+            },
+            {
+                "page5type": "SixValues"
             },
             {
                 "page5type": "ThreeValues"
@@ -2164,6 +2432,9 @@
                 "page5type": "FourValues2"
             },
             {
+                "page5type": "SixValues"
+            },
+            {
                 "page5type": "ThreeValues"
             },
             {
@@ -2189,6 +2460,9 @@
                 "page5type": "FourValues2"
             },
             {
+                "page5type": "SixValues"
+            },
+            {
                 "page5type": "WindRoseFlex"
             }
         ]
@@ -2205,6 +2479,9 @@
         },
         "condition": [
             {
+                "page5type": "SixValues"
+            },
+            {
                 "page5type": "WindRoseFlex"
             }
         ]
@@ -2220,6 +2497,9 @@
             "obp40": "true"
         },
         "condition": [
+            {
+                "page5type": "SixValues"
+            },
             {
                 "page5type": "WindRoseFlex"
             }
@@ -2282,6 +2562,7 @@
             "Battery",
             "Battery2",
             "Clock",
+            "Compass",
             "DST810",
             "Fluid",
             "FourValues",
@@ -2291,6 +2572,7 @@
             "OneValue",
             "RollPitch",
             "RudderPosition",
+            "SixValues",
             "Solar",
             "ThreeValues",
             "TwoValues",
@@ -2336,6 +2618,9 @@
         },
         "condition": [
             {
+                "page6type": "Fluid"
+            },
+            {
                 "page6type": "FourValues"
             },
             {
@@ -2348,6 +2633,9 @@
                 "page6type": "RollPitch"
             },
             {
+                "page6type": "SixValues"
+            },
+            {
                 "page6type": "ThreeValues"
             },
             {
@@ -2355,9 +2643,6 @@
             },
             {
                 "page6type": "WindRoseFlex"
-            },
-            {
-                "page6type": "Fluid"
             }
         ]
     },
@@ -2380,6 +2665,9 @@
             },
             {
                 "page6type": "RollPitch"
+            },
+            {
+                "page6type": "SixValues"
             },
             {
                 "page6type": "ThreeValues"
@@ -2410,6 +2698,9 @@
                 "page6type": "FourValues2"
             },
             {
+                "page6type": "SixValues"
+            },
+            {
                 "page6type": "ThreeValues"
             },
             {
@@ -2435,6 +2726,9 @@
                 "page6type": "FourValues2"
             },
             {
+                "page6type": "SixValues"
+            },
+            {
                 "page6type": "WindRoseFlex"
             }
         ]
@@ -2451,6 +2745,9 @@
         },
         "condition": [
             {
+                "page6type": "SixValues"
+            },
+            {
                 "page6type": "WindRoseFlex"
             }
         ]
@@ -2466,6 +2763,9 @@
             "obp40": "true"
         },
         "condition": [
+            {
+                "page6type": "SixValues"
+            },
             {
                 "page6type": "WindRoseFlex"
             }
@@ -2528,6 +2828,7 @@
             "Battery",
             "Battery2",
             "Clock",
+            "Compass",
             "DST810",
             "Fluid",
             "FourValues",
@@ -2537,6 +2838,7 @@
             "OneValue",
             "RollPitch",
             "RudderPosition",
+            "SixValues",
             "Solar",
             "ThreeValues",
             "TwoValues",
@@ -2579,6 +2881,9 @@
         },
         "condition": [
             {
+                "page7type": "Fluid"
+            },
+            {
                 "page7type": "FourValues"
             },
             {
@@ -2591,6 +2896,9 @@
                 "page7type": "RollPitch"
             },
             {
+                "page7type": "SixValues"
+            },
+            {
                 "page7type": "ThreeValues"
             },
             {
@@ -2598,9 +2906,6 @@
             },
             {
                 "page7type": "WindRoseFlex"
-            },
-            {
-                "page7type": "Fluid"
             }
         ]
     },
@@ -2623,6 +2928,9 @@
             },
             {
                 "page7type": "RollPitch"
+            },
+            {
+                "page7type": "SixValues"
             },
             {
                 "page7type": "ThreeValues"
@@ -2653,6 +2961,9 @@
                 "page7type": "FourValues2"
             },
             {
+                "page7type": "SixValues"
+            },
+            {
                 "page7type": "ThreeValues"
             },
             {
@@ -2678,6 +2989,9 @@
                 "page7type": "FourValues2"
             },
             {
+                "page7type": "SixValues"
+            },
+            {
                 "page7type": "WindRoseFlex"
             }
         ]
@@ -2694,6 +3008,9 @@
         },
         "condition": [
             {
+                "page7type": "SixValues"
+            },
+            {
                 "page7type": "WindRoseFlex"
             }
         ]
@@ -2709,6 +3026,9 @@
             "obp40": "true"
         },
         "condition": [
+            {
+                "page7type": "SixValues"
+            },
             {
                 "page7type": "WindRoseFlex"
             }
@@ -2771,6 +3091,7 @@
             "Battery",
             "Battery2",
             "Clock",
+            "Compass",
             "DST810",
             "Fluid",
             "FourValues",
@@ -2780,6 +3101,7 @@
             "OneValue",
             "RollPitch",
             "RudderPosition",
+            "SixValues",
             "Solar",
             "ThreeValues",
             "TwoValues",
@@ -2819,6 +3141,9 @@
         },
         "condition": [
             {
+                "page8type": "Fluid"
+            },
+            {
                 "page8type": "FourValues"
             },
             {
@@ -2831,6 +3156,9 @@
                 "page8type": "RollPitch"
             },
             {
+                "page8type": "SixValues"
+            },
+            {
                 "page8type": "ThreeValues"
             },
             {
@@ -2838,9 +3166,6 @@
             },
             {
                 "page8type": "WindRoseFlex"
-            },
-            {
-                "page8type": "Fluid"
             }
         ]
     },
@@ -2863,6 +3188,9 @@
             },
             {
                 "page8type": "RollPitch"
+            },
+            {
+                "page8type": "SixValues"
             },
             {
                 "page8type": "ThreeValues"
@@ -2893,6 +3221,9 @@
                 "page8type": "FourValues2"
             },
             {
+                "page8type": "SixValues"
+            },
+            {
                 "page8type": "ThreeValues"
             },
             {
@@ -2918,6 +3249,9 @@
                 "page8type": "FourValues2"
             },
             {
+                "page8type": "SixValues"
+            },
+            {
                 "page8type": "WindRoseFlex"
             }
         ]
@@ -2934,6 +3268,9 @@
         },
         "condition": [
             {
+                "page8type": "SixValues"
+            },
+            {
                 "page8type": "WindRoseFlex"
             }
         ]
@@ -2949,6 +3286,9 @@
             "obp40": "true"
         },
         "condition": [
+            {
+                "page8type": "SixValues"
+            },
             {
                 "page8type": "WindRoseFlex"
             }
@@ -3011,6 +3351,7 @@
             "Battery",
             "Battery2",
             "Clock",
+            "Compass",
             "DST810",
             "Fluid",
             "FourValues",
@@ -3020,6 +3361,7 @@
             "OneValue",
             "RollPitch",
             "RudderPosition",
+            "SixValues",
             "Solar",
             "ThreeValues",
             "TwoValues",
@@ -3056,6 +3398,9 @@
         },
         "condition": [
             {
+                "page9type": "Fluid"
+            },
+            {
                 "page9type": "FourValues"
             },
             {
@@ -3068,6 +3413,9 @@
                 "page9type": "RollPitch"
             },
             {
+                "page9type": "SixValues"
+            },
+            {
                 "page9type": "ThreeValues"
             },
             {
@@ -3075,9 +3423,6 @@
             },
             {
                 "page9type": "WindRoseFlex"
-            },
-            {
-                "page9type": "Fluid"
             }
         ]
     },
@@ -3100,6 +3445,9 @@
             },
             {
                 "page9type": "RollPitch"
+            },
+            {
+                "page9type": "SixValues"
             },
             {
                 "page9type": "ThreeValues"
@@ -3130,6 +3478,9 @@
                 "page9type": "FourValues2"
             },
             {
+                "page9type": "SixValues"
+            },
+            {
                 "page9type": "ThreeValues"
             },
             {
@@ -3155,6 +3506,9 @@
                 "page9type": "FourValues2"
             },
             {
+                "page9type": "SixValues"
+            },
+            {
                 "page9type": "WindRoseFlex"
             }
         ]
@@ -3171,6 +3525,9 @@
         },
         "condition": [
             {
+                "page9type": "SixValues"
+            },
+            {
                 "page9type": "WindRoseFlex"
             }
         ]
@@ -3186,6 +3543,9 @@
             "obp40": "true"
         },
         "condition": [
+            {
+                "page9type": "SixValues"
+            },
             {
                 "page9type": "WindRoseFlex"
             }
@@ -3248,6 +3608,7 @@
             "Battery",
             "Battery2",
             "Clock",
+            "Compass",
             "DST810",
             "Fluid",
             "FourValues",
@@ -3257,6 +3618,7 @@
             "OneValue",
             "RollPitch",
             "RudderPosition",
+            "SixValues",
             "Solar",
             "ThreeValues",
             "TwoValues",
@@ -3290,6 +3652,9 @@
         },
         "condition": [
             {
+                "page10type": "Fluid"
+            },
+            {
                 "page10type": "FourValues"
             },
             {
@@ -3302,6 +3667,9 @@
                 "page10type": "RollPitch"
             },
             {
+                "page10type": "SixValues"
+            },
+            {
                 "page10type": "ThreeValues"
             },
             {
@@ -3309,9 +3677,6 @@
             },
             {
                 "page10type": "WindRoseFlex"
-            },
-            {
-                "page10type": "Fluid"
             }
         ]
     },
@@ -3334,6 +3699,9 @@
             },
             {
                 "page10type": "RollPitch"
+            },
+            {
+                "page10type": "SixValues"
             },
             {
                 "page10type": "ThreeValues"
@@ -3364,6 +3732,9 @@
                 "page10type": "FourValues2"
             },
             {
+                "page10type": "SixValues"
+            },
+            {
                 "page10type": "ThreeValues"
             },
             {
@@ -3389,6 +3760,9 @@
                 "page10type": "FourValues2"
             },
             {
+                "page10type": "SixValues"
+            },
+            {
                 "page10type": "WindRoseFlex"
             }
         ]
@@ -3405,6 +3779,9 @@
         },
         "condition": [
             {
+                "page10type": "SixValues"
+            },
+            {
                 "page10type": "WindRoseFlex"
             }
         ]
@@ -3420,6 +3797,9 @@
             "obp40": "true"
         },
         "condition": [
+            {
+                "page10type": "SixValues"
+            },
             {
                 "page10type": "WindRoseFlex"
             }

@@ -46,9 +46,9 @@ class PageFourValues2 : public Page
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
         String name1 = xdrDelete(bvalue1->getName());   // Value name
         name1 = name1.substring(0, 6);                  // String length limit for value name
+        calibrationData.calibrateInstance(bvalue1, logger); // Check if boat data value is to be calibrated
         double value1 = bvalue1->value;                 // Value as double in SI unit
         bool valid1 = bvalue1->valid;                   // Valid information 
-        calibrationData.calibrateInstance(name1, bvalue1, logger); // Check if boat data value is to be calibrated
         String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
 
@@ -56,9 +56,9 @@ class PageFourValues2 : public Page
         GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list (only one value by PageOneValue)
         String name2 = xdrDelete(bvalue2->getName());   // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
+        calibrationData.calibrateInstance(bvalue2, logger); // Check if boat data value is to be calibrated
         double value2 = bvalue2->value;                 // Value as double in SI unit
         bool valid2 = bvalue2->valid;                   // Valid information 
-        calibrationData.calibrateInstance(name2, bvalue2, logger); // Check if boat data value is to be calibrated
         String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
 
@@ -66,9 +66,9 @@ class PageFourValues2 : public Page
         GwApi::BoatValue *bvalue3 = pageData.values[2]; // Second element in list (only one value by PageOneValue)
         String name3 = xdrDelete(bvalue3->getName());   // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
+        calibrationData.calibrateInstance(bvalue3, logger); // Check if boat data value is to be calibrated
         double value3 = bvalue3->value;                 // Value as double in SI unit
         bool valid3 = bvalue3->valid;                   // Valid information 
-        calibrationData.calibrateInstance(name3, bvalue3, logger); // Check if boat data value is to be calibrated
         String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit3 = formatValue(bvalue3, *commonData).unit;        // Unit of value
 
@@ -76,9 +76,9 @@ class PageFourValues2 : public Page
         GwApi::BoatValue *bvalue4 = pageData.values[3]; // Second element in list (only one value by PageOneValue)
         String name4 = xdrDelete(bvalue4->getName());   // Value name
         name4 = name4.substring(0, 6);                  // String length limit for value name
+        calibrationData.calibrateInstance(bvalue4, logger); // Check if boat data value is to be calibrated
         double value4 = bvalue4->value;                 // Value as double in SI unit
         bool valid4 = bvalue4->valid;                   // Valid information 
-        calibrationData.calibrateInstance(name4, bvalue4, logger); // Check if boat data value is to be calibrated
         String svalue4 = formatValue(bvalue4, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit4 = formatValue(bvalue4, *commonData).unit;        // Unit of value
 
@@ -108,7 +108,7 @@ class PageFourValues2 : public Page
         getdisplay().print(name1);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 90);
         if(holdvalues == false){
             getdisplay().print(unit1);                       // Unit
@@ -119,11 +119,11 @@ class PageFourValues2 : public Page
 
         // Switch font if format for any values
         if(bvalue1->getFormat() == "formatLatitude" || bvalue1->getFormat() == "formatLongitude"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(100, 90);
         }
         else if(bvalue1->getFormat() == "formatTime" || bvalue1->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(180, 77);
         }
         else{
@@ -156,7 +156,7 @@ class PageFourValues2 : public Page
         getdisplay().print(name2);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 180);
         if(holdvalues == false){
             getdisplay().print(unit2);                       // Unit
@@ -167,11 +167,11 @@ class PageFourValues2 : public Page
 
         // Switch font if format for any values
         if(bvalue2->getFormat() == "formatLatitude" || bvalue2->getFormat() == "formatLongitude"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(100, 180);
         }
         else if(bvalue2->getFormat() == "formatTime" || bvalue2->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(180, 158);
         }
         else{
@@ -199,12 +199,12 @@ class PageFourValues2 : public Page
         // ############### Value 3 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 220);
         getdisplay().print(name3);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(20, 240);
         if(holdvalues == false){
             getdisplay().print(unit3);                       // Unit
@@ -215,11 +215,11 @@ class PageFourValues2 : public Page
 
         // Switch font if format for any values
         if(bvalue3->getFormat() == "formatLatitude" || bvalue3->getFormat() == "formatLongitude"){
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(50, 240);
         }
         else if(bvalue3->getFormat() == "formatTime" || bvalue3->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(100, 240);
         }
         else{
@@ -247,12 +247,12 @@ class PageFourValues2 : public Page
         // ############### Value 4 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(220, 220);
         getdisplay().print(name4);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(220, 240);
         if(holdvalues == false){
             getdisplay().print(unit4);                       // Unit
@@ -263,11 +263,11 @@ class PageFourValues2 : public Page
 
         // Switch font if format for any values
         if(bvalue4->getFormat() == "formatLatitude" || bvalue4->getFormat() == "formatLongitude"){
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(250, 240);
         }
         else if(bvalue4->getFormat() == "formatTime" || bvalue4->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(300, 240);
         }
         else{

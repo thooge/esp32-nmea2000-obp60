@@ -162,7 +162,7 @@ class PageBattery : public Page
 
         // Show average settings
         getdisplay().setTextColor(commonData->fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         switch (average) {
             case 0:
                 getdisplay().setCursor(60, 90);
@@ -209,12 +209,12 @@ class PageBattery : public Page
         // ############### Value 1 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(20, 55);
         getdisplay().print(name1);                           // Value name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 90);
         getdisplay().print(unit1);                           // Unit
 
@@ -238,12 +238,12 @@ class PageBattery : public Page
         // ############### Value 2 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(20, 145);
         getdisplay().print(name2);                           // Value name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 180);
         getdisplay().print(unit2);                           // Unit
 
@@ -267,12 +267,12 @@ class PageBattery : public Page
         // ############### Value 3 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(20, 235);
         getdisplay().print(name3);                           // Value name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(20, 270);
         getdisplay().print(unit3);                           // Unit
 

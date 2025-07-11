@@ -351,8 +351,8 @@ private:
                 rmb.vmg
             );
             send(n2kMsg,msg.sourceId);
-            SetN2kPGN129285(n2kMsg,sourceId,1,1,true,true,"default");
-            AppendN2kPGN129285(n2kMsg,destinationId,rmb.destID,rmb.latitude,rmb.longitude);
+            SetN2kRouteWPInfo(n2kMsg,sourceId,1,1,N2kdir_forward,"default");
+            AppendN2kRouteWPInfo(n2kMsg,destinationId,rmb.destID,rmb.latitude,rmb.longitude);
             send(n2kMsg,msg.sourceId);
             }
     }
@@ -638,8 +638,8 @@ private:
         for (int i=0;i< 3;i++){
             if (msg.FieldLen(0)>0){
                 Depth=atof(msg.Field(0));
-                char dt=msg.Field(i+1)[0];
-                switch(dt){
+                char du=msg.Field(i+1)[0];
+                switch(du){
                     case 'f':
                         Depth=Depth/mToFeet;
                         break;
@@ -662,8 +662,9 @@ private:
                 //we can only send if we have a valid depth beloww tranducer
                 //to compute the offset
                 if (! boatData->DBT->isValid()) return;
-                double offset=Depth-boatData->DBT->getData();
-                if (offset >= 0 && dt == DBT){
+                double dbt=boatData->DBT->getData();
+                double offset=Depth-dbt;
+                if (offset >= 0 && dt == DBK){
                     logger->logDebug(GwLog::DEBUG, "strange DBK - more depth then transducer %s", msg.line);    
                     return;
                 }
@@ -675,8 +676,8 @@ private:
                     if (! boatData->DBS->update(Depth,msg.sourceId)) return;
                 }
                 tN2kMsg n2kMsg;
-                SetN2kWaterDepth(n2kMsg,1,Depth,offset);
-                send(n2kMsg,msg.sourceId,(n2kMsg.PGN)+String((offset != N2kDoubleNA)?1:0));
+                SetN2kWaterDepth(n2kMsg,1,dbt,offset); //on the N2K side we always have depth below transducer
+                send(n2kMsg,msg.sourceId,(n2kMsg.PGN)+String((offset >=0)?1:0));
             }            
         }        
     }

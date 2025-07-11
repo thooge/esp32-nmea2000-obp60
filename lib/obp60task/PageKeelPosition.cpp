@@ -109,7 +109,7 @@ public:
             getdisplay().getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
             getdisplay().setCursor(x-w/2, y+h/2);
             if(i % 30 == 0){
-                getdisplay().setFont(&Ubuntu_Bold8pt7b);
+                getdisplay().setFont(&Ubuntu_Bold8pt8b);
                 getdisplay().print(ii);
             }
 
@@ -189,19 +189,19 @@ public:
         getdisplay().fillRect(150, 150, 100, 4, commonData->fgcolor);                 // Water line
 
         // Print label
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().setCursor(100, 70);
         getdisplay().print("Keel Position");                 // Label
 
         if((rotsensor == "AS5600" && rotfunction == "Keel" && (valid1 == true || holdvalues == true)) || simulation == true){
             // Print Unit of keel position
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(175, 110);
             getdisplay().print(unit1);                       // Unit
         }
         else{
             // Print Unit of keel position
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(145, 110);
             getdisplay().print("No sensor data");            // Info missing sensor
         }

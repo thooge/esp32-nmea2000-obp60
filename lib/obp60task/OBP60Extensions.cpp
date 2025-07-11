@@ -11,20 +11,19 @@
 #include "imglib.h"
 
 // Character sets
-#include "Ubuntu_Bold8pt7b.h"
-#include "Ubuntu_Bold10pt7b.h"
-#include "Ubuntu_Bold12pt7b.h"
-#include "Ubuntu_Bold16pt7b.h"
-#include "Ubuntu_Bold20pt7b.h"
-#include "Ubuntu_Bold32pt7b.h"
-#include "DSEG7Classic-BoldItalic16pt7b.h"
-#include "DSEG7Classic-BoldItalic20pt7b.h"
-#include "DSEG7Classic-BoldItalic30pt7b.h"
-#include "DSEG7Classic-BoldItalic42pt7b.h"
-#include "DSEG7Classic-BoldItalic60pt7b.h"
-#include "Atari16px8b.h" // Key label font
-
-#include "Ubuntu_Bold20pt8b.h"
+#include "fonts/DSEG7Classic-BoldItalic16pt7b.h"
+#include "fonts/DSEG7Classic-BoldItalic20pt7b.h"
+#include "fonts/DSEG7Classic-BoldItalic26pt7b.h"
+#include "fonts/DSEG7Classic-BoldItalic30pt7b.h"
+#include "fonts/DSEG7Classic-BoldItalic42pt7b.h"
+#include "fonts/DSEG7Classic-BoldItalic60pt7b.h"
+#include "fonts/Ubuntu_Bold8pt8b.h"
+#include "fonts/Ubuntu_Bold10pt8b.h"
+#include "fonts/Ubuntu_Bold12pt8b.h"
+#include "fonts/Ubuntu_Bold16pt8b.h"
+#include "fonts/Ubuntu_Bold20pt8b.h"
+#include "fonts/Ubuntu_Bold32pt8b.h"
+#include "fonts/Atari16px8b.h" // Key label font
 
 // E-Ink Display
 #define GxEPD_WIDTH 400     // Display width
@@ -138,10 +137,10 @@ void deepSleep(CommonData &common){
     getdisplay().setFullWindow();               // Set full Refresh
     getdisplay().fillScreen(common.bgcolor);    // Clear screen
     getdisplay().setTextColor(common.fgcolor);
-    getdisplay().setFont(&Ubuntu_Bold20pt7b);
+    getdisplay().setFont(&Ubuntu_Bold20pt8b);
     getdisplay().setCursor(85, 150);
     getdisplay().print("Sleep Mode");
-    getdisplay().setFont(&Ubuntu_Bold8pt7b);
+    getdisplay().setFont(&Ubuntu_Bold8pt8b);
     getdisplay().setCursor(65, 175);
     getdisplay().print("To wake up press key and wait 5s");
     getdisplay().nextPage();                // Update display contents
@@ -163,10 +162,10 @@ void deepSleep(CommonData &common){
     //getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
     getdisplay().fillScreen(common.bgcolor);    // Clear screen
     getdisplay().setTextColor(common.fgcolor);
-    getdisplay().setFont(&Ubuntu_Bold20pt7b);
+    getdisplay().setFont(&Ubuntu_Bold20pt8b);
     getdisplay().setCursor(85, 150);
     getdisplay().print("Sleep Mode");
-    getdisplay().setFont(&Ubuntu_Bold8pt7b);
+    getdisplay().setFont(&Ubuntu_Bold8pt8b);
     getdisplay().setCursor(65, 175);
     getdisplay().print("To wake up press wheel and wait 5s");
     getdisplay().nextPage();                // Partial update
@@ -348,7 +347,7 @@ void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatVa
 
         // Show status info
         getdisplay().setTextColor(commonData.fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(0, 15);
         if(commonData.status.wifiApOn){
         getdisplay().print(" AP ");
@@ -418,7 +417,7 @@ void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatVa
             getdisplay().setTextColor(commonData.fgcolor);
             getdisplay().drawRect(201, 0, 23, 19, commonData.fgcolor);
         }
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         drawTextCenter(211, 9, String(commonData.data.actpage));
         heartbeat = !heartbeat;
 
@@ -427,7 +426,7 @@ void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatVa
         String timesource = commonData.config->getString(commonData.config->timeSource);
         double tz = commonData.config->getString(commonData.config->timeZone).toDouble();
         getdisplay().setTextColor(commonData.fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(230, 15);
         if (timesource == "RTC" or timesource == "iRTC") {
             // TODO take DST into account
@@ -681,7 +680,7 @@ void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
         getdisplay().fillCircle(xb, yb, 41, bcolor);
         // Insert G
         getdisplay().setTextColor(pcolor);
-        getdisplay().setFont(&Ubuntu_Bold32pt7b);
+        getdisplay().setFont(&Ubuntu_Bold32pt8b);
         getdisplay().setCursor(xb-22, yb+20);
         getdisplay().print("G");
 }
