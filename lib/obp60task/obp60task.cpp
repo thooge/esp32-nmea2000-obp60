@@ -79,8 +79,8 @@ void OBP60Init(GwApi *api){
     }
 
     #ifdef BOARD_OBP40S3
-    String sdcard = config->getConfigItem(config->useSDCard, true)->asString();
-    if (sdcard == "on") {
+    bool sdcard = config->getBool(config->useSDCard);
+    if (sdcard) {
         SPIClass SD_SPI = SPIClass(HSPI);
         SD_SPI.begin(SD_SPI_CLK, SD_SPI_MISO, SD_SPI_MOSI);
         if (SD.begin(SD_SPI_CS, SD_SPI, 80000000)) {
@@ -287,6 +287,8 @@ void registerAllPages(PageList &list){
     list.add(&registerPageDST810);
     extern PageDescription registerPageClock;
     list.add(&registerPageClock);
+    extern PageDescription registerPageCompass;
+    list.add(&registerPageCompass);
     extern PageDescription registerPageWhite;
     list.add(&registerPageWhite);
     extern PageDescription registerPageBME280;
@@ -336,10 +338,10 @@ void underVoltageDetection(GwApi *api, CommonData &common){
         //getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
         getdisplay().fillScreen(common.bgcolor);// Clear screen
         getdisplay().setTextColor(common.fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(65, 150);
         getdisplay().print("Undervoltage");
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(65, 175);
         getdisplay().print("Charge battery and restart system");
         getdisplay().nextPage();                // Partial update
@@ -356,10 +358,10 @@ void underVoltageDetection(GwApi *api, CommonData &common){
         getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
         getdisplay().fillScreen(common.bgcolor);// Clear screen
         getdisplay().setTextColor(common.fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold20pt7b);
+        getdisplay().setFont(&Ubuntu_Bold20pt8b);
         getdisplay().setCursor(65, 150);
         getdisplay().print("Undervoltage");
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(65, 175);
         getdisplay().print("To wake up repower system");
         getdisplay().nextPage();                // Partial update

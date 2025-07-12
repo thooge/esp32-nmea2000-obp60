@@ -35,7 +35,7 @@ void qrWiFi(String ssid, String passwd, uint16_t fgcolor, uint16_t bgcolor){
     box_y = box_y + box_s;
     box_x = init_x;
   }
-  getdisplay().setFont(&Ubuntu_Bold32pt7b);
+  getdisplay().setFont(&Ubuntu_Bold32pt8b);
   getdisplay().setTextColor(fgcolor);
   getdisplay().setCursor(140, 285);
   getdisplay().print("WiFi");

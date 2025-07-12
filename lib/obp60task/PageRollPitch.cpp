@@ -126,10 +126,10 @@ public:
         getdisplay().print(rolllimit);                   // Value
         //getdisplay().print(svalue1);                   // Value
 
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(10, 95);
         getdisplay().print("Limit");                     // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(10, 115);
         getdisplay().print("DEG");
         
@@ -141,10 +141,10 @@ public:
         getdisplay().setCursor(10, 270);
         if(holdvalues == false) getdisplay().print(svalue1); // Value
         else getdisplay().print(svalue1old);
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(10, 220);
         getdisplay().print(name1);                           // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(10, 190);
         getdisplay().print("Deg");
 
@@ -156,10 +156,10 @@ public:
         getdisplay().setCursor(295, 270);
         if(holdvalues == false) getdisplay().print(svalue2); // Value
         else getdisplay().print(svalue2old);
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(335, 220);
         getdisplay().print(name2);                           // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(335, 190);
         getdisplay().print("Deg");
 
@@ -198,7 +198,7 @@ public:
                 getdisplay().getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
                 getdisplay().setCursor(x-w/2, y+h/2);
                 if(i % 20 == 0){
-                    getdisplay().setFont(&Ubuntu_Bold8pt7b);
+                    getdisplay().setFont(&Ubuntu_Bold8pt8b);
                     getdisplay().print(ii);
                 }
 
@@ -300,7 +300,7 @@ public:
         }
         else{
             // Print sensor info
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(145, 200);
             getdisplay().print("No sensor data");            // Info missing sensor
         }

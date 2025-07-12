@@ -66,7 +66,7 @@ public:
     }
 
     void printAvg(int avg, uint16_t x, uint16_t y, bool prefix) {
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(x, y);
         if (prefix) {
             getdisplay().print("Avg: ");
@@ -91,7 +91,7 @@ public:
     }
 
     void printVoltageSymbol(uint16_t x, uint16_t y, uint16_t color) {
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
+        getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().setCursor(x, y);
         getdisplay().print("V");
         getdisplay().fillRect(x, y + 6, 22, 3, color);
@@ -201,13 +201,13 @@ public:
 
             // Show name
             getdisplay().setTextColor(commonData->fgcolor);
-            getdisplay().setFont(&Ubuntu_Bold32pt7b);
+            getdisplay().setFont(&Ubuntu_Bold32pt8b);
             getdisplay().setCursor(20, 100);
             getdisplay().print(name1);                           // Value name
 
             #if defined BOARD_OBP40S3 && defined LIPO_ACCU_1200 && defined VOLTAGE_SENSOR
             // Show charge status
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(185, 100);
             if(commonData->data.BatteryChargeStatus == true){
                 getdisplay().print("Charge");
@@ -218,12 +218,12 @@ public:
             #endif
 
             // Show unit
-            getdisplay().setFont(&Ubuntu_Bold20pt7b);
+            getdisplay().setFont(&Ubuntu_Bold20pt8b);
             getdisplay().setCursor(270, 100);
             getdisplay().print("V");
 
             // Show battery type
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(295, 100);
             #ifdef BOARD_OBP60S3
             getdisplay().print(batType);
@@ -305,7 +305,7 @@ public:
                 {c.x - r + 12, c.y + 1},
                 {c.x - r, c.y + 1}
             };
-            getdisplay().setFont(&Ubuntu_Bold10pt7b);
+            getdisplay().setFont(&Ubuntu_Bold10pt8b);
             for (int angle = 3; angle < 90; angle += 3) {
                 if (angle % 15 == 0) {
                     fillPoly4(rotatePoints(c, pts, angle), commonData->fgcolor);
@@ -362,7 +362,7 @@ public:
             printVoltageSymbol(40, 60, commonData->fgcolor);
 
             // Additional information at right side
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(300, 60);
             getdisplay().print("Source:");
             getdisplay().setCursor(300, 80);
