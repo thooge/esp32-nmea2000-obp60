@@ -837,11 +837,7 @@ void OBP60Task(GwApi *api){
                             currentPage->displayNew(pages[pageNumber].parameters);
                             lastPage=pageNumber;
                         }
-                        pages[pageNumber].parameters.boatHstry = shared->getHstryBuf(); // Add boat history to page parameters
-                        LOG_DEBUG(GwLog::ERROR,"obp60task buffers: TWD:%d   TWS:%f   DBT:%f", pages[pageNumber].parameters.boatHstry.twdHstry->getLast(),
-                                    pages[pageNumber].parameters.boatHstry.twsHstry->getLast() * 0.0194384, pages[pageNumber].parameters.boatHstry.dbtHstry->getLast() / 100);
-//                          LOG_DEBUG(GwLog::ERROR, "obp60task pointer: TWD: %p, TWS: %p, STW: %p", pages[pageNumber].parameters.boatHstry.twdHstry,
-//                                         pages[pageNumber].parameters.boatHstry.twsHstry, pages[pageNumber].parameters.boatHstry.dbtHstry);
+                        pages[pageNumber].parameters.boatHstry = shared->getHstryBuf(); // Add boat history data to page parameters
                         //call the page code
                         LOG_DEBUG(GwLog::DEBUG,"calling page %d",pageNumber);
                         // Show footer if enabled (together with header)
