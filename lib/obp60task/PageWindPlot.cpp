@@ -7,15 +7,17 @@
 #include <N2kMessages.h> // just for RadToDeg function
 #include <vector>
 
-static const float radToDeg = 180.0 / M_PI; // Conversion factor from radians to degrees
+static const double radToDeg = 180.0 / M_PI; // Conversion factor from radians to degrees
+// #define radians(a) (a * 0.017453292519943295)
+// #define degrees(a) (a * 57.29577951308232)
 
 // Get maximum difference of last <amount> of TWD ringbuffer values to center chart
 int getRng(const RingBuffer<int16_t>& windDirHstry, int center, size_t amount)
 {
     int minVal = windDirHstry.getMinVal();
     size_t count = windDirHstry.getCurrentSize();
-    size_t capacity = windDirHstry.getCapacity();
-    size_t last = windDirHstry.getLastIdx();
+//    size_t capacity = windDirHstry.getCapacity();
+//    size_t last = windDirHstry.getLastIdx();
 
     if (windDirHstry.isEmpty() || amount <= 0) {
         return minVal;
@@ -28,7 +30,8 @@ int getRng(const RingBuffer<int16_t>& windDirHstry, int center, size_t amount)
     int maxRng = minVal;
     // Start from the newest value (last) and go backwards x times
     for (size_t i = 0; i < amount; i++) {
-        value = windDirHstry.get(((last - i) % capacity + capacity) % capacity);
+//        value = windDirHstry.get(((last - i) % capacity + capacity) % capacity);
+        value = windDirHstry.get(count - 1 - i);
 
         if (value == minVal) {
             continue;
@@ -47,18 +50,18 @@ int getRng(const RingBuffer<int16_t>& windDirHstry, int center, size_t amount)
 }
 
 void fillSimData(PageData& pageData)
-// Fill the TWD history buffer with simulated data
+// Fill part of the TWD history buffer with simulated data
 {
     int value = 20;
     int16_t value2 = 0;
-    for (int i = 0; i < 600; i++) {
+    for (int i = 0; i < 900; i++) {
         value += random(-20, 20);
         if (value < 0)
             value += 360;
         if (value >= 360)
             value -= 360;
         value2 = static_cast<int16_t>(DegToRad(value) * 1000.0);
-        pageData.boatHstry.twdHstry->add(value2); // Fill the buffer with some test data
+        pageData.boatHstry.twdHstry->add(value2);
     }
 }
 
@@ -67,18 +70,18 @@ void fillTstBuffer(PageData& pageData)
     float value = 0;
     int value2 = 0;
     for (int i = 0; i < 60; i++) {
-        pageData.boatHstry.twdHstry->add(-10); // Fill the buffer with some test data
+        pageData.boatHstry.twdHstry->add(-10); // -> irregular data
     }
     for (int i = 0; i < 20; i++) {
         for (int j = 0; j < 20; j++) {
             value += 10;
             value2 = static_cast<int>(DegToRad(value) * 1000.0);
-            pageData.boatHstry.twdHstry->add(value2); // Fill the buffer with some test data
+            pageData.boatHstry.twdHstry->add(value2);
         }
         for (int j = 0; j < 20; j++) {
             value -= 10;
             value2 = static_cast<int>(DegToRad(value) * 1000.0);
-            pageData.boatHstry.twdHstry->add(value2); // Fill the buffer with some test data
+            pageData.boatHstry.twdHstry->add(value2);
         }
     }
 }
@@ -172,10 +175,9 @@ public:
         static const int yOffset = 48; // Offset for y coordinates of chart area
         static int cHeight; // height of chart area
         static int bufSize; // History buffer size: 960 values for appox. 16 min. history chart
-        int intvBufSize; // Buffer size used for currently selected time interval
+        static int intvBufSize; // Buffer size used for currently selected time interval
         int count; // current size of buffer
-        int numWndVals; // number of wind values available for current interval selection
-        static int linesToShow; // current number of lines to display on chart
+        static int numWndVals; // number of wind values available for current interval selection
         static int bufStart; // 1st data value in buffer to show
         int numAddedBufVals; // Number of values added to buffer since last display
         size_t currIdx; // Current index in TWD history buffer
@@ -223,7 +225,6 @@ public:
             simTws = 0;
             twsValue = 0;
             bufStart = 0;
-            linesToShow = 0;
             oldDataIntv = 0;
             numAddedBufVals, currIdx, lastIdx = 0;
             lastAddedIdx = pageData.boatHstry.twdHstry->getLastIdx();
@@ -247,43 +248,38 @@ public:
                 simTwd -= 360.0;
 
             int16_t z = static_cast<int16_t>(DegToRad(simTwd) * 1000.0);
+            LOG_DEBUG(GwLog::ERROR, "PageWindPlot Simulation: getLast TWD: %.0f, lastIdx: %d", pageData.boatHstry.twdHstry->getLast() / 1000.0 * RAD_TO_DEG, pageData.boatHstry.twdHstry->getLastIdx());
             pageData.boatHstry.twdHstry->add(z); // Fill the buffer with some test data
+            LOG_DEBUG(GwLog::ERROR, "PageWindPlot Simulation: getAdded TWD: %.0f, lastIdx: %d", pageData.boatHstry.twdHstry->getLast() / 1000.0 * RAD_TO_DEG, pageData.boatHstry.twdHstry->getLastIdx());
 
-            simTws += random(-20, 20); // TWS value in knots
+            simTws += random(-200, 150) / 10.0; // TWS value in knots
             simTws = constrain(simTws, 0.0f, 50.0f); // Ensure TWS is between 0 and 50 knots
             twsValue = simTws;
-            LOG_DEBUG(GwLog::ERROR, "PageWindPlot Simulation: simTwd: %f, twsValue: %f", simTwd, twsValue);
         } else {
             twsValue = pageData.boatHstry.twsHstry->getLast() / 10.0 * 1.94384; // TWS value in knots
         }
 
         // Identify buffer size and buffer start position for chart
-        intvBufSize = cHeight * dataIntv;
         count = pageData.boatHstry.twdHstry->getCurrentSize();
-        numWndVals = min(count, intvBufSize);
         currIdx = pageData.boatHstry.twdHstry->getLastIdx();
         numAddedBufVals = (currIdx - lastAddedIdx + bufSize) % bufSize; // Number of values added to buffer since last display
         if (dataIntv != oldDataIntv) {
             // new data interval selected by user
-            linesToShow = min(numWndVals / dataIntv, cHeight - 60);
-            bufStart = max(0, count - (linesToShow * dataIntv));
-            currIdx++; // eliminate current added value for bufStart calculation
+            intvBufSize = cHeight * dataIntv;
+            numWndVals = min(count, (cHeight - 60) * dataIntv);
+            bufStart = max(0, count - numWndVals);
+            lastAddedIdx = currIdx;
             oldDataIntv = dataIntv;
         } else {
-            if (numAddedBufVals >= dataIntv) {
-                linesToShow += (numAddedBufVals / dataIntv); // Number of lines to show on chart
-                LOG_DEBUG(GwLog::ERROR, "PageWindPlot bufStart: bufStart: %d, numAddedBufVals: %d, linesToShow: %d, count %d, bufSize %d, Cnt=Size: %d", bufStart, numAddedBufVals, linesToShow, count, bufSize, count == bufSize);
-                lastAddedIdx = currIdx;
-            }
-            if (count == bufSize && currIdx != lastIdx) {
-                int numVals = (currIdx - lastIdx + bufSize) % bufSize;
-                bufStart = ((bufStart - numVals) % bufSize + bufSize) % bufSize; // keep 1st chart value constant in a rolling buffer when new data is added
-                lastIdx = currIdx;
+            numWndVals = numWndVals + numAddedBufVals;
+            lastAddedIdx = currIdx;
+            if (count == bufSize) {
+                bufStart = max(0, bufStart - numAddedBufVals);
             }
         }
-        LOG_DEBUG(GwLog::ERROR, "PageWindPlot Dataset: TWD: %.1f, TWS: %.1f, DBT: %.1f, count: %d, intvBufSize: %d, numWndVals: %d, bufStart: %d, linesToShow: %d, numAddedBufVals: %d, lastIdx: %d",
+        LOG_DEBUG(GwLog::ERROR, "PageWindPlot Dataset: TWD: %.0f, TWS: %.1f, DBT: %.1f, count: %d, intvBufSize: %d, numWndVals: %d, bufStart: %d, numAddedBufVals: %d, lastIdx: %d",
             pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg, pageData.boatHstry.twsHstry->getLast() / 10.0 * 1.94384, pageData.boatHstry.dbtHstry->getLast() / 10.0,
-            count, intvBufSize, numWndVals, bufStart, linesToShow, numAddedBufVals, lastIdx);
+            count, intvBufSize, numWndVals, bufStart, numAddedBufVals, pageData.boatHstry.twdHstry->getLastIdx());
 
         // initialize chart range values
         if (wndCenter == INT_MIN) {
@@ -309,7 +305,7 @@ public:
         if (wndRight >= 360)
             wndRight -= 360;
         LOG_DEBUG(GwLog::DEBUG, "PageWindPlot FirstVal: %f, LastVal: %d, count: %d, diffRng: %d, chartRng: %d, Center: %d, scale: %f", pageData.boatHstry.twdHstry->getFirst() / 1000.0 * radToDeg,
-            pageData.boatHstry.twdHstry->get(linesToShow) / 1000.0 * radToDeg, count, diffRng, chrtRng, wndCenter, chrtScl);
+            pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg, count, diffRng, chrtRng, wndCenter, chrtScl);
 
         // Draw page
         //***********************************************************************
@@ -324,7 +320,7 @@ public:
 
         // chart labels
         char sWndLbl[4]; // char buffer for Wind angle label
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(xCenter - 88, yOffset - 3);
         getdisplay().print("TWD"); // Wind name
         // getdisplay().setCursor(xCenter - 20, yOffset - 3);
@@ -344,7 +340,7 @@ public:
         getdisplay().drawCircle(width - 5, yOffset - 17, 2, commonData->fgcolor); // <degree> symbol
         getdisplay().drawCircle(width - 5, yOffset - 17, 3, commonData->fgcolor); // <degree> symbol
 
-        if (pageData.boatHstry.twdHstry->getMax() == twdLowest) {
+        if (pageData.boatHstry.twdHstry->getMax() == pageData.boatHstry.twdHstry->getMinVal()) {
             // only <INT16_MIN> values in buffer -> no valid wind data available
             wndDataValid = false;
         } else {
@@ -353,8 +349,8 @@ public:
         // Draw wind values in chart
         //***********************************************************************
         if (wndDataValid) {
-            for (int i = 0; i < linesToShow; i++) {
-                chrtVal = static_cast<int>(pageData.boatHstry.twdHstry->get((bufStart + (i * dataIntv)) % bufSize)); // show the latest wind values in buffer; keep 1st value constant in a rolling buffer
+            for (int i = 0; i < (numWndVals / dataIntv); i++) {
+                chrtVal = static_cast<int>(pageData.boatHstry.twdHstry->get(bufStart + (i * dataIntv))); // show the latest wind values in buffer; keep 1st value constant in a rolling buffer
                 if (chrtVal == INT16_MIN) {
                     chrtPrevVal = INT16_MIN;
                     /* if (i == linesToShow - 1) {
@@ -373,8 +369,9 @@ public:
                     chrtVal = (chrtVal / 1000.0 * radToDeg) + 0.5; // Convert to degrees and round
                     x = ((chrtVal - wndLeft + 360) % 360) * chrtScl;
                     y = yOffset + cHeight - i; // Position in chart area
-                    if (i > linesToShow - 30)
-                        LOG_DEBUG(GwLog::ERROR, "PageWindPlot Chart: i: %d, chrtVal: %d, bufStart: %d count: %d, linesToShow: %d", i, chrtVal, bufStart, count, linesToShow);
+
+                    if (i >= (numWndVals / dataIntv) - 10)
+                        LOG_DEBUG(GwLog::ERROR, "PageWindPlot Chart: i: %d, chrtVal: %d, bufStart: %d count: %d, linesToShow: %d", i, chrtVal, bufStart, count, (numWndVals / dataIntv));
 
                     if ((i == 0) || (chrtPrevVal == INT16_MIN)) {
                         // just a dot for 1st chart point or after some invalid values
@@ -403,10 +400,8 @@ public:
                 }
                 // Reaching chart area top end
                 if (i >= (cHeight - 1)) {
-                    linesToShow -= min(60, cHeight); // free top 40 lines of chart for new values
-                    if (count >= numWndVals) {
-                        bufStart = (bufStart + (60 * dataIntv)) % bufSize; // next start value in buffer to show
-                    }
+                    oldDataIntv = 0; // force reset of buffer start and number of values to show in next display loop
+
                     int minWndDir = pageData.boatHstry.twdHstry->getMin(numWndVals) / 1000.0 * radToDeg;
                     int maxWndDir = pageData.boatHstry.twdHstry->getMax(numWndVals) / 1000.0 * radToDeg;
                     LOG_DEBUG(GwLog::ERROR, "PageWindPlot FreeTop: Minimum: %d, Maximum: %d, OldwndCenter: %d", minWndDir, maxWndDir, wndCenter);
@@ -417,7 +412,7 @@ public:
                             wndCenter = int((midWndDir + (midWndDir >= 0 ? 5 : -5)) / 10) * 10; // Set new center value; round to nearest 10 degree value
                         }
                     }
-                    LOG_DEBUG(GwLog::ERROR, "PageWindPlot FreeTop: cHeight: %d, LinesToShow: %d, bufStart: %d, numWndVals: %d, wndCenter: %d", cHeight, linesToShow, bufStart, numWndVals, wndCenter);
+                    LOG_DEBUG(GwLog::ERROR, "PageWindPlot FreeTop: cHeight: %d, bufStart: %d, numWndVals: %d, wndCenter: %d", cHeight, bufStart, numWndVals, wndCenter);
                     break;
                 }
             }
@@ -425,7 +420,7 @@ public:
         } else {
             // No valid data available
             LOG_DEBUG(GwLog::LOG, "PageWindPlot: No valid data available");
-            getdisplay().setFont(&Ubuntu_Bold10pt7b);
+            getdisplay().setFont(&Ubuntu_Bold10pt8b);
             getdisplay().fillRect(xCenter - 66, height / 2 - 20, 146, 24, commonData->bgcolor); // Clear area for TWS value
             drawTextCenter(xCenter, height / 2 - 10, "No sensor data");
         }
@@ -438,11 +433,8 @@ public:
             int xPosTws;
             static const int yPosTws = yOffset + 40;
 
-            //            xPosTws = flipTws ? 30 : width - 145;
             xPosTws = flipTws ? 20 : width - 138;
             currentZone = (y >= yPosTws - 38) && (y <= yPosTws + 6) && (x >= xPosTws - 4) && (x <= xPosTws + 146) ? 1 : 0; // Define current zone for TWS value
-            //            currentZone = (x >= xPosTws - 4) && (x <= xPosTws + 142) ? 1 : 0; // Define current zone for TWS value
-            //            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot TWS: xPos: %d, yPos: %d, x: %d y: %d, currZone: %d, lastZone: %d", xPosTws, yPosTws, x, y, currentZone, lastZone);
             if (currentZone != lastZone) {
                 // Only flip when x moves to a different zone
                 if ((y >= yPosTws - 38) && (y <= yPosTws + 6) && (x >= xPosTws - 4) && (x <= xPosTws + 146)) {
@@ -455,16 +447,19 @@ public:
             getdisplay().fillRect(xPosTws - 4, yPosTws - 38, 142, 44, commonData->bgcolor); // Clear area for TWS value
             getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
             getdisplay().setCursor(xPosTws, yPosTws);
-            //            twsValue = pageData.boatHstry.twsHstry->getLast() / 10.0 * 1.94384; // TWS value in knots
             if (twsValue < 0 || twsValue >= 100) {
                 getdisplay().print("--.-");
             } else {
-                getdisplay().printf("%2.1f", twsValue); // Value
+                if (twsValue < 10.0) {
+                    getdisplay().printf("!%3.1f", twsValue); // Value
+                } else {
+                    getdisplay().printf("%4.1f", twsValue); // Value}
+                }
             }
-            getdisplay().setFont(&Ubuntu_Bold12pt7b);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(xPosTws + 82, yPosTws - 14);
             getdisplay().print("TWS"); // Name
-            getdisplay().setFont(&Ubuntu_Bold8pt7b);
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(xPosTws + 78, yPosTws + 1);
             getdisplay().printf(" kn"); // Unit
         }
@@ -472,7 +467,7 @@ public:
         // chart Y axis labels; print at last to overwrite potential chart lines in label area
         int yPos;
         int chrtLbl;
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         for (int i = 1; i <= 3; i++) {
             yPos = yOffset + (i * 60);
             getdisplay().fillRect(0, yPos, width, 1, commonData->fgcolor);
@@ -483,16 +478,13 @@ public:
                 chrtLbl = ((i - 1 + (prevY < yOffset + 30)) * dataIntv) * -1; // change label if last data point is more than 30 lines (= seconds) from chart line
             } else {
                 int j = 3 - i;
-                //                chrtLbl = (int((((count / dataIntv) - 50) * dataIntv / 60) + 1) - ((j - 1) * dataIntv)) * -1; // 50 lines left below last chart line
-                chrtLbl = (int(((linesToShow - 50) * dataIntv / 60) + 1) - (j * dataIntv)) * -1; // 50 lines left below last chart line
+                chrtLbl = (int((((numWndVals / dataIntv) - 50) * dataIntv / 60) + 1) - (j * dataIntv)) * -1; // 50 lines left below last chart line
             }
-            //            if (chrtLbl <= 0) {
             getdisplay().printf("%3d", chrtLbl); // Wind value label
-            //            }
         }
 
         unsigned long finish = millis() - start;
-        LOG_DEBUG(GwLog::ERROR, "PageWindPlot Time: %lu", finish);
+//        LOG_DEBUG(GwLog::ERROR, "PageWindPlot Time: %lu", finish);
         // Update display
         getdisplay().nextPage(); // Partial update (fast)
     };
@@ -513,7 +505,8 @@ PageDescription registerPageWindPlot(
     "WindPlot", // Page name
     createPage, // Action
     0, // Number of bus values depends on selection in Web configuration
-    { "TWD", "TWA", "TWS", "HDM", "AWA", "AWS", "STW", "COG", "SOG" }, // Bus values we need in the page
+//    { "TWD", "TWA", "TWS", "HDM", "AWA", "AWS", "STW", "COG", "SOG" }, // Bus values we need in the page
+    { }, // Bus values we need in the page
     true // Show display header on/off
 );
 

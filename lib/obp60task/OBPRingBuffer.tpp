@@ -9,7 +9,7 @@ RingBuffer<T>::RingBuffer(size_t size)
     , count(0)
     , is_Full(false)
 {
-    bufLocker=xSemaphoreCreateMutex();
+    bufLocker = xSemaphoreCreateMutex();
 
     if (size == 0) {
         // return false;
@@ -44,11 +44,11 @@ void RingBuffer<T>::setMetaData(String name, String format, int updateFrequency,
 template <typename T>
 bool RingBuffer<T>::getMetaData(String& name, String& format, int& updateFrequency, T& minValue, T& maxValue)
 {
-    GWSYNCHRONIZED(&bufLocker);
     if (dataName == "" || dataFmt == "" || updFreq == -1) {
         return false; // Meta data not set
     }
 
+    GWSYNCHRONIZED(&bufLocker);
     name = dataName;
     format = dataFmt;
     updateFrequency = updFreq;
@@ -108,7 +108,7 @@ T RingBuffer<T>::getFirst() const
     if (isEmpty()) {
         return MIN_VAL;
     }
-    return get(first);
+    return get(0);
 }
 
 // Get the last (newest) value in the buffer
@@ -118,7 +118,7 @@ T RingBuffer<T>::getLast() const
     if (isEmpty()) {
         return MIN_VAL;
     }
-    return get(last);
+    return get(count - 1);
 }
 
 // Get the lowest value in the buffer
@@ -129,11 +129,11 @@ T RingBuffer<T>::getMin() const
         return MIN_VAL;
     }
 
-    T minVal = get(first);
+    T minVal = getFirst();
     T value;
-    for (size_t i = 0; i < count; i++) {
+    for (size_t i = 1; i < count; i++) {
         value = get(i);
-        if (value < minVal) {
+        if (value < minVal && value != MIN_VAL) {
             minVal = value;
         }
     }
@@ -150,10 +150,10 @@ T RingBuffer<T>::getMin(size_t amount) const
     if (amount > count)
         amount = count;
 
-    T minVal = get(last);
+    T minVal = getLast();
     T value;
     for (size_t i = 0; i < amount; i++) {
-        value = get((last + capacity - i) % capacity);
+        value = get(count - 1 - i);
         if (value < minVal && value != MIN_VAL) {
             minVal = value;
         }
@@ -169,11 +169,11 @@ T RingBuffer<T>::getMax() const
         return MIN_VAL;
     }
 
-    T maxVal = get(first);
+    T maxVal = getFirst();
     T value;
-    for (size_t i = 0; i < count; i++) {
+    for (size_t i = 1; i < count; i++) {
         value = get(i);
-        if (value > maxVal) {
+        if (value > maxVal && value != MIN_VAL) {
             maxVal = value;
         }
     }
@@ -190,10 +190,10 @@ T RingBuffer<T>::getMax(size_t amount) const
     if (amount > count)
         amount = count;
 
-    T maxVal = get(last);
+    T maxVal = getLast();
     T value;
     for (size_t i = 0; i < amount; i++) {
-        value = get((last + capacity - i) % capacity);
+        value = get(count - 1 - i);
         if (value > maxVal && value != MIN_VAL) {
             maxVal = value;
         }

@@ -812,30 +812,24 @@ void sensorTask(void *param){
             if (twdBVal->valid) {
                 val = static_cast<int16_t>(std::round(twdBVal->value * 1000)); // Shift value to store decimals in int16_t);
                 if (val < hstryMinVal || val > twdHstryMax) {
-                    val = INT16_MIN; // Add invalid value - to be fixed later
+                    val = INT16_MIN; // Add invalid value
                 }
-            } else {
-                val = INT16_MIN;
+                twdHstry.add(val);
             }
-            twdHstry.add(val);
             if (twsBVal->valid) {
                 val = static_cast<int16_t>(twsBVal->value * 10); // Shift value to store decimals in int16_t
                 if (val < hstryMinVal || val > twsHstryMax) {
                     val = INT16_MIN; // Add invalid value
                 }
-            } else {
-                val = INT16_MIN;
+                twsHstry.add(val);
             }
-            twsHstry.add(val);
             if (dbtBVal->valid) {
                 val = static_cast<int16_t>(dbtBVal->value * 10); // Shift value to store decimals in int16_t
                 if (val < hstryMinVal || val > dbtHstryMax) {
                     val = INT16_MIN; // Add invalid value
                 }
-            } else {
-                val = INT16_MIN;
+                dbtHstry.add(val);
             }
-            dbtHstry.add(val);
 
             int counttime = millis() - starttime20;
             api->getLogger()->logDebug(GwLog::ERROR,"SensorTask write time: %d", counttime);
