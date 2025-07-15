@@ -6,11 +6,6 @@
 #include <esp32/clk.h>
 #include "qrcode.h"
 
-#ifdef BOARD_OBP40S3
-#include <SD.h>
-#include <FS.h>
-#endif
-
 #define STRINGIZE_IMPL(x) #x
 #define STRINGIZE(x) STRINGIZE_IMPL(x)
 #define VERSINFO STRINGIZE(GWDEVVERSION)
@@ -250,12 +245,7 @@ public:
             getdisplay().setCursor(8, y0 + 48);
             getdisplay().print("SD-Card:");
             getdisplay().setCursor(90, y0 + 48);
-            if (sdcard) {
-                uint64_t cardsize = SD.cardSize() / (1024 * 1024);
-                getdisplay().print(String(cardsize) + String(" MB"));
-            } else {
-                getdisplay().print("off");
-            }
+            getdisplay().print(hasSDcard ? "ok" : "no");
 #endif
 
             // CPU speed config / active
@@ -355,7 +345,6 @@ public:
             y0 = 72;
             getdisplay().setCursor(x0, y0);
             getdisplay().print("Work in progress...");
-
 
         } else {
             // NMEA2000 device list

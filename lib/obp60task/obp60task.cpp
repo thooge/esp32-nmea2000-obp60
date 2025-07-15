@@ -79,8 +79,8 @@ void OBP60Init(GwApi *api){
     }
 
     #ifdef BOARD_OBP40S3
-    bool sdcard = config->getBool(config->useSDCard);
-    if (sdcard) {
+    // TODO migrate to new code see OBP60Extensions.cpp
+    if (config->getBool(config->useSDCard)) {
         SPIClass SD_SPI = SPIClass(HSPI);
         SD_SPI.begin(SD_SPI_CLK, SD_SPI_MISO, SD_SPI_MOSI);
         if (SD.begin(SD_SPI_CS, SD_SPI, 80000000)) {
@@ -99,6 +99,7 @@ void OBP60Init(GwApi *api){
             }
             uint64_t cardSize = SD.cardSize() / (1024 * 1024);
             LOG_DEBUG(GwLog::LOG,"SD card type %s of size %d MB detected", sdtype, cardSize);
+            SD_SPI.end();
         }
     }
 
@@ -382,6 +383,7 @@ void OBP60Task(GwApi *api){
 #ifdef HARDWARE_V21
     startLedTask(api);
 #endif
+
     PageList allPages;
     registerAllPages(allPages);
     CommonData commonData;

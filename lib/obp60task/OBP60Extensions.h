@@ -7,6 +7,12 @@
 #include <GxEPD2_BW.h>                  // E-paper lib V2
 #include <Adafruit_FRAM_I2C.h>          // I2C FRAM
 
+#ifdef BOARD_OBP40S3
+#include "esp_vfs_fat.h"
+#include "sdmmc_cmd.h"
+#define MOUNT_POINT "/sdcard"
+#endif
+
 // FRAM address reservations 32kB: 0x0000 - 0x7FFF
 // 0x0000 - 0x03ff: single variables
 #define FRAM_PAGE_NO 0x0002
@@ -24,6 +30,10 @@
 
 extern Adafruit_FRAM_I2C fram;
 extern bool hasFRAM;
+#ifdef BOARD_OBP40S3
+extern sdmmc_card_t *sdcard;
+extern bool hasSDCard;
+#endif
 
 // Fonts declarations for display (#includes see OBP60Extensions.cpp)
 extern const GFXfont DSEG7Classic_BoldItalic16pt7b;
