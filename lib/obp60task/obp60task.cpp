@@ -13,6 +13,8 @@
 #include "OBP60Extensions.h"            // Functions lib for extension board
 #include "OBP60Keypad.h"                // Functions for keypad
 #include "BoatDataCalibration.h"        // Functions lib for data instance calibration
+#include "OBPRingBuffer.h"              // Functions lib with ring buffer for history storage of some boat data
+#include "OBPDataOperations.h"          // Functions lib for data operations such as true wind calculation
 
 #ifdef BOARD_OBP40S3
 #include "driver/rtc_io.h"              // Needs for weakup from deep sleep
@@ -390,6 +392,11 @@ void OBP60Task(GwApi *api){
     commonData.logger=logger;
     commonData.config=config;
 
+    // Create ring buffers for history storage of some boat data
+    RingBuffer<int16_t> twdHstry(960); // Circular buffer to store wind direction values; store 960 TWD values for 16 minutes history
+    RingBuffer<int16_t> twsHstry(960); // Circular buffer to store wind speed values (TWS)
+    RingBuffer<int16_t> dbtHstry(960); // Circular buffer to store water depth values (DBT)
+
 #ifdef HARDWARE_V21
     // Keyboard coordinates for page footer
     initKeys(commonData);
@@ -525,12 +532,41 @@ void OBP60Task(GwApi *api){
             LOG_DEBUG(GwLog::DEBUG,"added fixed value %s to page %d",value->getName().c_str(),i);
             pages[i].parameters.values.push_back(value); 
        }
+        // Add boat history data to page parameters
+        pages[i].parameters.boatHstry = {&twdHstry, &twsHstry, &dbtHstry};
     }
     // add out of band system page (always available)
     Page *syspage = allPages.pages[0]->creator(commonData);
 
     // Read all calibration data settings from config
     calibrationData.readConfig(config, logger);
+
+    // List of boat values for history storage
+    GwApi::BoatValue *twdBVal=new GwApi::BoatValue(GwBoatData::_TWD);
+    GwApi::BoatValue *twsBVal=new GwApi::BoatValue(GwBoatData::_TWS);
+    GwApi::BoatValue *dbtBVal=new GwApi::BoatValue(GwBoatData::_DBT);
+    GwApi::BoatValue *hstryValList[]={twdBVal, twsBVal, dbtBVal};
+    api->getBoatDataValues(3, hstryValList);
+    // Boat data history buffer initialization
+    int hstryUpdFreq = 1000; // Update frequency for history buffers in ms
+    int hstryMinVal = 0; // Minimum value for these history buffers
+    int twdHstryMax = 6283; // Max value for wind direction (TWD) in rad (0...2*PI), shifted by 1000 for 3 decimals
+    int twsHstryMax = 1000; // Max value for wind speed (TWS) in m/s, shifted by 10 for 1 decimal
+    int dbtHstryMax = 3276; // Max value for depth in m (=327), shifted by 10 for 1 decimal
+    // Initialize history buffers with meta data
+    twdHstry.setMetaData(twdBVal->getName(), twdBVal->getFormat(), hstryUpdFreq, hstryMinVal, twdHstryMax);
+    twsHstry.setMetaData(twsBVal->getName(), twsBVal->getFormat(), hstryUpdFreq, hstryMinVal, twsHstryMax);
+    dbtHstry.setMetaData(dbtBVal->getName(), dbtBVal->getFormat(), hstryUpdFreq, hstryMinVal, dbtHstryMax);
+    bool simulation = api->getConfig()->getBool(api->getConfig()->useSimuData, false);
+
+    // List of boat values for true winds calculation
+    GwApi::BoatValue *awaBVal=new GwApi::BoatValue(GwBoatData::_AWA);
+    GwApi::BoatValue *awsBVal=new GwApi::BoatValue(GwBoatData::_AWS);
+    GwApi::BoatValue *cogBVal=new GwApi::BoatValue(GwBoatData::_COG);
+    GwApi::BoatValue *stwBVal=new GwApi::BoatValue(GwBoatData::_STW);
+    GwApi::BoatValue *hdtBVal=new GwApi::BoatValue(GwBoatData::_HDT);
+    GwApi::BoatValue *hdmBVal=new GwApi::BoatValue(GwBoatData::_HDM);
+    GwApi::BoatValue *WndCalcValList[]={awaBVal, awsBVal, cogBVal, stwBVal, hdtBVal, hdmBVal};
 
     // Display screenshot handler for HTTP request
     // http://192.168.15.1/api/user/OBP60Task/screenshot
@@ -587,6 +623,18 @@ void OBP60Task(GwApi *api){
     GwApi::BoatValue *lon = boatValues.findValueOrCreate("LON");        // Load GpsLongitude
     GwApi::BoatValue *hdop = boatValues.findValueOrCreate("HDOP");       // Load GpsHDOP
 
+/*    // Boat values for wind conversion for main loop; will be calculated in case values are not available by sensors
+    GwApi::BoatValue *twd = boatValues.findValueOrCreate("TWD");        // True Wind Direction
+    GwApi::BoatValue *tws = boatValues.findValueOrCreate("TWS");        // True Wind Speed
+    GwApi::BoatValue *twa = boatValues.findValueOrCreate("TWA");        // True Wind Angle
+    GwApi::BoatValue *awaBVal = boatValues.findValueOrCreate("AWA");        // Apparent Wind Angle
+    GwApi::BoatValue *awsBVal = boatValues.findValueOrCreate("AWS");        // Apparent Wind Speed
+    GwApi::BoatValue *cogBVal = boatValues.findValueOrCreate("COG");        // Course Over Ground
+    GwApi::BoatValue *stwBVal = boatValues.findValueOrCreate("STW");        // Speed Through Water
+    GwApi::BoatValue *hdtBVal = boatValues.findValueOrCreate("HDT");        // Heading True
+    GwApi::BoatValue *ctwBVal = boatValues.findValueOrCreate("CTW");        // Course Through Water
+    GwApi::BoatValue *hdmBVal = boatValues.findValueOrCreate("HDM");        // Heading Magnetic
+*/
     LOG_DEBUG(GwLog::LOG,"obp60task: start mainloop");
     
     commonData.time = boatValues.findValueOrCreate("GPST");      // Load GpsTime
@@ -600,6 +648,7 @@ void OBP60Task(GwApi *api){
     long starttime3 = millis();     // Display update all 1s
     long starttime4 = millis();     // Delayed display update after 4s when select a new page
     long starttime5 = millis();     // Calculate sunrise and sunset all 1s
+    unsigned long starttime10 = millis(); // Get history TWD, TWS, DBT data and calculate true winds each 1s
 
     pages[pageNumber].page->setupKeys(); // Initialize keys for first page
 
@@ -789,6 +838,60 @@ void OBP60Task(GwApi *api){
                 }
             }
             
+            // Read TWD, TWS, DBT data from boatData each 1000ms for history and windplot display
+            if((millis() > starttime10 + 1000) && !simulation) {
+                double twdVal, twsVal, dbtVal;
+                double awaVal, awsVal, cogVal, stwVal, hdtVal, hdmVal;
+                double DBL_MIN = std::numeric_limits<double>::lowest();
+
+                starttime10 = millis();
+                LOG_DEBUG(GwLog::DEBUG,"History buffer write cycle");
+                api->getBoatDataValues(3, hstryValList);
+
+                if (!twdBVal->valid || !twsBVal->valid) {
+                    api->getBoatDataValues(6, WndCalcValList); // Get all values for true wind calculation
+                    awaVal = awaBVal->valid ? awaBVal->value * RAD_TO_DEG : __DBL_MIN__;
+                    awsVal = awsBVal->valid ? awsBVal->value : __DBL_MIN__;
+                    cogVal = cogBVal->valid ? cogBVal->value  * RAD_TO_DEG : __DBL_MIN__;
+                    stwVal = stwBVal->valid ? stwBVal->value : __DBL_MIN__;
+                    hdtVal = hdtBVal->valid ? hdtBVal->value * RAD_TO_DEG : __DBL_MIN__;
+                    hdmVal = hdmBVal->valid ? hdmBVal->value * RAD_TO_DEG : __DBL_MIN__; 
+                    LOG_DEBUG(GwLog::ERROR,"obp60task - Read data: AWA: %f, AWS: %f, COG: %f, STW: %f, HDT: %f, TWD=%f, TWS=%f", awaBVal->value, awsBVal->value,
+                            cogBVal->value, stwBVal->value, hdtBVal->value, twdBVal->value, twsBVal->value);
+
+                    bool isCalculated = WindUtils::calcTrueWind(&awaVal, &awsVal, &cogVal, &stwVal, &cogVal, &hdmVal, &twdVal, &twsVal); // Calculate true wind if TWD not available
+//                    bool isCalculated = WindUtils::calcTrueWind(&awaVal, &awsVal, &cogVal, &stwVal, &hdtVal, &hdmVal, &twdVal, &twsVal); // Calculate true wind if TWD not available
+                    LOG_DEBUG(GwLog::ERROR,"obp60task - calc Wind: AWA: %f, AWS: %f, COG: %f, STW: %f, HDT: %f, TWD=%f, TWS=%f, converted? %d", awaBVal->value * RAD_TO_DEG, awsBVal->value * 3.6 / 1.852,
+                            cogBVal->value * RAD_TO_DEG, stwBVal->value * 3.6 / 1.852, hdtBVal->value * RAD_TO_DEG, twdVal, twsVal, isCalculated);
+                }
+                if (twdBVal->valid) {
+                    twdVal = std::round(twdBVal->value * 1000); // Shift value to store decimals in int16_t);
+                    if (twdVal < hstryMinVal || twdVal > twdHstryMax) {
+                        twdVal = INT16_MIN; // Add invalid value
+                    }
+                }
+                twdHstry.add(static_cast<int16_t>(twdVal));
+
+                if (twsBVal->valid) {
+                    twsVal = static_cast<int16_t>(twsBVal->value * 10); // Shift value to store decimals in int16_t
+                    if (twsVal < hstryMinVal || twsVal > twsHstryMax) {
+                        twsVal = INT16_MIN; // Add invalid value
+                    }
+                }
+                twsHstry.add(twsVal);
+
+                if (dbtBVal->valid) {
+                    dbtVal = dbtBVal->value * 10; // Shift value to store decimals in int16_t
+                    if (dbtVal < hstryMinVal || dbtVal > dbtHstryMax) {
+                        dbtVal = INT16_MIN; // Add invalid value
+                    }
+                    dbtHstry.add(dbtVal);
+                }
+
+                int counttime = millis() - starttime10;
+                LOG_DEBUG(GwLog::ERROR,"obp60task: History buffer write time: %d", counttime);
+            }
+
             // Refresh display data, default all 1s
             currentPage = pages[pageNumber].page;
             int pagetime = 1000;
@@ -839,7 +942,6 @@ void OBP60Task(GwApi *api){
                             currentPage->displayNew(pages[pageNumber].parameters);
                             lastPage=pageNumber;
                         }
-                        pages[pageNumber].parameters.boatHstry = shared->getHstryBuf(); // Add boat history data to page parameters
                         //call the page code
                         LOG_DEBUG(GwLog::DEBUG,"calling page %d",pageNumber);
                         // Show footer if enabled (together with header)
