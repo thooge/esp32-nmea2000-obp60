@@ -57,6 +57,11 @@ GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> & getdisplay();
 GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay();
 #endif
 
+// Page display return values
+#define PAGE_OK 0          // all ok, do nothing
+#define PAGE_UPDATE 1      // page wants display to update
+#define PAGE_HIBERNATE 2   // page wants displey to hibernate
+
 struct Point {
     double x;
     double y;
@@ -97,6 +102,7 @@ void displayTrendLow(int16_t x, int16_t y, uint16_t size, uint16_t color);
 
 void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatValue *time, GwApi::BoatValue *hdop); // Draw display header
 void displayFooter(CommonData &commonData);
+void displayAlarm(CommonData &commonData);
 
 SunData calcSunsetSunrise(double time, double date, double latitude, double longitude, float timezone); // Calulate sunset and sunrise
 SunData calcSunsetSunriseRTC(struct tm *rtctime, double latitude, double longitude, float timezone);
@@ -142,12 +148,12 @@ static unsigned char fram_bits[] PROGMEM = {
    0xff, 0xff, 0xf8, 0x1f, 0xf8, 0x1f, 0xff, 0xff, 0xff, 0xff, 0xf8, 0x1f,
    0xf8, 0x1f, 0xff, 0xff, 0xff, 0xff, 0xf8, 0x1f };
 
-static unsigned char ap_bits[] = {
+static unsigned char ap_bits[] PROGMEM = {
    0xe0, 0x03, 0x18, 0x0c, 0x04, 0x10, 0xc2, 0x21, 0x30, 0x06, 0x08, 0x08,
    0xc0, 0x01, 0x20, 0x02, 0x00, 0x00, 0x80, 0x00, 0xc0, 0x01, 0xc0, 0x01,
    0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00 };
 
-static unsigned char dish_bits[] PROGMEM= {
+static unsigned char dish_bits[] PROGMEM = {
    0x3c, 0x00, 0x42, 0x18, 0xfa, 0x1b, 0x02, 0x04, 0x02, 0x0a, 0x02, 0x09,
    0x82, 0x08, 0x06, 0x0a, 0x0e, 0x1b, 0x9c, 0x2b, 0x38, 0x2b, 0x74, 0x20,
    0xec, 0x1f, 0x1c, 0x00, 0xf4, 0x00, 0xfe, 0x03 };

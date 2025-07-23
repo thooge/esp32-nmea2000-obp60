@@ -164,7 +164,7 @@ public:
         }
     }
 
-    virtual void displayPage(PageData &pageData){
+    int displayPage(PageData &pageData){
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
 
@@ -391,7 +391,7 @@ public:
 
         // Update display
         getdisplay().nextPage();    // Partial update (fast)
-
+        return PAGE_OK;
     };
 };
 
