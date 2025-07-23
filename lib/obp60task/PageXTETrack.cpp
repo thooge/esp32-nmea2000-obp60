@@ -65,7 +65,7 @@ class PageXTETrack : public Page
         return key;
     }
 
-    virtual void displayPage(PageData &pageData){
+    int displayPage(PageData &pageData){
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
 
@@ -207,9 +207,7 @@ class PageXTETrack : public Page
         drawSegment(399, 100, 318, 24, 289, 24, 350, 100, commonData->fgcolor, seg[4]);
         drawSegment(399, 54, 354, 24, 325, 24, 399, 90, commonData->fgcolor, seg[5]);
 
-        // Update display
-        getdisplay().nextPage();    // Partial update (fast)
-
+        return PAGE_UPDATE;
     };
 };
 

@@ -296,7 +296,7 @@ public:
         return key;
     }
 
-    virtual void displayPage(PageData &pageData)
+    int displayPage(PageData &pageData)
     {
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
@@ -354,7 +354,7 @@ public:
         }
 
         // Logging boat values
-        if (bvalue1 == NULL) return;
+        if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
         LOG_DEBUG(GwLog::LOG,"Drawing at PageWind, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
 
         // Draw page
@@ -618,9 +618,7 @@ public:
 
         }
 
-        // Update display
-        getdisplay().nextPage();     // Partial update (fast)
-
+        return PAGE_UPDATE;
     };
 };
 

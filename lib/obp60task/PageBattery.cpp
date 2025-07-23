@@ -34,7 +34,7 @@ class PageBattery : public Page
         return key;
     }
 
-    virtual void displayPage(PageData &pageData){
+    int displayPage(PageData &pageData){
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
         
@@ -288,9 +288,7 @@ class PageBattery : public Page
             getdisplay().print("---");                       // No sensor data (sensor is off)
         }
 
-        // Update display
-        getdisplay().nextPage();    // Partial update (fast)
-
+        return PAGE_UPDATE;
     };
 };
 

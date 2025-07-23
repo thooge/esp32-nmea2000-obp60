@@ -31,7 +31,7 @@ public:
         return key;
     }
 
-    virtual void displayPage(PageData &pageData){
+    int displayPage(PageData &pageData){
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
 
@@ -67,10 +67,13 @@ public:
         }
 
         // Update display
-        getdisplay().nextPage();
+        // getdisplay().nextPage();
+        int ret = PAGE_UPDATE;
         if (mode == 'W') {
-            getdisplay().hibernate();
+            //getdisplay().hibernate();
+            ret |= PAGE_HIBERNATE;
         }
+        return ret;
 
     };
 };

@@ -98,7 +98,7 @@ class PageFluid : public Page
         commonData->logger->logDebug(GwLog::LOG,"New PageFluid: fluidtype=%d", fluidtype);
     }
 
-    virtual void displayPage(PageData &pageData){
+    int displayPage(PageData &pageData){
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
 
@@ -252,9 +252,7 @@ class PageFluid : public Page
             getdisplay().fillCircle(c.x, c.y, 6, commonData->bgcolor);
         }
  
-        // Update display
-        getdisplay().nextPage();    // Partial update (fast)
-
+        return PAGE_UPDATE;
     };
 };
 

@@ -61,7 +61,7 @@ class PageCompass : public Page
         return key;
     }
 
-    virtual void displayPage(PageData &pageData){
+    int displayPage(PageData &pageData){
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
     
@@ -104,7 +104,7 @@ class PageCompass : public Page
             setFlashLED(false); 
         }
 
-        if (bvalue == NULL) return;
+        if (bvalue == NULL) return PAGE_OK; // WTF why this statement?
         
         //***********************************************************
 
@@ -235,12 +235,11 @@ class PageCompass : public Page
         // if ( x_test > 390)
         //     x_test = 320;
 
-        // Update display
-        getdisplay().nextPage();    // Partial update (fast)
-    
-        };
-    
+        return PAGE_UPDATE;
     };
+
+};
+
 static Page *createPage(CommonData &common){
     return new PageCompass(common);
 }/**

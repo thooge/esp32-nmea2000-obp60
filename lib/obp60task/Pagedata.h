@@ -78,6 +78,22 @@ typedef struct{
     bool on;            // fast on/off detector
 } BacklightData;
 
+enum AlarmSource {
+    Alarm_Generic,
+    Alarm_Local,
+    Alarm_NMEA0183,
+    Alarm_NMEA2000
+};
+
+typedef struct{
+    uint8_t id; // alarm-id e.g. 01..99 from NMEA0183
+    AlarmSource source;
+    String message; // single line of plain text
+    bool active = false;
+    uint8_t signal; // how to signal MESSAGE | LED | BUZZER
+    uint8_t length_sec; // seconds until alarm disappeares without user interaction
+} AlarmData;
+
 typedef struct{
   GwApi::Status status;
   GwLog *logger=NULL;
@@ -86,6 +102,7 @@ typedef struct{
   SunData sundata;
   TouchKeyData keydata[6];
   BacklightData backlight;
+  AlarmData alarm;
   GwApi::BoatValue *time=NULL;
   GwApi::BoatValue *date=NULL;
   uint16_t fgcolor;
@@ -100,7 +117,7 @@ class Page{
     CommonData *commonData;
   public:
     int refreshtime = 1000;
-    virtual void displayPage(PageData &pageData)=0;
+    virtual int displayPage(PageData &pageData)=0;
     virtual void displayNew(PageData &pageData){}
     virtual void setupKeys() {
 #ifdef HARDWARE_V21

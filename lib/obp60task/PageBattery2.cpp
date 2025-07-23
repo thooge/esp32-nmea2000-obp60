@@ -44,7 +44,7 @@ public:
         return key;
     }
 
-    virtual void displayPage(PageData &pageData)
+    int displayPage(PageData &pageData)
     {
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
@@ -334,8 +334,7 @@ public:
         getdisplay().setFont(&Ubuntu_Bold16pt8b);
         getdisplay().print("W");
 
-        // Update display
-        getdisplay().nextPage();    // Partial update (fast)
+        return PAGE_UPDATE;
     };
 };
 
