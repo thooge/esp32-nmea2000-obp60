@@ -20,7 +20,7 @@ class PageBME280 : public Page
         return key;
     }
 
-    virtual void displayPage(PageData &pageData){
+    int displayPage(PageData &pageData){
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
 
@@ -176,9 +176,7 @@ class PageBME280 : public Page
         // Show bus data
         getdisplay().print(svalue3);                         // Real value as formated string
 
-        // Update display
-        getdisplay().nextPage();    // Partial update (fast)
-
+        return PAGE_UPDATE;
     };
 };
 

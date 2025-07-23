@@ -843,7 +843,16 @@ void OBP60Task(GwApi *api){
                         if (pages[pageNumber].description && pages[pageNumber].description->header){
                             displayFooter(commonData);
                         }
-                        currentPage->displayPage(pages[pageNumber].parameters);
+                        int ret = currentPage->displayPage(pages[pageNumber].parameters);
+                        if (commonData.alarm.active) {
+                            displayAlarm(commonData);
+                        }
+                        if (ret & PAGE_UPDATE) {
+                            getdisplay().nextPage(); // Partial update (fast)
+                        }
+                        if (ret & PAGE_HIBERNATE) {
+                            getdisplay().hibernate();
+                        }
                     }
 
                 }
