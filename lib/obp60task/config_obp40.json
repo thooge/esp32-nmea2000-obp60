@@ -737,7 +737,7 @@
         "condition": [
             { "calInstance1": "AWA" },
             { "calInstance1": "AWS" },
-            { "calInstance2": "COG" },
+            { "calInstance1": "COG" },
             { "calInstance1": "DBT" },
             { "calInstance1": "HDM" },
             { "calInstance1": "PRPOS" },
@@ -762,7 +762,7 @@
         "condition": [
             { "calInstance1": "AWA" },
             { "calInstance1": "AWS" },
-            { "calInstance2": "COG" },
+            { "calInstance1": "COG" },
             { "calInstance1": "DBT" },
             { "calInstance1": "HDM" },
             { "calInstance1": "PRPOS" },
@@ -782,7 +782,7 @@
         "check": "checkMinMax",
         "min": 0,
         "max": 10,
-        "description": "Smoothing factor for data instance 1",
+        "description": "Smoothing factor [0..10]; 0 = no smoothing",
         "category": "OBP40 Calibrations",
         "capabilities": {
             "obp40":"true"
@@ -790,7 +790,7 @@
         "condition": [
             { "calInstance1": "AWA" },
             { "calInstance1": "AWS" },
-            { "calInstance2": "COG" },
+            { "calInstance1": "COG" },
             { "calInstance1": "DBT" },
             { "calInstance1": "HDM" },
             { "calInstance1": "PRPOS" },
@@ -887,7 +887,7 @@
         "check": "checkMinMax",
         "min": 0,
         "max": 10,
-        "description": "Smoothing factor for data instance 2",
+        "description": "Smoothing factor [0..10]; 0 = no smoothing",
         "category": "OBP40 Calibrations",
         "capabilities": {
             "obp40":"true"
@@ -992,7 +992,7 @@
         "check": "checkMinMax",
         "min": 0,
         "max": 10,
-        "description": "Smoothing factor for data instance 3",
+        "description": "Smoothing factor [0..10]; 0 = no smoothing",
         "category": "OBP40 Calibrations",
         "capabilities": {
             "obp40":"true"
