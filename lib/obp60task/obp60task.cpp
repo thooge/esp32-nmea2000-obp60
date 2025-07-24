@@ -421,7 +421,7 @@ void OBP60Task(GwApi *api){
     #endif
 
     #ifdef DISPLAY_GDEY042T81
-        getdisplay().init(115200, true, 2, false);  // Use this for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+        getdisplay().init(115200, true, 2, false);  // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
     #else
         getdisplay().init(115200);                  // Init for normal displays
     #endif
@@ -747,12 +747,22 @@ void OBP60Task(GwApi *api){
                 starttime1 = millis();
                 starttime2 = millis();
                 getdisplay().setFullWindow();    // Set full update
-                getdisplay().nextPage();
-                if(fastrefresh == "false"){
+                if(fastrefresh == "true"){
+                    getdisplay().nextPage();                     // Full update
+                }
+                else{
                     getdisplay().fillScreen(commonData.fgcolor); // Clear display
+                    #ifdef DISPLAY_GDEY042T81
+                        getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+                    #else
+                        getdisplay().init(115200);               // Init for normal displays
+                    #endif
+                    getdisplay().firstPage();                    // Full update
                     getdisplay().nextPage();                     // Full update
-                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
-                    getdisplay().nextPage();                     // Full update
+//                    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+//                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
+//                    getdisplay().nextPage();                     // Partial update
+//                    getdisplay().nextPage();                     // Partial update
                 }
                 delayedDisplayUpdate = false;
             }
@@ -764,12 +774,22 @@ void OBP60Task(GwApi *api){
                 starttime2 = millis();
                 LOG_DEBUG(GwLog::DEBUG,"E-Ink full refresh first 5 min");
                 getdisplay().setFullWindow();    // Set full update
-                getdisplay().nextPage();
-                if(fastrefresh == "false"){
+                if(fastrefresh == "true"){
+                    getdisplay().nextPage();                     // Full update
+                }
+                else{
                     getdisplay().fillScreen(commonData.fgcolor); // Clear display
+                    #ifdef DISPLAY_GDEY042T81
+                        getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+                    #else
+                        getdisplay().init(115200);               // Init for normal displays
+                    #endif
+                    getdisplay().firstPage();                    // Full update
                     getdisplay().nextPage();                     // Full update
-                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
-                    getdisplay().nextPage();                     // Full update
+//                    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+//                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
+//                    getdisplay().nextPage();                     // Partial update
+//                    getdisplay().nextPage();                     // Partial update
                 }
             }
 
@@ -778,12 +798,22 @@ void OBP60Task(GwApi *api){
                 starttime2 = millis();
                 LOG_DEBUG(GwLog::DEBUG,"E-Ink full refresh");
                 getdisplay().setFullWindow();    // Set full update
-                getdisplay().nextPage();
-                if(fastrefresh == "false"){
+                if(fastrefresh == "true"){
+                    getdisplay().nextPage();                     // Full update
+                }
+                else{
                     getdisplay().fillScreen(commonData.fgcolor); // Clear display
+                    #ifdef DISPLAY_GDEY042T81
+                        getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+                    #else
+                        getdisplay().init(115200);               // Init for normal displays
+                    #endif
+                    getdisplay().firstPage();                    // Full update
                     getdisplay().nextPage();                     // Full update
-                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
-                    getdisplay().nextPage();                     // Full update
+//                    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+//                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
+//                    getdisplay().nextPage();                     // Partial update
+//                    getdisplay().nextPage();                     // Partial update
                 }
             }
             
