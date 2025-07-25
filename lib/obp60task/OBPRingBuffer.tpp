@@ -57,6 +57,13 @@ bool RingBuffer<T>::getMetaData(String& name, String& format, int& updateFrequen
     return true;
 }
 
+// Get buffer name
+template <typename T>
+String RingBuffer<T>::getName() const
+{
+    return dataName;
+}
+
 // Add a new value to buffer
 template <typename T>
 void RingBuffer<T>::add(const T& value)
@@ -129,9 +136,9 @@ T RingBuffer<T>::getMin() const
         return MIN_VAL;
     }
 
-    T minVal = getFirst();
+    T minVal = MAX_VAL;
     T value;
-    for (size_t i = 1; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         value = get(i);
         if (value < minVal && value != MIN_VAL) {
             minVal = value;
@@ -150,7 +157,7 @@ T RingBuffer<T>::getMin(size_t amount) const
     if (amount > count)
         amount = count;
 
-    T minVal = getLast();
+    T minVal = MAX_VAL;
     T value;
     for (size_t i = 0; i < amount; i++) {
         value = get(count - 1 - i);
@@ -169,9 +176,9 @@ T RingBuffer<T>::getMax() const
         return MIN_VAL;
     }
 
-    T maxVal = getFirst();
+    T maxVal = MIN_VAL;
     T value;
-    for (size_t i = 1; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         value = get(i);
         if (value > maxVal && value != MIN_VAL) {
             maxVal = value;
@@ -190,7 +197,7 @@ T RingBuffer<T>::getMax(size_t amount) const
     if (amount > count)
         amount = count;
 
-    T maxVal = getLast();
+    T maxVal = MIN_VAL;
     T value;
     for (size_t i = 0; i < amount; i++) {
         value = get(count - 1 - i);
@@ -328,7 +335,7 @@ bool RingBuffer<T>::isFull() const
     return is_Full;
 }
 
-// Get lowest possible value for buffer; used for initialized buffer data
+// Get lowest possible value for buffer; used for non-set buffer data
 template <typename T>
 T RingBuffer<T>::getMinVal() const
 {

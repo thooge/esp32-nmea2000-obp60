@@ -220,6 +220,17 @@
         }
     },
     {
+        "name": "calcTrueWnds",
+        "label": "Calculate True Wind",
+        "type": "boolean",
+        "default": "false",
+        "description": "If not available, calculate true wind data from appearant wind and other boat data",
+        "category": "OBP60 Settings",
+        "capabilities": {
+            "obp60": "true"
+        }
+    },
+    {
         "name": "lengthFormat",
         "label": "Length Format",
         "type": "list",

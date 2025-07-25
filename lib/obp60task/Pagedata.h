@@ -5,14 +5,9 @@
 #include <vector>
 #include "LedSpiTask.h"
 #include "OBPRingBuffer.h"
+#include "OBPDataOperations.h"
 
 #define MAX_PAGE_NUMBER 10    // Max number of pages for show data
-
-typedef struct{
-  RingBuffer<int16_t>* twdHstry;
-  RingBuffer<int16_t>* twsHstry;
-  RingBuffer<int16_t>* dbtHstry;
-} tBoatHstryData;
 
 typedef std::vector<GwApi::BoatValue *> ValueList;
 
