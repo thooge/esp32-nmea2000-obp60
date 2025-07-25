@@ -113,7 +113,7 @@ public:
         return key;
     }
 
-    virtual void displayPage(PageData& pageData)
+    int displayPage(PageData& pageData)
     {
         GwConfigHandler* config = commonData->config;
         GwLog* logger = commonData->logger;
@@ -123,6 +123,16 @@ public:
         static int updFreq; // Update frequency for TWD
         static int16_t twdLowest, twdHighest; // TWD range
         // static int16_t twdBufMinVal; // lowest possible twd buffer value; used for non-set data
+
+        // current boat data values; TWD only for validation test, TWS for display of current value
+        const int numBoatData = 2;
+        GwApi::BoatValue* bvalue;
+        String BDataName[numBoatData];
+        double BDataValue[numBoatData];
+        bool BDataValid[numBoatData];
+        String BDataText[numBoatData];
+        String BDataUnit[numBoatData];
+        String BDataFormat[numBoatData];
 
         static bool isInitialized = false; // Flag to indicate that page is initialized
         static bool wndDataValid = false; // Flag to indicate if wind data is valid
@@ -163,7 +173,6 @@ public:
         static int chrtPrevVal; // Last wind value in chart area for check if value crosses 180 degree line
 
         LOG_DEBUG(GwLog::LOG, "Display page WindPlot");
-        unsigned long WndPlotStart = millis();
 
         // Get config data
         simulation = config->getBool(config->useSimuData);
@@ -194,26 +203,17 @@ public:
             isInitialized = true; // Set flag to indicate that page is now initialized
         }
 
-        const int numBoatData = 2;
-        GwApi::BoatValue* bvalue;
-        String DataName[numBoatData];
-        double DataValue[numBoatData];
-        bool DataValid[numBoatData];
-        String DataText[numBoatData];
-        String DataUnit[numBoatData];
-        String DataFormat[numBoatData];
-
         // read boat data values; TWD only for validation test, TWS for display of current value
         for (int i = 0; i < numBoatData; i++) {
             bvalue = pageData.values[i];
-            DataName[i] = xdrDelete(bvalue->getName());
-            DataName[i] = DataName[i].substring(0, 6); // String length limit for value name
+            // BDataName[i] = xdrDelete(bvalue->getName());
+            BDataName[i] = BDataName[i].substring(0, 6); // String length limit for value name
             calibrationData.calibrateInstance(bvalue, logger); // Check if boat data value is to be calibrated
-            DataValue[i] = bvalue->value; // Value as double in SI unit
-            DataValid[i] = bvalue->valid;
-            DataText[i] = formatValue(bvalue, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
-            DataUnit[i] = formatValue(bvalue, *commonData).unit;
-            DataFormat[i] = bvalue->getFormat(); // Unit of value
+            BDataValue[i] = bvalue->value; // Value as double in SI unit
+            BDataValid[i] = bvalue->valid;
+            BDataText[i] = formatValue(bvalue, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
+            BDataUnit[i] = formatValue(bvalue, *commonData).unit;
+            BDataFormat[i] = bvalue->getFormat(); // Unit of value
         }
 
         // Optical warning by limit violation (unused)
@@ -240,8 +240,8 @@ public:
                 bufStart = max(0, bufStart - numAddedBufVals);
             }
         }
-        LOG_DEBUG(GwLog::ERROR, "PageWindPlot Dataset: count: %d, TWD: %.0f, TWS: %.1f, TWD_valid? %d, intvBufSize: %d, numWndVals: %d, bufStart: %d, numAddedBufVals: %d, lastIdx: %d, old: %d, act: %d",
-            count, pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg, pageData.boatHstry.twsHstry->getLast() / 10.0 * 1.94384, DataValid[0],
+        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Dataset: count: %d, TWD: %.0f, TWS: %.1f, TWD_valid? %d, intvBufSize: %d, numWndVals: %d, bufStart: %d, numAddedBufVals: %d, lastIdx: %d, old: %d, act: %d",
+            count, pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg, pageData.boatHstry.twsHstry->getLast() / 10.0 * 1.94384, BDataValid[0],
             intvBufSize, numWndVals, bufStart, numAddedBufVals, pageData.boatHstry.twdHstry->getLastIdx(), oldDataIntv, dataIntv);
 
         // Set wndCenter from 1st real buffer value
@@ -307,16 +307,13 @@ public:
         if (pageData.boatHstry.twdHstry->getMax() == pageData.boatHstry.twdHstry->getMinVal()) {
             // only <INT16_MIN> values in buffer -> no valid wind data available
             wndDataValid = false;
-        } else if (!DataValid[0]) {
+        } else if (!BDataValid[0]) {
             // currently no valid TWD data available
             numNoData++;
             wndDataValid = true;
             if (numNoData > 3) {
                 // If more than 4 invalid values in a row, send message
                 wndDataValid = false;
-                getdisplay().setFont(&Ubuntu_Bold10pt8b);
-                getdisplay().fillRect(xCenter - 66, height / 2 - 20, 146, 24, commonData->bgcolor); // Clear area for TWS value
-                drawTextCenter(xCenter, height / 2 - 10, "No sensor data");
             }
         } else {
             numNoData = 0; // reset data error counter
@@ -397,8 +394,8 @@ public:
             // No valid data available
             LOG_DEBUG(GwLog::LOG, "PageWindPlot: No valid data available");
             getdisplay().setFont(&Ubuntu_Bold10pt8b);
-            getdisplay().fillRect(xCenter - 66, height / 2 - 20, 146, 24, commonData->bgcolor); // Clear area for TWS value
-            drawTextCenter(xCenter, height / 2 - 10, "No sensor data");
+            getdisplay().fillRect(xCenter - 33, height / 2 - 20, 66, 24, commonData->bgcolor); // Clear area for message
+            drawTextCenter(xCenter, height / 2 - 10, "No data");
         }
 
         // Print TWS value
@@ -425,24 +422,25 @@ public:
             getdisplay().fillRect(xPosTws - 4, yPosTws - 38, 142, 44, commonData->bgcolor); // Clear area for TWS value
             getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
             getdisplay().setCursor(xPosTws, yPosTws);
-            if (!DataValid[1]) {
+            if (!BDataValid[1]) {
                 getdisplay().print("--.-");
             } else {
-                if (DataValue[1] < 9.95) {
-                    getdisplay().printf("!%3.1f", DataValue[1] + 0.05); // Value, round to 1 decimal
+                double dbl = BDataValue[1] * 3.6 / 1.852;
+                if (dbl < 10.0) {
+                    getdisplay().printf("!%3.1f", dbl); // Value, round to 1 decimal
                 } else {
-                    getdisplay().printf("%4.1f", DataValue[1] + 0.05); // Value, round to 1 decimal
+                    getdisplay().printf("%4.1f", dbl); // Value, round to 1 decimal
                 }
             }
             getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(xPosTws + 82, yPosTws - 14);
 //            getdisplay().print("TWS"); // Name
-            getdisplay().print(DataName[1]); // Name
+            getdisplay().print(BDataName[1]); // Name
             getdisplay().setFont(&Ubuntu_Bold8pt8b);
 //            getdisplay().setCursor(xPosTws + 78, yPosTws + 1);
             getdisplay().setCursor(xPosTws + 82, yPosTws + 1);
 //            getdisplay().printf(" kn"); // Unit
-            getdisplay().print(DataUnit[1]); // Unit
+            getdisplay().print(BDataUnit[1]); // Unit
         }
 
         // chart Y axis labels; print at last to overwrite potential chart lines in label area
@@ -464,10 +462,7 @@ public:
             getdisplay().printf("%3d", chrtLbl); // Wind value label
         }
 
-        unsigned long finish = millis() - WndPlotStart;
-        LOG_DEBUG(GwLog::ERROR, "PageWindPlot Time: %lu", finish);
-        // Update display
-        getdisplay().nextPage(); // Partial update (fast)
+        return PAGE_UPDATE;
     };
 };
 
