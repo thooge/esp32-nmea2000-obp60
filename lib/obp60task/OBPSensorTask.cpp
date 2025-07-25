@@ -526,14 +526,18 @@ void sensorTask(void *param){
         // Send supply voltage value all 1s
         if(millis() > starttime5 + 1000 && String(powsensor1) == "off"){
             starttime5 = millis();
-            float rawVoltage = 0;
-            #if defined(BOARD_OBP40S3) && defined(VOLTAGE_SENSOR)
+            float rawVoltage = 0;       // Default value
+            #ifdef BOARD_OBP40S3
+            sensors.batteryVoltage = 0; // If no sensor then zero voltage
+            #endif
+            #if defined(BOARD_OBP40S3)  && defined(VOLTAGE_SENSOR)
             rawVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.53) * 2;   // Vin = 1/2 for OBP40
+            sensors.batteryVoltage = rawVoltage * vslope + voffset; // Calibration
             #endif
             #ifdef BOARD_OBP60S3
-            rawVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.17) * 20;   // Vin = 1/20 for OBP60    
+            rawVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.17) * 20;   // Vin = 1/20 for OBP60
+            sensors.batteryVoltage = rawVoltage * vslope + voffset; // Calibration  
             #endif
-            sensors.batteryVoltage = rawVoltage * vslope + voffset; // Calibration
             // Save new data in average array
             batV.reading(int(sensors.batteryVoltage * 100));
             // Calculate the average values for different time lines from integer values

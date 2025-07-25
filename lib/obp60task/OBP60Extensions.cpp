@@ -300,6 +300,49 @@ void fillPoly4(const std::vector<Point>& p4, uint16_t color) {
     getdisplay().fillTriangle(p4[0].x, p4[0].y, p4[2].x, p4[2].y, p4[3].x, p4[3].y, color);
 }
 
+// Split string into words, whitespace separated
+std::vector<String> split(const String &s) {
+    std::vector<String> words;
+    String word = "";
+    for (size_t i = 0; i < s.length(); i++) {
+        if (s[i] == ' ' || s[i] == '\t' || s[i] == '\r' || s[i] == '\n')  {
+            if (word.length() > 0) {
+                words.push_back(word);
+                word = "";
+            }
+        } else {
+             word += s[i];
+        }
+    }
+    if (word.length() > 0) {
+        words.push_back(word);
+    }
+    return words;
+}
+
+// Wordwrap single line, monospaced font
+std::vector<String> wordwrap(String &line, uint16_t maxwidth) {
+    std::vector<String> lines;
+    std::vector<String> words = split(line);
+    String currentLine = "";
+    for (const auto& word : words) {
+        if (currentLine.length() + word.length() + 1 > maxwidth) {
+             if (currentLine.length() > 0) {
+                  lines.push_back(currentLine);
+                  currentLine = "";
+             }
+        }
+        if (currentLine.length() > 0) {
+            currentLine += " ";
+        }
+        currentLine += word;
+    }
+    if (currentLine.length() > 0) {
+        lines.push_back(currentLine);
+    }
+    return lines;
+}
+
 // Draw centered text
 void drawTextCenter(int16_t cx, int16_t cy, String text) {
     int16_t x1, y1;
@@ -543,6 +586,47 @@ void displayFooter(CommonData &commonData) {
     getdisplay().drawLine(335, 280, 335, 399, commonData.fgcolor);
     drawTextCenter(366, 291, commonData.keydata[1].label);
 #endif
+}
+
+// Alarm overlay, to be drawn as very last draw operation
+void displayAlarm(CommonData &commonData) {
+
+    const uint16_t x = 50;   // overlay area
+    const uint16_t y = 100;
+    const uint16_t w = 300;
+    const uint16_t h = 150;
+
+    getdisplay().setFont(&Atari16px);
+    getdisplay().setTextColor(commonData.fgcolor);
+
+    // overlay
+    getdisplay().drawRect(x, y, w, h, commonData.fgcolor);
+    getdisplay().fillRect(x + 1, y + 1, w - 1, h - 1, commonData.bgcolor);
+    getdisplay().drawRect(x + 3, y + 3, w - 5, h - 5, commonData.fgcolor);
+
+    // exclamation icon in left top corner
+    getdisplay().drawXBitmap(x + 16, y + 16, exclamation_bits, exclamation_width, exclamation_height, commonData.fgcolor);
+
+    // title
+    getdisplay().setCursor(x + 64, y + 30);
+    getdisplay().print("A L A R M");
+    getdisplay().setCursor(x + 64, y + 48);
+    getdisplay().print("#" + commonData.alarm.id);
+    getdisplay().print(" from ");
+    getdisplay().print(commonData.alarm.source);
+
+    // message, but maximum 4 lines
+    std::vector<String> lines = wordwrap (commonData.alarm.message, w - 16 - 8 / 8);
+    int n = 0;
+    for (const auto& l : lines) {
+        getdisplay().setCursor(x + 16, y + 80 + n);
+        getdisplay().print(l);
+        n += 16;
+        if (n > 64) {
+            break;
+        }
+    }
+    drawTextCenter(x + w / 2,  y + h - 16, "Press button 1 to dismiss alarm");
 }
 
 // Sunset und sunrise calculation

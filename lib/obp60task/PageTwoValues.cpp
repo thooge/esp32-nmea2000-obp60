@@ -21,7 +21,7 @@ class PageTwoValues : public Page
         return key;
     }
 
-    virtual void displayPage(PageData &pageData){
+    int displayPage(PageData &pageData){
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
 
@@ -65,7 +65,7 @@ class PageTwoValues : public Page
         }
 
         // Logging boat values
-        if (bvalue1 == NULL) return;
+        if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
         LOG_DEBUG(GwLog::LOG,"Drawing at PageTwoValues, %s: %f, %s: %f", name1.c_str(), value1, name2.c_str(), value2);
 
         // Draw page
@@ -166,8 +166,7 @@ class PageTwoValues : public Page
             unit2old = unit2;                                           // Save the old unit
         }
 
-        // Update display
-        getdisplay().nextPage();    // Partial update (fast)
+        return PAGE_UPDATE;
     };
 };
 
