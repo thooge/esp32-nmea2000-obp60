@@ -29,7 +29,7 @@ class PageSixValues : public Page
         return key;
     }
 
-    virtual void displayPage(PageData &pageData){
+    int displayPage(PageData &pageData){
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
 
@@ -71,7 +71,7 @@ class PageSixValues : public Page
                 setFlashLED(false); 
             }
     
-            if (bvalue == NULL) return;
+            if (bvalue == NULL) return PAGE_OK; // WTF why this statement?
            
             // Draw page
             //***********************************************************
@@ -149,9 +149,7 @@ class PageSixValues : public Page
             getdisplay().fillRect(SixValues_x1+SixValues_DeltaX-8, SixValues_y1+i*SixValues_DeltaY, 3, SixValues_DeltaY, commonData->fgcolor);
             }
     
-            // Update display
-            getdisplay().nextPage();    // Partial update (fast)
-    
+            return PAGE_UPDATE;
         };
     
     };

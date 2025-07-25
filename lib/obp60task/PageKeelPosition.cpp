@@ -21,7 +21,7 @@ public:
         return key;
     }
 
-    virtual void displayPage(PageData &pageData)
+    int displayPage(PageData &pageData)
     {
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
@@ -206,9 +206,7 @@ public:
             getdisplay().print("No sensor data");            // Info missing sensor
         }
 
-        // Update display
-        getdisplay().nextPage();    // Partial update (fast)
-
+        return PAGE_UPDATE;
     };
 };
 
