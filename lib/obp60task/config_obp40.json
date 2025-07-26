@@ -1315,6 +1315,7 @@
         "default": "Clock",
         "description": "Type of page for page 1",
         "list": [
+            "Anchor",
             "BME280",
             "Battery",
             "Battery2",
@@ -1595,6 +1596,7 @@
         "default": "Wind",
         "description": "Type of page for page 2",
         "list": [
+            "Anchor",
             "BME280",
             "Battery",
             "Battery2",
@@ -1872,6 +1874,7 @@
         "default": "OneValue",
         "description": "Type of page for page 3",
         "list": [
+            "Anchor",
             "BME280",
             "Battery",
             "Battery2",
@@ -2146,6 +2149,7 @@
         "default": "TwoValues",
         "description": "Type of page for page 4",
         "list": [
+            "Anchor",
             "BME280",
             "Battery",
             "Battery2",
@@ -2417,6 +2421,7 @@
         "default": "ThreeValues",
         "description": "Type of page for page 5",
         "list": [
+            "Anchor",
             "BME280",
             "Battery",
             "Battery2",
@@ -2685,6 +2690,7 @@
         "default": "FourValues",
         "description": "Type of page for page 6",
         "list": [
+            "Anchor",
             "BME280",
             "Battery",
             "Battery2",
@@ -2950,6 +2956,7 @@
         "default": "FourValues2",
         "description": "Type of page for page 7",
         "list": [
+            "Anchor",
             "BME280",
             "Battery",
             "Battery2",
@@ -3212,6 +3219,7 @@
         "default": "Fluid",
         "description": "Type of page for page 8",
         "list": [
+            "Anchor",
             "BME280",
             "Battery",
             "Battery2",
@@ -3471,6 +3479,7 @@
         "default": "RollPitch",
         "description": "Type of page for page 9",
         "list": [
+            "Anchor",
             "BME280",
             "Battery",
             "Battery2",
@@ -3727,6 +3736,7 @@
         "default": "Battery2",
         "description": "Type of page for page 10",
         "list": [
+            "Anchor",
             "BME280",
             "Battery",
             "Battery2",
