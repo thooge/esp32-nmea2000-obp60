@@ -220,6 +220,17 @@
         }
     },
     {
+        "name": "calcTrueWnds",
+        "label": "Calculate True Wind",
+        "type": "boolean",
+        "default": "false",
+        "description": "If not available, calculate true wind data from appearant wind and other boat data",
+        "category": "OBP40 Settings",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
         "name": "lengthFormat",
         "label": "Length Format",
         "type": "list",
@@ -1336,6 +1347,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -1616,6 +1628,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -1893,6 +1906,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -2167,6 +2181,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -2438,6 +2453,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -2706,6 +2722,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -2971,6 +2988,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -3233,6 +3251,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -3492,6 +3511,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
@@ -3748,6 +3768,7 @@
             "Voltage",
             "WhitePage",
             "Wind",
+            "WindPlot",
             "WindRose",
             "WindRoseFlex",
             "XTETrack"
