@@ -972,7 +972,7 @@ void OBP60Task(GwApi *api){
                 api->getStatus(commonData.status);
 
                 if (calcTrueWnds) {
-                    // addTrueWind(api, &boatValues);
+                    addTrueWind(api, &boatValues);
                 }
                 // Handle history buffers for TWD, TWS for wind plot page and other usage
                  handleHstryBuf(api, &boatValues, hstryBufList);
