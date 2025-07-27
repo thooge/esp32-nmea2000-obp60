@@ -94,7 +94,7 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
         } else if (*cogVal != DBL_MIN) {
             hdt = *cogVal; // Use COG as fallback if HDT and HDM are not available
         } else {
-            return false; // Cannot calculate without valid HDT or HDM
+            return false; // Cannot calculate without valid HDT or HDM+VAR or COG
         }
     }
 
@@ -102,8 +102,7 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
         ctw = *cogVal; // Use COG as CTW if available
         //    ctw = *cogVal + ((*cogVal - hdt) / 2); // Estimate CTW from COG
     } else {
-        ctw = hdt; // 2nd approximation for CTW;
-        return false;
+        ctw = hdt; // 2nd approximation for CTW; hdt must exist if we reach this part of the code
     }
 
     if (*stwVal != DBL_MIN) {
@@ -115,11 +114,11 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
         return false;
     }
 
-    if ((*awaVal == DBL_MIN) || (*awsVal == DBL_MIN) || (*cogVal == DBL_MIN) || (*stwVal == DBL_MIN)) {
-        // Cannot calculate true wind without valid AWA, AWS, COG, or STW
+    if ((*awaVal == DBL_MIN) || (*awsVal == DBL_MIN)) {
+        // Cannot calculate true wind without valid AWA, AWS; other checks are done earlier
         return false;
     } else {
-        calcTwdSA(awaVal, awsVal, &ctw, stwVal, &hdt, &twd, &tws, &twa);
+        calcTwdSA(awaVal, awsVal, &ctw, &stw, &hdt, &twd, &tws, &twa);
         *twdVal = twd;
         *twsVal = tws;
         *twaVal = twa;
