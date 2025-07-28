@@ -53,7 +53,7 @@ class PageFourValues : public Page
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
 
         // Get boat values #2
-        GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list (only one value by PageOneValue)
+        GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list
         String name2 = xdrDelete(bvalue2->getName());   // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue2, logger); // Check if boat data value is to be calibrated
@@ -63,7 +63,7 @@ class PageFourValues : public Page
         String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
 
         // Get boat values #3
-        GwApi::BoatValue *bvalue3 = pageData.values[2]; // Second element in list (only one value by PageOneValue)
+        GwApi::BoatValue *bvalue3 = pageData.values[2]; // Third element in list
         String name3 = xdrDelete(bvalue3->getName());   // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue3, logger); // Check if boat data value is to be calibrated
@@ -73,7 +73,7 @@ class PageFourValues : public Page
         String unit3 = formatValue(bvalue3, *commonData).unit;        // Unit of value
 
         // Get boat values #4
-        GwApi::BoatValue *bvalue4 = pageData.values[3]; // Second element in list (only one value by PageOneValue)
+        GwApi::BoatValue *bvalue4 = pageData.values[3]; // Fourth element in list
         String name4 = xdrDelete(bvalue4->getName());   // Value name
         name4 = name4.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue4, logger); // Check if boat data value is to be calibrated
@@ -301,7 +301,7 @@ static Page *createPage(CommonData &common){
  * this will be number of BoatValue pointers in pageData.values
  */
 PageDescription registerPageFourValues(
-    "FourValues",    // Page name
+    "FourValues",   // Page name
     createPage,     // Action
     4,              // Number of bus values depends on selection in Web configuration
     true            // Show display header on/off

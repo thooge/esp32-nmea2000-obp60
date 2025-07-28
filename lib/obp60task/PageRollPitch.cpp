@@ -41,9 +41,9 @@ public:
         String backlightMode = config->getString(config->backlight);
         int rolllimit = config->getInt(config->rollLimit);
         String roffset = config->getString(config->rollOffset);
-        double rolloffset = roffset.toFloat()/360*(2*PI);
+        double rolloffset = roffset.toFloat()/360*(2*M_PI);
         String poffset = config->getString(config->pitchOffset);
-        double pitchoffset = poffset.toFloat()/360*(2*PI);
+        double pitchoffset = poffset.toFloat()/360*(2*M_PI);
 
         // Get boat values for roll
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (xdrRoll)
@@ -55,17 +55,17 @@ public:
         }
         else{
             if(simulation == true){
-                value1 = (20 + float(random(0, 50)) / 10.0)/360*2*PI;
+                value1 = (20 + float(random(0, 50)) / 10.0)/360*2*M_PI;
             }
             else{
                 value1 = 0;
             }
         }
-        if(value1/(2*PI)*360 > -10 && value1/(2*PI)*360 < 10){
-            svalue1 = String(value1/(2*PI)*360,1);      // Convert raw value to string
+        if(value1/(2*M_PI)*360 > -10 && value1/(2*M_PI)*360 < 10){
+            svalue1 = String(value1/(2*M_PI)*360,1);      // Convert raw value to string
         }
         else{
-            svalue1 = String(value1/(2*PI)*360,0);
+            svalue1 = String(value1/(2*M_PI)*360,0);
         }
         if(valid1 == true){
            svalue1old = svalue1;                                       // Save the old value
@@ -80,17 +80,17 @@ public:
         }
         else{
              if(simulation == true){
-                value2 = (float(random(-5, 5)))/360*2*PI;
+                value2 = (float(random(-5, 5)))/360*2*M_PI;
             }
             else{
                 value2 = 0;
             }
         }
-        if(value2/(2*PI)*360 > -10 && value2/(2*PI)*360 < 10){
-            svalue2 = String(value2/(2*PI)*360,1);      // Convert raw value to string
+        if(value2/(2*PI)*360 > -10 && value2/(2*M_PI)*360 < 10){
+            svalue2 = String(value2/(2*M_PI)*360,1);      // Convert raw value to string
         }
         else{
-            svalue2 = String(value2/(2*PI)*360,0);
+            svalue2 = String(value2/(2*M_PI)*360,0);
         }
         if(valid2 == true){
            svalue2old = svalue2;                                       // Save the old value
@@ -99,7 +99,7 @@ public:
         // Optical warning by limit violation
         if(String(flashLED) == "Limit Violation"){
             // Limits for roll
-            if(value1*360/(2*PI) >= -1*rolllimit && value1*360/(2*PI) <= rolllimit){
+            if(value1*360/(2*M_PI) >= -1*rolllimit && value1*360/(2*M_PI) <= rolllimit){
                 setBlinkingLED(false);
                 setFlashLED(false);
             }
@@ -132,7 +132,7 @@ public:
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(10, 115);
         getdisplay().print("DEG");
-        
+
         // Horizintal separator left
         getdisplay().fillRect(0, 149, 60, 3, commonData->fgcolor);
 
@@ -164,10 +164,9 @@ public:
         getdisplay().print("Deg");
 
 //*******************************************************************************************
-        
+
         // Draw instrument
         int rInstrument = 100;     // Radius of instrument
-        float pi = 3.141592;
 
         getdisplay().fillCircle(200, 150, rInstrument + 10, commonData->fgcolor);    // Outer circle
         getdisplay().fillCircle(200, 150, rInstrument + 7, commonData->bgcolor);     // Outer circle
@@ -177,19 +176,18 @@ public:
             // Only scaling +/- 60 degrees
             if((i >= 0 && i <= 60) ||  (i >= 300 && i <= 360)){
                 // Scaling values
-                float x = 200 + (rInstrument+25)*sin(i/180.0*pi);  //  x-coordinate dots
-                float y = 150 - (rInstrument+25)*cos(i/180.0*pi);  //  y-coordinate cots
+                float x = 200 + (rInstrument+25)*sin(i/180.0*M_PI);  //  x-coordinate dots
+                float y = 150 - (rInstrument+25)*cos(i/180.0*M_PI);  //  y-coordinate cots
                 const char *ii = "";
-                switch (i)
-                {
-                case 0: ii="0"; break;
-                case 20 : ii="20"; break;
-                case 40 : ii="40"; break;
-                case 60 : ii="60"; break;
-                case 300 : ii="60"; break;
-                case 320 : ii="40"; break;
-                case 340 : ii="20"; break;
-                default: break;
+                switch (i) {
+                    case 0: ii="0"; break;
+                    case 20 : ii="20"; break;
+                    case 40 : ii="40"; break;
+                    case 60 : ii="60"; break;
+                    case 300 : ii="60"; break;
+                    case 320 : ii="40"; break;
+                    case 340 : ii="20"; break;
+                    default: break;
                 }
 
                 // Print text centered on position x, y
@@ -203,11 +201,11 @@ public:
                 }
 
                 // Draw sub scale with dots
-                float x1c = 200 + rInstrument*sin(i/180.0*pi);
-                float y1c = 150 - rInstrument*cos(i/180.0*pi);
+                float x1c = 200 + rInstrument*sin(i/180.0*M_PI);
+                float y1c = 150 - rInstrument*cos(i/180.0*M_PI);
                 getdisplay().fillCircle((int)x1c, (int)y1c, 2, commonData->fgcolor);
-                float sinx=sin(i/180.0*pi);
-                float cosx=cos(i/180.0*pi); 
+                float sinx=sin(i/180.0*M_PI);
+                float cosx=cos(i/180.0*M_PI);
 
                 // Draw sub scale with lines (two triangles)
                 if(i % 20 == 0){
@@ -229,17 +227,17 @@ public:
         // Draw mast position pointer
         float startwidth = 8;           // Start width of pointer
 
-//        value1 = (2 * pi ) - value1;    // Mirror coordiante system for pointer, keel and boat
+//        value1 = (2 * M_PI ) - value1;    // Mirror coordiante system for pointer, keel and boat
 
         if(valid1 == true || holdvalues == true || simulation == true){
-            float sinx=sin(value1 + pi);
-            float cosx=cos(value1 + pi);
+            float sinx=sin(value1 + M_PI);
+            float cosx=cos(value1 + M_PI);
             // Normal pointer
             // Pointer as triangle with center base 2*width
             float xx1 = -startwidth;
             float xx2 = startwidth;
             float yy1 = -startwidth;
-            float yy2 = -(rInstrument * 0.7); 
+            float yy2 = -(rInstrument * 0.7);
             getdisplay().fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
                 200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                 200+(int)(cosx*0-sinx*yy2),150+(int)(sinx*0+cosx*yy2),commonData->fgcolor);
@@ -283,7 +281,7 @@ public:
             float xx1 = -startwidth;
             float xx2 = startwidth;
             float yy1 = -startwidth;
-            float yy2 = -(rInstrument - 15); 
+            float yy2 = -(rInstrument - 15);
             getdisplay().fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
                 200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                 200+(int)(cosx*0-sinx*yy2),150+(int)(sinx*0+cosx*yy2),commonData->fgcolor);
