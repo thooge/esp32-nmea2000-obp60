@@ -49,9 +49,9 @@ String formatLongitude(double lon) {
     return String(degree, 0) + "\x90 " + String(minute, 4) + "' " + ((lon > 0) ? "E" : "W");
 }
 
-FormatedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
+FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
     GwLog *logger = commondata.logger;
-    FormatedData result;
+    FormattedData result;
     static int dayoffset = 0;
     double rawvalue = 0;
 

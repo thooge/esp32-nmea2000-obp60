@@ -197,7 +197,7 @@ typedef struct{
   double value;
   String svalue;
   String unit;
-} FormatedData;
+} FormattedData;
 
 // Formatter for boat values
-FormatedData formatValue(GwApi::BoatValue *value, CommonData &commondata);
+FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata);
