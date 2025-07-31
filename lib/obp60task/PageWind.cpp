@@ -633,11 +633,11 @@ static Page *createPage(CommonData &common){
  * and will will provide the names of the fixed values we need
  */
 PageDescription registerPageWind(
-    "Wind",             // Page name
-    createPage,         // Action
-    0,                  // Number of bus values depends on selection in Web configuration
+    "Wind",     // Page name
+    createPage, // Action
+    0,          // Number of bus values depends on selection in Web configuration
     {"AWS","AWA", "TWS", "TWA"}, // Bus values we need in the page
-    true                // Show display header on/off
+    true        // Show display header on/off
 );
 
 #endif
