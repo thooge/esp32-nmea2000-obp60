@@ -404,10 +404,9 @@ bool addTrueWind(GwApi* api, BoatValueList* boatValues) {
     hdtVal = hdtBVal->valid ? hdtBVal->value : DBL_MIN;
     hdmVal = hdmBVal->valid ? hdmBVal->value : DBL_MIN;
     varVal = varBVal->valid ? varBVal->value : DBL_MIN;
-    api->getLogger()->logDebug(GwLog::DEBUG,"obp60task addTrueWind: AWA: %.1f, AWS: %.1f, COG: %.1f, STW: %.1f, HDT: %.1f, HDM: %.1f, VAR: %.1f", awaBVal->value * RAD_TO_DEG, awsBVal->value * 3.6 / 1.852,
-            cogBVal->value * RAD_TO_DEG, stwBVal->value * 3.6 / 1.852, hdtBVal->value * RAD_TO_DEG, hdmBVal->value * RAD_TO_DEG, varBVal->value * RAD_TO_DEG);
+    api->getLogger()->logDebug(GwLog::DEBUG,"obp60task addTrueWind: AWA %.1f, AWS %.1f, COG %.1f, STW %.1f, SOG %.1f, HDT %.1f, HDM %.1f, VAR %.1f", awaBVal->value * RAD_TO_DEG, awsBVal->value * 3.6 / 1.852,
+            cogBVal->value * RAD_TO_DEG, stwBVal->value * 3.6 / 1.852, sogBVal->value * 3.6 / 1.852, hdtBVal->value * RAD_TO_DEG, hdmBVal->value * RAD_TO_DEG, varBVal->value * RAD_TO_DEG);
 
-//    isCalculated = WindUtils::calcTrueWind(&awaVal, &awsVal, &cogVal, &stwVal, &sogVal, &hdtVal, &hdmVal, &varVal, &twdBVal->value, &twsBVal->value, &twaBVal->value);
     isCalculated = WindUtils::calcTrueWind(&awaVal, &awsVal, &cogVal, &stwVal, &sogVal, &hdtVal, &hdmVal, &varVal, &twd, &tws, &twa);
 
     if (isCalculated) { // Replace values only, if successfully calculated and not already available
@@ -424,8 +423,8 @@ bool addTrueWind(GwApi* api, BoatValueList* boatValues) {
             twaBVal->valid = true;
         }
     }
-    api->getLogger()->logDebug(GwLog::DEBUG,"obp60task calcTrueWind: TWD_Valid? %d, TWD=%.1f, TWS=%.1f, TWA=%.1f, isCalculated? %d", twdBVal->valid, twdBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852,
-        twaBVal->value * RAD_TO_DEG, isCalculated);
+    api->getLogger()->logDebug(GwLog::DEBUG,"obp60task addTrueWind: TWD_Valid %d, isCalculated %d, TWD %.1f, TWA %.1f, TWS %.1f", twdBVal->valid, isCalculated, twdBVal->value * RAD_TO_DEG,
+        twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852);
 
     return isCalculated;
 }
@@ -464,8 +463,8 @@ void handleHstryBuf(GwApi* api, BoatValueList* boatValues, tBoatHstryData hstryB
     GwApi::BoatValue *twsBVal = boatValues->findValueOrCreate(hstryBufList.twsHstry->getName());
     GwApi::BoatValue *twaBVal = boatValues->findValueOrCreate("TWA");
 
-    api->getLogger()->logDebug(GwLog::DEBUG,"obp60task handleHstryBuf: twdBVal: %f, twsBVal: %f, twaBVal: %f, TWD_isValid? %d", twdBVal->value * RAD_TO_DEG,
-        twsBVal->value * 3.6 / 1.852, twaBVal->value * RAD_TO_DEG, twdBVal->valid);
+    api->getLogger()->logDebug(GwLog::DEBUG,"obp60task handleHstryBuf: twdBVal: %.1f, twaBVal: %.1f, twsBVal: %.1f, TWD_isValid? %d", twdBVal->value * RAD_TO_DEG,
+        twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852, twdBVal->valid);
     calBVal = new GwApi::BoatValue("TWD"); // temporary solution for calibration of history buffer values
     calBVal->setFormat(twdBVal->getFormat());
     if (twdBVal->valid) {
