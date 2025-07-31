@@ -310,7 +310,7 @@ private:
         getdisplay().setCursor(202, y0 + 80);
         getdisplay().print("Bl color:");
         getdisplay().setCursor(320, y0 + 80);
-        getdisplay().print(commonData->backlight.color);
+        getdisplay().print(commonData->backlight.color.toName());
         getdisplay().setCursor(202, y0 + 96);
         getdisplay().print("Bl mode:");
         getdisplay().setCursor(320, y0 + 96);
