@@ -398,11 +398,11 @@ static Page *createPage(CommonData &common){
  * and will will provide the names of the fixed values we need
  */
 PageDescription registerPageVoltage(
-    "Voltage",      // Name of page
-    createPage,     // Action
-    0,              // Number of bus values depends on selection in Web configuration
-    {},             // Names of bus values undepends on selection in Web configuration (refer GwBoatData.h)
-    true            // Show display header on/off
+    "Voltage",  // Name of page
+    createPage, // Action
+    0,          // Number of bus values depends on selection in Web configuration
+    {},         // Names of bus values undepends on selection in Web configuration (refer GwBoatData.h)
+    true        // Show display header on/off
 );
 
 #endif

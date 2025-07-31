@@ -206,7 +206,7 @@ public:
         // read boat data values; TWD only for validation test, TWS for display of current value
         for (int i = 0; i < numBoatData; i++) {
             bvalue = pageData.values[i];
-            // BDataName[i] = xdrDelete(bvalue->getName());
+            BDataName[i] = xdrDelete(bvalue->getName());
             BDataName[i] = BDataName[i].substring(0, 6); // String length limit for value name
             calibrationData.calibrateInstance(bvalue, logger); // Check if boat data value is to be calibrated
             BDataValue[i] = bvalue->value; // Value as double in SI unit
@@ -326,24 +326,13 @@ public:
                 chrtVal = static_cast<int>(pageData.boatHstry.twdHstry->get(bufStart + (i * dataIntv))); // show the latest wind values in buffer; keep 1st value constant in a rolling buffer
                 if (chrtVal == INT16_MIN) {
                     chrtPrevVal = INT16_MIN;
-                    /* if (i == linesToShow - 1) {
-                        numNoData++;
-                        // If more than 4 invalid values in a row, reset chart
-                    } else {
-                        numNoData = 0; // Reset invalid value counter
-                    }
-                    if (numNoData > 4) {
-                        // If more than 4 invalid values in a row, send message
-                        getdisplay().setFont(&Ubuntu_Bold10pt8b);
-                        getdisplay().fillRect(xCenter - 66, height / 2 - 20, 146, 24, commonData->bgcolor); // Clear area for TWS value
-                        drawTextCenter(xCenter, height / 2 - 10, "No sensor data");
-                    } */
                 } else {
                     chrtVal = static_cast<int>((chrtVal / 1000.0 * radToDeg) + 0.5); // Convert to degrees and round
                     x = ((chrtVal - wndLeft + 360) % 360) * chrtScl;
                     y = yOffset + cHeight - i; // Position in chart area
 
-                    if (i >= (numWndVals / dataIntv) - 10)
+//                    if (i >= (numWndVals / dataIntv) - 10)
+                    if (i >= (numWndVals / dataIntv) - 1)
                         LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Chart: i: %d, chrtVal: %d, bufStart: %d, count: %d, linesToShow: %d", i, chrtVal, bufStart, count, (numWndVals / dataIntv));
 
                     if ((i == 0) || (chrtPrevVal == INT16_MIN)) {
@@ -378,7 +367,8 @@ public:
                     int minWndDir = pageData.boatHstry.twdHstry->getMin(numWndVals) / 1000.0 * radToDeg;
                     int maxWndDir = pageData.boatHstry.twdHstry->getMax(numWndVals) / 1000.0 * radToDeg;
                     LOG_DEBUG(GwLog::DEBUG, "PageWindPlot FreeTop: Minimum: %d, Maximum: %d, OldwndCenter: %d", minWndDir, maxWndDir, wndCenter);
-                    if ((minWndDir + 540 >= wndCenter + 540) || (maxWndDir + 540 <= wndCenter + 540)) {
+//                    if ((minWndDir + 540 >= wndCenter + 540) || (maxWndDir + 540 <= wndCenter + 540)) {
+                    if (((minWndDir - wndCenter >= 0) && (minWndDir - wndCenter < 180)) || ((maxWndDir - wndCenter <= 0) && (maxWndDir - wndCenter >=180))) {
                         // Check if all wind value are left or right of center value -> optimize chart range
                         midWndDir = pageData.boatHstry.twdHstry->getMid(numWndVals) / 1000.0 * radToDeg;
                         if (midWndDir != INT16_MIN) {

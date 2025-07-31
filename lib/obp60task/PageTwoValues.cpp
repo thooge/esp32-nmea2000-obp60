@@ -49,7 +49,7 @@ class PageTwoValues : public Page
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
 
         // Get boat values #2
-        GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list (only one value by PageOneValue)
+        GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list
         String name2 = xdrDelete(bvalue2->getName());   // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue2, logger); // Check if boat data value is to be calibrated
