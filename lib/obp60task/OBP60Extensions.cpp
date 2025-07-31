@@ -107,6 +107,27 @@ void hardwareInit(GwApi *api)
     }
 }
 
+void powerInit(String powermode) {
+    // Max Power | Only 5.0V | Min Power
+    if (powermode == "Max Power" || powermode == "Only 5.0V") {
+#ifdef HARDWARE_V21
+        setPortPin(OBP_POWER_50, true); // Power on 5.0V rail
+#endif
+#ifdef BOARD_OBP40S3
+        setPortPin(OBP_POWER_EPD, true);// Power on ePaper display
+        setPortPin(OBP_POWER_SD, true); // Power on SD card
+#endif
+    } else { // Min Power
+#ifdef HARDWARE_V21
+        setPortPin(OBP_POWER_50, false); // Power off 5.0V rail
+#endif
+#ifdef BOARD_OBP40S3
+        setPortPin(OBP_POWER_EPD, false);// Power off ePaper display
+        setPortPin(OBP_POWER_SD, false); // Power off SD card
+#endif
+    }
+}
+
 void setPortPin(uint pin, bool value){
     pinMode(pin, OUTPUT);
     digitalWrite(pin, value);

@@ -75,6 +75,7 @@ void deepSleep(CommonData &common);
 uint8_t getLastPage();
 
 void hardwareInit(GwApi *api);
+void powerInit(String powermode);
 
 void setPortPin(uint pin, bool value);          // Set port pin for extension port
 
