@@ -167,6 +167,7 @@ public:
 
         // Draw instrument
         int rInstrument = 100;     // Radius of instrument
+        float pi = 3.141592;
 
         getdisplay().fillCircle(200, 150, rInstrument + 10, commonData->fgcolor);    // Outer circle
         getdisplay().fillCircle(200, 150, rInstrument + 7, commonData->bgcolor);     // Outer circle
