@@ -2,6 +2,7 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+#include "ConfigMenu.h"
 #include "images/logo64.xbm"
 #include <esp32/clk.h>
 #include "qrcode.h"
@@ -44,6 +45,9 @@
 class PageSystem : public Page
 {
 private:
+    GwConfigHandler *config;
+    GwLog *logger;
+
     // NVRAM config options
     String flashLED;
 
@@ -67,6 +71,9 @@ private:
     double homelon;
 
     char mode = 'N'; // (N)ormal, (S)ettings, (C)onfiguration, (D)evice list, c(A)rd
+    int8_t editmode = -1; // marker for menu/edit/set function
+
+    ConfigMenu *menu;
 
     void incMode() {
         if (mode == 'N') {        // Normal
@@ -219,7 +226,7 @@ private:
 
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
 
-        getdisplay().setCursor(x0, y0);
+        /*getdisplay().setCursor(x0, y0);
         getdisplay().print("CPU speed: 80 | 160 | 240");
         getdisplay().setCursor(x0, y0 + 1 * dy);
         getdisplay().print("Power mode: Max | 5V | Min");
@@ -228,7 +235,30 @@ private:
 
         // TODO Change NVRAM-preferences settings here
         getdisplay().setCursor(x0, y0 + 4 * dy);
-        getdisplay().print("Simulation: On | Off");
+        getdisplay().print("Simulation: On | Off"); */
+
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        for (int i = 0 ; i < menu->getItemCount(); i++) {
+            ConfigMenuItem *itm = menu->getItemByIndex(i);
+            if (!itm) {
+                LOG_DEBUG(GwLog::ERROR, "Menu item not found: %d", i);
+            } else {
+                Rect r = menu->getItemRect(i);
+                bool inverted = (i == menu->getActiveIndex());
+                drawTextBoxed(r, itm->getLabel(), commonData->fgcolor, commonData->bgcolor, inverted, false);
+                if (inverted and editmode > 0) {
+                    // triangle as edit marker
+                    getdisplay().fillTriangle(r.x + r.w + 20, r.y, r.x + r.w + 30, r.y + r.h / 2, r.x + r.w + 20, r.y + r.h,  commonData->fgcolor);
+                }
+                getdisplay().setCursor(r.x + r.w + 40, r.y + r.h - 4);
+                if (itm->getType() == "int") {
+                    getdisplay().print(itm->getValue());
+                    getdisplay().print(itm->getUnit());
+                } else {
+                     getdisplay().print(itm->getValue() == 0 ? "No" : "Yes");
+                }
+            }
+        }
     }
 
     void displayModeSettings() {
@@ -351,10 +381,17 @@ private:
         getdisplay().print(String(commonData->status.n2kTx));
     }
 
+   void storeConfig() {
+       menu->storeValues();
+   }
+
 public:
     PageSystem(CommonData &common){
         commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageSystem");
+        config = commonData->config;
+        logger = commonData->logger;
+
+        logger->logDebug(GwLog::LOG,"Instantiate PageSystem");
         if (hasFRAM) {
             mode = fram.read(FRAM_SYSTEM_MODE);
         }
@@ -378,6 +415,24 @@ public:
         rot_sensor = common.config->getString(common.config->useRotSensor);
         homelat = common.config->getString(common.config->homeLAT).toDouble();
         homelon = common.config->getString(common.config->homeLON).toDouble();
+
+        // CPU speed: 80 | 160 | 240
+        // Power mode: Max | 5V | Min
+        // Accesspoint: On | Off
+
+        // TODO Change NVRAM-preferences settings here
+        // getdisplay().setCursor(x0, y0 + 4 * dy);
+        // getdisplay().print("Simulation: On | Off");
+
+        // Initialize config menu
+        menu = new ConfigMenu("Options", 40, 80);
+        menu->setItemDimension(150, 20);
+
+        ConfigMenuItem *newitem;
+        newitem = menu->addItem("accesspoint", "Accesspoint", "bool", 0, "");
+        newitem = menu->addItem("simulation", "Simulation", "on/off", 0, "");
+        menu->setItemActive("accesspoint");
+
     }
 
     virtual void setupKeys(){

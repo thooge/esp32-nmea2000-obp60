@@ -44,6 +44,7 @@ private:
     uint16_t y;
     uint16_t w;
     uint16_t h;
+    void (*fptrCallback)();
 
 public:
     ConfigMenu(String title, uint16_t menu_x, uint16_t menu_y);
@@ -60,4 +61,6 @@ public:
     Point getXY();
     Rect getRect();
     Rect getItemRect(int8_t index);
+    void setCallback(void (*callback)());
+    void storeValues();
 };

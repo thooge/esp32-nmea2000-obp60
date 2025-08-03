@@ -192,3 +192,13 @@ Rect ConfigMenu::getItemRect(int8_t index) {
     return {static_cast<double>(x), static_cast<double>(y + index * h),
             static_cast<double>(w), static_cast<double>(h)};
 }
+
+void ConfigMenu::setCallback(void (*callback)()) {
+    fptrCallback = callback;
+}
+
+void ConfigMenu::storeValues() {
+    if (fptrCallback) {
+        fptrCallback();
+    }
+}
