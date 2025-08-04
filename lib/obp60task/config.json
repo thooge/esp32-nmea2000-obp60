@@ -1296,6 +1296,21 @@
         }
     },
     {
+        "name": "headerFormat",
+        "label": "Header Format",
+        "type": "list",
+        "default":"TEXT",
+        "description": "Header format: Text or Symbols",
+        "list": [
+            {"l":"Text","v":"TEXT"},
+            {"l":"Symbols","v":"ICON"}
+        ],
+        "category":"OBP60 Pages",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
         "name": "imageFormat",
         "label": "Screenshot Format",
         "type": "list",
