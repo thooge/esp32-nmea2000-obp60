@@ -362,7 +362,7 @@
         "label": "RTC Modul",
         "type": "list",
         "default": "off",
-        "description": "Use internal RTC module type [off|DS1388]",
+        "description": "Use RTC module type [off|DS1388]",
         "list": [
             "off",
             "DS1388"
