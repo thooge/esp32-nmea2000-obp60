@@ -323,18 +323,18 @@ void underVoltageDetection(GwApi *api, CommonData &common){
         setFlashLED(false);                     // Flash LED Off            
         buzzer(TONE4, 20);                      // Buzzer tone 4kHz 20ms
         // Shutdown EInk display
-        getdisplay().setFullWindow();           // Set full Refresh
-        //getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-        getdisplay().fillScreen(common.bgcolor);// Clear screen
-        getdisplay().setTextColor(common.fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(65, 150);
-        getdisplay().print("Undervoltage");
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(65, 175);
-        getdisplay().print("Charge battery and restart system");
-        getdisplay().nextPage();                // Partial update
-        getdisplay().powerOff();                // Display power off
+        epd->setFullWindow();           // Set full Refresh
+        //epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+        epd->fillScreen(common.bgcolor);// Clear screen
+        epd->setTextColor(common.fgcolor);
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(65, 150);
+        epd->print("Undervoltage");
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(65, 175);
+        epd->print("Charge battery and restart system");
+        epd->nextPage();                // Partial update
+        epd->powerOff();                // Display power off
         setPortPin(OBP_POWER_EPD, false);       // Power off ePaper display
         setPortPin(OBP_POWER_SD, false);        // Power off SD card
         #else
@@ -344,17 +344,17 @@ void underVoltageDetection(GwApi *api, CommonData &common){
         buzzer(TONE4, 20);                      // Buzzer tone 4kHz 20ms
         setPortPin(OBP_POWER_50, false);        // Power rail 5.0V Off
         // Shutdown EInk display
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-        getdisplay().fillScreen(common.bgcolor);// Clear screen
-        getdisplay().setTextColor(common.fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(65, 150);
-        getdisplay().print("Undervoltage");
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(65, 175);
-        getdisplay().print("To wake up repower system");
-        getdisplay().nextPage();                // Partial update
-        getdisplay().powerOff();                // Display power off
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+        epd->fillScreen(common.bgcolor);// Clear screen
+        epd->setTextColor(common.fgcolor);
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(65, 150);
+        epd->print("Undervoltage");
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(65, 175);
+        epd->print("To wake up repower system");
+        epd->nextPage();                // Partial update
+        epd->powerOff();                // Display power off
         #endif
         // Stop system
         while(true){
@@ -531,37 +531,37 @@ void OBP60Task(GwApi *api){
     #endif
 
     #ifdef DISPLAY_GDEY042T81
-        getdisplay().init(115200, true, 2, false);  // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+        epd->init(115200, true, 2, false);  // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
     #else
-        getdisplay().init(115200);                  // Init for normal displays
+        epd->init(115200);                  // Init for normal displays
     #endif
 
-    getdisplay().setRotation(0);                 // Set display orientation (horizontal)
-    getdisplay().setFullWindow();                // Set full Refresh
-    getdisplay().firstPage();                    // set first page
-    getdisplay().fillScreen(commonData.bgcolor);
-    getdisplay().setTextColor(commonData.fgcolor);
-    getdisplay().nextPage();                     // Full Refresh
-    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-    getdisplay().fillScreen(commonData.bgcolor);
-    getdisplay().nextPage();                     // Fast Refresh
-    getdisplay().nextPage();                     // Fast Refresh
+    epd->setRotation(0);                 // Set display orientation (horizontal)
+    epd->setFullWindow();                // Set full Refresh
+    epd->firstPage();                    // set first page
+    epd->fillScreen(commonData.bgcolor);
+    epd->setTextColor(commonData.fgcolor);
+    epd->nextPage();                     // Full Refresh
+    epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+    epd->fillScreen(commonData.bgcolor);
+    epd->nextPage();                     // Fast Refresh
+    epd->nextPage();                     // Fast Refresh
     if(String(displaymode) == "Logo + QR Code" || String(displaymode) == "Logo"){
-        getdisplay().fillScreen(commonData.bgcolor);
-        getdisplay().drawBitmap(0, 0, gImage_Logo_OBP_400x300_sw, getdisplay().width(), getdisplay().height(), commonData.fgcolor); // Draw start logo
-        getdisplay().nextPage();                 // Fast Refresh
-        getdisplay().nextPage();                 // Fast Refresh
+        epd->fillScreen(commonData.bgcolor);
+        epd->drawBitmap(0, 0, gImage_Logo_OBP_400x300_sw, epd->width(), epd->height(), commonData.fgcolor); // Draw start logo
+        epd->nextPage();                 // Fast Refresh
+        epd->nextPage();                 // Fast Refresh
         delay(SHOW_TIME);                        // Logo show time
         if(String(displaymode) == "Logo + QR Code"){
-            getdisplay().fillScreen(commonData.bgcolor);
+            epd->fillScreen(commonData.bgcolor);
             qrWiFi(systemname, wifipass, commonData.fgcolor, commonData.bgcolor);  // Show QR code for WiFi connection
-            getdisplay().nextPage();             // Fast Refresh
-            getdisplay().nextPage();             // Fast Refresh
+            epd->nextPage();             // Fast Refresh
+            epd->nextPage();             // Fast Refresh
             delay(SHOW_TIME);                    // QR code show time
         }
-        getdisplay().fillScreen(commonData.bgcolor);
-        getdisplay().nextPage();                 // Fast Refresh
-        getdisplay().nextPage();                 // Fast Refresh
+        epd->fillScreen(commonData.bgcolor);
+        epd->nextPage();                 // Fast Refresh
+        epd->nextPage();                 // Fast Refresh
     }
     
     // Init pages
@@ -872,23 +872,23 @@ void OBP60Task(GwApi *api){
             if(millis() > starttime4 + 4000 && delayedDisplayUpdate == true){
                 starttime1 = millis();
                 starttime2 = millis();
-                getdisplay().setFullWindow();    // Set full update
+                epd->setFullWindow();    // Set full update
                 if(fastrefresh == "true"){
-                    getdisplay().nextPage();                     // Full update
+                    epd->nextPage();                     // Full update
                 }
                 else{
-                    getdisplay().fillScreen(commonData.fgcolor); // Clear display
+                    epd->fillScreen(commonData.fgcolor); // Clear display
                     #ifdef DISPLAY_GDEY042T81
-                        getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+                        epd->init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
                     #else
-                        getdisplay().init(115200);               // Init for normal displays
+                        epd->init(115200);               // Init for normal displays
                     #endif
-                    getdisplay().firstPage();                    // Full update
-                    getdisplay().nextPage();                     // Full update
-//                    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-//                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
-//                    getdisplay().nextPage();                     // Partial update
-//                    getdisplay().nextPage();                     // Partial update
+                    epd->firstPage();                    // Full update
+                    epd->nextPage();                     // Full update
+//                    epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+//                    epd->fillScreen(commonData.bgcolor); // Clear display
+//                    epd->nextPage();                     // Partial update
+//                    epd->nextPage();                     // Partial update
                 }
                 delayedDisplayUpdate = false;
             }
@@ -899,23 +899,23 @@ void OBP60Task(GwApi *api){
                 starttime1 = millis();
                 starttime2 = millis();
                 LOG_DEBUG(GwLog::DEBUG,"E-Ink full refresh first 5 min");
-                getdisplay().setFullWindow();    // Set full update
+                epd->setFullWindow();    // Set full update
                 if(fastrefresh == "true"){
-                    getdisplay().nextPage();                     // Full update
+                    epd->nextPage();                     // Full update
                 }
                 else{
-                    getdisplay().fillScreen(commonData.fgcolor); // Clear display
+                    epd->fillScreen(commonData.fgcolor); // Clear display
                     #ifdef DISPLAY_GDEY042T81
-                        getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+                        epd->init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
                     #else
-                        getdisplay().init(115200);               // Init for normal displays
+                        epd->init(115200);               // Init for normal displays
                     #endif
-                    getdisplay().firstPage();                    // Full update
-                    getdisplay().nextPage();                     // Full update
-//                    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-//                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
-//                    getdisplay().nextPage();                     // Partial update
-//                    getdisplay().nextPage();                     // Partial update
+                    epd->firstPage();                    // Full update
+                    epd->nextPage();                     // Full update
+//                    epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+//                    epd->fillScreen(commonData.bgcolor); // Clear display
+//                    epd->nextPage();                     // Partial update
+//                    epd->nextPage();                     // Partial update
                 }
             }
 
@@ -923,23 +923,23 @@ void OBP60Task(GwApi *api){
             if(millis() > starttime2 + fullrefreshtime * 60 * 1000){
                 starttime2 = millis();
                 LOG_DEBUG(GwLog::DEBUG,"E-Ink full refresh");
-                getdisplay().setFullWindow();    // Set full update
+                epd->setFullWindow();    // Set full update
                 if(fastrefresh == "true"){
-                    getdisplay().nextPage();                     // Full update
+                    epd->nextPage();                     // Full update
                 }
                 else{
-                    getdisplay().fillScreen(commonData.fgcolor); // Clear display
+                    epd->fillScreen(commonData.fgcolor); // Clear display
                     #ifdef DISPLAY_GDEY042T81
-                        getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+                        epd->init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
                     #else
-                        getdisplay().init(115200);               // Init for normal displays
+                        epd->init(115200);               // Init for normal displays
                     #endif
-                    getdisplay().firstPage();                    // Full update
-                    getdisplay().nextPage();                     // Full update
-//                    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-//                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
-//                    getdisplay().nextPage();                     // Partial update
-//                    getdisplay().nextPage();                     // Partial update
+                    epd->firstPage();                    // Full update
+                    epd->nextPage();                     // Full update
+//                    epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+//                    epd->fillScreen(commonData.bgcolor); // Clear display
+//                    epd->nextPage();                     // Partial update
+//                    epd->nextPage();                     // Partial update
                 }
             }        
                 
@@ -965,8 +965,8 @@ void OBP60Task(GwApi *api){
                  handleHstryBuf(api, &boatValues, hstryBufList);
 
                 // Clear display
-                // getdisplay().fillRect(0, 0, getdisplay().width(), getdisplay().height(), commonData.bgcolor);
-                getdisplay().fillScreen(commonData.bgcolor);  // Clear display
+                // epd->fillRect(0, 0, epd->width(), epd->height(), commonData.bgcolor);
+                epd->fillScreen(commonData.bgcolor);  // Clear display
 
                 // Show header if enabled
                 if (pages[pageNumber].description && pages[pageNumber].description->header or systemPage){
@@ -984,13 +984,13 @@ void OBP60Task(GwApi *api){
                     if (currentPage == NULL){
                         LOG_DEBUG(GwLog::ERROR,"page number %d not found", pageNumber);
                         // Error handling for missing page
-                        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-                        getdisplay().fillScreen(commonData.bgcolor);  // Clear display
-                        getdisplay().drawXBitmap(200 - unknown_width / 2, 150 - unknown_height / 2, unknown_bits, unknown_width, unknown_height, commonData.fgcolor);
-                        getdisplay().setCursor(140, 250);
-                        getdisplay().setFont(&Atari16px);
-                        getdisplay().print("Here be dragons!");
-                        getdisplay().nextPage(); // Partial update (fast)
+                        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+                        epd->fillScreen(commonData.bgcolor);  // Clear display
+                        epd->drawXBitmap(200 - unknown_width / 2, 150 - unknown_height / 2, unknown_bits, unknown_width, unknown_height, commonData.fgcolor);
+                        epd->setCursor(140, 250);
+                        epd->setFont(&Atari16px);
+                        epd->print("Here be dragons!");
+                        epd->nextPage(); // Partial update (fast)
                     }
                     else{
                         if (lastPage != pageNumber){
@@ -1010,10 +1010,10 @@ void OBP60Task(GwApi *api){
                             displayAlarm(commonData);
                         }
                         if (ret & PAGE_UPDATE) {
-                            getdisplay().nextPage(); // Partial update (fast)
+                            epd->nextPage(); // Partial update (fast)
                         }
                         if (ret & PAGE_HIBERNATE) {
-                            getdisplay().hibernate();
+                            epd->hibernate();
                         }
                     }
 
