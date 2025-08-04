@@ -44,7 +44,9 @@ extern const GFXfont Atari16px;
 
 // Global functions
 #ifdef DISPLAY_GDEW042T2
-GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> & getdisplay();
+GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> & getdisplay(); // DEPRECATED
+typedef GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> gxepd2display;
+extern gxepd2display *epd;
 #endif
 
 #ifdef DISPLAY_GDEY042T81
@@ -54,11 +56,15 @@ extern gxepd2display *epd;
 #endif
 
 #ifdef DISPLAY_GYE042A87
-GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> & getdisplay();
+GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> & getdisplay(); // DEPRECATED
+typedef GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> gxepd2display;
+extern gxepd2display *epd;
 #endif
 
 #ifdef DISPLAY_SE0420NQ04
-GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay();
+GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay(); // DEPRECATED
+typedef GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> gxepd2display;
+extern gxepd2display *epd;
 #endif
 
 // Page display return values

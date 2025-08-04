@@ -34,7 +34,8 @@
 // Set display type and SPI pins for display
 GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(OBP_SPI_CS, OBP_SPI_DC, OBP_SPI_RST, OBP_SPI_BUSY)); // GDEW042T2 400x300, UC8176 (IL0398)
 // Export display in new funktion
-GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> & getdisplay(){return display;}
+GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> & getdisplay(){return display;} // DEPRECATED
+gxepd2display *epd = &display;
 #endif
 
 #ifdef DISPLAY_GDEY042T81
@@ -49,14 +50,16 @@ gxepd2display *epd = &display;
 // Set display type and SPI pins for display
 GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> display(GxEPD2_420_GYE042A87(OBP_SPI_CS, OBP_SPI_DC, OBP_SPI_RST, OBP_SPI_BUSY)); // GDEW042T2 400x300, UC8176 (IL0398)
 // Export display in new funktion
-GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> & getdisplay(){return display;}
+GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> & getdisplay(){return display;} // DEPRECATED
+gxepd2display *epd = &display;
 #endif
 
 #ifdef DISPLAY_SE0420NQ04
 // Set display type and SPI pins for display
 GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> display(GxEPD2_420_SE0420NQ04(OBP_SPI_CS, OBP_SPI_DC, OBP_SPI_RST, OBP_SPI_BUSY)); // GDEW042T2 400x300, UC8176 (IL0398)
 // Export display in new funktion
-GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay(){return display;}
+GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay(){return display;} // DEPRECATED
+gxepd2display *epd = &display;
 #endif
 
 // Horter I2C moduls
@@ -497,26 +500,26 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
 #ifdef HARDWARE_V21
         // Display key lock status
         if (commonData.keylock) {
-            getdisplay().drawXBitmap(170, 1, lock_bits, icon_width, icon_height, commonData.fgcolor);
+            epd->drawXBitmap(170, 1, lock_bits, icon_width, icon_height, commonData.fgcolor);
         } else {
-            getdisplay().drawXBitmap(166, 1, swipe_bits, swipe_width, swipe_height, commonData.fgcolor);
+            epd->drawXBitmap(166, 1, swipe_bits, swipe_width, swipe_height, commonData.fgcolor);
         }
 #endif
 #ifdef LIPO_ACCU_1200
         if (commonData.data.BatteryChargeStatus == 1) {
-             getdisplay().drawXBitmap(170, 1, battery_loading_bits, battery_width, battery_height, commonData.fgcolor);
+             epd->drawXBitmap(170, 1, battery_loading_bits, battery_width, battery_height, commonData.fgcolor);
         } else {
 #ifdef VOLTAGE_SENSOR
             if (commonData.data.batteryLevelLiPo < 10) {
-                getdisplay().drawXBitmap(170, 1, battery_0_bits, battery_width, battery_height, commonData.fgcolor);
+                epd->drawXBitmap(170, 1, battery_0_bits, battery_width, battery_height, commonData.fgcolor);
             } else if (commonData.data.batteryLevelLiPo < 25) {
-                getdisplay().drawXBitmap(170, 1, battery_25_bits, battery_width, battery_height, commonData.fgcolor);
+                epd->drawXBitmap(170, 1, battery_25_bits, battery_width, battery_height, commonData.fgcolor);
             } else if (commonData.data.batteryLevelLiPo < 50) {
-                getdisplay().drawXBitmap(170, 1, battery_50_bits, battery_width, battery_height, commonData.fgcolor);
+                epd->drawXBitmap(170, 1, battery_50_bits, battery_width, battery_height, commonData.fgcolor);
             } else if (commonData.data.batteryLevelLiPo < 75) {
-                getdisplay().drawXBitmap(170, 1, battery_75_bits, battery_width, battery_height, commonData.fgcolor);
+                epd->drawXBitmap(170, 1, battery_75_bits, battery_width, battery_height, commonData.fgcolor);
             } else {
-                getdisplay().drawXBitmap(170, 1, battery_100_bits, battery_width, battery_height, commonData.fgcolor);
+                epd->drawXBitmap(170, 1, battery_100_bits, battery_width, battery_height, commonData.fgcolor);
             }
 #endif // VOLTAGE_SENSOR
         }
@@ -524,13 +527,13 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
 
         // Heartbeat as page number
         if (heartbeat) {
-            getdisplay().setTextColor(commonData.bgcolor);
-            getdisplay().fillRect(201, 0, 23, 19, commonData.fgcolor);
+            epd->setTextColor(commonData.bgcolor);
+            epd->fillRect(201, 0, 23, 19, commonData.fgcolor);
         } else {
-            getdisplay().setTextColor(commonData.fgcolor);
-            getdisplay().drawRect(201, 0, 23, 19, commonData.fgcolor);
+            epd->setTextColor(commonData.fgcolor);
+            epd->drawRect(201, 0, 23, 19, commonData.fgcolor);
         }
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        epd->setFont(&Ubuntu_Bold8pt8b);
         drawTextCenter(211, 9, String(commonData.data.actpage));
         heartbeat = !heartbeat;
 
@@ -538,19 +541,19 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
         String fmttype = commonData.config->getString(commonData.config->dateFormat);
         String timesource = commonData.config->getString(commonData.config->timeSource);
         double tz = commonData.config->getString(commonData.config->timeZone).toDouble();
-        getdisplay().setTextColor(commonData.fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(230, 15);
+        epd->setTextColor(commonData.fgcolor);
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(230, 15);
         if (timesource == "RTC" or timesource == "iRTC") {
             // TODO take DST into account
             if (commonData.data.rtcValid) {
                 time_t tv = mktime(&commonData.data.rtcTime) + (int)(tz * 3600);
                 struct tm *local_tm = localtime(&tv);
-                getdisplay().print(formatTime('m', local_tm->tm_hour, local_tm->tm_min, 0));
-                getdisplay().print(" ");
-                getdisplay().print(formatDate(fmttype, local_tm->tm_year + 1900, local_tm->tm_mon + 1, local_tm->tm_mday));
-                getdisplay().print(" ");
-                getdisplay().print(tz == 0 ? "UTC" : "LOT");
+                epd->print(formatTime('m', local_tm->tm_hour, local_tm->tm_min, 0));
+                epd->print(" ");
+                epd->print(formatDate(fmttype, local_tm->tm_year + 1900, local_tm->tm_mon + 1, local_tm->tm_mday));
+                epd->print(" ");
+                epd->print(tz == 0 ? "UTC" : "LOT");
             } else {
                 drawTextRalign(396, 15, "RTC invalid");
             }
@@ -561,15 +564,15 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
                 String acttime = formatValue(time, commonData).svalue;
                 acttime = acttime.substring(0, 5);
                 String actdate = formatValue(date, commonData).svalue;
-                getdisplay().print(acttime);
-                getdisplay().print(" ");
-                getdisplay().print(actdate);
-                getdisplay().print(" ");
-                getdisplay().print(tz == 0 ? "UTC" : "LOT");
+                epd->print(acttime);
+                epd->print(" ");
+                epd->print(actdate);
+                epd->print(" ");
+                epd->print(tz == 0 ? "UTC" : "LOT");
             }
             else{
                 if(commonData.config->getBool(commonData.config->useSimuData) == true){
-                    getdisplay().print("12:00 01.01.2024 LOT");
+                    epd->print("12:00 01.01.2024 LOT");
                 }
                 else{
                     drawTextRalign(396, 15, "No GPS data");
@@ -577,15 +580,15 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
             }
         } // timesource == "GPS"
         else {
-            getdisplay().print("No time source");
+            epd->print("No time source");
         }
     }
 }
 
 void displayFooter(CommonData &commonData) {
 
-    getdisplay().setFont(&Atari16px);
-    getdisplay().setTextColor(commonData.fgcolor);
+    epd->setFont(&Atari16px);
+    epd->setTextColor(commonData.fgcolor);
 
 #ifdef HARDWARE_V21
     // Frame around key icon area
@@ -594,14 +597,14 @@ void displayFooter(CommonData &commonData) {
         const uint16_t top = 280;
         const uint16_t bottom = 299;
         // horizontal stub lines
-        getdisplay().drawLine(commonData.keydata[0].x, top, commonData.keydata[0].x+10, top, commonData.fgcolor);
+        epd->drawLine(commonData.keydata[0].x, top, commonData.keydata[0].x+10, top, commonData.fgcolor);
         for (int i = 1; i <= 5; i++) {
-            getdisplay().drawLine(commonData.keydata[i].x-10, top, commonData.keydata[i].x+10, top, commonData.fgcolor);
+            epd->drawLine(commonData.keydata[i].x-10, top, commonData.keydata[i].x+10, top, commonData.fgcolor);
         }
-        getdisplay().drawLine(commonData.keydata[5].x + commonData.keydata[5].w - 10, top, commonData.keydata[5].x + commonData.keydata[5].w + 1, top, commonData.fgcolor);
+        epd->drawLine(commonData.keydata[5].x + commonData.keydata[5].w - 10, top, commonData.keydata[5].x + commonData.keydata[5].w + 1, top, commonData.fgcolor);
         // vertical key separators
         for (int i = 0; i <= 4; i++) {
-            getdisplay().drawLine(commonData.keydata[i].x + commonData.keydata[i].w, top, commonData.keydata[i].x + commonData.keydata[i].w, bottom, commonData.fgcolor);
+            epd->drawLine(commonData.keydata[i].x + commonData.keydata[i].w, top, commonData.keydata[i].x + commonData.keydata[i].w, bottom, commonData.fgcolor);
         }
         for (int i = 0; i < 6; i++) {
             uint16_t x, y;
@@ -612,7 +615,7 @@ void displayFooter(CommonData &commonData) {
                     if (iconmap.find(icon_name) != iconmap.end()) {
                         x = commonData.keydata[i].x + (commonData.keydata[i].w - icon_width) / 2;
                         y = commonData.keydata[i].y + (commonData.keydata[i].h - icon_height) / 2;
-                        getdisplay().drawXBitmap(x, y, iconmap[icon_name], icon_width, icon_height, commonData.fgcolor);
+                        epd->drawXBitmap(x, y, iconmap[icon_name], icon_width, icon_height, commonData.fgcolor);
                     } else {
                         // icon is missing, use name instead
                         x = commonData.keydata[i].x + commonData.keydata[i].w / 2;
@@ -627,8 +630,8 @@ void displayFooter(CommonData &commonData) {
             }
         }
     } else {
-        getdisplay().setCursor(65, 295);
-        getdisplay().print("Press 1 and 6 fast to unlock keys");
+        epd->setCursor(65, 295);
+        epd->print("Press 1 and 6 fast to unlock keys");
     }
 #endif
 #ifdef BOARD_OBP40S3
@@ -639,21 +642,21 @@ void displayFooter(CommonData &commonData) {
     uint16_t x0 = (GxEPD_WIDTH - w) / 2 + r * 2;
     for (int i = 0; i < commonData.data.maxpage; i++) {
         if (i == (commonData.data.actpage - 1)) {
-            getdisplay().fillCircle(x0 + i * (r * 2 + space), 290, r, commonData.fgcolor);
+            epd->fillCircle(x0 + i * (r * 2 + space), 290, r, commonData.fgcolor);
         } else {
-            getdisplay().drawCircle(x0 + i * (r * 2 + space), 290, r, commonData.fgcolor);
+            epd->drawCircle(x0 + i * (r * 2 + space), 290, r, commonData.fgcolor);
         }
     }
     // key indicators
     // left side = top key "menu"
-    getdisplay().drawLine(0, 280, 10, 280, commonData.fgcolor);
-    getdisplay().drawLine(55, 280, 65, 280, commonData.fgcolor);
-    getdisplay().drawLine(65, 280, 65, 299, commonData.fgcolor);
+    epd->drawLine(0, 280, 10, 280, commonData.fgcolor);
+    epd->drawLine(55, 280, 65, 280, commonData.fgcolor);
+    epd->drawLine(65, 280, 65, 299, commonData.fgcolor);
     drawTextCenter(33, 291, commonData.keydata[0].label);
     // right side = bottom key "exit"
-    getdisplay().drawLine(390, 280, 399, 280, commonData.fgcolor);
-    getdisplay().drawLine(335, 280, 345, 280, commonData.fgcolor);
-    getdisplay().drawLine(335, 280, 335, 399, commonData.fgcolor);
+    epd->drawLine(390, 280, 399, 280, commonData.fgcolor);
+    epd->drawLine(335, 280, 345, 280, commonData.fgcolor);
+    epd->drawLine(335, 280, 335, 399, commonData.fgcolor);
     drawTextCenter(366, 291, commonData.keydata[1].label);
 #endif
 }
@@ -666,31 +669,31 @@ void displayAlarm(CommonData &commonData) {
     const uint16_t w = 300;
     const uint16_t h = 150;
 
-    getdisplay().setFont(&Atari16px);
-    getdisplay().setTextColor(commonData.fgcolor);
+    epd->setFont(&Atari16px);
+    epd->setTextColor(commonData.fgcolor);
 
     // overlay
-    getdisplay().drawRect(x, y, w, h, commonData.fgcolor);
-    getdisplay().fillRect(x + 1, y + 1, w - 1, h - 1, commonData.bgcolor);
-    getdisplay().drawRect(x + 3, y + 3, w - 5, h - 5, commonData.fgcolor);
+    epd->drawRect(x, y, w, h, commonData.fgcolor);
+    epd->fillRect(x + 1, y + 1, w - 1, h - 1, commonData.bgcolor);
+    epd->drawRect(x + 3, y + 3, w - 5, h - 5, commonData.fgcolor);
 
     // exclamation icon in left top corner
-    getdisplay().drawXBitmap(x + 16, y + 16, exclamation_bits, exclamation_width, exclamation_height, commonData.fgcolor);
+    epd->drawXBitmap(x + 16, y + 16, exclamation_bits, exclamation_width, exclamation_height, commonData.fgcolor);
 
     // title
-    getdisplay().setCursor(x + 64, y + 30);
-    getdisplay().print("A L A R M");
-    getdisplay().setCursor(x + 64, y + 48);
-    getdisplay().print("#" + commonData.alarm.id);
-    getdisplay().print(" from ");
-    getdisplay().print(commonData.alarm.source);
+    epd->setCursor(x + 64, y + 30);
+    epd->print("A L A R M");
+    epd->setCursor(x + 64, y + 48);
+    epd->print("#" + commonData.alarm.id);
+    epd->print(" from ");
+    epd->print(commonData.alarm.source);
 
     // message, but maximum 4 lines
     std::vector<String> lines = wordwrap (commonData.alarm.message, w - 16 - 8 / 8);
     int n = 0;
     for (const auto& l : lines) {
-        getdisplay().setCursor(x + 16, y + 80 + n);
-        getdisplay().print(l);
+        epd->setCursor(x + 16, y + 80 + n);
+        epd->print(l);
         n += 16;
         if (n > 64) {
             break;
@@ -783,20 +786,20 @@ void batteryGraphic(uint x, uint y, float percent, int pcolor, int bcolor){
         }
         // Battery corpus 100x80 with fill level
         int level = int((100.0 - percent) * (80-(2*t)) / 100.0);
-        getdisplay().fillRect(xb, yb, 100, 80, pcolor);
+        epd->fillRect(xb, yb, 100, 80, pcolor);
         if(percent < 99){
-            getdisplay().fillRect(xb+t, yb+t, 100-(2*t), level, bcolor);
+            epd->fillRect(xb+t, yb+t, 100-(2*t), level, bcolor);
         }
         // Plus pol 20x15
         int xp = xb + 20;
         int yp = yb - 15 + t;
-        getdisplay().fillRect(xp, yp, 20, 15, pcolor);
-        getdisplay().fillRect(xp+t, yp+t, 20-(2*t), 15-(2*t), bcolor);
+        epd->fillRect(xp, yp, 20, 15, pcolor);
+        epd->fillRect(xp+t, yp+t, 20-(2*t), 15-(2*t), bcolor);
         // Minus pol 20x15
         int xm = xb + 60;
         int ym = yb -15 + t;
-        getdisplay().fillRect(xm, ym, 20, 15, pcolor);
-        getdisplay().fillRect(xm+t, ym+t, 20-(2*t), 15-(2*t), bcolor);
+        epd->fillRect(xm, ym, 20, 15, pcolor);
+        epd->fillRect(xm+t, ym+t, 20-(2*t), 15-(2*t), bcolor);
 }
 
 // Solar graphic with fill level
@@ -808,17 +811,17 @@ void solarGraphic(uint x, uint y, int pcolor, int bcolor){
         int percent = 0;
         // Solar corpus 100x80
         int level = int((100.0 - percent) * (80-(2*t)) / 100.0);
-        getdisplay().fillRect(xb, yb, 100, 80, pcolor);
+        epd->fillRect(xb, yb, 100, 80, pcolor);
         if(percent < 99){
-            getdisplay().fillRect(xb+t, yb+t, 100-(2*t), level, bcolor);
+            epd->fillRect(xb+t, yb+t, 100-(2*t), level, bcolor);
         }
         // Draw horizontel lines
-        getdisplay().fillRect(xb, yb+28-t, 100, t, pcolor);
-        getdisplay().fillRect(xb, yb+54-t, 100, t, pcolor);
+        epd->fillRect(xb, yb+28-t, 100, t, pcolor);
+        epd->fillRect(xb, yb+54-t, 100, t, pcolor);
         // Draw vertical lines
-        getdisplay().fillRect(xb+19+t, yb, t, 80, pcolor);
-        getdisplay().fillRect(xb+39+2*t, yb, t, 80, pcolor);
-        getdisplay().fillRect(xb+59+3*t, yb, t, 80, pcolor);
+        epd->fillRect(xb+19+t, yb, t, 80, pcolor);
+        epd->fillRect(xb+39+2*t, yb, t, 80, pcolor);
+        epd->fillRect(xb+59+3*t, yb, t, 80, pcolor);
 
 }
 
@@ -830,13 +833,13 @@ void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
         int t = 4;      // Line thickness
 
         // Generator corpus with radius 45
-        getdisplay().fillCircle(xb, yb, 45, pcolor);
-        getdisplay().fillCircle(xb, yb, 41, bcolor);
+        epd->fillCircle(xb, yb, 45, pcolor);
+        epd->fillCircle(xb, yb, 41, bcolor);
         // Insert G
-        getdisplay().setTextColor(pcolor);
-        getdisplay().setFont(&Ubuntu_Bold32pt8b);
-        getdisplay().setCursor(xb-22, yb+20);
-        getdisplay().print("G");
+        epd->setTextColor(pcolor);
+        epd->setFont(&Ubuntu_Bold32pt8b);
+        epd->setCursor(xb-22, yb+20);
+        epd->print("G");
 }
 
 // Function to handle HTTP image request
@@ -850,7 +853,7 @@ void doImageRequest(GwApi *api, int *pageno, const PageStruct pages[MAX_PAGE_NUM
 
     logger->logDebug(GwLog::LOG,"handle image request [%s]: %s", imgformat, filename);
 
-    uint8_t *fb = getdisplay().getBuffer(); // EPD framebuffer
+    uint8_t *fb = epd->getBuffer(); // EPD framebuffer
     std::vector<uint8_t> imageBuffer;       // image in webserver transferbuffer
     String mimetype;
 
