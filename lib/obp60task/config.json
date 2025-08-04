@@ -1133,6 +1133,21 @@
         }
     },
     {
+        "name": "headerFormat",
+        "label": "Header Format",
+        "type": "list",
+        "default":"TEXT",
+        "description": "Header format: Text or Symbols",
+        "list": [
+            {"l":"Text","v":"TEXT"},
+            {"l":"Symbols","v":"ICON"}
+        ],
+        "category":"OBP60 Pages",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
         "name": "backlight",
         "label": "Backlight Mode",
         "type": "list",
@@ -1290,21 +1305,6 @@
         "max": 10,
         "default":"1",
         "description": "First page number to display after device startup",
-        "category":"OBP60 Pages",
-        "capabilities": {
-            "obp60":"true"
-        }
-    },
-    {
-        "name": "headerFormat",
-        "label": "Header Format",
-        "type": "list",
-        "default":"TEXT",
-        "description": "Header format: Text or Symbols",
-        "list": [
-            {"l":"Text","v":"TEXT"},
-            {"l":"Symbols","v":"ICON"}
-        ],
         "category":"OBP60 Pages",
         "capabilities": {
             "obp60":"true"
