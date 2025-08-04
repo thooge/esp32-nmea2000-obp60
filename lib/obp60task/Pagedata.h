@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 #pragma once
 #include <Arduino.h>
 #include "GwApi.h"
@@ -99,6 +101,10 @@ typedef struct{
 } AlarmData;
 
 typedef struct{
+    int voltage = 0;
+} AvgData;
+
+typedef struct{
   GwApi::Status status;
   GwLog *logger=NULL;
   GwConfigHandler *config=NULL;
@@ -107,6 +113,7 @@ typedef struct{
   TouchKeyData keydata[6];
   BacklightData backlight;
   AlarmData alarm;
+  AvgData avgdata;
   GwApi::BoatValue *time=NULL;
   GwApi::BoatValue *date=NULL;
   uint16_t fgcolor;
@@ -117,9 +124,11 @@ typedef struct{
 
 //a base class that all pages must inherit from
 class Page{
-  protected:
+protected:
     CommonData *commonData;
-  public:
+    GwConfigHandler *config;
+    GwLog *logger;
+public:
     int refreshtime = 1000;
     virtual int displayPage(PageData &pageData)=0;
     virtual void displayNew(PageData &pageData){}

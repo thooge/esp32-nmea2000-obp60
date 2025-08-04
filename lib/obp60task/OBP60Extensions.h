@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #ifndef _OBP60EXTENSIONPORT_H
 #define _OBP60EXTENSIONPORT_H
 
@@ -46,7 +47,9 @@ GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> & getdisplay();
 #endif
 
 #ifdef DISPLAY_GDEY042T81
-GxEPD2_BW<GxEPD2_420_GDEY042T81, GxEPD2_420_GDEY042T81::HEIGHT> & getdisplay();
+GxEPD2_BW<GxEPD2_420_GDEY042T81, GxEPD2_420_GDEY042T81::HEIGHT> & getdisplay(); // DEPRECATED
+typedef GxEPD2_BW<GxEPD2_420_GDEY042T81, GxEPD2_420_GDEY042T81::HEIGHT> gxepd2display;
+extern gxepd2display *epd;
 #endif
 
 #ifdef DISPLAY_GYE042A87

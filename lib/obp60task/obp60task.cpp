@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 #include "obp60task.h"
 #include "Pagedata.h"                   // Data exchange for pages

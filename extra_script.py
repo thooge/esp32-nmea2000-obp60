@@ -501,7 +501,7 @@ def prebuild(env):
     genereateUserTasks(os.path.join(outPath(), TASK_INCLUDE))
     generateFile(os.path.join(basePath(),XDR_FILE),os.path.join(outPath(),XDR_INCLUDE),generateXdrMappings)
     generateFile(os.path.join(basePath(),GROVE_CONFIG_IN),os.path.join(outPath(),GROVE_CONFIG),generateGroveDefs,inMode='r')
-    version="dev"+datetime.now().strftime("%Y%m%d")
+    version = "dev{}{}".format(datetime.now().strftime("%Y%m%d"), "-ext")
     env.Append(CPPDEFINES=[('GWDEVVERSION',version)])
 
 def cleangenerated(source, target, env):
