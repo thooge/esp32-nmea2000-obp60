@@ -1,4 +1,4 @@
-#ifdef BOARD_OBP60S3
+#if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
@@ -15,7 +15,7 @@ public:
         common.logger->logDebug(GwLog::LOG,"Show PageSkyView");
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key){
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -24,7 +24,7 @@ public:
         return key;
     }
 
-    virtual void displayPage(PageData &pageData){
+    int displayPage(PageData &pageData) {
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
 
@@ -49,7 +49,7 @@ public:
         getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
 
         // current position
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
 
         GwApi::BoatValue *bv_lat = pageData.values[0];
         String sv_lat = formatValue(bv_lat, *commonData).svalue;
@@ -92,7 +92,7 @@ public:
 
         int16_t  x1, y1;
         uint16_t w, h;
-        getdisplay().setFont(&Ubuntu_Bold12pt7b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
 
 		getdisplay().getTextBounds("N", 0, 150, &x1, &y1, &w, &h);
         getdisplay().setCursor(c.x - w / 2, c.y - r + h + 2);
@@ -114,7 +114,7 @@ public:
 
 
         // Signal / Noise bars
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(325, 34);
         getdisplay().print("SNR");
         getdisplay().drawRect(270, 20, 125, 257, commonData->fgcolor);
@@ -127,9 +127,7 @@ public:
             getdisplay().drawRect(305, y-12, 85, 14, commonData->fgcolor);
         }
 
-        // Update display
-        getdisplay().nextPage();    // Partial update (fast)
-
+        return PAGE_UPDATE;
     };
 };
 
