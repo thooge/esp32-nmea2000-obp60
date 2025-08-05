@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "BoatDataCalibration.h"
@@ -181,8 +182,8 @@ public:
         String backlightMode = config->getString(config->backlight);
 
         if (!isInitialized) {
-            width = getdisplay().width();
-            height = getdisplay().height();
+            width = epd->width();
+            height = epd->height();
             xCenter = width / 2;
             cHeight = height - yOffset - 22;
             bufSize = pageData.boatHstry.twdHstry->getCapacity();
@@ -277,32 +278,32 @@ public:
         //***********************************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, width, height); // Set partial update
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setPartialWindow(0, 0, width, height); // Set partial update
+        epd->setTextColor(commonData->fgcolor);
 
         // chart lines
-        getdisplay().fillRect(0, yOffset, width, 2, commonData->fgcolor);
-        getdisplay().fillRect(xCenter, yOffset, 1, cHeight, commonData->fgcolor);
+        epd->fillRect(0, yOffset, width, 2, commonData->fgcolor);
+        epd->fillRect(xCenter, yOffset, 1, cHeight, commonData->fgcolor);
 
         // chart labels
         char sWndLbl[4]; // char buffer for Wind angle label
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(xCenter - 88, yOffset - 3);
-        getdisplay().print("TWD"); // Wind data name
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(xCenter - 88, yOffset - 3);
+        epd->print("TWD"); // Wind data name
         snprintf(sWndLbl, 4, "%03d", (wndCenter < 0) ? (wndCenter + 360) : wndCenter);
         drawTextCenter(xCenter, yOffset - 11, sWndLbl);
-        getdisplay().drawCircle(xCenter + 25, yOffset - 17, 2, commonData->fgcolor); // <degree> symbol
-        getdisplay().drawCircle(xCenter + 25, yOffset - 17, 3, commonData->fgcolor); // <degree> symbol
-        getdisplay().setCursor(1, yOffset - 3);
+        epd->drawCircle(xCenter + 25, yOffset - 17, 2, commonData->fgcolor); // <degree> symbol
+        epd->drawCircle(xCenter + 25, yOffset - 17, 3, commonData->fgcolor); // <degree> symbol
+        epd->setCursor(1, yOffset - 3);
         snprintf(sWndLbl, 4, "%03d", (wndLeft < 0) ? (wndLeft + 360) : wndLeft);
-        getdisplay().print(sWndLbl); // Wind left value
-        getdisplay().drawCircle(46, yOffset - 17, 2, commonData->fgcolor); // <degree> symbol
-        getdisplay().drawCircle(46, yOffset - 17, 3, commonData->fgcolor); // <degree> symbol
-        getdisplay().setCursor(width - 50, yOffset - 3);
+        epd->print(sWndLbl); // Wind left value
+        epd->drawCircle(46, yOffset - 17, 2, commonData->fgcolor); // <degree> symbol
+        epd->drawCircle(46, yOffset - 17, 3, commonData->fgcolor); // <degree> symbol
+        epd->setCursor(width - 50, yOffset - 3);
         snprintf(sWndLbl, 4, "%03d", (wndRight < 0) ? (wndRight + 360) : wndRight);
-        getdisplay().print(sWndLbl); // Wind right value
-        getdisplay().drawCircle(width - 5, yOffset - 17, 2, commonData->fgcolor); // <degree> symbol
-        getdisplay().drawCircle(width - 5, yOffset - 17, 3, commonData->fgcolor); // <degree> symbol
+        epd->print(sWndLbl); // Wind right value
+        epd->drawCircle(width - 5, yOffset - 17, 2, commonData->fgcolor); // <degree> symbol
+        epd->drawCircle(width - 5, yOffset - 17, 3, commonData->fgcolor); // <degree> symbol
 
         if (pageData.boatHstry.twdHstry->getMax() == pageData.boatHstry.twdHstry->getMinVal()) {
             // only <INT16_MIN> values in buffer -> no valid wind data available
@@ -347,15 +348,15 @@ public:
                         if (((chrtPrevVal180 >= -180) && (chrtPrevVal180 < -90) && (chrtVal180 > 90)) || ((chrtPrevVal180 <= 179) && (chrtPrevVal180 > 90) && chrtVal180 <= -90)) {
                             // If current value crosses chart borders compared to previous value, split line
                             int xSplit = (((chrtPrevVal180 > 0 ? wndRight : wndLeft) - wndLeft + 360) % 360) * chrtScl;
-                            getdisplay().drawLine(prevX, prevY, xSplit, y, commonData->fgcolor);
-                            getdisplay().drawLine(prevX, prevY - 1, ((xSplit != prevX) ? xSplit : xSplit - 1), ((xSplit != prevX) ? y - 1 : y), commonData->fgcolor);
+                            epd->drawLine(prevX, prevY, xSplit, y, commonData->fgcolor);
+                            epd->drawLine(prevX, prevY - 1, ((xSplit != prevX) ? xSplit : xSplit - 1), ((xSplit != prevX) ? y - 1 : y), commonData->fgcolor);
                             prevX = (((chrtVal180 > 0 ? wndRight : wndLeft) - wndLeft + 360) % 360) * chrtScl;
                         }
                     }
 
                     // Draw line with 2 pixels width + make sure vertical line are drawn correctly
-                    getdisplay().drawLine(prevX, prevY, x, y, commonData->fgcolor);
-                    getdisplay().drawLine(prevX, prevY - 1, ((x != prevX) ? x : x - 1), ((x != prevX) ? y - 1 : y), commonData->fgcolor);
+                    epd->drawLine(prevX, prevY, x, y, commonData->fgcolor);
+                    epd->drawLine(prevX, prevY - 1, ((x != prevX) ? x : x - 1), ((x != prevX) ? y - 1 : y), commonData->fgcolor);
                     chrtPrevVal = chrtVal;
                     prevX = x;
                     prevY = y;
@@ -383,8 +384,8 @@ public:
         } else {
             // No valid data available
             LOG_DEBUG(GwLog::LOG, "PageWindPlot: No valid data available");
-            getdisplay().setFont(&Ubuntu_Bold10pt8b);
-            getdisplay().fillRect(xCenter - 33, height / 2 - 20, 66, 24, commonData->bgcolor); // Clear area for message
+            epd->setFont(&Ubuntu_Bold10pt8b);
+            epd->fillRect(xCenter - 33, height / 2 - 20, 66, 24, commonData->bgcolor); // Clear area for message
             drawTextCenter(xCenter, height / 2 - 10, "No data");
         }
 
@@ -409,39 +410,39 @@ public:
             }
             lastZone = currentZone;
 
-            getdisplay().fillRect(xPosTws - 4, yPosTws - 38, 142, 44, commonData->bgcolor); // Clear area for TWS value
-            getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
-            getdisplay().setCursor(xPosTws, yPosTws);
+            epd->fillRect(xPosTws - 4, yPosTws - 38, 142, 44, commonData->bgcolor); // Clear area for TWS value
+            epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
+            epd->setCursor(xPosTws, yPosTws);
             if (!BDataValid[1]) {
-                getdisplay().print("--.-");
+                epd->print("--.-");
             } else {
                 double dbl = BDataValue[1] * 3.6 / 1.852;
                 if (dbl < 10.0) {
-                    getdisplay().printf("!%3.1f", dbl); // Value, round to 1 decimal
+                    epd->printf("!%3.1f", dbl); // Value, round to 1 decimal
                 } else {
-                    getdisplay().printf("%4.1f", dbl); // Value, round to 1 decimal
+                    epd->printf("%4.1f", dbl); // Value, round to 1 decimal
                 }
             }
-            getdisplay().setFont(&Ubuntu_Bold12pt8b);
-            getdisplay().setCursor(xPosTws + 82, yPosTws - 14);
-//            getdisplay().print("TWS"); // Name
-            getdisplay().print(BDataName[1]); // Name
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-//            getdisplay().setCursor(xPosTws + 78, yPosTws + 1);
-            getdisplay().setCursor(xPosTws + 82, yPosTws + 1);
-//            getdisplay().printf(" kn"); // Unit
-            getdisplay().print(BDataUnit[1]); // Unit
+            epd->setFont(&Ubuntu_Bold12pt8b);
+            epd->setCursor(xPosTws + 82, yPosTws - 14);
+//            epd->print("TWS"); // Name
+            epd->print(BDataName[1]); // Name
+            epd->setFont(&Ubuntu_Bold8pt8b);
+//            epd->setCursor(xPosTws + 78, yPosTws + 1);
+            epd->setCursor(xPosTws + 82, yPosTws + 1);
+//            epd->printf(" kn"); // Unit
+            epd->print(BDataUnit[1]); // Unit
         }
 
         // chart Y axis labels; print at last to overwrite potential chart lines in label area
         int yPos;
         int chrtLbl;
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        epd->setFont(&Ubuntu_Bold8pt8b);
         for (int i = 1; i <= 3; i++) {
             yPos = yOffset + (i * 60);
-            getdisplay().fillRect(0, yPos, width, 1, commonData->fgcolor);
-            getdisplay().fillRect(0, yPos - 8, 24, 16, commonData->bgcolor); // Clear small area to remove potential chart lines
-            getdisplay().setCursor(1, yPos + 4);
+            epd->fillRect(0, yPos, width, 1, commonData->fgcolor);
+            epd->fillRect(0, yPos - 8, 24, 16, commonData->bgcolor); // Clear small area to remove potential chart lines
+            epd->setCursor(1, yPos + 4);
             if (count >= intvBufSize) {
                 // Calculate minute value for label
                 chrtLbl = ((i - 1 + (prevY < yOffset + 30)) * dataIntv) * -1; // change label if last data point is more than 30 lines (= seconds) from chart line
@@ -449,7 +450,7 @@ public:
                 int j = 3 - i;
                 chrtLbl = (int((((numWndVals / dataIntv) - 50) * dataIntv / 60) + 1) - (j * dataIntv)) * -1; // 50 lines left below last chart line
             }
-            getdisplay().printf("%3d", chrtLbl); // Wind value label
+            epd->printf("%3d", chrtLbl); // Wind value label
         }
 
         return PAGE_UPDATE;

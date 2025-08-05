@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -91,37 +92,37 @@ public:
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setTextColor(commonData->fgcolor);
 
         // ############### Value 1 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(20, 55);
-        getdisplay().print("Depth");                         // Page name
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(20, 55);
+        epd->print("Depth");                         // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(20, 90);
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(20, 90);
         if(holdvalues == false){
-            getdisplay().print(unit1);                       // Unit
+            epd->print(unit1);                       // Unit
         }
         else{
-            getdisplay().print(unit1old);
+            epd->print(unit1old);
         }
 
         // Set font
-        getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
-        getdisplay().setCursor(180, 90);
+        epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
+        epd->setCursor(180, 90);
 
         // Show bus data
         if(holdvalues == false){
-            getdisplay().print(svalue1);                                     // Real value as formated string
+            epd->print(svalue1);                                     // Real value as formated string
         }
         else{
-            getdisplay().print(svalue1old);                                  // Old value as formated string
+            epd->print(svalue1old);                                  // Old value as formated string
         }
         if(valid1 == true){
             svalue1old = svalue1;                                       // Save the old value
@@ -131,35 +132,35 @@ public:
         // ############### Horizontal Line ################
 
         // Horizontal line 3 pix
-        getdisplay().fillRect(0, 105, 400, 3, commonData->fgcolor);
+        epd->fillRect(0, 105, 400, 3, commonData->fgcolor);
 
         // ############### Value 2 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(20, 145);
-        getdisplay().print("Speed");                         // Page name
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(20, 145);
+        epd->print("Speed");                         // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(20, 180);
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(20, 180);
         if(holdvalues == false){
-            getdisplay().print(unit2);                       // Unit
+            epd->print(unit2);                       // Unit
         }
         else{
-            getdisplay().print(unit2old);
+            epd->print(unit2old);
         }
 
         // Setfont
-        getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
-        getdisplay().setCursor(180, 180);
+        epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
+        epd->setCursor(180, 180);
 
         // Show bus data
         if(holdvalues == false){
-            getdisplay().print(svalue2);                                     // Real value as formated string
+            epd->print(svalue2);                                     // Real value as formated string
         }
         else{
-            getdisplay().print(svalue2old);                                  // Old value as formated string
+            epd->print(svalue2old);                                  // Old value as formated string
         }
         if(valid2 == true){
             svalue2old = svalue2;                                       // Save the old value
@@ -169,35 +170,35 @@ public:
         // ############### Horizontal Line ################
 
         // Horizontal line 3 pix
-        getdisplay().fillRect(0, 195, 400, 3, commonData->fgcolor);
+        epd->fillRect(0, 195, 400, 3, commonData->fgcolor);
 
         // ############### Value 3 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(20, 220);
-        getdisplay().print("Log");                           // Page name
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(20, 220);
+        epd->print("Log");                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(20, 240);
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(20, 240);
         if(holdvalues == false){
-            getdisplay().print(unit3);                       // Unit
+            epd->print(unit3);                       // Unit
         }
         else{
-            getdisplay().print(unit3old);
+            epd->print(unit3old);
         }
 
         // Set font
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(80, 270);
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(80, 270);
 
         // Show bus data
         if(holdvalues == false){
-            getdisplay().print(svalue3);                                     // Real value as formated string
+            epd->print(svalue3);                                     // Real value as formated string
         }
         else{
-            getdisplay().print(svalue3old);                                  // Old value as formated string
+            epd->print(svalue3old);                                  // Old value as formated string
         }
         if(valid3 == true){
             svalue3old = svalue3;                                       // Save the old value
@@ -207,35 +208,35 @@ public:
         // ############### Vertical Line ################
 
         // Vertical line 3 pix
-        getdisplay().fillRect(200, 195, 3, 75, commonData->fgcolor);
+        epd->fillRect(200, 195, 3, 75, commonData->fgcolor);
 
         // ############### Value 4 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(220, 220);
-        getdisplay().print("Temp");                           // Page name
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(220, 220);
+        epd->print("Temp");                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(220, 240);
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(220, 240);
         if(holdvalues == false){
-            getdisplay().print(unit4);                       // Unit
+            epd->print(unit4);                       // Unit
         }
         else{
-            getdisplay().print(unit4old);
+            epd->print(unit4old);
         }
 
         // Set font
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(280, 270);
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(280, 270);
 
         // Show bus data
         if(holdvalues == false){
-            getdisplay().print(svalue4);                                     // Real value as formated string
+            epd->print(svalue4);                                     // Real value as formated string
         }
         else{
-            getdisplay().print(svalue4old);                                  // Old value as formated string
+            epd->print(svalue4old);                                  // Old value as formated string
         }
         if(valid4 == true){
             svalue4old = svalue4;                                       // Save the old value

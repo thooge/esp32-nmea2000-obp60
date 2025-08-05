@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -158,134 +159,134 @@ class PageBattery : public Page
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
         // Show average settings
-        getdisplay().setTextColor(commonData->fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        epd->setTextColor(commonData->fgcolor);
+        epd->setFont(&Ubuntu_Bold8pt8b);
         switch (average) {
             case 0:
-                getdisplay().setCursor(60, 90);
-                getdisplay().print("Avg: 1s");
-                getdisplay().setCursor(60, 180);
-                getdisplay().print("Avg: 1s");
-                getdisplay().setCursor(60, 270);
-                getdisplay().print("Avg: 1s");
+                epd->setCursor(60, 90);
+                epd->print("Avg: 1s");
+                epd->setCursor(60, 180);
+                epd->print("Avg: 1s");
+                epd->setCursor(60, 270);
+                epd->print("Avg: 1s");
                 break;
             case 1:
-                getdisplay().setCursor(60, 90);
-                getdisplay().print("Avg: 10s");
-                getdisplay().setCursor(60, 180);
-                getdisplay().print("Avg: 10s");
-                getdisplay().setCursor(60, 270);
-                getdisplay().print("Avg: 10s");
+                epd->setCursor(60, 90);
+                epd->print("Avg: 10s");
+                epd->setCursor(60, 180);
+                epd->print("Avg: 10s");
+                epd->setCursor(60, 270);
+                epd->print("Avg: 10s");
                 break;
             case 2:
-                getdisplay().setCursor(60, 90);
-                getdisplay().print("Avg: 60s");
-                getdisplay().setCursor(60, 180);
-                getdisplay().print("Avg: 60s");
-                getdisplay().setCursor(60, 270);
-                getdisplay().print("Avg: 60s");
+                epd->setCursor(60, 90);
+                epd->print("Avg: 60s");
+                epd->setCursor(60, 180);
+                epd->print("Avg: 60s");
+                epd->setCursor(60, 270);
+                epd->print("Avg: 60s");
                 break;
             case 3:
-                getdisplay().setCursor(60, 90);
-                getdisplay().print("Avg: 300s");
-                getdisplay().setCursor(60, 180);
-                getdisplay().print("Avg: 300s");
-                getdisplay().setCursor(60, 270);
-                getdisplay().print("Avg: 300s");
+                epd->setCursor(60, 90);
+                epd->print("Avg: 300s");
+                epd->setCursor(60, 180);
+                epd->print("Avg: 300s");
+                epd->setCursor(60, 270);
+                epd->print("Avg: 300s");
                 break;
             default:
-                getdisplay().setCursor(60, 90);
-                getdisplay().print("Avg: 1s");
-                getdisplay().setCursor(60, 180);
-                getdisplay().print("Avg: 1s");
-                getdisplay().setCursor(60, 270);
-                getdisplay().print("Avg: 1s");
+                epd->setCursor(60, 90);
+                epd->print("Avg: 1s");
+                epd->setCursor(60, 180);
+                epd->print("Avg: 1s");
+                epd->setCursor(60, 270);
+                epd->print("Avg: 1s");
                 break;
         } 
 
         // ############### Value 1 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(20, 55);
-        getdisplay().print(name1);                           // Value name
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(20, 55);
+        epd->print(name1);                           // Value name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(20, 90);
-        getdisplay().print(unit1);                           // Unit
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(20, 90);
+        epd->print(unit1);                           // Unit
 
         // Show value
-        getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
-        getdisplay().setCursor(180, 90);
+        epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
+        epd->setCursor(180, 90);
 
         // Show bus data
         if(String(powsensor1) != "off"){
-            getdisplay().print(value1,2);                    // Real value as formated string
+            epd->print(value1,2);                    // Real value as formated string
         }
         else{
-            getdisplay().print("---");                       // No sensor data (sensor is off)
+            epd->print("---");                       // No sensor data (sensor is off)
         }
 
         // ############### Horizontal Line ################
 
         // Horizontal line 3 pix
-        getdisplay().fillRect(0, 105, 400, 3, commonData->fgcolor);
+        epd->fillRect(0, 105, 400, 3, commonData->fgcolor);
 
         // ############### Value 2 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(20, 145);
-        getdisplay().print(name2);                           // Value name
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(20, 145);
+        epd->print(name2);                           // Value name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(20, 180);
-        getdisplay().print(unit2);                           // Unit
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(20, 180);
+        epd->print(unit2);                           // Unit
 
         // Show value
-        getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
-        getdisplay().setCursor(180, 180);
+        epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
+        epd->setCursor(180, 180);
 
         // Show bus data
         if(String(powsensor1) != "off"){
-            getdisplay().print(value2,1);                    // Real value as formated string
+            epd->print(value2,1);                    // Real value as formated string
         }
         else{
-            getdisplay().print("---");                       // No sensor data (sensor is off)
+            epd->print("---");                       // No sensor data (sensor is off)
         }
 
         // ############### Horizontal Line ################
 
         // Horizontal line 3 pix
-        getdisplay().fillRect(0, 195, 400, 3, commonData->fgcolor);
+        epd->fillRect(0, 195, 400, 3, commonData->fgcolor);
 
         // ############### Value 3 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(20, 235);
-        getdisplay().print(name3);                           // Value name
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(20, 235);
+        epd->print(name3);                           // Value name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(20, 270);
-        getdisplay().print(unit3);                           // Unit
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(20, 270);
+        epd->print(unit3);                           // Unit
 
         // Show value
-        getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
-        getdisplay().setCursor(180, 270);
+        epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
+        epd->setCursor(180, 270);
 
         // Show bus data
         if(String(powsensor1) != "off"){
-            getdisplay().print(value3,1);                    // Real value as formated string
+            epd->print(value3,1);                    // Real value as formated string
         }
         else{
-            getdisplay().print("---");                       // No sensor data (sensor is off)
+            epd->print("---");                       // No sensor data (sensor is off)
         }
 
         return PAGE_UPDATE;

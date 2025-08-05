@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -45,14 +46,14 @@ class PageXTETrack : public Page
        if (fill == true) {
            // no primitive for quadrangular object
            // we create it from 2 triangles
-           getdisplay().fillTriangle(x0, y0, x1, y1, x3, y3, color);
-           getdisplay().fillTriangle(x1, y1, x2, y2, x3, y3, color);
+           epd->fillTriangle(x0, y0, x1, y1, x3, y3, color);
+           epd->fillTriangle(x1, y1, x2, y2, x3, y3, color);
        } else {
            // draw outline
-           getdisplay().drawLine(x0, y0, x1, y1, color);
-           getdisplay().drawLine(x1, y1, x2, y2, color);
-           getdisplay().drawLine(x2, y2, x3, y3, color);
-           getdisplay().drawLine(x3, y3, x0, y0, color);
+           epd->drawLine(x0, y0, x1, y1, color);
+           epd->drawLine(x1, y1, x2, y2, color);
+           epd->drawLine(x2, y2, x3, y3, color);
+           epd->drawLine(x3, y3, x0, y0, color);
        }
     }
 
@@ -89,57 +90,57 @@ class PageXTETrack : public Page
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setTextColor(commonData->fgcolor);
 
         // descriptions
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(50, 188);
-        getdisplay().print("Cross-track error");
-        getdisplay().setCursor(270, 188);
-        getdisplay().print("Track");
-        getdisplay().setCursor(45, 275);
-        getdisplay().print("Distance to waypoint");
-        getdisplay().setCursor(260, 275);
-        getdisplay().print("Bearing");
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(50, 188);
+        epd->print("Cross-track error");
+        epd->setCursor(270, 188);
+        epd->print("Track");
+        epd->setCursor(45, 275);
+        epd->print("Distance to waypoint");
+        epd->setCursor(260, 275);
+        epd->print("Bearing");
 
         // values
-        getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
+        epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
 
         int16_t  x, y;
         uint16_t w, h;
 
         GwApi::BoatValue *bv_xte = pageData.values[0]; // XTE
         String sval_xte = formatValue(bv_xte, *commonData).svalue;
-        getdisplay().getTextBounds(sval_xte, 0, 0, &x, &y, &w, &h);
-        getdisplay().setCursor(160-w, 170);
-        getdisplay().print(sval_xte);
+        epd->getTextBounds(sval_xte, 0, 0, &x, &y, &w, &h);
+        epd->setCursor(160-w, 170);
+        epd->print(sval_xte);
 
         GwApi::BoatValue *bv_cog = pageData.values[1]; // COG
         String sval_cog = formatValue(bv_cog, *commonData).svalue;
-        getdisplay().getTextBounds(sval_cog, 0, 0, &x, &y, &w, &h);
-        getdisplay().setCursor(360-w, 170);
-        getdisplay().print(sval_cog);
+        epd->getTextBounds(sval_cog, 0, 0, &x, &y, &w, &h);
+        epd->setCursor(360-w, 170);
+        epd->print(sval_cog);
 
         GwApi::BoatValue *bv_dtw = pageData.values[2]; // DTW
         String sval_dtw = formatValue(bv_dtw, *commonData).svalue;
-        getdisplay().getTextBounds(sval_dtw, 0, 0, &x, &y, &w, &h);
-        getdisplay().setCursor(160-w, 257);
-        getdisplay().print(sval_dtw);
+        epd->getTextBounds(sval_dtw, 0, 0, &x, &y, &w, &h);
+        epd->setCursor(160-w, 257);
+        epd->print(sval_dtw);
 
         GwApi::BoatValue *bv_btw = pageData.values[3]; // BTW
         String sval_btw = formatValue(bv_btw, *commonData).svalue;
-        getdisplay().getTextBounds(sval_btw, 0, 0, &x, &y, &w, &h);
-        getdisplay().setCursor(360-w, 257);
-        getdisplay().print(sval_btw);
+        epd->getTextBounds(sval_btw, 0, 0, &x, &y, &w, &h);
+        epd->setCursor(360-w, 257);
+        epd->print(sval_btw);
 
         bool valid = bv_cog->valid && bv_btw->valid;
 
         // XTETrack view
 
         // draw ship symbol (as bitmap)
-        getdisplay().drawXBitmap(184, 68, ship_bits, ship_width, ship_height, commonData->fgcolor);
+        epd->drawXBitmap(184, 68, ship_bits, ship_width, ship_height, commonData->fgcolor);
 
         // draw next waypoint name
         String sval_wpname = "no data";
@@ -148,13 +149,13 @@ class PageXTETrack : public Page
             sval_wpname = "Tonne 122";
         }
 
-        getdisplay().setFont(&Ubuntu_Bold10pt8b);
-        getdisplay().getTextBounds(sval_wpname, 0, 150, &x, &y, &w, &h);
+        epd->setFont(&Ubuntu_Bold10pt8b);
+        epd->getTextBounds(sval_wpname, 0, 150, &x, &y, &w, &h);
         // TODO if text don't fix use smaller font size.
         // if smallest size does not fit use 2 lines
         // last resort: clip with ellipsis
-        getdisplay().setCursor(200 - w / 2, 60);
-        getdisplay().print(sval_wpname);
+        epd->setCursor(200 - w / 2, 60);
+        epd->print(sval_wpname);
 
         // draw course segments
 

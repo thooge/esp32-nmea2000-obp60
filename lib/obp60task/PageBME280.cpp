@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -105,76 +106,76 @@ class PageBME280 : public Page
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setTextColor(commonData->fgcolor);
 
         // ############### Value 1 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(20, 55);
-        getdisplay().print(name1);                           // Page name
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(20, 55);
+        epd->print(name1);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(20, 90);
-        getdisplay().print(unit1);                           // Unit
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(20, 90);
+        epd->print(unit1);                           // Unit
 
         // Switch font if format for any values
-        getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
-        getdisplay().setCursor(180, 90);
+        epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
+        epd->setCursor(180, 90);
 
         // Show bus data
-        getdisplay().print(svalue1);                         // Real value as formated string
+        epd->print(svalue1);                         // Real value as formated string
 
         // ############### Horizontal Line ################
 
         // Horizontal line 3 pix
-        getdisplay().fillRect(0, 105, 400, 3, commonData->fgcolor);
+        epd->fillRect(0, 105, 400, 3, commonData->fgcolor);
 
         // ############### Value 2 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(20, 145);
-        getdisplay().print(name2);                           // Page name
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(20, 145);
+        epd->print(name2);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(20, 180);
-        getdisplay().print(unit2);                           // Unit
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(20, 180);
+        epd->print(unit2);                           // Unit
 
         // Switch font if format for any values
-        getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
-        getdisplay().setCursor(180, 180);
+        epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
+        epd->setCursor(180, 180);
 
         // Show bus data
-        getdisplay().print(svalue2);                         // Real value as formated string
+        epd->print(svalue2);                         // Real value as formated string
 
         // ############### Horizontal Line ################
 
         // Horizontal line 3 pix
-        getdisplay().fillRect(0, 195, 400, 3, commonData->fgcolor);
+        epd->fillRect(0, 195, 400, 3, commonData->fgcolor);
 
         // ############### Value 3 ################
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(20, 235);
-        getdisplay().print(name3);                           // Page name
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(20, 235);
+        epd->print(name3);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(20, 270);
-        getdisplay().print(unit3);                           // Unit
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(20, 270);
+        epd->print(unit3);                           // Unit
 
         // Switch font if format for any values
-        getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
-        getdisplay().setCursor(140, 270);
+        epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
+        epd->setCursor(140, 270);
 
         // Show bus data
-        getdisplay().print(svalue3);                         // Real value as formated string
+        epd->print(svalue3);                         // Real value as formated string
 
         return PAGE_UPDATE;
     };

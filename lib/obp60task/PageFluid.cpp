@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -138,17 +139,17 @@ class PageFluid : public Page
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height());
+        epd->setPartialWindow(0, 0, epd->width(), epd->height());
 
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setTextColor(commonData->fgcolor);
 
         // descriptions
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(20, 60);
-        getdisplay().print("Fluid");
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(20, 60);
+        epd->print("Fluid");
 
-        getdisplay().setCursor(300, 60);
-        getdisplay().print(xdrDelete(name1).substring(0, 6));
+        epd->setCursor(300, 60);
+        epd->print(xdrDelete(name1).substring(0, 6));
 
         // analog instrument
         // scale from -120 to 120
@@ -158,11 +159,11 @@ class PageFluid : public Page
         uint8_t r = 110;
 
         // circular frame
-        getdisplay().drawCircle(c.x, c.y, r+5, commonData->fgcolor);
-        getdisplay().fillCircle(c.x, c.y, r+2, commonData->fgcolor);
-        getdisplay().fillCircle(c.x, c.y, r-1, commonData->bgcolor);
+        epd->drawCircle(c.x, c.y, r+5, commonData->fgcolor);
+        epd->fillCircle(c.x, c.y, r+2, commonData->fgcolor);
+        epd->fillCircle(c.x, c.y, r-1, commonData->bgcolor);
         // center of pointer as dot 
-        getdisplay().fillCircle(c.x, c.y, 8, commonData->fgcolor);
+        epd->fillCircle(c.x, c.y, 8, commonData->fgcolor);
 
         // value down centered
         char buffer[6];
@@ -176,32 +177,32 @@ class PageFluid : public Page
         // draw symbol (as bitmap)
         switch (fluidtype) {
             case 0:
-                getdisplay().drawXBitmap(c.x-8, c.y-50, fuel_bits, fuel_width, fuel_height, commonData->fgcolor);
+                epd->drawXBitmap(c.x-8, c.y-50, fuel_bits, fuel_width, fuel_height, commonData->fgcolor);
                 break;
             case 1:
-                getdisplay().drawXBitmap(c.x-8, c.y-50, water_bits, water_width, water_height, commonData->fgcolor);
+                epd->drawXBitmap(c.x-8, c.y-50, water_bits, water_width, water_height, commonData->fgcolor);
                 break;
             case 2: // gray water no symbol yet
-                // getdisplay().drawXBitmap(c.x-8, c.y-50, gray_bits, gray_width, gray_height, commonData->fgcolor);
+                // epd->drawXBitmap(c.x-8, c.y-50, gray_bits, gray_width, gray_height, commonData->fgcolor);
                 break;
             case 3:
-                getdisplay().drawXBitmap(c.x-8, c.y-50, fish_bits, fish_width, fish_height, commonData->fgcolor);
+                epd->drawXBitmap(c.x-8, c.y-50, fish_bits, fish_width, fish_height, commonData->fgcolor);
                 break;
             case 4:
-                getdisplay().drawXBitmap(c.x-8, c.y-50, oil_bits, oil_width, oil_height, commonData->fgcolor);
+                epd->drawXBitmap(c.x-8, c.y-50, oil_bits, oil_width, oil_height, commonData->fgcolor);
                 break;
             case 5:
-                getdisplay().drawXBitmap(c.x-8, c.y-50, waste_bits, waste_width, waste_height, commonData->fgcolor);
+                epd->drawXBitmap(c.x-8, c.y-50, waste_bits, waste_width, waste_height, commonData->fgcolor);
                 break;
             case 6:
-                getdisplay().drawXBitmap(c.x-8, c.y-50, gasoline_bits, gasoline_width, gasoline_height, commonData->fgcolor);
+                epd->drawXBitmap(c.x-8, c.y-50, gasoline_bits, gasoline_width, gasoline_height, commonData->fgcolor);
                 break;
         }
 
         Point p, pr;
 
         // scale texts
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        epd->setFont(&Ubuntu_Bold8pt8b);
         p = {c.x, c.y - r + 30};
         drawTextCenter(p.x, p.y, "1/2");
         pr = rotatePoint(c, p, -60);
@@ -210,7 +211,7 @@ class PageFluid : public Page
         drawTextCenter(pr.x, pr.y, "3/4");
 
         // empty and full
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
+        epd->setFont(&Ubuntu_Bold12pt8b);
         p = rotatePoint(c, {c.x, c.y - r + 30}, -130);
         drawTextCenter(p.x, p.y, "E");
         p = rotatePoint(c, {c.x, c.y - r + 30}, 130);
@@ -236,7 +237,7 @@ class PageFluid : public Page
                 continue;
             }
             p = rotatePoint(c, {c.x, c.y - r + 10}, angle);
-            getdisplay().fillCircle(p.x, p.y, 3, commonData->fgcolor);
+            epd->fillCircle(p.x, p.y, 3, commonData->fgcolor);
         }
 
         // pointer
@@ -249,7 +250,7 @@ class PageFluid : public Page
             };
             fillPoly4(rotatePoints(c, pts, -120 + fluidlevel * 2.4), commonData->fgcolor);
             // Pointer axis is white
-            getdisplay().fillCircle(c.x, c.y, 6, commonData->bgcolor);
+            epd->fillCircle(c.x, c.y, 6, commonData->bgcolor);
         }
  
         return PAGE_UPDATE;

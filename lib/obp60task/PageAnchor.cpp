@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -130,64 +131,64 @@ private:
         }
 
         // Title and corner value headings
-        getdisplay().setTextColor(commonData->fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(8, 48);
-        getdisplay().print("Anchor");
+        epd->setTextColor(commonData->fgcolor);
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(8, 48);
+        epd->print("Anchor");
 
-        getdisplay().setFont(&Ubuntu_Bold10pt8b);
-        getdisplay().setCursor(8, 200);
-        getdisplay().print("Depth");
+        epd->setFont(&Ubuntu_Bold10pt8b);
+        epd->setCursor(8, 200);
+        epd->print("Depth");
         drawTextRalign(392, 38, "Chain");
         drawTextRalign(392, 200, "Wind");
 
         // Units
-        getdisplay().setCursor(8, 272);
-        getdisplay().print(sunit_dbs);
+        epd->setCursor(8, 272);
+        epd->print(sunit_dbs);
         drawTextRalign(392, 272, sunit_aws);
         drawTextRalign(392, 100, lengthformat); // chain unit not implemented
 
         // Corner values
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(8, 70);
-        getdisplay().print("Alarm: ");
-        getdisplay().print(alarm_enabled ? "On" : "Off");
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(8, 70);
+        epd->print("Alarm: ");
+        epd->print(alarm_enabled ? "On" : "Off");
 
-        getdisplay().setCursor(8, 90);
-        getdisplay().print("HDOP");
-        getdisplay().setCursor(8, 106);
+        epd->setCursor(8, 90);
+        epd->print("HDOP");
+        epd->setCursor(8, 106);
         if (bv_hdop->valid) {
-            getdisplay().print(round(bv_hdop->value), 0);
-            getdisplay().print(sunit_hdop);
+            epd->print(round(bv_hdop->value), 0);
+            epd->print(sunit_hdop);
         } else {
-            getdisplay().print("n/a");
+            epd->print("n/a");
         }
 
         // Values
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         // Current chain used
-        getdisplay().setCursor(328, 85);
-        getdisplay().print("27");
+        epd->setCursor(328, 85);
+        epd->print("27");
 
         // Depth
-        getdisplay().setCursor(8, 250);
-        getdisplay().print(sval_dbs);
+        epd->setCursor(8, 250);
+        epd->print(sval_dbs);
         // Wind
-        getdisplay().setCursor(328, 250);
-        getdisplay().print(sval_aws);
+        epd->setCursor(328, 250);
+        epd->print(sval_aws);
 
-        getdisplay().drawCircle(c.x, c.y, r, commonData->fgcolor);
-        getdisplay().drawCircle(c.x, c.y, r + 1, commonData->fgcolor);
+        epd->drawCircle(c.x, c.y, r, commonData->fgcolor);
+        epd->drawCircle(c.x, c.y, r + 1, commonData->fgcolor);
  
         // zoom scale
-        getdisplay().drawLine(c.x + 10, c.y, c.x + r - 4, c.y, commonData->fgcolor);
+        epd->drawLine(c.x + 10, c.y, c.x + r - 4, c.y, commonData->fgcolor);
         // arrow left
-        getdisplay().drawLine(c.x + 10, c.y, c.x + 16, c.y - 4, commonData->fgcolor);
-        getdisplay().drawLine(c.x + 10, c.y, c.x + 16, c.y + 4, commonData->fgcolor);
+        epd->drawLine(c.x + 10, c.y, c.x + 16, c.y - 4, commonData->fgcolor);
+        epd->drawLine(c.x + 10, c.y, c.x + 16, c.y + 4, commonData->fgcolor);
         // arrow right
-        getdisplay().drawLine(c.x + r - 4, c.y, c.x + r - 10, c.y - 4, commonData->fgcolor);
-        getdisplay().drawLine(c.x + r - 4, c.y, c.x + r - 10, c.y + 4, commonData->fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        epd->drawLine(c.x + r - 4, c.y, c.x + r - 10, c.y - 4, commonData->fgcolor);
+        epd->drawLine(c.x + r - 4, c.y, c.x + r - 10, c.y + 4, commonData->fgcolor);
+        epd->setFont(&Ubuntu_Bold8pt8b);
         drawTextCenter(c.x + r / 2, c.y + 8, String(scale) + "m");
  
         // alarm range circle
@@ -196,28 +197,28 @@ private:
             // r and r_range are pixel values
             uint16_t r_range = int(alarm_range * r / scale);
             LOG_DEBUG(GwLog::LOG,"Drawing at PageAnchor; Alarm range = %d", r_range);
-            getdisplay().drawCircle(c.x, c.y, r_range, commonData->fgcolor);
+            epd->drawCircle(c.x, c.y, r_range, commonData->fgcolor);
         }
  
         // draw anchor symbol (as bitmap)
-        getdisplay().drawXBitmap(c.x - anchor_width / 2, c.y - anchor_height / 2,
+        epd->drawXBitmap(c.x - anchor_width / 2, c.y - anchor_height / 2,
                                  anchor_bits, anchor_width, anchor_height, commonData->fgcolor);
 
     }
 
     void displayModeConfig() {
 
-        getdisplay().setTextColor(commonData->fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(8, 48);
-        getdisplay().print("Anchor configuration");
+        epd->setTextColor(commonData->fgcolor);
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(8, 48);
+        epd->print("Anchor configuration");
         
         // TODO
         // show lat/lon for anchor pos
         // show lat/lon for boat pos
         // show distance anchor <-> boat
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        epd->setFont(&Ubuntu_Bold8pt8b);
         for (int i = 0 ; i < menu->getItemCount(); i++) {
             ConfigMenuItem *itm = menu->getItemByIndex(i);
             if (!itm) {
@@ -228,14 +229,14 @@ private:
                 drawTextBoxed(r, itm->getLabel(), commonData->fgcolor, commonData->bgcolor, inverted, false);
                 if (inverted and editmode > 0) {
                     // triangle as edit marker
-                    getdisplay().fillTriangle(r.x + r.w + 20, r.y, r.x + r.w + 30, r.y + r.h / 2, r.x + r.w + 20, r.y + r.h,  commonData->fgcolor);
+                    epd->fillTriangle(r.x + r.w + 20, r.y, r.x + r.w + 30, r.y + r.h / 2, r.x + r.w + 20, r.y + r.h,  commonData->fgcolor);
                 }
-                getdisplay().setCursor(r.x + r.w + 40, r.y + r.h - 4);
+                epd->setCursor(r.x + r.w + 40, r.y + r.h - 4);
                 if (itm->getType() == "int") {
-                    getdisplay().print(itm->getValue());
-                    getdisplay().print(itm->getUnit());
+                    epd->print(itm->getValue());
+                    epd->print(itm->getUnit());
                 } else {
-                     getdisplay().print(itm->getValue() == 0 ? "No" : "Yes");
+                     epd->print(itm->getValue() == 0 ? "No" : "Yes");
                 }
             }
         } 
@@ -399,7 +400,7 @@ public:
         LOG_DEBUG(GwLog::LOG,"Drawing at PageAnchor; Mode=%c", mode);
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
        if (mode == 'N') {
            displayModeNormal(pageData);

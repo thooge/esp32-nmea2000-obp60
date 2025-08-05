@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -61,19 +62,19 @@ public:
 
         // Set display in partial refresh mode
         if (mode == 'W') {
-            getdisplay().setFullWindow();
+            epd->setFullWindow();
         } else {
-            getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+            epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
         }
 
         if (mode == 'L') {
-            getdisplay().drawXBitmap(0, 0, OBP_400x300_bits, OBP_400x300_width, OBP_400x300_height, commonData->fgcolor);
+            epd->drawXBitmap(0, 0, OBP_400x300_bits, OBP_400x300_width, OBP_400x300_height, commonData->fgcolor);
         } else if (mode == 'M') {
 #ifdef BOARD_OBP60S3
-            getdisplay().drawXBitmap(0, 0, OBP60_400x300_bits, OBP60_400x300_width, OBP60_400x300_height, commonData->fgcolor);
+            epd->drawXBitmap(0, 0, OBP60_400x300_bits, OBP60_400x300_width, OBP60_400x300_height, commonData->fgcolor);
 #endif
 #ifdef BOARD_OBP40S3
-            getdisplay().drawXBitmap(0, 0, OBP40_400x300_bits, OBP40_400x300_width, OBP40_400x300_height, commonData->fgcolor);
+            epd->drawXBitmap(0, 0, OBP40_400x300_bits, OBP40_400x300_width, OBP40_400x300_height, commonData->fgcolor);
 #endif
         }
 

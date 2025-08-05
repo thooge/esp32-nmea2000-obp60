@@ -75,38 +75,38 @@ public:
     }
 
     void printAvg(int avg, uint16_t x, uint16_t y, bool prefix) {
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(x, y);
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(x, y);
         if (prefix) {
-            getdisplay().print("Avg: ");
+            epd->print("Avg: ");
         }
         switch (average) {
             case 0:
-                getdisplay().print("1s");
+                epd->print("1s");
                 break;
             case 1:
-                getdisplay().print("10s");
+                epd->print("10s");
                 break;
             case 2:
-                getdisplay().print("60s");
+                epd->print("60s");
                 break;
             case 3:
-                getdisplay().print("300s");
+                epd->print("300s");
                 break;
             default:
-                getdisplay().print("1s");
+                epd->print("1s");
                 break;
         }
     }
 
     void printVoltageSymbol(uint16_t x, uint16_t y, uint16_t color) {
-        getdisplay().setFont(&Ubuntu_Bold16pt8b);
-        getdisplay().setCursor(x, y);
-        getdisplay().print("V");
-        getdisplay().fillRect(x, y + 6, 22, 3, color);
-        getdisplay().fillRect(x, y + 11, 6, 3, color);
-        getdisplay().fillRect(x + 8, y + 11, 6, 3, color);
-        getdisplay().fillRect(x + 16, y + 11, 6, 3, color);
+        epd->setFont(&Ubuntu_Bold16pt8b);
+        epd->setCursor(x, y);
+        epd->print("V");
+        epd->fillRect(x, y + 6, 22, 3, color);
+        epd->fillRect(x, y + 11, 6, 3, color);
+        epd->fillRect(x + 8, y + 11, 6, 3, color);
+        epd->fillRect(x + 16, y + 11, 6, 3, color);
     }
 
     int displayPage(PageData &pageData){
@@ -202,50 +202,50 @@ public:
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
         if (mode == 'D') {
             // Display mode digital
 
             // Show name
-            getdisplay().setTextColor(commonData->fgcolor);
-            getdisplay().setFont(&Ubuntu_Bold32pt8b);
-            getdisplay().setCursor(20, 100);
-            getdisplay().print(name1);                           // Value name
+            epd->setTextColor(commonData->fgcolor);
+            epd->setFont(&Ubuntu_Bold32pt8b);
+            epd->setCursor(20, 100);
+            epd->print(name1);                           // Value name
 
             #if defined BOARD_OBP40S3 && defined LIPO_ACCU_1200 && defined VOLTAGE_SENSOR
             // Show charge status
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(185, 100);
+            epd->setFont(&Ubuntu_Bold8pt8b);
+            epd->setCursor(185, 100);
             if(commonData->data.BatteryChargeStatus == true){
-                getdisplay().print("Charge");
+                epd->print("Charge");
             }
             else{
-                getdisplay().print("Discharge");
+                epd->print("Discharge");
             }
             #endif
 
             // Show unit
-            getdisplay().setFont(&Ubuntu_Bold20pt8b);
-            getdisplay().setCursor(270, 100);
-            getdisplay().print("V");
+            epd->setFont(&Ubuntu_Bold20pt8b);
+            epd->setCursor(270, 100);
+            epd->print("V");
 
             // Show battery type
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(295, 100);
+            epd->setFont(&Ubuntu_Bold8pt8b);
+            epd->setCursor(295, 100);
             #ifdef BOARD_OBP60S3
-            getdisplay().print(batType);
+            epd->print(batType);
             #endif
             #if defined BOARD_OBP40S3 && defined LIPO_ACCU_1200 && defined VOLTAGE_SENSOR
-            getdisplay().print("LiPo");
+            epd->print("LiPo");
             #endif
 
             // Show average settings
             printAvg(average, 320, 84, true);
 
             // Reading bus data or using simulation data
-            getdisplay().setFont(&DSEG7Classic_BoldItalic60pt7b);
-            getdisplay().setCursor(20, 240);
+            epd->setFont(&DSEG7Classic_BoldItalic60pt7b);
+            epd->setCursor(20, 240);
             if(simulation == true){
                 if(batVoltage == "12V"){
                     value1 = 12.0;
@@ -254,30 +254,30 @@ public:
                     value1 = 24.0;
                 }
                 value1 += float(random(0, 5)) / 10;         // Simulation data
-                getdisplay().print(value1,1);
+                epd->print(value1,1);
             }
             else{
                 // Check for valid real data, display also if hold values activated
                 if(valid1 == true || holdvalues == true){
                     // Resolution switching
                     if(value1 < 10){
-                        getdisplay().print(value1,2);
+                        epd->print(value1,2);
                     }
                     if(value1 >= 10 && value1 < 100){
-                        getdisplay().print(value1,1);
+                        epd->print(value1,1);
                     }
                     if(value1 >= 100){
-                        getdisplay().print(value1,0);
+                        epd->print(value1,0);
                     }
                 }
                 else{
-                getdisplay().print("---");                       // Missing bus data
+                epd->print("---");                       // Missing bus data
                 }
             }
 
             // Show trend indicator
             if(trend == true){
-                getdisplay().fillRect(315, 183, 35, 4, commonData->fgcolor);   // Draw separator
+                epd->fillRect(315, 183, 35, 4, commonData->fgcolor);   // Draw separator
                 if(int(raw * 10) > int(valueTrend * 10)){
                     displayTrendHigh(320, 174, 11, commonData->fgcolor);  // Show high indicator
                 }
@@ -298,9 +298,9 @@ public:
             std::vector<Point> pts;
 
             // Instrument
-            getdisplay().drawCircleHelper(c.x, c.y, r + 2, 0x01, commonData->fgcolor);
-            getdisplay().drawCircleHelper(c.x, c.y, r + 1, 0x01, commonData->fgcolor);
-            getdisplay().drawCircleHelper(c.x, c.y, r    , 0x01, commonData->fgcolor);
+            epd->drawCircleHelper(c.x, c.y, r + 2, 0x01, commonData->fgcolor);
+            epd->drawCircleHelper(c.x, c.y, r + 1, 0x01, commonData->fgcolor);
+            epd->drawCircleHelper(c.x, c.y, r    , 0x01, commonData->fgcolor);
 
             // Scale
             // angle to voltage scale mapping
@@ -313,7 +313,7 @@ public:
                 {c.x - r + 12, c.y + 1},
                 {c.x - r, c.y + 1}
             };
-            getdisplay().setFont(&Ubuntu_Bold10pt8b);
+            epd->setFont(&Ubuntu_Bold10pt8b);
             for (int angle = 3; angle < 90; angle += 3) {
                 if (angle % 15 == 0) {
                     fillPoly4(rotatePoints(c, pts, angle), commonData->fgcolor);
@@ -323,7 +323,7 @@ public:
                 else {
                     p1 = rotatePoint(c, {c.x - r, c.y}, angle);
                     p2 = rotatePoint(c, {c.x - r + 6, c.y}, angle);
-                    getdisplay().drawLine(p1.x, p1.y, p2.x, p2.y, commonData->fgcolor);
+                    epd->drawLine(p1.x, p1.y, p2.x, p2.y, commonData->fgcolor);
                 }
             }
 
@@ -363,31 +363,31 @@ public:
             fillPoly4(rotatePoints(c, pts, angle), commonData->fgcolor);
 
             // base
-            getdisplay().fillCircle(c.x, c.y, 7, commonData->fgcolor);
-            getdisplay().fillCircle(c.x, c.y, 4, commonData->bgcolor);
+            epd->fillCircle(c.x, c.y, 7, commonData->fgcolor);
+            epd->fillCircle(c.x, c.y, 4, commonData->bgcolor);
 
             // Symbol
             printVoltageSymbol(40, 60, commonData->fgcolor);
 
             // Additional information at right side
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(300, 60);
-            getdisplay().print("Source:");
-            getdisplay().setCursor(300, 80);
-            getdisplay().print(name1);
+            epd->setFont(&Ubuntu_Bold8pt8b);
+            epd->setCursor(300, 60);
+            epd->print("Source:");
+            epd->setCursor(300, 80);
+            epd->print(name1);
 
-            getdisplay().setCursor(300, 110);
-            getdisplay().print("Type:");
-            getdisplay().setCursor(300, 130);
-            getdisplay().print(batType);
+            epd->setCursor(300, 110);
+            epd->print("Type:");
+            epd->setCursor(300, 130);
+            epd->print(batType);
 
-            getdisplay().setCursor(300, 160);
-            getdisplay().print("Avg:");
+            epd->setCursor(300, 160);
+            epd->print("Avg:");
             printAvg(average, 300, 180, false);
 
             // FRAM indicator
             if (hasFRAM) {
-                getdisplay().drawXBitmap(300, 240, fram_bits, icon_width, icon_height, commonData->fgcolor);
+                epd->drawXBitmap(300, 240, fram_bits, icon_width, icon_height, commonData->fgcolor);
             }
 
         }

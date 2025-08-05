@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -109,27 +110,27 @@ class PageCompass : public Page
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+        epd->setTextColor(commonData->fgcolor);
 
         // Horizontal line 2 pix top & bottom
         // Print data on top half
-        getdisplay().fillRect(0, 130, 400, 2, commonData->fgcolor); 
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(10, 70);
-        getdisplay().print(DataName[WhichDataDisplay]);                         // Page name
+        epd->fillRect(0, 130, 400, 2, commonData->fgcolor); 
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(10, 70);
+        epd->print(DataName[WhichDataDisplay]);                         // Page name
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(10, 120);
-        getdisplay().print(DataUnits[WhichDataDisplay]); 
-        getdisplay().setCursor(190, 120);
-        getdisplay().setFont(&DSEG7Classic_BoldItalic42pt7b);
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(10, 120);
+        epd->print(DataUnits[WhichDataDisplay]); 
+        epd->setCursor(190, 120);
+        epd->setFont(&DSEG7Classic_BoldItalic42pt7b);
   
         if(holdvalues == false){
-            getdisplay().print(DataText[WhichDataDisplay]);                     // Real value as formated string
+            epd->print(DataText[WhichDataDisplay]);                     // Real value as formated string
         }
         else{
-            getdisplay().print(OldDataText[WhichDataDisplay]);                  // Old value as formated string
+            epd->print(OldDataText[WhichDataDisplay]);                  // Old value as formated string
         }
         if(DataValid[WhichDataDisplay] == true){
             OldDataText[WhichDataDisplay] = DataText[WhichDataDisplay];         // Save the old value
@@ -148,14 +149,14 @@ class PageCompass : public Page
         char buffer[bsize+1];
         buffer[0]=0;              
 
-        getdisplay().setFont(&Ubuntu_Bold16pt8b);
-        getdisplay().setCursor(10, Compass_Y0-60);
-        getdisplay().print(DataName[WhichDataCompass]);                         // Page name
+        epd->setFont(&Ubuntu_Bold16pt8b);
+        epd->setCursor(10, Compass_Y0-60);
+        epd->print(DataName[WhichDataCompass]);                         // Page name
  
      
         // Draw compass base line and pointer
-        getdisplay().fillRect(0, Compass_Y0, 400, 3, commonData->fgcolor);            
-        getdisplay().fillTriangle(Compass_X0,Compass_Y0-40,Compass_X0-10,Compass_Y0-80,Compass_X0+10,Compass_Y0-80,commonData->fgcolor);
+        epd->fillRect(0, Compass_Y0, 400, 3, commonData->fgcolor);            
+        epd->fillTriangle(Compass_X0,Compass_Y0-40,Compass_X0-10,Compass_Y0-80,Compass_X0+10,Compass_Y0-80,commonData->fgcolor);
         // Draw trendlines
         for ( int i = 1; i < abs(TheTrend) / 2; i++){
             int x1;
@@ -164,7 +165,7 @@ class PageCompass : public Page
             else
                     x1 = Compass_X0 - 20 * ( i + 1 );
 
-            getdisplay().fillRect(x1, Compass_Y0 -55, 10, 6, commonData->fgcolor);            
+            epd->fillRect(x1, Compass_Y0 -55, 10, 6, commonData->fgcolor);            
                 }          
         // Central line +  satellite lines
         double NextSector = round(TheAngle / ( M_PI / 9 )) * ( M_PI / 9 );  // Get the next 20degree value
@@ -174,28 +175,28 @@ class PageCompass : public Page
         for ( int i = 0; i <=4; i++ ){
                 int x0;
                 x0 = Compass_X0 + Delta_X + 2 * i * 5 * Compass_LineDelta;
-                getdisplay().fillRect(x0-2, Compass_Y0 - 2 * Compass_LineLength, 5, 2 * Compass_LineLength, commonData->fgcolor);
+                epd->fillRect(x0-2, Compass_Y0 - 2 * Compass_LineLength, 5, 2 * Compass_LineLength, commonData->fgcolor);
                 x0 = Compass_X0 + Delta_X + ( 2 * i + 1 ) * 5 * Compass_LineDelta;
-                getdisplay().fillRect(x0-1, Compass_Y0 - Compass_LineLength, 3, Compass_LineLength, commonData->fgcolor);
+                epd->fillRect(x0-1, Compass_Y0 - Compass_LineLength, 3, Compass_LineLength, commonData->fgcolor);
 
                 x0 = Compass_X0 + Delta_X - 2 * i * 5 * Compass_LineDelta;
-                getdisplay().fillRect(x0-2, Compass_Y0 - 2 * Compass_LineLength, 5, 2 * Compass_LineLength, commonData->fgcolor);
+                epd->fillRect(x0-2, Compass_Y0 - 2 * Compass_LineLength, 5, 2 * Compass_LineLength, commonData->fgcolor);
                 x0 = Compass_X0 + Delta_X - ( 2 * i + 1 ) * 5 * Compass_LineDelta;
-                getdisplay().fillRect(x0-1, Compass_Y0 - Compass_LineLength, 3, Compass_LineLength, commonData->fgcolor);
+                epd->fillRect(x0-1, Compass_Y0 - Compass_LineLength, 3, Compass_LineLength, commonData->fgcolor);
             }
 
-        getdisplay().fillRect(0, Compass_Y0, 400, 3, commonData->fgcolor);
+        epd->fillRect(0, Compass_Y0, 400, 3, commonData->fgcolor);
         // Add the numbers to the compass band
         int x0;
         float AngleToDisplay = NextSector * 180.0 / M_PI;
 
         x0 = Compass_X0 + Delta_X;
-        getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
+        epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
 
         do {
-                getdisplay().setCursor(x0 - 40, Compass_Y0 + 40);
+                epd->setCursor(x0 - 40, Compass_Y0 + 40);
                 snprintf(buffer,bsize,"%03.0f", AngleToDisplay);
-                getdisplay().print(buffer);
+                epd->print(buffer);
                 AngleToDisplay += 20;
                 if ( AngleToDisplay >= 360.0 )
                     AngleToDisplay -= 360.0;
@@ -208,7 +209,7 @@ class PageCompass : public Page
 
         x0 = Compass_X0 + Delta_X + 4 * 5 * Compass_LineDelta;
         do {
-            getdisplay().setCursor(x0 - 40, Compass_Y0 + 40);
+            epd->setCursor(x0 - 40, Compass_Y0 + 40);
             snprintf(buffer,bsize,"%03.0f", AngleToDisplay);
             // Quick and dirty way to prevent wrapping text in next line
             if ( ( x0 - 40 ) > 380 )
@@ -218,7 +219,7 @@ class PageCompass : public Page
             else if ( ( x0 - 40 )  >  325 ) 
                 buffer[2] = 0;
                 
-            getdisplay().print(buffer);             
+            epd->print(buffer);             
 
             AngleToDisplay -= 20;
             if ( AngleToDisplay < 0 )
@@ -230,8 +231,8 @@ class PageCompass : public Page
         // x_test += 2;
 
         // snprintf(buffer,bsize,"%03d", x_test);
-        // getdisplay().setCursor(x_test, Compass_Y0 - 60);
-        // getdisplay().print(buffer);
+        // epd->setCursor(x_test, Compass_Y0 - 60);
+        // epd->print(buffer);
         // if ( x_test > 390)
         //     x_test = 320;
 

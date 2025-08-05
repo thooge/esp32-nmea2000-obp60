@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -182,65 +183,65 @@ bool homevalid = false; // homelat and homelon are valid
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setTextColor(commonData->fgcolor);
 
         time_t tv = mktime(&commonData->data.rtcTime) + timezone * 3600;
         struct tm *local_tm = localtime(&tv);
 
         // Show values GPS date
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(10, 65);
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(10, 65);
         if (holdvalues == false) {
             if (source == 'G') {
                  // GPS value
-                 getdisplay().print(svalue2);
+                 epd->print(svalue2);
             } else if (commonData->data.rtcValid) {
                 // RTC value
                  if (tz == 'L') {
-                     getdisplay().print(formatDate(dateformat, local_tm->tm_year + 1900, local_tm->tm_mon + 1, local_tm->tm_mday));
+                     epd->print(formatDate(dateformat, local_tm->tm_year + 1900, local_tm->tm_mon + 1, local_tm->tm_mday));
                  }
                  else {
-                     getdisplay().print(formatDate(dateformat, commonData->data.rtcTime.tm_year + 1900, commonData->data.rtcTime.tm_mon + 1, commonData->data.rtcTime.tm_mday));
+                     epd->print(formatDate(dateformat, commonData->data.rtcTime.tm_year + 1900, commonData->data.rtcTime.tm_mon + 1, commonData->data.rtcTime.tm_mday));
                  }
             } else {
-                getdisplay().print("---");
+                epd->print("---");
             }
         } else {
-            getdisplay().print(svalue2old);
+            epd->print(svalue2old);
         }
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(10, 95);
-        getdisplay().print("Date");                          // Name
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(10, 95);
+        epd->print("Date");                          // Name
 
         // Horizintal separator left
-        getdisplay().fillRect(0, 149, 60, 3, commonData->fgcolor);
+        epd->fillRect(0, 149, 60, 3, commonData->fgcolor);
 
         // Show values GPS time
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(10, 250);
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(10, 250);
         if (holdvalues == false) {
             if (source == 'G') {
-                getdisplay().print(svalue1); // Value
+                epd->print(svalue1); // Value
             }
             else if (commonData->data.rtcValid) {
                  if (tz == 'L') {
-                      getdisplay().print(formatTime('s', local_tm->tm_hour, local_tm->tm_min, local_tm->tm_sec));
+                      epd->print(formatTime('s', local_tm->tm_hour, local_tm->tm_min, local_tm->tm_sec));
                  }
                  else {
-                      getdisplay().print(formatTime('s', commonData->data.rtcTime.tm_hour, commonData->data.rtcTime.tm_min, commonData->data.rtcTime.tm_sec));
+                      epd->print(formatTime('s', commonData->data.rtcTime.tm_hour, commonData->data.rtcTime.tm_min, commonData->data.rtcTime.tm_sec));
                  }
             } else {
-                getdisplay().print("---");
+                epd->print("---");
             }
         }
         else {
-             getdisplay().print(svalue1old);
+             epd->print(svalue1old);
         }
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(10, 220);
-        getdisplay().print("Time");                          // Name
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(10, 220);
+        epd->print("Time");                          // Name
 
         // Show values sunrise
         String sunrise = "---";
@@ -251,16 +252,16 @@ bool homevalid = false; // homelat and homelon are valid
             sunrise = String("06:42");
         }
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(335, 65);
-        if(holdvalues == false) getdisplay().print(sunrise); // Value
-        else getdisplay().print(svalue5old);
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(335, 95);
-        getdisplay().print("SunR");                          // Name
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(335, 65);
+        if(holdvalues == false) epd->print(sunrise); // Value
+        else epd->print(svalue5old);
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(335, 95);
+        epd->print("SunR");                          // Name
 
         // Horizintal separator right
-        getdisplay().fillRect(340, 149, 80, 3, commonData->fgcolor);
+        epd->fillRect(340, 149, 80, 3, commonData->fgcolor);
 
         // Show values sunset
         String sunset = "---";
@@ -271,13 +272,13 @@ bool homevalid = false; // homelat and homelon are valid
             sunset = String("21:03");
         }
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(335, 250);
-        if(holdvalues == false) getdisplay().print(sunset);  // Value
-        else getdisplay().print(svalue6old);
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(335, 220);
-        getdisplay().print("SunS");                          // Name
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(335, 250);
+        if(holdvalues == false) epd->print(sunset);  // Value
+        else epd->print(svalue6old);
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(335, 220);
+        epd->print("SunS");                          // Name
 
 //*******************************************************************************************
 
@@ -285,8 +286,8 @@ bool homevalid = false; // homelat and homelon are valid
         int rInstrument = 110;     // Radius of clock
         float pi = 3.141592;
 
-        getdisplay().fillCircle(200, 150, rInstrument + 10, commonData->fgcolor);    // Outer circle
-        getdisplay().fillCircle(200, 150, rInstrument + 7, commonData->bgcolor);     // Outer circle
+        epd->fillCircle(200, 150, rInstrument + 10, commonData->fgcolor);    // Outer circle
+        epd->fillCircle(200, 150, rInstrument + 7, commonData->bgcolor);     // Outer circle
 
         for(int i=0; i<360; i=i+1)
         {
@@ -314,11 +315,11 @@ bool homevalid = false; // homelat and homelon are valid
             // Print text centered on position x, y
             int16_t x1, y1;     // Return values of getTextBounds
             uint16_t w, h;      // Return values of getTextBounds
-            getdisplay().getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
-            getdisplay().setCursor(x-w/2, y+h/2);
+            epd->getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
+            epd->setCursor(x-w/2, y+h/2);
             if(i % 30 == 0){
-                getdisplay().setFont(&Ubuntu_Bold12pt8b);
-                getdisplay().print(ii);
+                epd->setFont(&Ubuntu_Bold12pt8b);
+                epd->print(ii);
             }
 
             // Draw sub scale with dots
@@ -327,7 +328,7 @@ bool homevalid = false; // homelat and homelon are valid
              if(i % 6 == 0){
                 float x1c = 200 + rInstrument*sin(i/180.0*pi);
                 float y1c = 150 - rInstrument*cos(i/180.0*pi);
-                getdisplay().fillCircle((int)x1c, (int)y1c, 2, commonData->fgcolor);
+                epd->fillCircle((int)x1c, (int)y1c, 2, commonData->fgcolor);
                 sinx=sin(i/180.0*pi);
                 cosx=cos(i/180.0*pi);
              }
@@ -339,31 +340,31 @@ bool homevalid = false; // homelat and homelon are valid
                 float xx2 = +dx;
                 float yy1 =  -(rInstrument-10);
                 float yy2 =  -(rInstrument+10);
-                getdisplay().fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
+                epd->fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
                         200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                         200+(int)(cosx*xx1-sinx*yy2),150+(int)(sinx*xx1+cosx*yy2),commonData->fgcolor);
-                getdisplay().fillTriangle(200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
+                epd->fillTriangle(200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                         200+(int)(cosx*xx1-sinx*yy2),150+(int)(sinx*xx1+cosx*yy2),
                         200+(int)(cosx*xx2-sinx*yy2),150+(int)(sinx*xx2+cosx*yy2),commonData->fgcolor);
             }
         }
 
         // Print Unit in clock
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(175, 110);
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(175, 110);
         if(holdvalues == false){
-            getdisplay().print(tz == 'L' ? "LOT" : "UTC");
+            epd->print(tz == 'L' ? "LOT" : "UTC");
         }
         else{
-            getdisplay().print(unit2old); // date unit
+            epd->print(unit2old); // date unit
         }
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(185, 190);
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(185, 190);
         if (source == 'G') {
-            getdisplay().print("GPS");
+            epd->print("GPS");
         } else {
-            getdisplay().print("RTC");
+            epd->print("RTC");
         }
 
         // Clock values
@@ -406,7 +407,7 @@ bool homevalid = false; // homelat and homelon are valid
             float xx2 = startwidth;
             float yy1 = -startwidth;
             float yy2 = -(rInstrument * 0.5);
-            getdisplay().fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
+            epd->fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
                 200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                 200+(int)(cosx*0-sinx*yy2),150+(int)(sinx*0+cosx*yy2),commonData->fgcolor);
             // Inverted pointer
@@ -416,7 +417,7 @@ bool homevalid = false; // homelat and homelon are valid
             float ix2 = -endwidth;
             float iy1 = -(rInstrument * 0.5);
             float iy2 = -endwidth;
-            getdisplay().fillTriangle(200+(int)(cosx*ix1-sinx*iy1),150+(int)(sinx*ix1+cosx*iy1),
+            epd->fillTriangle(200+(int)(cosx*ix1-sinx*iy1),150+(int)(sinx*ix1+cosx*iy1),
                 200+(int)(cosx*ix2-sinx*iy1),150+(int)(sinx*ix2+cosx*iy1),
                 200+(int)(cosx*0-sinx*iy2),150+(int)(sinx*0+cosx*iy2),commonData->fgcolor);
         }
@@ -432,7 +433,7 @@ bool homevalid = false; // homelat and homelon are valid
             float xx2 = startwidth;
             float yy1 = -startwidth;
             float yy2 = -(rInstrument - 15);
-            getdisplay().fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
+            epd->fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
                 200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                 200+(int)(cosx*0-sinx*yy2),150+(int)(sinx*0+cosx*yy2),commonData->fgcolor);
             // Inverted pointer
@@ -442,14 +443,14 @@ bool homevalid = false; // homelat and homelon are valid
             float ix2 = -endwidth;
             float iy1 = -(rInstrument - 15);
             float iy2 = -endwidth;
-            getdisplay().fillTriangle(200+(int)(cosx*ix1-sinx*iy1),150+(int)(sinx*ix1+cosx*iy1),
+            epd->fillTriangle(200+(int)(cosx*ix1-sinx*iy1),150+(int)(sinx*ix1+cosx*iy1),
                 200+(int)(cosx*ix2-sinx*iy1),150+(int)(sinx*ix2+cosx*iy1),
                 200+(int)(cosx*0-sinx*iy2),150+(int)(sinx*0+cosx*iy2),commonData->fgcolor);
         }
 
         // Center circle
-        getdisplay().fillCircle(200, 150, startwidth + 6, commonData->bgcolor);
-        getdisplay().fillCircle(200, 150, startwidth + 4, commonData->fgcolor);
+        epd->fillCircle(200, 150, startwidth + 6, commonData->bgcolor);
+        epd->fillCircle(200, 150, startwidth + 4, commonData->fgcolor);
 
         return PAGE_UPDATE;
     };

@@ -26,20 +26,20 @@ void qrWiFi(String ssid, String passwd, uint16_t fgcolor, uint16_t bgcolor){
     // Each horizontal module
     for (uint8_t x = 0; x < qrcode.size; x++) {
       if(qrcode_getModule(&qrcode, x, y)){
-        getdisplay().fillRect(box_x, box_y, box_s, box_s, fgcolor);
+        epd->fillRect(box_x, box_y, box_s, box_s, fgcolor);
       } else {
-        getdisplay().fillRect(box_x, box_y, box_s, box_s, bgcolor);
+        epd->fillRect(box_x, box_y, box_s, box_s, bgcolor);
       }
       box_x = box_x + box_s;
     }
     box_y = box_y + box_s;
     box_x = init_x;
   }
-  getdisplay().setFont(&Ubuntu_Bold32pt8b);
-  getdisplay().setTextColor(fgcolor);
-  getdisplay().setCursor(140, 285);
-  getdisplay().print("WiFi");
-  getdisplay().nextPage();                 // Full Refresh
+  epd->setFont(&Ubuntu_Bold32pt8b);
+  epd->setTextColor(fgcolor);
+  epd->setCursor(140, 285);
+  epd->print("WiFi");
+  epd->nextPage();                 // Full Refresh
 }
 
 #endif

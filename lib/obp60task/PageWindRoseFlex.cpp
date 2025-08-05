@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -147,88 +148,88 @@ public:
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setTextColor(commonData->fgcolor);
 
         // Show value 2 at position of value 1 (top left)
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(10, 65);
-        getdisplay().print(svalue2);                     // Value
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(10, 95);
-        getdisplay().print(name2);                       // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(10, 115);
-        getdisplay().print(" ");
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(10, 65);
+        epd->print(svalue2);                     // Value
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(10, 95);
+        epd->print(name2);                       // Name
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(10, 115);
+        epd->print(" ");
         if(holdvalues == false){
-            getdisplay().print(unit2);                   // Unit
+            epd->print(unit2);                   // Unit
         }
         else{
-            getdisplay().print(unit2old);                // Unit
+            epd->print(unit2old);                // Unit
         }
 
         // Horizintal separator left
-        getdisplay().fillRect(0, 149, 60, 3, commonData->fgcolor);
+        epd->fillRect(0, 149, 60, 3, commonData->fgcolor);
 
         // Show value 3 at bottom left
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(10, 270);
-        getdisplay().print(svalue3);                     // Value
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(10, 220);
-        getdisplay().print(name3);                       // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(10, 190);
-        getdisplay().print(" ");
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(10, 270);
+        epd->print(svalue3);                     // Value
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(10, 220);
+        epd->print(name3);                       // Name
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(10, 190);
+        epd->print(" ");
         if(holdvalues == false){
-            getdisplay().print(unit3);                   // Unit
+            epd->print(unit3);                   // Unit
         }
         else{
-            getdisplay().print(unit3old);                // Unit
+            epd->print(unit3old);                // Unit
         }
 
         // Show value 4 at top right
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(295, 65);
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(295, 65);
         if(valid3 == true){
-           // getdisplay().print(abs(value3 * 180 / M_PI), 0); // Value
-            getdisplay().print(svalue4);     // Value
+           // epd->print(abs(value3 * 180 / M_PI), 0); // Value
+            epd->print(svalue4);     // Value
         }
         else{
-            getdisplay().print("---");                   // Value
+            epd->print("---");                   // Value
         }
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(335, 95);
-        getdisplay().print(name4);                       // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(335, 115);
-        getdisplay().print(" ");
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(335, 95);
+        epd->print(name4);                       // Name
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(335, 115);
+        epd->print(" ");
         if(holdvalues == false){
-            getdisplay().print(unit4);                   // Unit
+            epd->print(unit4);                   // Unit
         }
         else{
-            getdisplay().print(unit4old);                // Unit
+            epd->print(unit4old);                // Unit
         }
 
         // Horizintal separator right
-        getdisplay().fillRect(340, 149, 80, 3, commonData->fgcolor);
+        epd->fillRect(340, 149, 80, 3, commonData->fgcolor);
 
         // Show value 5 at bottom right
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(295, 270);
-        getdisplay().print(svalue5);                     // Value
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(335, 220);
-        getdisplay().print(name5);                       // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(335, 190);
-        getdisplay().print(" ");
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(295, 270);
+        epd->print(svalue5);                     // Value
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(335, 220);
+        epd->print(name5);                       // Name
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(335, 190);
+        epd->print(" ");
         if(holdvalues == false){
-            getdisplay().print(unit5);                   // Unit
+            epd->print(unit5);                   // Unit
         }
         else{
-            getdisplay().print(unit5old);                // Unit
+            epd->print(unit5old);                // Unit
         }
 
 
@@ -237,10 +238,10 @@ public:
         // Draw wind rose
         int rInstrument = 110;     // Radius of grafic instrument
 
-        getdisplay().fillCircle(200, 150, rInstrument + 10, commonData->fgcolor);    // Outer circle
-        getdisplay().fillCircle(200, 150, rInstrument + 7, commonData->bgcolor);     // Outer circle
-        getdisplay().fillCircle(200, 150, rInstrument - 10, commonData->fgcolor);    // Inner circle
-        getdisplay().fillCircle(200, 150, rInstrument - 13, commonData->bgcolor);    // Inner circle
+        epd->fillCircle(200, 150, rInstrument + 10, commonData->fgcolor);    // Outer circle
+        epd->fillCircle(200, 150, rInstrument + 7, commonData->bgcolor);     // Outer circle
+        epd->fillCircle(200, 150, rInstrument - 10, commonData->fgcolor);    // Inner circle
+        epd->fillCircle(200, 150, rInstrument - 13, commonData->bgcolor);    // Inner circle
 
         for(int i=0; i<360; i=i+10)
         {
@@ -267,17 +268,17 @@ public:
             // Print text centered on position x, y
             int16_t x1, y1;     // Return values of getTextBounds
             uint16_t w, h;      // Return values of getTextBounds
-            getdisplay().getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
-            getdisplay().setCursor(x-w/2, y+h/2);
+            epd->getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
+            epd->setCursor(x-w/2, y+h/2);
             if(i % 30 == 0){
-                getdisplay().setFont(&Ubuntu_Bold8pt8b);
-                getdisplay().print(ii);
+                epd->setFont(&Ubuntu_Bold8pt8b);
+                epd->print(ii);
             }
 
             // Draw sub scale with dots
             float x1c = 200 + rInstrument*sin(i/180.0*M_PI);
             float y1c = 150 - rInstrument*cos(i/180.0*M_PI);
-            getdisplay().fillCircle((int)x1c, (int)y1c, 2, commonData->fgcolor);
+            epd->fillCircle((int)x1c, (int)y1c, 2, commonData->fgcolor);
             float sinx=sin(i/180.0*M_PI);
             float cosx=cos(i/180.0*M_PI);
 
@@ -288,10 +289,10 @@ public:
                 float xx2 = +dx;
                 float yy1 =  -(rInstrument-10);
                 float yy2 =  -(rInstrument+10);
-                getdisplay().fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
+                epd->fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
                         200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                         200+(int)(cosx*xx1-sinx*yy2),150+(int)(sinx*xx1+cosx*yy2),commonData->fgcolor);
-                getdisplay().fillTriangle(200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
+                epd->fillTriangle(200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                         200+(int)(cosx*xx1-sinx*yy2),150+(int)(sinx*xx1+cosx*yy2),
                         200+(int)(cosx*xx2-sinx*yy2),150+(int)(sinx*xx2+cosx*yy2),commonData->fgcolor);
             }
@@ -308,7 +309,7 @@ public:
             float xx2 = startwidth;
             float yy1 = -startwidth;
             float yy2 = -(rInstrument-15);
-            getdisplay().fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
+            epd->fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
                 200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                 200+(int)(cosx*0-sinx*yy2),150+(int)(sinx*0+cosx*yy2),commonData->fgcolor);
             // Inverted pointer
@@ -318,36 +319,36 @@ public:
             float ix2 = -endwidth;
             float iy1 = -(rInstrument-15);
             float iy2 = -endwidth;
-            getdisplay().fillTriangle(200+(int)(cosx*ix1-sinx*iy1),150+(int)(sinx*ix1+cosx*iy1),
+            epd->fillTriangle(200+(int)(cosx*ix1-sinx*iy1),150+(int)(sinx*ix1+cosx*iy1),
                 200+(int)(cosx*ix2-sinx*iy1),150+(int)(sinx*ix2+cosx*iy1),
                 200+(int)(cosx*0-sinx*iy2),150+(int)(sinx*0+cosx*iy2),commonData->fgcolor);
         }
 
         // Center circle
-        getdisplay().fillCircle(200, 150, startwidth + 6, commonData->bgcolor);
-        getdisplay().fillCircle(200, 150, startwidth + 4, commonData->fgcolor);
+        epd->fillCircle(200, 150, startwidth + 6, commonData->bgcolor);
+        epd->fillCircle(200, 150, startwidth + 4, commonData->fgcolor);
 
 //*******************************************************************************************
 
         // Show value6, so that it does not collide with the wind pointer
-        getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
+        epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
         if (cos(value1) > 0){
-            getdisplay().setCursor(160, 200);
-            getdisplay().print(svalue6);                     // Value
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(190, 215);
+            epd->setCursor(160, 200);
+            epd->print(svalue6);                     // Value
+            epd->setFont(&Ubuntu_Bold8pt8b);
+            epd->setCursor(190, 215);
         } else{
-            getdisplay().setCursor(160, 130);
-            getdisplay().print(svalue6);                     // Value
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(190, 90);
+            epd->setCursor(160, 130);
+            epd->print(svalue6);                     // Value
+            epd->setFont(&Ubuntu_Bold8pt8b);
+            epd->setCursor(190, 90);
         }
-        getdisplay().print(" ");
+        epd->print(" ");
         if(holdvalues == false){
-            getdisplay().print(unit6);                   // Unit
+            epd->print(unit6);                   // Unit
         }
         else{
-            getdisplay().print(unit6old);                // Unit
+            epd->print(unit6old);                // Unit
         }
 
         return PAGE_UPDATE;

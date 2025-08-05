@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -60,44 +61,44 @@ class PageOneValue : public Page
         //***********************************************************
 
         /// Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
         // Show name
-        getdisplay().setTextColor(commonData->fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold32pt8b);
-        getdisplay().setCursor(20, 100);
-        getdisplay().print(name1);                           // Page name
+        epd->setTextColor(commonData->fgcolor);
+        epd->setFont(&Ubuntu_Bold32pt8b);
+        epd->setCursor(20, 100);
+        epd->print(name1);                           // Page name
 
         // Show unit
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(270, 100);
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(270, 100);
         if(holdvalues == false){
-            getdisplay().print(unit1);                       // Unit
+            epd->print(unit1);                       // Unit
         }
         else{
-            getdisplay().print(unit1old);
+            epd->print(unit1old);
         }
 
         // Switch font if format for any values
         if(bvalue1->getFormat() == "formatLatitude" || bvalue1->getFormat() == "formatLongitude"){
-            getdisplay().setFont(&Ubuntu_Bold20pt8b);
-            getdisplay().setCursor(20, 180);
+            epd->setFont(&Ubuntu_Bold20pt8b);
+            epd->setCursor(20, 180);
         }
         else if(bvalue1->getFormat() == "formatTime" || bvalue1->getFormat() == "formatDate"){
-            getdisplay().setFont(&Ubuntu_Bold32pt8b);
-            getdisplay().setCursor(20, 200);
+            epd->setFont(&Ubuntu_Bold32pt8b);
+            epd->setCursor(20, 200);
         }
         else{
-            getdisplay().setFont(&DSEG7Classic_BoldItalic60pt7b);
-            getdisplay().setCursor(20, 240);
+            epd->setFont(&DSEG7Classic_BoldItalic60pt7b);
+            epd->setCursor(20, 240);
         }
 
         // Show bus data
         if(holdvalues == false){
-            getdisplay().print(svalue1);                                     // Real value as formated string
+            epd->print(svalue1);                                     // Real value as formated string
         }
         else{
-            getdisplay().print(svalue1old);                                  // Old value as formated string
+            epd->print(svalue1old);                                  // Old value as formated string
         }
         if(valid1 == true){
             svalue1old = svalue1;                                       // Save the old value

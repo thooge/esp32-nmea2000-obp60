@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -77,13 +78,13 @@ class PageSixValues : public Page
             //***********************************************************
     
             // Set display in partial refresh mode
-            getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-            getdisplay().setTextColor(commonData->fgcolor);
+            epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+            epd->setTextColor(commonData->fgcolor);
 
             for (int i = 0; i < ( HowManyValues / 2 ); i++){
                 if (i < (HowManyValues / 2) - 1) {          // Don't draw horizontal line after last line of values -> standard design
                    // Horizontal line 3 pix
-                    getdisplay().fillRect(0, SixValues_y1+(i+1)*SixValues_DeltaY, 400, 3, commonData->fgcolor);
+                    epd->fillRect(0, SixValues_y1+(i+1)*SixValues_DeltaY, 400, 3, commonData->fgcolor);
                 }
                 for (int j = 0; j < 2; j++){
                     int ValueIndex = i * 2 + j;
@@ -92,53 +93,53 @@ class PageSixValues : public Page
                     LOG_DEBUG(GwLog::LOG,"Drawing at PageSixValue: %d %s %f %s",  ValueIndex,  DataName[ValueIndex], DataValue[ValueIndex], DataFormat[ValueIndex] );
     
            // Show name
-                    getdisplay().setFont(&Ubuntu_Bold12pt8b);
-                    getdisplay().setCursor(x0, y0+25);
-                    getdisplay().print(DataName[ValueIndex]);                           // Page name
+                    epd->setFont(&Ubuntu_Bold12pt8b);
+                    epd->setCursor(x0, y0+25);
+                    epd->print(DataName[ValueIndex]);                           // Page name
     
             // Show unit
-                    getdisplay().setFont(&Ubuntu_Bold8pt8b);
-                    getdisplay().setCursor(x0, y0+72);
+                    epd->setFont(&Ubuntu_Bold8pt8b);
+                    epd->setCursor(x0, y0+72);
                     if(holdvalues == false){
-                        getdisplay().print(DataUnits[ValueIndex]);                       // Unit
+                        epd->print(DataUnits[ValueIndex]);                       // Unit
                         }
                     else{
-                        getdisplay().print(OldDataUnits[ValueIndex]);
+                        epd->print(OldDataUnits[ValueIndex]);
                         }
     
             // Switch font if format for any values
                     if(DataFormat[ValueIndex] == "formatLatitude" || DataFormat[ValueIndex] == "formatLongitude"){
-                        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-                        getdisplay().setCursor(x0+10, y0+60);
+                        epd->setFont(&Ubuntu_Bold12pt8b);
+                        epd->setCursor(x0+10, y0+60);
                         }
                     else if(DataFormat[ValueIndex] == "formatTime" || DataFormat[ValueIndex] == "formatDate"){
-                        getdisplay().setFont(&Ubuntu_Bold16pt8b);
-                        getdisplay().setCursor(x0+20,y0+55);
+                        epd->setFont(&Ubuntu_Bold16pt8b);
+                        epd->setCursor(x0+20,y0+55);
                         } 
             // pressure in hPa          
                     else if(DataFormat[ValueIndex] == "formatXdr:P:P"){
-                        getdisplay().setFont(&DSEG7Classic_BoldItalic26pt7b);
-                        getdisplay().setCursor(x0+5, y0+70);
+                        epd->setFont(&DSEG7Classic_BoldItalic26pt7b);
+                        epd->setCursor(x0+5, y0+70);
                      }
             // RPM
                      else if(DataFormat[ValueIndex] == "formatXdr:T:R"){
-                        getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
-                        getdisplay().setCursor(x0+25, y0+70);
+                        epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
+                        epd->setCursor(x0+25, y0+70);
                      }
                     else{
-                        getdisplay().setFont(&DSEG7Classic_BoldItalic26pt7b);
+                        epd->setFont(&DSEG7Classic_BoldItalic26pt7b);
                         if ( DataText[ValueIndex][0] == '-' )
-                            getdisplay().setCursor(x0+25, y0+70);
+                            epd->setCursor(x0+25, y0+70);
                         else
-                            getdisplay().setCursor(x0+65, y0+70);
+                            epd->setCursor(x0+65, y0+70);
                         }
     
             // Show bus data
                     if(holdvalues == false){
-                        getdisplay().print(DataText[ValueIndex]);                                     // Real value as formated string
+                        epd->print(DataText[ValueIndex]);                                     // Real value as formated string
                         }
                     else{
-                        getdisplay().print(OldDataText[ValueIndex]);                                  // Old value as formated string
+                        epd->print(OldDataText[ValueIndex]);                                  // Old value as formated string
                         }
                     if(DataValid[ValueIndex] == true){
                         OldDataText[ValueIndex] = DataText[ValueIndex];                                       // Save the old value
@@ -146,7 +147,7 @@ class PageSixValues : public Page
                         }
                 }
                    // Vertical line 3 pix
-            getdisplay().fillRect(SixValues_x1+SixValues_DeltaX-8, SixValues_y1+i*SixValues_DeltaY, 3, SixValues_DeltaY, commonData->fgcolor);
+            epd->fillRect(SixValues_x1+SixValues_DeltaX-8, SixValues_y1+i*SixValues_DeltaY, 3, SixValues_DeltaY, commonData->fgcolor);
             }
     
             return PAGE_UPDATE;

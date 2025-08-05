@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -116,101 +117,101 @@ private:
 
         uint16_t y0 = 155;
 
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(8, 48);
-        getdisplay().print("System information");
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(8, 48);
+        epd->print("System information");
 
-        getdisplay().drawXBitmap(320, 25, logo64_bits, logo64_width, logo64_height, commonData->fgcolor);
+        epd->drawXBitmap(320, 25, logo64_bits, logo64_width, logo64_height, commonData->fgcolor);
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        epd->setFont(&Ubuntu_Bold8pt8b);
 
         char ssid[13];
         snprintf(ssid, 13, "%04X%08X", (uint16_t)(chipid >> 32), (uint32_t)chipid);
         displayBarcode(String(ssid), 320, 200, 2);
-        getdisplay().setCursor(8, 70);
-        getdisplay().print(String("MCUDEVICE-") + String(ssid));
+        epd->setCursor(8, 70);
+        epd->print(String("MCUDEVICE-") + String(ssid));
 
-        getdisplay().setCursor(8, 95);
-        getdisplay().print("Firmware version: ");
-        getdisplay().setCursor(150, 95);
-        getdisplay().print(VERSINFO);
+        epd->setCursor(8, 95);
+        epd->print("Firmware version: ");
+        epd->setCursor(150, 95);
+        epd->print(VERSINFO);
 
-        getdisplay().setCursor(8, 113);
-        getdisplay().print("Board version: ");
-        getdisplay().setCursor(150, 113);
-        getdisplay().print(BOARDINFO);
-        getdisplay().print(String(" HW ") + String(PCBINFO));
+        epd->setCursor(8, 113);
+        epd->print("Board version: ");
+        epd->setCursor(150, 113);
+        epd->print(BOARDINFO);
+        epd->print(String(" HW ") + String(PCBINFO));
 
-        getdisplay().setCursor(8, 131);
-        getdisplay().print("Display version: ");
-        getdisplay().setCursor(150, 131);
-        getdisplay().print(DISPLAYINFO);
-        getdisplay().print("; GxEPD2 v");
-        getdisplay().print(GXEPD2INFO);
+        epd->setCursor(8, 131);
+        epd->print("Display version: ");
+        epd->setCursor(150, 131);
+        epd->print(DISPLAYINFO);
+        epd->print("; GxEPD2 v");
+        epd->print(GXEPD2INFO);
 
-        getdisplay().setCursor(8, 265);
+        epd->setCursor(8, 265);
 #ifdef BOARD_OBP60S3
-        getdisplay().print("Press STBY to enter deep sleep mode");
+        epd->print("Press STBY to enter deep sleep mode");
 #endif
 #ifdef BOARD_OBP40S3
-        getdisplay().print("Press wheel to enter deep sleep mode");
+        epd->print("Press wheel to enter deep sleep mode");
 #endif
 
         // Flash memory size
         uint32_t flash_size = ESP.getFlashChipSize();
-        getdisplay().setCursor(8, y0);
-        getdisplay().print("FLASH:");
-        getdisplay().setCursor(90, y0);
-        getdisplay().print(String(flash_size / 1024) + String(" kB"));
+        epd->setCursor(8, y0);
+        epd->print("FLASH:");
+        epd->setCursor(90, y0);
+        epd->print(String(flash_size / 1024) + String(" kB"));
 
         // PSRAM memory size
         uint32_t psram_size = ESP.getPsramSize();
-        getdisplay().setCursor(8, y0 + 16);
-        getdisplay().print("PSRAM:");
-        getdisplay().setCursor(90, y0 + 16);
-        getdisplay().print(String(psram_size / 1024) + String(" kB"));
+        epd->setCursor(8, y0 + 16);
+        epd->print("PSRAM:");
+        epd->setCursor(90, y0 + 16);
+        epd->print(String(psram_size / 1024) + String(" kB"));
 
         // FRAM available / status
-        getdisplay().setCursor(8, y0 + 32);
-        getdisplay().print("FRAM:");
-        getdisplay().setCursor(90, y0 + 32);
-        getdisplay().print(hasFRAM ? "available" : "not found");
+        epd->setCursor(8, y0 + 32);
+        epd->print("FRAM:");
+        epd->setCursor(90, y0 + 32);
+        epd->print(hasFRAM ? "available" : "not found");
 
 #ifdef BOARD_OBP40S3
         // SD-Card
-        getdisplay().setCursor(8, y0 + 48);
-        getdisplay().print("SD-Card:");
-        getdisplay().setCursor(90, y0 + 48);
+        epd->setCursor(8, y0 + 48);
+        epd->print("SD-Card:");
+        epd->setCursor(90, y0 + 48);
         if (sdcard) {
             uint64_t cardsize = SD.cardSize() / (1024 * 1024);
-            getdisplay().print(String(cardsize) + String(" MB"));
+            epd->print(String(cardsize) + String(" MB"));
         } else {
-            getdisplay().print("off");
+            epd->print("off");
         }
 #endif
 
         // CPU speed config / active
-        getdisplay().setCursor(202, y0);
-        getdisplay().print("CPU speed:");
-        getdisplay().setCursor(300, y0);
-        getdisplay().print(cpuspeed);
-        getdisplay().print(" / ");
+        epd->setCursor(202, y0);
+        epd->print("CPU speed:");
+        epd->setCursor(300, y0);
+        epd->print(cpuspeed);
+        epd->print(" / ");
         int cpu_freq = esp_clk_cpu_freq() / 1000000;
-        getdisplay().print(String(cpu_freq));
+        epd->print(String(cpu_freq));
 
         // total RAM free
         int Heap_free = esp_get_free_heap_size();
-        getdisplay().setCursor(202, y0 + 16);
-        getdisplay().print("Total free:");
-        getdisplay().setCursor(300, y0 + 16);
-        getdisplay().print(String(Heap_free));
+        epd->setCursor(202, y0 + 16);
+        epd->print("Total free:");
+        epd->setCursor(300, y0 + 16);
+        epd->print(String(Heap_free));
 
         // RAM free for task
         int RAM_free = uxTaskGetStackHighWaterMark(NULL);
-        getdisplay().setCursor(202, y0 + 32);
-        getdisplay().print("Task free:");
-        getdisplay().setCursor(300, y0 + 32);
-        getdisplay().print(String(RAM_free));
+        epd->setCursor(202, y0 + 32);
+        epd->print("Task free:");
+        epd->setCursor(300, y0 + 32);
+        epd->print(String(RAM_free));
     }
 
     void displayModeConfig() {
@@ -220,24 +221,24 @@ private:
         uint16_t y0 = 80;
         uint16_t dy = 20;
 
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(8, 48);
-        getdisplay().print("System configuration");
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(8, 48);
+        epd->print("System configuration");
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        epd->setFont(&Ubuntu_Bold8pt8b);
 
-        /*getdisplay().setCursor(x0, y0);
-        getdisplay().print("CPU speed: 80 | 160 | 240");
-        getdisplay().setCursor(x0, y0 + 1 * dy);
-        getdisplay().print("Power mode: Max | 5V | Min");
-        getdisplay().setCursor(x0, y0 + 2 * dy);
-        getdisplay().print("Accesspoint: On | Off");
+        /*epd->setCursor(x0, y0);
+        epd->print("CPU speed: 80 | 160 | 240");
+        epd->setCursor(x0, y0 + 1 * dy);
+        epd->print("Power mode: Max | 5V | Min");
+        epd->setCursor(x0, y0 + 2 * dy);
+        epd->print("Accesspoint: On | Off");
 
         // TODO Change NVRAM-preferences settings here
-        getdisplay().setCursor(x0, y0 + 4 * dy);
-        getdisplay().print("Simulation: On | Off"); */
+        epd->setCursor(x0, y0 + 4 * dy);
+        epd->print("Simulation: On | Off"); */
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        epd->setFont(&Ubuntu_Bold8pt8b);
         for (int i = 0 ; i < menu->getItemCount(); i++) {
             ConfigMenuItem *itm = menu->getItemByIndex(i);
             if (!itm) {
@@ -248,14 +249,14 @@ private:
                 drawTextBoxed(r, itm->getLabel(), commonData->fgcolor, commonData->bgcolor, inverted, false);
                 if (inverted and editmode > 0) {
                     // triangle as edit marker
-                    getdisplay().fillTriangle(r.x + r.w + 20, r.y, r.x + r.w + 30, r.y + r.h / 2, r.x + r.w + 20, r.y + r.h,  commonData->fgcolor);
+                    epd->fillTriangle(r.x + r.w + 20, r.y, r.x + r.w + 30, r.y + r.h / 2, r.x + r.w + 20, r.y + r.h,  commonData->fgcolor);
                 }
-                getdisplay().setCursor(r.x + r.w + 40, r.y + r.h - 4);
+                epd->setCursor(r.x + r.w + 40, r.y + r.h - 4);
                 if (itm->getType() == "int") {
-                    getdisplay().print(itm->getValue());
-                    getdisplay().print(itm->getUnit());
+                    epd->print(itm->getValue());
+                    epd->print(itm->getUnit());
                 } else {
-                     getdisplay().print(itm->getValue() == 0 ? "No" : "Yes");
+                     epd->print(itm->getValue() == 0 ? "No" : "Yes");
                 }
             }
         }
@@ -267,84 +268,84 @@ private:
         const uint16_t x0 = 8;
         const uint16_t y0 = 72;
 
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(x0, 48);
-        getdisplay().print("System settings");
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(x0, 48);
+        epd->print("System settings");
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        epd->setFont(&Ubuntu_Bold8pt8b);
 
         // left column
-        getdisplay().setCursor(x0, y0);
-        getdisplay().print("Simulation:");
-        getdisplay().setCursor(120, y0);
-        getdisplay().print(simulation ? "on" : "off");
+        epd->setCursor(x0, y0);
+        epd->print("Simulation:");
+        epd->setCursor(120, y0);
+        epd->print(simulation ? "on" : "off");
 
-        getdisplay().setCursor(x0, y0 + 16);
-        getdisplay().print("Environment:");
-        getdisplay().setCursor(120, y0 + 16);
-        getdisplay().print(env_module);
+        epd->setCursor(x0, y0 + 16);
+        epd->print("Environment:");
+        epd->setCursor(120, y0 + 16);
+        epd->print(env_module);
 
-        getdisplay().setCursor(x0, y0 + 32);
-        getdisplay().print("Buzzer:");
-        getdisplay().setCursor(120, y0 + 32);
-        getdisplay().print(buzzer_mode);
+        epd->setCursor(x0, y0 + 32);
+        epd->print("Buzzer:");
+        epd->setCursor(120, y0 + 32);
+        epd->print(buzzer_mode);
 
-        getdisplay().setCursor(x0, y0 + 64);
-        getdisplay().print("GPS:");
-        getdisplay().setCursor(120, y0 + 64);
-        getdisplay().print(gps_module);
+        epd->setCursor(x0, y0 + 64);
+        epd->print("GPS:");
+        epd->setCursor(120, y0 + 64);
+        epd->print(gps_module);
 
-        getdisplay().setCursor(x0, y0 + 80);
-        getdisplay().print("RTC:");
-        getdisplay().setCursor(120, y0 + 80);
-        getdisplay().print(rtc_module);
+        epd->setCursor(x0, y0 + 80);
+        epd->print("RTC:");
+        epd->setCursor(120, y0 + 80);
+        epd->print(rtc_module);
 
-        getdisplay().setCursor(x0, y0 + 96);
-        getdisplay().print("Wifi:");
-        getdisplay().setCursor(120, y0 + 96);
-        getdisplay().print(commonData->status.wifiApOn ? "on" : "off");
+        epd->setCursor(x0, y0 + 96);
+        epd->print("Wifi:");
+        epd->setCursor(120, y0 + 96);
+        epd->print(commonData->status.wifiApOn ? "on" : "off");
 
         // Home location
-        getdisplay().setCursor(x0, y0 + 128);
-        getdisplay().print("Home Lat.:");
+        epd->setCursor(x0, y0 + 128);
+        epd->print("Home Lat.:");
         drawTextRalign(230, y0 + 128, formatLatitude(homelat));
-        getdisplay().setCursor(x0, y0 + 144);
-        getdisplay().print("Home Lon.:");
+        epd->setCursor(x0, y0 + 144);
+        epd->print("Home Lon.:");
         drawTextRalign(230, y0 + 144, formatLongitude(homelon));
 
         // right column
-        getdisplay().setCursor(202, y0);
-        getdisplay().print("Batt. sensor:");
-        getdisplay().setCursor(320, y0);
-        getdisplay().print(batt_sensor);
+        epd->setCursor(202, y0);
+        epd->print("Batt. sensor:");
+        epd->setCursor(320, y0);
+        epd->print(batt_sensor);
 
         // Solar sensor
-        getdisplay().setCursor(202, y0 + 16);
-        getdisplay().print("Solar sensor:");
-        getdisplay().setCursor(320, y0 + 16);
-        getdisplay().print(solar_sensor);
+        epd->setCursor(202, y0 + 16);
+        epd->print("Solar sensor:");
+        epd->setCursor(320, y0 + 16);
+        epd->print(solar_sensor);
 
         // Generator sensor
-        getdisplay().setCursor(202, y0 + 32);
-        getdisplay().print("Gen. sensor:");
-        getdisplay().setCursor(320, y0 + 32);
-        getdisplay().print(gen_sensor);
+        epd->setCursor(202, y0 + 32);
+        epd->print("Gen. sensor:");
+        epd->setCursor(320, y0 + 32);
+        epd->print(gen_sensor);
 
 #ifdef BOARD_OBP60S3
         // Backlight infos
-        getdisplay().setCursor(202, y0 + 64);
-        getdisplay().print("Backlight:");
-        getdisplay().setCursor(320, y0 + 64);
-        getdisplay().printf("%d%%", commonData->backlight.brightness);
+        epd->setCursor(202, y0 + 64);
+        epd->print("Backlight:");
+        epd->setCursor(320, y0 + 64);
+        epd->printf("%d%%", commonData->backlight.brightness);
         // TODO test function with OBP60 device
-        getdisplay().setCursor(202, y0 + 80);
-        getdisplay().print("Bl color:");
-        getdisplay().setCursor(320, y0 + 80);
-        getdisplay().print(commonData->backlight.color.toName());
-        getdisplay().setCursor(202, y0 + 96);
-        getdisplay().print("Bl mode:");
-        getdisplay().setCursor(320, y0 + 96);
-        getdisplay().print(commonData->backlight.mode);
+        epd->setCursor(202, y0 + 80);
+        epd->print("Bl color:");
+        epd->setCursor(320, y0 + 80);
+        epd->print(commonData->backlight.color.toName());
+        epd->setCursor(202, y0 + 96);
+        epd->print("Bl mode:");
+        epd->setCursor(320, y0 + 96);
+        epd->print(commonData->backlight.mode);
         // TODO Buzzer mode and power
 #endif
 
@@ -357,28 +358,28 @@ private:
         uint16_t x0 = 20;
         uint16_t y0 = 72;
 
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(8, 48);
-        getdisplay().print("SD Card info");
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(8, 48);
+        epd->print("SD Card info");
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(x0, y0);
-        getdisplay().print("Work in progress...");
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(x0, y0);
+        epd->print("Work in progress...");
     }
 
     void displayModeDevicelist() {
         // NMEA2000 device list
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(8, 48);
-        getdisplay().print("NMEA2000 device list");
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(8, 48);
+        epd->print("NMEA2000 device list");
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(20, 80);
-        getdisplay().print("RxD: ");
-        getdisplay().print(String(commonData->status.n2kRx));
-        getdisplay().setCursor(20, 100);
-        getdisplay().print("TxD: ");
-        getdisplay().print(String(commonData->status.n2kTx));
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(20, 80);
+        epd->print("RxD: ");
+        epd->print(String(commonData->status.n2kRx));
+        epd->setCursor(20, 100);
+        epd->print("TxD: ");
+        epd->print(String(commonData->status.n2kTx));
     }
 
    void storeConfig() {
@@ -421,8 +422,8 @@ public:
         // Accesspoint: On | Off
 
         // TODO Change NVRAM-preferences settings here
-        // getdisplay().setCursor(x0, y0 + 4 * dy);
-        // getdisplay().print("Simulation: On | Off");
+        // epd->setCursor(x0, y0 + 4 * dy);
+        // epd->print("Simulation: On | Off");
 
         // Initialize config menu
         menu = new ConfigMenu("Options", 40, 80);
@@ -507,7 +508,7 @@ public:
         for (uint8_t j = 0; j < qrcode.size; j++) {
             for (uint8_t i = 0; i < qrcode.size; i++) {
                 if (qrcode_getModule(&qrcode, i, j)) {
-                    getdisplay().fillRect(x, y, s, s, commonData->fgcolor);
+                    epd->fillRect(x, y, s, s, commonData->fgcolor);
                 }
                 x += s;
             }
@@ -530,7 +531,7 @@ public:
         LOG_DEBUG(GwLog::LOG,"Drawing at PageSystem, Mode=%c", mode);
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height());
+        epd->setPartialWindow(0, 0, epd->width(), epd->height());
 
         // call current system page
         switch (mode) {
@@ -552,7 +553,7 @@ public:
         }
 
         // Update display
-        getdisplay().nextPage();    // Partial update (fast)
+        epd->nextPage();    // Partial update (fast)
         return PAGE_OK;
     };
 };

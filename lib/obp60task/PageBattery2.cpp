@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -184,107 +185,107 @@ public:
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setTextColor(commonData->fgcolor);
 
         // Show name
-        getdisplay().setFont(&Ubuntu_Bold20pt8b);
-        getdisplay().setCursor(10, 65);
-        getdisplay().print("Bat.");
+        epd->setFont(&Ubuntu_Bold20pt8b);
+        epd->setCursor(10, 65);
+        epd->print("Bat.");
 
          // Show battery type
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(90, 65);
-        getdisplay().print(batType);
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(90, 65);
+        epd->print(batType);
 
         // Show voltage type
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(10, 140);
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(10, 140);
         int bvoltage = 0;
         if(String(batVoltage) == "12V") bvoltage = 12;
         else bvoltage = 24;
-        getdisplay().print(bvoltage);
-        getdisplay().setFont(&Ubuntu_Bold16pt8b);
-        getdisplay().print("V");
+        epd->print(bvoltage);
+        epd->setFont(&Ubuntu_Bold16pt8b);
+        epd->print("V");
 
         // Show battery capacity
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(10, 200);
-        if(batCapacity <= 999) getdisplay().print(batCapacity, 0);
-        if(batCapacity > 999) getdisplay().print(float(batCapacity/1000.0), 1);
-        getdisplay().setFont(&Ubuntu_Bold16pt8b);
-        if(batCapacity <= 999) getdisplay().print("Ah");
-        if(batCapacity > 999) getdisplay().print("kAh");
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(10, 200);
+        if(batCapacity <= 999) epd->print(batCapacity, 0);
+        if(batCapacity > 999) epd->print(float(batCapacity/1000.0), 1);
+        epd->setFont(&Ubuntu_Bold16pt8b);
+        if(batCapacity <= 999) epd->print("Ah");
+        if(batCapacity > 999) epd->print("kAh");
 
         // Show info
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(10, 235);
-        getdisplay().print("Installed");
-        getdisplay().setCursor(10, 255);
-        getdisplay().print("Battery Type");
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(10, 235);
+        epd->print("Installed");
+        epd->setCursor(10, 255);
+        epd->print("Battery Type");
 
         // Show battery with fill level
         batteryGraphic(150, 45, batPercentage, commonData->fgcolor, commonData->bgcolor);
 
         // Show average settings
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(150, 145);
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(150, 145);
         switch (average) {
             case 0:
-                getdisplay().print("Avg: 1s");
+                epd->print("Avg: 1s");
                 break;
             case 1:
-                getdisplay().print("Avg: 10s");
+                epd->print("Avg: 10s");
                 break;
             case 2:
-                getdisplay().print("Avg: 60s");
+                epd->print("Avg: 60s");
                 break;
             case 3:
-                getdisplay().print("Avg: 300s");
+                epd->print("Avg: 300s");
                 break;
             default:
-                getdisplay().print("Avg: 1s");
+                epd->print("Avg: 1s");
                 break;
         } 
 
         // Show fill level in percent
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(150, 200);
-        getdisplay().print(batPercentage);
-        getdisplay().setFont(&Ubuntu_Bold16pt8b);
-        getdisplay().print("%");
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(150, 200);
+        epd->print(batPercentage);
+        epd->setFont(&Ubuntu_Bold16pt8b);
+        epd->print("%");
 
         // Show time to full discharge
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(150, 260);
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(150, 260);
         if((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false){
-            if(batRange < 9.9) getdisplay().print(batRange, 1);
-            else getdisplay().print(batRange, 0);
+            if(batRange < 9.9) epd->print(batRange, 1);
+            else epd->print(batRange, 0);
         }
-        else  getdisplay().print("--");
-        getdisplay().setFont(&Ubuntu_Bold16pt8b);
-        getdisplay().print("h");
+        else  epd->print("--");
+        epd->setFont(&Ubuntu_Bold16pt8b);
+        epd->print("h");
 
         // Show sensor type info
         String i2cAddr = "";
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(270, 60);
-        if(powerSensor == "off") getdisplay().print("Internal");
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(270, 60);
+        if(powerSensor == "off") epd->print("Internal");
         if(powerSensor == "INA219"){
-            getdisplay().print("INA219");
+            epd->print("INA219");
         }
         if(powerSensor == "INA226"){
-            getdisplay().print("INA226");
+            epd->print("INA226");
             i2cAddr = " (0x" + String(INA226_I2C_ADDR1, HEX) + ")";
         }
-        getdisplay().print(i2cAddr);
-        getdisplay().setCursor(270, 80);
-        getdisplay().print("Sensor Modul");
+        epd->print(i2cAddr);
+        epd->setCursor(270, 80);
+        epd->print("Sensor Modul");
 
         // Reading bus data or using simulation data
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(260, 140);
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(260, 140);
         if(simulation == true){
             if(batVoltage == "12V"){
                 value1 = 12.0;
@@ -293,46 +294,46 @@ public:
                 value1 = 24.0;
             }
             value1 += float(random(0, 5)) / 10;         // Simulation data
-            getdisplay().print(value1,1);
+            epd->print(value1,1);
         }
         else{
             // Check for valid real data, display also if hold values activated
             if(valid1 == true || holdvalues == true){
                 // Resolution switching
-                if(value1 <= 9.9) getdisplay().print(value1, 2);
-                if(value1 > 9.9 && value1 <= 99.9)getdisplay().print(value1, 1);
-                if(value1 > 99.9) getdisplay().print(value1, 0);
+                if(value1 <= 9.9) epd->print(value1, 2);
+                if(value1 > 9.9 && value1 <= 99.9)epd->print(value1, 1);
+                if(value1 > 99.9) epd->print(value1, 0);
             }
             else{
-            getdisplay().print("---");                       // Missing bus data
+            epd->print("---");                       // Missing bus data
             }
         }
-        getdisplay().setFont(&Ubuntu_Bold16pt8b);
-        getdisplay().print("V");
+        epd->setFont(&Ubuntu_Bold16pt8b);
+        epd->print("V");
 
         // Show actual current in A
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(260, 200);
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(260, 200);
         if((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false){
-            if(value2 <= 9.9) getdisplay().print(value2, 2);
-            if(value2 > 9.9 && value2 <= 99.9)getdisplay().print(value2, 1);
-            if(value2 > 99.9) getdisplay().print(value2, 0);
+            if(value2 <= 9.9) epd->print(value2, 2);
+            if(value2 > 9.9 && value2 <= 99.9)epd->print(value2, 1);
+            if(value2 > 99.9) epd->print(value2, 0);
         }
-        else  getdisplay().print("---");
-        getdisplay().setFont(&Ubuntu_Bold16pt8b);
-        getdisplay().print("A");
+        else  epd->print("---");
+        epd->setFont(&Ubuntu_Bold16pt8b);
+        epd->print("A");
 
         // Show actual consumption in W
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(260, 260);
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(260, 260);
         if((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false){
-            if(value3 <= 9.9) getdisplay().print(value3, 2);
-            if(value3 > 9.9 && value3 <= 99.9)getdisplay().print(value3, 1);
-            if(value3 > 99.9) getdisplay().print(value3, 0);
+            if(value3 <= 9.9) epd->print(value3, 2);
+            if(value3 > 9.9 && value3 <= 99.9)epd->print(value3, 1);
+            if(value3 > 99.9) epd->print(value3, 0);
         }
-        else  getdisplay().print("---");
-        getdisplay().setFont(&Ubuntu_Bold16pt8b);
-        getdisplay().print("W");
+        else  epd->print("---");
+        epd->setFont(&Ubuntu_Bold16pt8b);
+        epd->print("W");
 
         return PAGE_UPDATE;
     };

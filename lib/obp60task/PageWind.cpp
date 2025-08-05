@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -361,51 +362,51 @@ public:
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setTextColor(commonData->fgcolor);
 
 
         if (mode == 'X') {
             // Original example code with scaling circle
 
             // Show values AWS/TWS
-            getdisplay().setFont(&Ubuntu_Bold20pt8b);
-            getdisplay().setCursor(20, 50);
-            getdisplay().print(name1);                       // Value name
-            getdisplay().print(": ");
+            epd->setFont(&Ubuntu_Bold20pt8b);
+            epd->setCursor(20, 50);
+            epd->print(name1);                       // Value name
+            epd->print(": ");
             if(holdvalues == false){
-                getdisplay().print(svalue1);                     // Value
-                getdisplay().print(" ");
-                getdisplay().print(unit1);                       // Unit
+                epd->print(svalue1);                     // Value
+                epd->print(" ");
+                epd->print(unit1);                       // Unit
             }
             else{
-                getdisplay().print(svalue1old);                  // Value old
-                getdisplay().print(" ");
-                getdisplay().print(unit1old);                    // Unit old
+                epd->print(svalue1old);                  // Value old
+                epd->print(" ");
+                epd->print(unit1old);                    // Unit old
             }
 
             // Show values AWD/TWD
-            getdisplay().setFont(&Ubuntu_Bold20pt8b);
-            getdisplay().setCursor(20, 260);
-            getdisplay().print(name2);                       // Value name
-            getdisplay().print(": ");
+            epd->setFont(&Ubuntu_Bold20pt8b);
+            epd->setCursor(20, 260);
+            epd->print(name2);                       // Value name
+            epd->print(": ");
             if(holdvalues == false){
-                getdisplay().print(svalue2);                     // Value
-                getdisplay().print(" ");
-                getdisplay().print(unit2);                       // Unit
+                epd->print(svalue2);                     // Value
+                epd->print(" ");
+                epd->print(unit2);                       // Unit
             }
             else{
-                getdisplay().print(svalue2old);                  // Value old
-                getdisplay().print(" ");
-                getdisplay().print(unit2old);                    // Unit old
+                epd->print(svalue2old);                  // Value old
+                epd->print(" ");
+                epd->print(unit2old);                    // Unit old
             }
 
             Point c = {200, 145};
 
             // Draw instrument
-            getdisplay().fillCircle(c.x, c.y, lp + 5, commonData->fgcolor);
-            getdisplay().fillCircle(c.x, c.y, lp + 1, commonData->bgcolor);
+            epd->fillCircle(c.x, c.y, lp + 5, commonData->fgcolor);
+            epd->fillCircle(c.x, c.y, lp + 1, commonData->bgcolor);
 
             // Wind pointer
             if (bvalue2->valid or simulation) {
@@ -420,7 +421,7 @@ public:
                 };
                 fillPoly4(rotatePoints(c, pts, RadToDeg(value2)), commonData->fgcolor);
             } else {
-                getdisplay().setFont(&Ubuntu_Bold12pt8b);
+                epd->setFont(&Ubuntu_Bold12pt8b);
                 drawTextCenter(c.x, c.y, "no data");
             }
 
@@ -438,7 +439,7 @@ public:
             };
             int angle;
 
-            getdisplay().setFont(&Ubuntu_Bold12pt8b);
+            epd->setFont(&Ubuntu_Bold12pt8b);
 
             // starbord
             // text with line
@@ -453,7 +454,7 @@ public:
             for (int i = 30; i < 138; i += 6) {
                  if (i % 15 != 0) {
                       p = rotatePoint(c, {c.x, c.y - r + 5}, i);
-                      getdisplay().fillCircle(p.x, p.y, 2, commonData->fgcolor);
+                      epd->fillCircle(p.x, p.y, 2, commonData->fgcolor);
                  }
             }
 
@@ -470,17 +471,17 @@ public:
             for (int i = 228; i < 330; i += 6) {
                  if (i % 15 != 0) {
                       p = rotatePoint(c, {c.x, c.y - r + 5}, i);
-                      getdisplay().fillCircle(p.x, p.y, 2, commonData->fgcolor);
+                      epd->fillCircle(p.x, p.y, 2, commonData->fgcolor);
                  }
             }
 
             // data source
-            getdisplay().setFont(&Ubuntu_Bold12pt8b);
-            getdisplay().setCursor(8, 50);
+            epd->setFont(&Ubuntu_Bold12pt8b);
+            epd->setCursor(8, 50);
             if (source == 'A') {
-                getdisplay().print("APP");
+                epd->print("APP");
             } else {
-                getdisplay().print("TRUE");
+                epd->print("TRUE");
             }
 
             // Wind pointer (angle)
@@ -500,7 +501,7 @@ public:
                     alpha *= -1;
                 }
 
-                getdisplay().fillCircle(c.x, c.y, 8, commonData->fgcolor);
+                epd->fillCircle(c.x, c.y, 8, commonData->fgcolor);
                 pts = {
                     {c.x - 1, c.y - (r - 20)},
                     {c.x + 1, c.y - (r - 20)},
@@ -508,39 +509,39 @@ public:
                     {c.x - 6, c.y + 15}
                 };
                 fillPoly4(rotatePoints(c, pts, alpha), commonData->fgcolor);
-                getdisplay().fillCircle(c.x, c.y, 6, commonData->bgcolor);
+                epd->fillCircle(c.x, c.y, 6, commonData->bgcolor);
             } else {
-                getdisplay().setFont(&Ubuntu_Bold12pt8b);
+                epd->setFont(&Ubuntu_Bold12pt8b);
                 drawTextCenter(c.x, c.y, "no data");
             }
 
             // Wind speed as decimal number
-            getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-            getdisplay().setCursor(150, 250);
+            epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+            epd->setCursor(150, 250);
             if (holdvalues == false) {
-                getdisplay().print(svalue1);
+                epd->print(svalue1);
             } else {
-                getdisplay().print(svalue1old);
+                epd->print(svalue1old);
             }
             // unit
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(220, 265);
-            getdisplay().print("kts");
+            epd->setFont(&Ubuntu_Bold8pt8b);
+            epd->setCursor(220, 265);
+            epd->print("kts");
         }
         else {
             // Normal mode
 
             // data source
-            getdisplay().setFont(&Ubuntu_Bold12pt8b);
-            getdisplay().setCursor(8, 50);
+            epd->setFont(&Ubuntu_Bold12pt8b);
+            epd->setCursor(8, 50);
             if (source == 'A') {
-                getdisplay().print("APP");
+                epd->print("APP");
             } else {
-                getdisplay().print("TRUE");
+                epd->print("TRUE");
             }
 
             // draw ship front symbol (as bitmap)
-            getdisplay().drawXBitmap(140, 30, front_bits, front_width, front_height, commonData->fgcolor);
+            epd->drawXBitmap(140, 30, front_bits, front_width, front_height, commonData->fgcolor);
 
             Point c = {200, 155};
             uint16_t r = 150;
@@ -565,7 +566,7 @@ public:
             for (int i = 30; i < 150; i += 10) {
                  if (i % 30 != 0) {
                       p = rotatePoint(c, {c.x, c.y - r + 5}, i);
-                      getdisplay().fillCircle(p.x, p.y, 3, commonData->fgcolor);
+                      epd->fillCircle(p.x, p.y, 3, commonData->fgcolor);
                  }
             }
 
@@ -582,27 +583,27 @@ public:
             for (int i = 210; i < 340; i += 10) {
                  if (i % 30 != 0) {
                       p = rotatePoint(c, {c.x, c.y - r + 5}, i);
-                      getdisplay().fillCircle(p.x, p.y, 3, commonData->fgcolor);
+                      epd->fillCircle(p.x, p.y, 3, commonData->fgcolor);
                  }
             }
 
             // Wind speed as decimal number
-            getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-            getdisplay().setCursor(150, 250);
+            epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+            epd->setCursor(150, 250);
             if (holdvalues == false) {
-                getdisplay().print(svalue1);
+                epd->print(svalue1);
             } else {
-                getdisplay().print(svalue1old);
+                epd->print(svalue1old);
             }
             // unit
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(220, 265);
-            getdisplay().print("kts");
+            epd->setFont(&Ubuntu_Bold8pt8b);
+            epd->setCursor(220, 265);
+            epd->print("kts");
 
             // Wind pointer (angle)
             if (bvalue2->valid or simulation) {
                 float alpha = RadToDeg(value2);
-                getdisplay().fillCircle(c.x, c.y, 8, commonData->fgcolor);
+                epd->fillCircle(c.x, c.y, 8, commonData->fgcolor);
                 pts = {
                     {c.x - 1, c.y - (r - 20)},
                     {c.x + 1, c.y - (r - 20)},
@@ -610,9 +611,9 @@ public:
                     {c.x - 6, c.y + 15}
                 };
                 fillPoly4(rotatePoints(c, pts, alpha), commonData->fgcolor);
-                getdisplay().fillCircle(c.x, c.y, 6, commonData->bgcolor);
+                epd->fillCircle(c.x, c.y, 6, commonData->bgcolor);
             } else {
-                getdisplay().setFont(&Ubuntu_Bold12pt8b);
+                epd->setFont(&Ubuntu_Bold12pt8b);
                 drawTextCenter(c.x, c.y, "no data");
             }
 

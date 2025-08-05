@@ -33,34 +33,20 @@
 #ifdef DISPLAY_GDEW042T2
 // Set display type and SPI pins for display
 GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(OBP_SPI_CS, OBP_SPI_DC, OBP_SPI_RST, OBP_SPI_BUSY)); // GDEW042T2 400x300, UC8176 (IL0398)
-// Export display in new funktion
-GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> & getdisplay(){return display;} // DEPRECATED
-gxepd2display *epd = &display;
 #endif
-
 #ifdef DISPLAY_GDEY042T81
 // Set display type and SPI pins for display
 GxEPD2_BW<GxEPD2_420_GDEY042T81, GxEPD2_420_GDEY042T81::HEIGHT> display(GxEPD2_420_GDEY042T81(OBP_SPI_CS, OBP_SPI_DC, OBP_SPI_RST, OBP_SPI_BUSY)); // GDEW042T2 400x300, UC8176 (IL0398)
-// Export display in new funktion
-GxEPD2_BW<GxEPD2_420_GDEY042T81, GxEPD2_420_GDEY042T81::HEIGHT> & getdisplay(){return display;} // DEPRECATED
-gxepd2display *epd = &display;
 #endif
-
 #ifdef DISPLAY_GYE042A87
 // Set display type and SPI pins for display
 GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> display(GxEPD2_420_GYE042A87(OBP_SPI_CS, OBP_SPI_DC, OBP_SPI_RST, OBP_SPI_BUSY)); // GDEW042T2 400x300, UC8176 (IL0398)
-// Export display in new funktion
-GxEPD2_BW<GxEPD2_420_GYE042A87, GxEPD2_420_GYE042A87::HEIGHT> & getdisplay(){return display;} // DEPRECATED
-gxepd2display *epd = &display;
 #endif
-
 #ifdef DISPLAY_SE0420NQ04
 // Set display type and SPI pins for display
 GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> display(GxEPD2_420_SE0420NQ04(OBP_SPI_CS, OBP_SPI_DC, OBP_SPI_RST, OBP_SPI_BUSY)); // GDEW042T2 400x300, UC8176 (IL0398)
-// Export display in new funktion
-GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay(){return display;} // DEPRECATED
-gxepd2display *epd = &display;
 #endif
+gxepd2display *epd = &display;
 
 // Horter I2C moduls
 PCF8574 pcf8574_Out(PCF8574_I2C_ADDR1); // First digital output modul PCF8574 from Horter
@@ -210,17 +196,17 @@ void deepSleep(CommonData &common){
     setFlashLED(false);                     // Flash LED Off
     buzzer(TONE4, 20);                      // Buzzer tone 4kHz 20ms
     // Shutdown EInk display
-    getdisplay().setFullWindow();               // Set full Refresh
-    getdisplay().fillScreen(common.bgcolor);    // Clear screen
-    getdisplay().setTextColor(common.fgcolor);
-    getdisplay().setFont(&Ubuntu_Bold20pt8b);
-    getdisplay().setCursor(85, 150);
-    getdisplay().print("Sleep Mode");
-    getdisplay().setFont(&Ubuntu_Bold8pt8b);
-    getdisplay().setCursor(65, 175);
-    getdisplay().print("To wake up press key and wait 5s");
-    getdisplay().nextPage();                // Update display contents
-    getdisplay().powerOff();                // Display power off
+    epd->setFullWindow();               // Set full Refresh
+    epd->fillScreen(common.bgcolor);    // Clear screen
+    epd->setTextColor(common.fgcolor);
+    epd->setFont(&Ubuntu_Bold20pt8b);
+    epd->setCursor(85, 150);
+    epd->print("Sleep Mode");
+    epd->setFont(&Ubuntu_Bold8pt8b);
+    epd->setCursor(65, 175);
+    epd->print("To wake up press key and wait 5s");
+    epd->nextPage();                // Update display contents
+    epd->powerOff();                // Display power off
     setPortPin(OBP_POWER_50, false);        // Power off ePaper display
     // Stop system
     esp_deep_sleep_start();                 // Deep Sleep with weakup via touch pin
@@ -234,18 +220,18 @@ void deepSleep(CommonData &common){
     setPortPin(OBP_BACKLIGHT_LED, false);   // Backlight Off
     setFlashLED(false);                     // Flash LED Off
     // Shutdown EInk display
-    getdisplay().setFullWindow();               // Set full Refresh
-    //getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-    getdisplay().fillScreen(common.bgcolor);    // Clear screen
-    getdisplay().setTextColor(common.fgcolor);
-    getdisplay().setFont(&Ubuntu_Bold20pt8b);
-    getdisplay().setCursor(85, 150);
-    getdisplay().print("Sleep Mode");
-    getdisplay().setFont(&Ubuntu_Bold8pt8b);
-    getdisplay().setCursor(65, 175);
-    getdisplay().print("To wake up press wheel and wait 5s");
-    getdisplay().nextPage();                // Partial update
-    getdisplay().powerOff();                // Display power off
+    epd->setFullWindow();               // Set full Refresh
+    //epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+    epd->fillScreen(common.bgcolor);    // Clear screen
+    epd->setTextColor(common.fgcolor);
+    epd->setFont(&Ubuntu_Bold20pt8b);
+    epd->setCursor(85, 150);
+    epd->print("Sleep Mode");
+    epd->setFont(&Ubuntu_Bold8pt8b);
+    epd->setCursor(65, 175);
+    epd->print("To wake up press wheel and wait 5s");
+    epd->nextPage();                // Partial update
+    epd->powerOff();                // Display power off
     setPortPin(OBP_POWER_EPD, false);       // Power off ePaper display
     setPortPin(OBP_POWER_SD, false);        // Power off SD card
     // Stop system
@@ -353,17 +339,17 @@ String xdrDelete(String input){
 }
 
 void fillPoly4(const std::vector<Point>& p4, uint16_t color) {
-    getdisplay().fillTriangle(p4[0].x, p4[0].y, p4[1].x, p4[1].y, p4[2].x, p4[2].y, color);
-    getdisplay().fillTriangle(p4[0].x, p4[0].y, p4[2].x, p4[2].y, p4[3].x, p4[3].y, color);
+    epd->fillTriangle(p4[0].x, p4[0].y, p4[1].x, p4[1].y, p4[2].x, p4[2].y, color);
+    epd->fillTriangle(p4[0].x, p4[0].y, p4[2].x, p4[2].y, p4[3].x, p4[3].y, color);
 }
 
 void drawPoly(const std::vector<Point>& points, uint16_t color) {
     size_t polysize = points.size();
     for (size_t i = 0; i < polysize - 1; i++) {
-        getdisplay().drawLine(points[i].x, points[i].y, points[i+1].x, points[i+1].y, color);
+        epd->drawLine(points[i].x, points[i].y, points[i+1].x, points[i+1].y, color);
     }
     // close path
-    getdisplay().drawLine(points[polysize-1].x, points[polysize-1].y, points[0].x, points[0].y, color);
+    epd->drawLine(points[polysize-1].x, points[polysize-1].y, points[0].x, points[0].y, color);
 }
 
 // Split string into words, whitespace separated
@@ -413,46 +399,46 @@ std::vector<String> wordwrap(String &line, uint16_t maxwidth) {
 void drawTextCenter(int16_t cx, int16_t cy, String text) {
     int16_t x1, y1;
     uint16_t w, h;
-    getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
-    getdisplay().setCursor(cx - w / 2, cy + h / 2);
-    getdisplay().print(text);
+    epd->getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
+    epd->setCursor(cx - w / 2, cy + h / 2);
+    epd->print(text);
 }
 
 // Draw right aligned text
 void drawTextRalign(int16_t x, int16_t y, String text) {
     int16_t x1, y1;
     uint16_t w, h;
-    getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
-    getdisplay().setCursor(x - w, y);
-    getdisplay().print(text);
+    epd->getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
+    epd->setCursor(x - w, y);
+    epd->print(text);
 }
 
 // Draw text inside box, normal or inverted
 void drawTextBoxed(Rect box, String text, uint16_t fg, uint16_t bg, bool inverted, bool border) {
     if (inverted) {
-        getdisplay().fillRect(box.x, box.y, box.w, box.h, fg);
-        getdisplay().setTextColor(bg);
+        epd->fillRect(box.x, box.y, box.w, box.h, fg);
+        epd->setTextColor(bg);
     } else {
         if (border) {
-            getdisplay().fillRect(box.x + 1, box.y + 1, box.w - 2, box.h - 2, bg);
-            getdisplay().drawRect(box.x, box.y, box.w, box.h, fg);
+            epd->fillRect(box.x + 1, box.y + 1, box.w - 2, box.h - 2, bg);
+            epd->drawRect(box.x, box.y, box.w, box.h, fg);
         }
-        getdisplay().setTextColor(fg);
+        epd->setTextColor(fg);
     }
     uint16_t border_offset = box.h / 4; // 25% of box height
-    getdisplay().setCursor(box.x + border_offset, box.y + box.h - border_offset);
-    getdisplay().print(text);
-    getdisplay().setTextColor(fg);
+    epd->setCursor(box.x + border_offset, box.y + box.h - border_offset);
+    epd->print(text);
+    epd->setTextColor(fg);
 }
 
 // Show a triangle for trend direction high (x, y is the left edge)
 void displayTrendHigh(int16_t x, int16_t y, uint16_t size, uint16_t color){
-    getdisplay().fillTriangle(x, y, x+size*2, y, x+size, y-size*2, color);
+    epd->fillTriangle(x, y, x+size*2, y, x+size, y-size*2, color);
 }
 
 // Show a triangle for trend direction low (x, y is the left edge)
 void displayTrendLow(int16_t x, int16_t y, uint16_t size, uint16_t color){
-    getdisplay().fillTriangle(x, y, x+size*2, y, x+size, y+size*2, color);
+    epd->fillTriangle(x, y, x+size*2, y, x+size, y+size*2, color);
 }
 
 // Show header informations
@@ -482,57 +468,57 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
         }
 
         // Show status info
-        getdisplay().setTextColor(commonData.fgcolor);
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(0, 15);
+        epd->setTextColor(commonData.fgcolor);
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(0, 15);
         if (commonData.status.wifiApOn) {
             if (symbolmode) {
-                getdisplay().drawXBitmap(symbol_x, 1, iconmap["AP"], icon_width, icon_height, commonData.fgcolor);
+                epd->drawXBitmap(symbol_x, 1, iconmap["AP"], icon_width, icon_height, commonData.fgcolor);
                 symbol_x += symbol_offset;
             } else {
-                getdisplay().print(" AP ");
+                epd->print(" AP ");
             }
         }
         // If receive new telegram data then display bus name
         if(commonData.status.tcpClRx != tcpClRxOld || commonData.status.tcpClTx != tcpClTxOld || commonData.status.tcpSerRx != tcpSerRxOld || commonData.status.tcpSerTx != tcpSerTxOld){
             if (symbolmode) {
-                getdisplay().drawXBitmap(symbol_x, 1, iconmap["TCP"], icon_width, icon_height, commonData.fgcolor);
+                epd->drawXBitmap(symbol_x, 1, iconmap["TCP"], icon_width, icon_height, commonData.fgcolor);
                 symbol_x += symbol_offset;
             } else {
-                getdisplay().print("TCP ");
+                epd->print("TCP ");
             }
         }
         if(commonData.status.n2kRx != n2kRxOld || commonData.status.n2kTx != n2kTxOld){
             if (symbolmode) {
-                getdisplay().drawXBitmap(symbol_x, 1, iconmap["N2K"], icon_width, icon_height, commonData.fgcolor);
+                epd->drawXBitmap(symbol_x, 1, iconmap["N2K"], icon_width, icon_height, commonData.fgcolor);
                 symbol_x += symbol_offset;
             } else {
-                getdisplay().print("N2K ");
+                epd->print("N2K ");
             }
         }
         if(commonData.status.serRx != serRxOld || commonData.status.serTx != serTxOld){
             if (symbolmode) {
-                getdisplay().drawXBitmap(symbol_x, 1, iconmap["0183"], icon_width, icon_height, commonData.fgcolor);
+                epd->drawXBitmap(symbol_x, 1, iconmap["0183"], icon_width, icon_height, commonData.fgcolor);
                 symbol_x += symbol_offset;
             } else {
-                getdisplay().print("183 ");
+                epd->print("183 ");
             }
         }
         if(commonData.status.usbRx != usbRxOld || commonData.status.usbTx != usbTxOld){
             if (symbolmode) {
-                getdisplay().drawXBitmap(symbol_x, 1, iconmap["USB"], icon_width, icon_height, commonData.fgcolor);
+                epd->drawXBitmap(symbol_x, 1, iconmap["USB"], icon_width, icon_height, commonData.fgcolor);
                 symbol_x += symbol_offset;
             } else {
-                getdisplay().print("USB ");
+                epd->print("USB ");
             }
         }
         double gpshdop = formatValue(hdop, commonData).value;
         if(commonData.config->getString(commonData.config->useGPS) != "off" &&  gpshdop <= commonData.config->getInt(commonData.config->hdopAccuracy) && hdop->valid == true){
             if (symbolmode) {
-                getdisplay().drawXBitmap(symbol_x, 1, iconmap["GPS"], icon_width, icon_height, commonData.fgcolor);
+                epd->drawXBitmap(symbol_x, 1, iconmap["GPS"], icon_width, icon_height, commonData.fgcolor);
                 symbol_x += symbol_offset;
             } else {
-                getdisplay().print("GPS");
+                epd->print("GPS");
             }
         }
         // Save old telegram counter

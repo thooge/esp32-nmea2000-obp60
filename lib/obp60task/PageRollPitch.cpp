@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include "Pagedata.h"
@@ -116,52 +117,52 @@ public:
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
-        getdisplay().setTextColor(commonData->fgcolor);
+        epd->setTextColor(commonData->fgcolor);
 
         // Show roll limit
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(10, 65);
-        getdisplay().print(rolllimit);                   // Value
-        //getdisplay().print(svalue1);                   // Value
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(10, 65);
+        epd->print(rolllimit);                   // Value
+        //epd->print(svalue1);                   // Value
 
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(10, 95);
-        getdisplay().print("Limit");                     // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(10, 115);
-        getdisplay().print("DEG");
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(10, 95);
+        epd->print("Limit");                     // Name
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(10, 115);
+        epd->print("DEG");
 
         // Horizintal separator left
-        getdisplay().fillRect(0, 149, 60, 3, commonData->fgcolor);
+        epd->fillRect(0, 149, 60, 3, commonData->fgcolor);
 
         // Show roll value
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(10, 270);
-        if(holdvalues == false) getdisplay().print(svalue1); // Value
-        else getdisplay().print(svalue1old);
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(10, 220);
-        getdisplay().print(name1);                           // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(10, 190);
-        getdisplay().print("Deg");
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(10, 270);
+        if(holdvalues == false) epd->print(svalue1); // Value
+        else epd->print(svalue1old);
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(10, 220);
+        epd->print(name1);                           // Name
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(10, 190);
+        epd->print("Deg");
 
         // Horizintal separator right
-        getdisplay().fillRect(340, 149, 80, 3, commonData->fgcolor);
+        epd->fillRect(340, 149, 80, 3, commonData->fgcolor);
 
         // Show pitch value
-        getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(295, 270);
-        if(holdvalues == false) getdisplay().print(svalue2); // Value
-        else getdisplay().print(svalue2old);
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(335, 220);
-        getdisplay().print(name2);                           // Name
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(335, 190);
-        getdisplay().print("Deg");
+        epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
+        epd->setCursor(295, 270);
+        if(holdvalues == false) epd->print(svalue2); // Value
+        else epd->print(svalue2old);
+        epd->setFont(&Ubuntu_Bold12pt8b);
+        epd->setCursor(335, 220);
+        epd->print(name2);                           // Name
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        epd->setCursor(335, 190);
+        epd->print("Deg");
 
 //*******************************************************************************************
 
@@ -169,8 +170,8 @@ public:
         int rInstrument = 100;     // Radius of instrument
         float pi = 3.141592;
 
-        getdisplay().fillCircle(200, 150, rInstrument + 10, commonData->fgcolor);    // Outer circle
-        getdisplay().fillCircle(200, 150, rInstrument + 7, commonData->bgcolor);     // Outer circle
+        epd->fillCircle(200, 150, rInstrument + 10, commonData->fgcolor);    // Outer circle
+        epd->fillCircle(200, 150, rInstrument + 7, commonData->bgcolor);     // Outer circle
 
         for(int i=0; i<360; i=i+10)
         {
@@ -194,17 +195,17 @@ public:
                 // Print text centered on position x, y
                 int16_t x1, y1;     // Return values of getTextBounds
                 uint16_t w, h;      // Return values of getTextBounds
-                getdisplay().getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
-                getdisplay().setCursor(x-w/2, y+h/2);
+                epd->getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
+                epd->setCursor(x-w/2, y+h/2);
                 if(i % 20 == 0){
-                    getdisplay().setFont(&Ubuntu_Bold8pt8b);
-                    getdisplay().print(ii);
+                    epd->setFont(&Ubuntu_Bold8pt8b);
+                    epd->print(ii);
                 }
 
                 // Draw sub scale with dots
                 float x1c = 200 + rInstrument*sin(i/180.0*M_PI);
                 float y1c = 150 - rInstrument*cos(i/180.0*M_PI);
-                getdisplay().fillCircle((int)x1c, (int)y1c, 2, commonData->fgcolor);
+                epd->fillCircle((int)x1c, (int)y1c, 2, commonData->fgcolor);
                 float sinx=sin(i/180.0*M_PI);
                 float cosx=cos(i/180.0*M_PI);
 
@@ -215,10 +216,10 @@ public:
                     float xx2 = +dx;
                     float yy1 =  -(rInstrument-10);
                     float yy2 =  -(rInstrument+10);
-                    getdisplay().fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
+                    epd->fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
                             200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                             200+(int)(cosx*xx1-sinx*yy2),150+(int)(sinx*xx1+cosx*yy2),commonData->fgcolor);
-                    getdisplay().fillTriangle(200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
+                    epd->fillTriangle(200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                             200+(int)(cosx*xx1-sinx*yy2),150+(int)(sinx*xx1+cosx*yy2),
                             200+(int)(cosx*xx2-sinx*yy2),150+(int)(sinx*xx2+cosx*yy2),commonData->fgcolor);
                 }
@@ -239,7 +240,7 @@ public:
             float xx2 = startwidth;
             float yy1 = -startwidth;
             float yy2 = -(rInstrument * 0.7);
-            getdisplay().fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
+            epd->fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
                 200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                 200+(int)(cosx*0-sinx*yy2),150+(int)(sinx*0+cosx*yy2),commonData->fgcolor);
             // Inverted pointer
@@ -249,28 +250,28 @@ public:
             float ix2 = -endwidth;
             float iy1 = -(rInstrument * 0.7);
             float iy2 = -endwidth;
-            getdisplay().fillTriangle(200+(int)(cosx*ix1-sinx*iy1),150+(int)(sinx*ix1+cosx*iy1),
+            epd->fillTriangle(200+(int)(cosx*ix1-sinx*iy1),150+(int)(sinx*ix1+cosx*iy1),
                 200+(int)(cosx*ix2-sinx*iy1),150+(int)(sinx*ix2+cosx*iy1),
                 200+(int)(cosx*0-sinx*iy2),150+(int)(sinx*0+cosx*iy2),commonData->fgcolor);
 
             // Draw counterweight
-            getdisplay().fillCircle(200+(int)(cosx*0-sinx*yy2),150+(int)(sinx*0+cosx*yy2), 5, commonData->fgcolor);
+            epd->fillCircle(200+(int)(cosx*0-sinx*yy2),150+(int)(sinx*0+cosx*yy2), 5, commonData->fgcolor);
         }
 
         // Center circle
-        getdisplay().fillCircle(200, 150, startwidth + 22, commonData->bgcolor);
-        getdisplay().fillCircle(200, 150, startwidth + 20, commonData->fgcolor);      // Boat circle
+        epd->fillCircle(200, 150, startwidth + 22, commonData->bgcolor);
+        epd->fillCircle(200, 150, startwidth + 20, commonData->fgcolor);      // Boat circle
         int x0 = 200;
         int y0 = 150;
         int x1 = x0 + 50*cos(value1);
         int y1 = y0 + 50*sin(value1);
         int x2 = x0 + 50*cos(value1 - pi/2);
         int y2 = y0 + 50*sin(value1 - pi/2);
-        getdisplay().fillTriangle(x0, y0, x1, y1, x2, y2, commonData->bgcolor);          // Clear half top side of boat circle (right triangle)
+        epd->fillTriangle(x0, y0, x1, y1, x2, y2, commonData->bgcolor);          // Clear half top side of boat circle (right triangle)
         x1 = x0 + 50*cos(value1 + pi);
         y1 = y0 + 50*sin(value1 + pi);
-        getdisplay().fillTriangle(x0, y0, x1, y1, x2, y2, commonData->bgcolor);          // Clear half top side of boat circle (left triangle)
-        getdisplay().fillRect(150, 160, 100, 4, commonData->fgcolor);                 // Water line
+        epd->fillTriangle(x0, y0, x1, y1, x2, y2, commonData->bgcolor);          // Clear half top side of boat circle (left triangle)
+        epd->fillRect(150, 160, 100, 4, commonData->fgcolor);                 // Water line
 
         // Draw roll pointer
         startwidth = 4;     // Start width of pointer
@@ -283,7 +284,7 @@ public:
             float xx2 = startwidth;
             float yy1 = -startwidth;
             float yy2 = -(rInstrument - 15);
-            getdisplay().fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
+            epd->fillTriangle(200+(int)(cosx*xx1-sinx*yy1),150+(int)(sinx*xx1+cosx*yy1),
                 200+(int)(cosx*xx2-sinx*yy1),150+(int)(sinx*xx2+cosx*yy1),
                 200+(int)(cosx*0-sinx*yy2),150+(int)(sinx*0+cosx*yy2),commonData->fgcolor);
             // Inverted pointer
@@ -293,15 +294,15 @@ public:
             float ix2 = -endwidth;
             float iy1 = -(rInstrument - 15);
             float iy2 = -endwidth;
-            getdisplay().fillTriangle(200+(int)(cosx*ix1-sinx*iy1),150+(int)(sinx*ix1+cosx*iy1),
+            epd->fillTriangle(200+(int)(cosx*ix1-sinx*iy1),150+(int)(sinx*ix1+cosx*iy1),
                 200+(int)(cosx*ix2-sinx*iy1),150+(int)(sinx*ix2+cosx*iy1),
                 200+(int)(cosx*0-sinx*iy2),150+(int)(sinx*0+cosx*iy2),commonData->fgcolor);
         }
         else{
             // Print sensor info
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(145, 200);
-            getdisplay().print("No sensor data");            // Info missing sensor
+            epd->setFont(&Ubuntu_Bold8pt8b);
+            epd->setCursor(145, 200);
+            epd->print("No sensor data");            // Info missing sensor
         }
 
         return PAGE_UPDATE;
