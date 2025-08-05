@@ -749,19 +749,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance1": "AWA" },
-            { "calInstance1": "AWS" },
-            { "calInstance1": "COG" },
-            { "calInstance1": "DBT" },
-            { "calInstance1": "HDM" },
-            { "calInstance1": "PRPOS" },
-            { "calInstance1": "RPOS" },
-            { "calInstance1": "SOG" },
-            { "calInstance1": "STW" },
-            { "calInstance1": "TWA" },
-            { "calInstance1": "TWS" },
-            { "calInstance1": "TWD" },
-            { "calInstance1": "WTemp" } ]
+            { "calInstance1": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSlope1",
@@ -774,19 +763,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance1": "AWA" },
-            { "calInstance1": "AWS" },
-            { "calInstance1": "COG" },
-            { "calInstance1": "DBT" },
-            { "calInstance1": "HDM" },
-            { "calInstance1": "PRPOS" },
-            { "calInstance1": "RPOS" },
-            { "calInstance1": "SOG" },
-            { "calInstance1": "STW" },
-            { "calInstance1": "TWA" },
-            { "calInstance1": "TWS" },
-            { "calInstance1": "TWD" },
-            { "calInstance1": "WTemp" }  ]
+            { "calInstance1": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSmooth1",
@@ -802,19 +780,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance1": "AWA" },
-            { "calInstance1": "AWS" },
-            { "calInstance1": "COG" },
-            { "calInstance1": "DBT" },
-            { "calInstance1": "HDM" },
-            { "calInstance1": "PRPOS" },
-            { "calInstance1": "RPOS" },
-            { "calInstance1": "SOG" },
-            { "calInstance1": "STW" },
-            { "calInstance1": "TWA" },
-            { "calInstance1": "TWS" },
-            { "calInstance1": "TWD" },
-            { "calInstance1": "WTemp" }  ]
+            { "calInstance1": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calInstance2",
@@ -854,19 +821,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance2": "AWA" },
-            { "calInstance2": "AWS" },
-            { "calInstance2": "COG" },
-            { "calInstance2": "DBT" },
-            { "calInstance2": "HDM" },
-            { "calInstance2": "PRPOS" },
-            { "calInstance2": "RPOS" },
-            { "calInstance2": "SOG" },
-            { "calInstance2": "STW" },
-            { "calInstance2": "TWA" },
-            { "calInstance2": "TWS" },
-            { "calInstance2": "TWD" },
-            { "calInstance2": "WTemp" } ]
+            { "calInstance2": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSlope2",
@@ -879,19 +835,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance2": "AWA" },
-            { "calInstance2": "AWS" },
-            { "calInstance2": "COG" },
-            { "calInstance2": "DBT" },
-            { "calInstance2": "HDM" },
-            { "calInstance2": "PRPOS" },
-            { "calInstance2": "RPOS" },
-            { "calInstance2": "SOG" },
-            { "calInstance2": "STW" },
-            { "calInstance2": "TWA" },
-            { "calInstance2": "TWS" },
-            { "calInstance2": "TWD" },
-            { "calInstance2": "WTemp" } ]
+            { "calInstance2": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSmooth2",
@@ -907,19 +852,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance2": "AWA" },
-            { "calInstance2": "AWS" },
-            { "calInstance2": "COG" },
-            { "calInstance2": "DBT" },
-            { "calInstance2": "HDM" },
-            { "calInstance2": "PRPOS" },
-            { "calInstance2": "RPOS" },
-            { "calInstance2": "SOG" },
-            { "calInstance2": "STW" },
-            { "calInstance2": "TWA" },
-            { "calInstance2": "TWS" },
-            { "calInstance2": "TWD" },
-            { "calInstance2": "WTemp" } ]
+            { "calInstance2": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calInstance3",
@@ -959,19 +893,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance3": "AWA" },
-            { "calInstance3": "AWS" },
-            { "calInstance3": "COG" },
-            { "calInstance3": "DBT" },
-            { "calInstance3": "HDM" },
-            { "calInstance3": "PRPOS" },
-            { "calInstance3": "RPOS" },
-            { "calInstance3": "SOG" },
-            { "calInstance3": "STW" },
-            { "calInstance3": "TWA" },
-            { "calInstance3": "TWS" },
-            { "calInstance3": "TWD" },
-            { "calInstance3": "WTemp" } ]
+            { "calInstance3": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSlope3",
@@ -984,19 +907,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance3": "AWA" },
-            { "calInstance3": "AWS" },
-            { "calInstance3": "COG" },
-            { "calInstance3": "DBT" },
-            { "calInstance3": "HDM" },
-            { "calInstance3": "PRPOS" },
-            { "calInstance3": "RPOS" },
-            { "calInstance3": "SOG" },
-            { "calInstance3": "STW" },
-            { "calInstance3": "TWA" },
-            { "calInstance3": "TWS" },
-            { "calInstance3": "TWD" },
-            { "calInstance3": "WTemp" } ]
+            { "calInstance3": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSmooth3",
@@ -1012,19 +924,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance3": "AWA" },
-            { "calInstance3": "AWS" },
-            { "calInstance3": "COG" },
-            { "calInstance3": "DBT" },
-            { "calInstance3": "HDM" },
-            { "calInstance3": "PRPOS" },
-            { "calInstance3": "RPOS" },
-            { "calInstance3": "SOG" },
-            { "calInstance3": "STW" },
-            { "calInstance3": "TWA" },
-            { "calInstance3": "TWS" },
-            { "calInstance3": "TWD" },
-            { "calInstance3": "WTemp" } ]
+            { "calInstance3": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "display",
@@ -1347,13 +1248,16 @@
         "default": "Voltage",
         "description": "Type of page for page 1",
         "list": [
+            "AIS",
             "Anchor",
+            "Autopilot",
             "BME280",
             "Battery",
             "Battery2",
             "Clock",
             "Compass",
             "DST810",
+            "EPropulsion",
             "Fluid",
             "FourValues",
             "FourValues2",
@@ -1630,13 +1534,16 @@
         "default": "WindRose",
         "description": "Type of page for page 2",
         "list": [
+            "AIS",
             "Anchor",
+            "Autopilot",
             "BME280",
             "Battery",
             "Battery2",
             "Clock",
             "Compass",
             "DST810",
+            "EPropulsion",
             "Fluid",
             "FourValues",
             "FourValues2",
@@ -1910,13 +1817,16 @@
         "default": "OneValue",
         "description": "Type of page for page 3",
         "list": [
+            "AIS",
             "Anchor",
+            "Autopilot",
             "BME280",
             "Battery",
             "Battery2",
             "Clock",
             "Compass",
             "DST810",
+            "EPropulsion",
             "Fluid",
             "FourValues",
             "FourValues2",
@@ -2187,13 +2097,16 @@
         "default": "TwoValues",
         "description": "Type of page for page 4",
         "list": [
+            "AIS",
             "Anchor",
+            "Autopilot",
             "BME280",
             "Battery",
             "Battery2",
             "Clock",
             "Compass",
             "DST810",
+            "EPropulsion",
             "Fluid",
             "FourValues",
             "FourValues2",
@@ -2461,13 +2374,16 @@
         "default": "ThreeValues",
         "description": "Type of page for page 5",
         "list": [
+            "AIS",
             "Anchor",
+            "Autopilot",
             "BME280",
             "Battery",
             "Battery2",
             "Clock",
             "Compass",
             "DST810",
+            "EPropulsion",
             "Fluid",
             "FourValues",
             "FourValues2",
@@ -2732,13 +2648,16 @@
         "default": "FourValues",
         "description": "Type of page for page 6",
         "list": [
+            "AIS",
             "Anchor",
+            "Autopilot",
             "BME280",
             "Battery",
             "Battery2",
             "Clock",
             "Compass",
             "DST810",
+            "EPropulsion",
             "Fluid",
             "FourValues",
             "FourValues2",
@@ -3000,13 +2919,16 @@
         "default": "FourValues2",
         "description": "Type of page for page 7",
         "list": [
+            "AIS",
             "Anchor",
+            "Autopilot",
             "BME280",
             "Battery",
             "Battery2",
             "Clock",
             "Compass",
             "DST810",
+            "EPropulsion",
             "Fluid",
             "FourValues",
             "FourValues2",
@@ -3265,13 +3187,16 @@
         "default": "Clock",
         "description": "Type of page for page 8",
         "list": [
+            "AIS",
             "Anchor",
+            "Autopilot",
             "BME280",
             "Battery",
             "Battery2",
             "Clock",
             "Compass",
             "DST810",
+            "EPropulsion",
             "Fluid",
             "FourValues",
             "FourValues2",
@@ -3527,13 +3452,16 @@
         "default": "RollPitch",
         "description": "Type of page for page 9",
         "list": [
+            "AIS",
             "Anchor",
+            "Autopilot",
             "BME280",
             "Battery",
             "Battery2",
             "Clock",
             "Compass",
             "DST810",
+            "EPropulsion",
             "Fluid",
             "FourValues",
             "FourValues2",
@@ -3786,13 +3714,16 @@
         "default": "Battery2",
         "description": "Type of page for page 10",
         "list": [
+            "AIS",
             "Anchor",
+            "Autopilot",
             "BME280",
             "Battery",
             "Battery2",
             "Clock",
             "Compass",
             "DST810",
+            "EPropulsion",
             "Fluid",
             "FourValues",
             "FourValues2",

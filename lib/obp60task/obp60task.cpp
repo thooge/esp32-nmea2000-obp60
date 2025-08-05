@@ -259,7 +259,7 @@ void registerAllPages(PageList &list){
     extern PageDescription registerPageWindRose;
     list.add(&registerPageWindRose);
     extern PageDescription registerPageWindRoseFlex;
-    list.add(&registerPageWindRoseFlex); // 
+    list.add(&registerPageWindRoseFlex);
     extern PageDescription registerPageVoltage;
     list.add(&registerPageVoltage);
     extern PageDescription registerPageDST810;
@@ -294,6 +294,12 @@ void registerAllPages(PageList &list){
     list.add(&registerPageSkyView);
     extern PageDescription registerPageAnchor;
     list.add(&registerPageAnchor);
+/*    extern PageDescription registerPageAIS;
+    list.add(&registerPageAIS);
+    extern PageDescription registerPageAutopilot;
+    list.add(&registerPageAutopilot);
+    extern PageDescription registerPageEPropulsion;
+    list.add(&registerPageEPropulsion); */
 }
 
 // Undervoltage detection for shutdown display
