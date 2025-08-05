@@ -24,17 +24,11 @@
 #include <SPI.h>
 #endif
 
-// True type character sets includes
-// See OBP60ExtensionPort.cpp
-
 // Pictures
-//#include GxEPD_BitmapExamples         // Example picture
-#include "MFD_OBP60_400x300_sw.h"       // MFD with logo
-#include "Logo_OBP_400x300_sw.h"        // OBP Logo
+#include "images/OBP_400x300.xbm"       // OBP Logo
 #include "images/unknown.xbm"           // unknown page indicator
 #include "OBP60QRWiFi.h"                // Functions lib for WiFi QR code
 #include "OBPSensorTask.h"              // Functions lib for sensor data
-
 
 // Global vars
 bool initComplete = false;      // Initialization complete
@@ -548,7 +542,7 @@ void OBP60Task(GwApi *api){
     epd->nextPage();                     // Fast Refresh
     if(String(displaymode) == "Logo + QR Code" || String(displaymode) == "Logo"){
         epd->fillScreen(commonData.bgcolor);
-        epd->drawBitmap(0, 0, gImage_Logo_OBP_400x300_sw, epd->width(), epd->height(), commonData.fgcolor); // Draw start logo
+        epd->drawXBitmap(0, 0, OBP_400x300_bits, OBP_400x300_width, OBP_400x300_height, commonData.fgcolor);
         epd->nextPage();                 // Fast Refresh
         epd->nextPage();                 // Fast Refresh
         delay(SHOW_TIME);                        // Logo show time
