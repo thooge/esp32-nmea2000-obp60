@@ -149,12 +149,13 @@ def usage():
     print("Command line options")
     print(" -d --device     device name to use e.g. obp60")
     print(" -p --pages      number of pages to create")
+    print(" -m --merge      json with device config to merge to")
     print(" -h              show this help")
     print()
 
 if __name__ == '__main__':
     try:
-        options, remainder = getopt.getopt(sys.argv[1:], 'd:p:', ['device=','--pages='])
+        options, remainder = getopt.getopt(sys.argv[1:], 'd:p:m:', ['device=','--pages=','--merge'])
     except getopt.GetoptError as err:
         print(err)
         usage()
@@ -162,11 +163,14 @@ if __name__ == '__main__':
 
     device = "obp60"
     no_of_pages = 10
+    merge_json = None
     for opt, arg in options:
         if opt in ('-d', '--device'):
             device = arg
         elif opt in ('-p', '--pages'):
             no_of_pages = int(arg)
+        elif opt in ('-m', '--merge'):
+            merge_json = arg
         elif opt == '-h':
             usage()
             sys.exit(0)
@@ -175,5 +179,12 @@ if __name__ == '__main__':
     pagedata = detect_pages("obp60task.cpp")
 
     json_output = create_json(device, no_of_pages, pagedata)
-    # print omitting first line containing [  of JSON array
-    print(json_output[1:])
+    if merge_json and os.path.isfile(merge_json):
+        with open(merge_json, 'r') as fh:
+            device_json = json.load(fh)
+        page_json = json.loads(json_output)
+        device_json.extend(page_json)
+        print(json.dumps(device_json, indent=4))
+    else:
+        # print omitting first line containing [ of JSON array
+        print(json_output[1:])
