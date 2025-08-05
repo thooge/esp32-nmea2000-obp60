@@ -69,6 +69,12 @@ PCF8574 pcf8574_Out(PCF8574_I2C_ADDR1); // First digital output modul PCF8574 fr
 Adafruit_FRAM_I2C fram;
 bool hasFRAM = false;
 
+// SD Card
+#ifdef BOARD_OBP40S3
+sdmmc_card_t *sdcard;
+#endif
+bool hasSDCard = false;
+
 // Global vars
 bool blinkingLED = false;       // Enable / disable blinking flash LED
 bool statusLED = false;         // Actual status of flash LED on/off
@@ -83,6 +89,9 @@ LedTaskData *ledTaskData=nullptr;
 
 void hardwareInit(GwApi *api)
 {
+    GwLog *logger=api->getLogger();
+    GwConfigHandler *config=api->getConfig();
+
     Wire.begin();
     // Init PCF8574 digital outputs
     Wire.setClock(I2C_SPEED);       // Set I2C clock on 10 kHz
@@ -92,7 +101,7 @@ void hardwareInit(GwApi *api)
     fram = Adafruit_FRAM_I2C();
     if (esp_reset_reason() ==  ESP_RST_POWERON) {
         // help initialize FRAM
-        api->getLogger()->logDebug(GwLog::LOG,"Delaying I2C init for 250ms due to cold boot");
+        LOG_DEBUG(GwLog::LOG,"Delaying I2C init for 250ms due to cold boot");
         delay(250);
     }
     // FRAM (e.g. MB85RC256V)
@@ -104,12 +113,53 @@ void hardwareInit(GwApi *api)
         // Boot counter
         uint8_t framcounter = fram.read(0x0000);
         fram.write(0x0000, framcounter+1);
-        api->getLogger()->logDebug(GwLog::LOG,"FRAM detected: 0x%04x/0x%04x (counter=%d)", manufacturerID, productID, framcounter);
+        LOG_DEBUG(GwLog::LOG,"FRAM detected: 0x%04x/0x%04x (counter=%d)", manufacturerID, productID, framcounter);
     }
     else {
         hasFRAM = false;
-        api->getLogger()->logDebug(GwLog::LOG,"NO FRAM detected");
+        LOG_DEBUG(GwLog::LOG,"NO FRAM detected");
     }
+    // SD Card
+    hasSDCard = false;
+#ifdef BOARD_OBP40S3
+    if (config->getBool(config->useSDCard)) {
+        esp_err_t ret;
+        sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+        host.slot = SPI3_HOST;
+        spi_bus_config_t bus_cfg = {
+            .mosi_io_num = SD_SPI_MOSI,
+            .miso_io_num = SD_SPI_MISO,
+            .sclk_io_num = SD_SPI_CLK,
+            .quadwp_io_num = -1,
+            .quadhd_io_num = -1,
+            .max_transfer_sz = 4000,
+        };
+        ret = spi_bus_initialize((spi_host_device_t) host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
+        if (ret != ESP_OK) {
+            LOG_DEBUG(GwLog::ERROR,"Failed to initialize SPI bus for SD card");
+        } else {
+            sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
+            slot_config.gpio_cs = SD_SPI_CS;
+            slot_config.host_id = (spi_host_device_t) host.slot;
+            esp_vfs_fat_sdmmc_mount_config_t mount_config = {
+                .format_if_mount_failed = false,
+                .max_files = 5,
+                .allocation_unit_size = 16 * 1024
+            };
+            ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &sdcard);
+            if (ret != ESP_OK) {
+                if (ret == ESP_FAIL) {
+                    LOG_DEBUG(GwLog::ERROR,"Failed to mount SD card filesystem");
+                } else {
+                    LOG_DEBUG(GwLog::ERROR,"Failed to initialize SD card");
+                }
+            } else {
+                LOG_DEBUG(GwLog::ERROR,"SD card filesystem mounted");
+                hasSDCard = true;
+            }
+        }
+    }
+#endif
 }
 
 void powerInit(String powermode) {

@@ -9,6 +9,12 @@
 #include <GxEPD2_BW.h>                  // E-paper lib V2
 #include <Adafruit_FRAM_I2C.h>          // I2C FRAM
 
+#ifdef BOARD_OBP40S3
+#include "esp_vfs_fat.h"
+#include "sdmmc_cmd.h"
+#define MOUNT_POINT "/sdcard"
+#endif
+
 // FRAM address reservations 32kB: 0x0000 - 0x7FFF
 // 0x0000 - 0x03ff: single variables
 #define FRAM_PAGE_NO 0x0002
