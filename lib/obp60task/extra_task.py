@@ -28,3 +28,4 @@ except:
 env["CPPDEFINES"].extend([("BOARD", env["BOARD"]), ("EPDTYPE", epdtype), ("PCBVERS", pcbvers), ("GXEPD2VERS", gxepd2vers)])
 
 print("added hardware info to CPPDEFINES")
+print("friendly board name is '{}'".format(env.GetProjectOption("board_name")))

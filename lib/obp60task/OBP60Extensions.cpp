@@ -461,12 +461,6 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
 
     if(commonData.config->getBool(commonData.config->statusLine) == true){
 
-       if (symbolmode) {
-           commonData.logger->logDebug(GwLog::LOG,"Header: Symbolmode");
-       } else {
-           commonData.logger->logDebug(GwLog::LOG,"Header: Textmode");
-        }
-
         // Show status info
         epd->setTextColor(commonData.fgcolor);
         epd->setFont(&Ubuntu_Bold8pt8b);

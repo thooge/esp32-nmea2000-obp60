@@ -3,7 +3,6 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
-#include "ConfigMenu.h"
 
 /*
   Autopilot
@@ -21,9 +20,6 @@ private:
     String backlightMode;
 
     char mode = 'N'; // (N)ormal, (C)onfig
-    int8_t editmode = -1; // marker for menu/edit/set function
-
-    ConfigMenu *menu;
 
     void displayModeNormal(PageData &pageData) {
 
@@ -142,11 +138,11 @@ static Page *createPage(CommonData &common){
  * this will be number of BoatValue pointers in pageData.values
  */
 PageDescription registerPageAutopilot(
-    "Autopilot",      // Page name
-    createPage, // Action
-    0,          // Number of bus values depends on selection in Web configuration
-    {}, // Names of bus values undepends on selection in Web configuration (refer GwBoatData.h)
-    true        // Show display header on/off
+    "Autopilot",    // Page name
+    createPage,     // Action
+    0,              // Number of bus values depends on selection in Web configuration
+    {},             // Names of bus values undepends on selection in Web configuration (refer GwBoatData.h)
+    false           // Show display header on/off
 );
 
 #endif

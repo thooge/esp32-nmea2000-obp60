@@ -3,7 +3,6 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
-#include "ConfigMenu.h"
 
 /*
   AIS Overview
@@ -11,6 +10,9 @@
     - AIS-Targets in range with speed and heading
     - perhaps collision alarm
   Data: LAT LON SOG HDT
+
+  Feature possibilities
+    - switch between North up / Heading up
 
 */
 
@@ -31,9 +33,6 @@ private:
     int alarm_range = 3;
 
     char mode = 'N'; // (N)ormal, (C)onfig
-    int8_t editmode = -1; // marker for menu/edit/set function
-
-    ConfigMenu *menu;
 
     void displayModeNormal(PageData &pageData) {
 
@@ -98,21 +97,8 @@ public:
         flashLED = config->getString(config->flashLED);
         backlightMode = config->getString(config->backlight);
 
-        alarm_range = 30;
+        alarm_range = 3;
 
-        // Initialize config menu
-        /* menu = new ConfigMenu("Options", 40, 80);
-        menu->setItemDimension(150, 20);
-
-        ConfigMenuItem *newitem;
-        newitem = menu->addItem("range", "Range", "int", 4, "nm");
-        if (! newitem) {
-            // Demo: in case of failure exit here, should never be happen
-            logger->logDebug(GwLog::ERROR,"Menu item creation failed");
-            return;
-        }
-        newitem->setRange(0, 20, {1, 5});
-        menu->setItemActive("range"); */
      }
 
     void setupKeys(){

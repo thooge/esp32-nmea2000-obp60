@@ -231,12 +231,13 @@ class PageList{
  * each page should have defined a registerXXXPage variable of type
  * PageData that describes what it needs
  */
-void registerAllPages(PageList &list){
+void registerAllPages(GwLog *logger, PageList &list){
     //the next line says that this variable is defined somewhere else
     //in our case in a separate C++ source file
     //this way this separate source file can be compiled by it's own
     //and has no access to any of our data except the one that we
     //give as a parameter to the page function
+    logger->logDebug(GwLog::LOG, "Memory before registering pages: stack=%d, heap=%d", uxTaskGetStackHighWaterMark(NULL), ESP.getFreeHeap());
     extern PageDescription registerPageSystem;
     //we add the variable to our list
     list.add(&registerPageSystem);
@@ -294,12 +295,9 @@ void registerAllPages(PageList &list){
     list.add(&registerPageSkyView);
     extern PageDescription registerPageAnchor;
     list.add(&registerPageAnchor);
-/*    extern PageDescription registerPageAIS;
+    extern PageDescription registerPageAIS;
     list.add(&registerPageAIS);
-    extern PageDescription registerPageAutopilot;
-    list.add(&registerPageAutopilot);
-    extern PageDescription registerPageEPropulsion;
-    list.add(&registerPageEPropulsion); */
+    logger->logDebug(GwLog::LOG,"Memory after registering pages: stack=%d, heap=%d", uxTaskGetStackHighWaterMark(NULL), ESP.getFreeHeap());
 }
 
 // Undervoltage detection for shutdown display
@@ -492,7 +490,7 @@ void OBP60Task(GwApi *api){
     startLedTask(api);
 #endif
     PageList allPages;
-    registerAllPages(allPages);
+    registerAllPages(logger, allPages);
     CommonData commonData;
     commonData.logger=logger;
     commonData.config=config;

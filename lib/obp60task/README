@@ -27,19 +27,22 @@ New pages
 ---------
 To create a new page for OBP60 the following steps are necessary:
 
-  1. Create a page under /lib/obp60task/PageXXXX.cpp
+  1. Create a page under /lib/obp60task/PageXXXX.cpp. You can use a simple
+     page e.g. PageOneValue.cpp as template
   2. Set page name in PageXXXX.cpp on file name
   3. Register new page in /lib/obp60task/obp60task.cpp in function
      'registerAllPages'
-  4. Add new page in /lib/obp60task/config.json for each page type or add 
-     new page to gen_set.py and run it to auto-generate the relevant 
-     section of config.json
+  4. Add new page in /lib/obp60task/config.json for each page type 
+     or use  gen_set.py to auto-generate the relevant  section of
+     config.json. For further information on that  read the comments
+     in gen_set.py.
   5. Copy the changes in config.json to config_obp40.json and rename
      strings accordingly. E.g. obp60 to obp40.
 
- 
 Using Gitpod
 ------------
+
+Warning: You have to register with gitpod!
 
 Open web page:
 https://gitpod.io/#https://github.com/norbert-walter/esp32-nmea2000-obp60/tree/master/lib/obp60task
