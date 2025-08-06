@@ -14,6 +14,7 @@
 typedef std::vector<GwApi::BoatValue *> ValueList;
 
 typedef struct{
+  GwApi *api;
   String pageName;
   uint8_t pageNumber; // page number in sequence of visible pages
   //the values will always contain the user defined values first

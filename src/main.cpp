@@ -333,6 +333,9 @@ public:
     status.n2kTx=countNMEA2KOut.getGlobal();
     channels.fillStatus(status);
   }
+  virtual Nmea2kTwai *getNMEA2000(){
+    return &NMEA2000;
+  }
   virtual GwBoatData *getBoatData(){
     return &boatData;
   }

@@ -976,6 +976,7 @@ void OBP60Task(GwApi *api){
                 if (systemPage) {
                     displayFooter(commonData);
                     PageData sysparams; // empty
+                    sysparams.api = api;
                     syspage->displayPage(sysparams);
                 }
                 else {

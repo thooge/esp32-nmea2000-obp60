@@ -7,6 +7,7 @@
 #include "images/logo64.xbm"
 #include <esp32/clk.h>
 #include "qrcode.h"
+#include "Nmea2kTwai.h"
 
 #ifdef BOARD_OBP40S3
 #include <SD.h>
@@ -529,6 +530,10 @@ public:
 
         // Logging page information
         LOG_DEBUG(GwLog::LOG,"Drawing at PageSystem, Mode=%c", mode);
+
+        // Get references from API
+        Nmea2kTwai *NMEA2000 = pageData.api->getNMEA2000();
+        LOG_DEBUG(GwLog::LOG,"N2k source address=%d", NMEA2000->GetN2kSource());
 
         // Set display in partial refresh mode
         epd->setPartialWindow(0, 0, epd->width(), epd->height());

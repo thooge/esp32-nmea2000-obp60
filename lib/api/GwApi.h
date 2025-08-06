@@ -2,6 +2,7 @@
 #define _GWAPI_H
 #include "GwMessage.h"
 #include "N2kMsg.h"
+#include "Nmea2kTwai.h"
 #include "NMEA0183Msg.h"
 #include "GWConfig.h"
 #include "GwBoatData.h"
@@ -222,6 +223,7 @@ class GwApi{
          * accessing boat data must only be executed from within the main thread
          * you need to use the request pattern as shown in GwExampleTask.cpp
          */
+        virtual Nmea2kTwai *getNMEA2000()=0;
         virtual GwBoatData *getBoatData()=0;
         virtual ~GwApi(){}
 };

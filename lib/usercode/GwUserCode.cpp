@@ -216,6 +216,10 @@ public:
     {
         return api->getLogger();
     }
+    virtual Nmea2kTwai *getNMEA2000()
+    {
+        return api->getNMEA2000();
+    }
     virtual GwBoatData *getBoatData()
     {
         return api->getBoatData();
