@@ -121,7 +121,13 @@ template<class T> class GwBoatItem : public GwBoatItemBase{
             if (! isValid(millis())) return defaultv;
             return data;
         }
-        virtual double getDoubleValue(){return (double)data;}
+        virtual double getDoubleValue(){
+            if constexpr (std::is_same<T, String>::value) {
+                return 0.0; // TODO any better ideas?
+            } else {
+                return (double)data;
+            }
+        }
         virtual void fillString();
         virtual void toJsonDoc(GwJsonDocument *doc, unsigned long minTime);
         virtual int getLastSource(){return lastUpdateSource;}

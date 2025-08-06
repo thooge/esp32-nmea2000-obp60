@@ -20,7 +20,7 @@ import getopt
 import re
 import json
 
-__version__ = "0.2"
+__version__ = "1.2"
 
 def detect_pages(filename):
     # returns a dictionary with page name and the number of gui fields
@@ -110,11 +110,10 @@ def create_json(device, no_of_pages, pagedata):
                 "description": "The display for field {}".format(number_to_text(field_no)),
                 "category": f"{device.upper()} Page {page_no}",
                 "capabilities": {device.lower(): "true"},
-                "condition": [
-                    {f"page{page_no}type": page}
-                    for page in pages
-                    if pagedata[page] >= field_no
-                ],
+                "condition": {
+                    f"page{page_no}type": [page for page in pages if pagedata[page] >= field_no],
+                    "visiblePages": [vp for vp in range(page_no, no_of_pages + 1)]
+                },
             }
             output.append(field_data)
 

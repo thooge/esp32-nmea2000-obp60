@@ -1423,35 +1423,31 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page1type": "Fluid"
-            },
-            {
-                "page1type": "FourValues"
-            },
-            {
-                "page1type": "FourValues2"
-            },
-            {
-                "page1type": "OneValue"
-            },
-            {
-                "page1type": "RollPitch"
-            },
-            {
-                "page1type": "SixValues"
-            },
-            {
-                "page1type": "ThreeValues"
-            },
-            {
-                "page1type": "TwoValues"
-            },
-            {
-                "page1type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page1type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page1value2",
@@ -1463,29 +1459,29 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page1type": "FourValues"
-            },
-            {
-                "page1type": "FourValues2"
-            },
-            {
-                "page1type": "RollPitch"
-            },
-            {
-                "page1type": "SixValues"
-            },
-            {
-                "page1type": "ThreeValues"
-            },
-            {
-                "page1type": "TwoValues"
-            },
-            {
-                "page1type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page1type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page1value3",
@@ -1497,23 +1493,27 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page1type": "FourValues"
-            },
-            {
-                "page1type": "FourValues2"
-            },
-            {
-                "page1type": "SixValues"
-            },
-            {
-                "page1type": "ThreeValues"
-            },
-            {
-                "page1type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page1type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page1value4",
@@ -1525,20 +1525,26 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page1type": "FourValues"
-            },
-            {
-                "page1type": "FourValues2"
-            },
-            {
-                "page1type": "SixValues"
-            },
-            {
-                "page1type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page1type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page1value5",
@@ -1550,14 +1556,24 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page1type": "SixValues"
-            },
-            {
-                "page1type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page1type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page1value6",
@@ -1569,14 +1585,24 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page1type": "SixValues"
-            },
-            {
-                "page1type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page1type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page1fluid",
@@ -1704,35 +1730,30 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page2type": "Fluid"
-            },
-            {
-                "page2type": "FourValues"
-            },
-            {
-                "page2type": "FourValues2"
-            },
-            {
-                "page2type": "OneValue"
-            },
-            {
-                "page2type": "RollPitch"
-            },
-            {
-                "page2type": "SixValues"
-            },
-            {
-                "page2type": "ThreeValues"
-            },
-            {
-                "page2type": "TwoValues"
-            },
-            {
-                "page2type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page2type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page2value2",
@@ -1744,29 +1765,28 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page2type": "FourValues"
-            },
-            {
-                "page2type": "FourValues2"
-            },
-            {
-                "page2type": "RollPitch"
-            },
-            {
-                "page2type": "SixValues"
-            },
-            {
-                "page2type": "ThreeValues"
-            },
-            {
-                "page2type": "TwoValues"
-            },
-            {
-                "page2type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page2type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page2value3",
@@ -1778,23 +1798,26 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page2type": "FourValues"
-            },
-            {
-                "page2type": "FourValues2"
-            },
-            {
-                "page2type": "SixValues"
-            },
-            {
-                "page2type": "ThreeValues"
-            },
-            {
-                "page2type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page2type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page2value4",
@@ -1806,20 +1829,25 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page2type": "FourValues"
-            },
-            {
-                "page2type": "FourValues2"
-            },
-            {
-                "page2type": "SixValues"
-            },
-            {
-                "page2type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page2type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page2value5",
@@ -1831,14 +1859,23 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page2type": "SixValues"
-            },
-            {
-                "page2type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page2type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page2value6",
@@ -1850,14 +1887,23 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page2type": "SixValues"
-            },
-            {
-                "page2type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page2type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page2fluid",
@@ -1982,35 +2028,29 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page3type": "Fluid"
-            },
-            {
-                "page3type": "FourValues"
-            },
-            {
-                "page3type": "FourValues2"
-            },
-            {
-                "page3type": "OneValue"
-            },
-            {
-                "page3type": "RollPitch"
-            },
-            {
-                "page3type": "SixValues"
-            },
-            {
-                "page3type": "ThreeValues"
-            },
-            {
-                "page3type": "TwoValues"
-            },
-            {
-                "page3type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page3type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page3value2",
@@ -2022,29 +2062,27 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page3type": "FourValues"
-            },
-            {
-                "page3type": "FourValues2"
-            },
-            {
-                "page3type": "RollPitch"
-            },
-            {
-                "page3type": "SixValues"
-            },
-            {
-                "page3type": "ThreeValues"
-            },
-            {
-                "page3type": "TwoValues"
-            },
-            {
-                "page3type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page3type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page3value3",
@@ -2056,23 +2094,25 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page3type": "FourValues"
-            },
-            {
-                "page3type": "FourValues2"
-            },
-            {
-                "page3type": "SixValues"
-            },
-            {
-                "page3type": "ThreeValues"
-            },
-            {
-                "page3type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page3type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page3value4",
@@ -2084,20 +2124,24 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page3type": "FourValues"
-            },
-            {
-                "page3type": "FourValues2"
-            },
-            {
-                "page3type": "SixValues"
-            },
-            {
-                "page3type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page3type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page3value5",
@@ -2109,14 +2153,22 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page3type": "SixValues"
-            },
-            {
-                "page3type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page3type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page3value6",
@@ -2128,14 +2180,22 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page3type": "SixValues"
-            },
-            {
-                "page3type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page3type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page3fluid",
@@ -2257,35 +2317,28 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page4type": "Fluid"
-            },
-            {
-                "page4type": "FourValues"
-            },
-            {
-                "page4type": "FourValues2"
-            },
-            {
-                "page4type": "OneValue"
-            },
-            {
-                "page4type": "RollPitch"
-            },
-            {
-                "page4type": "SixValues"
-            },
-            {
-                "page4type": "ThreeValues"
-            },
-            {
-                "page4type": "TwoValues"
-            },
-            {
-                "page4type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page4type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page4value2",
@@ -2297,29 +2350,26 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page4type": "FourValues"
-            },
-            {
-                "page4type": "FourValues2"
-            },
-            {
-                "page4type": "RollPitch"
-            },
-            {
-                "page4type": "SixValues"
-            },
-            {
-                "page4type": "ThreeValues"
-            },
-            {
-                "page4type": "TwoValues"
-            },
-            {
-                "page4type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page4type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page4value3",
@@ -2331,23 +2381,24 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page4type": "FourValues"
-            },
-            {
-                "page4type": "FourValues2"
-            },
-            {
-                "page4type": "SixValues"
-            },
-            {
-                "page4type": "ThreeValues"
-            },
-            {
-                "page4type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page4type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page4value4",
@@ -2359,20 +2410,23 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page4type": "FourValues"
-            },
-            {
-                "page4type": "FourValues2"
-            },
-            {
-                "page4type": "SixValues"
-            },
-            {
-                "page4type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page4type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page4value5",
@@ -2384,14 +2438,21 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page4type": "SixValues"
-            },
-            {
-                "page4type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page4type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page4value6",
@@ -2403,14 +2464,21 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page4type": "SixValues"
-            },
-            {
-                "page4type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page4type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page4fluid",
@@ -2529,35 +2597,27 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page5type": "Fluid"
-            },
-            {
-                "page5type": "FourValues"
-            },
-            {
-                "page5type": "FourValues2"
-            },
-            {
-                "page5type": "OneValue"
-            },
-            {
-                "page5type": "RollPitch"
-            },
-            {
-                "page5type": "SixValues"
-            },
-            {
-                "page5type": "ThreeValues"
-            },
-            {
-                "page5type": "TwoValues"
-            },
-            {
-                "page5type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page5type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page5value2",
@@ -2569,29 +2629,25 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page5type": "FourValues"
-            },
-            {
-                "page5type": "FourValues2"
-            },
-            {
-                "page5type": "RollPitch"
-            },
-            {
-                "page5type": "SixValues"
-            },
-            {
-                "page5type": "ThreeValues"
-            },
-            {
-                "page5type": "TwoValues"
-            },
-            {
-                "page5type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page5type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page5value3",
@@ -2603,23 +2659,23 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page5type": "FourValues"
-            },
-            {
-                "page5type": "FourValues2"
-            },
-            {
-                "page5type": "SixValues"
-            },
-            {
-                "page5type": "ThreeValues"
-            },
-            {
-                "page5type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page5type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page5value4",
@@ -2631,20 +2687,22 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page5type": "FourValues"
-            },
-            {
-                "page5type": "FourValues2"
-            },
-            {
-                "page5type": "SixValues"
-            },
-            {
-                "page5type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page5type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page5value5",
@@ -2656,14 +2714,20 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page5type": "SixValues"
-            },
-            {
-                "page5type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page5type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page5value6",
@@ -2675,14 +2739,20 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page5type": "SixValues"
-            },
-            {
-                "page5type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page5type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page5fluid",
@@ -2798,35 +2868,26 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page6type": "Fluid"
-            },
-            {
-                "page6type": "FourValues"
-            },
-            {
-                "page6type": "FourValues2"
-            },
-            {
-                "page6type": "OneValue"
-            },
-            {
-                "page6type": "RollPitch"
-            },
-            {
-                "page6type": "SixValues"
-            },
-            {
-                "page6type": "ThreeValues"
-            },
-            {
-                "page6type": "TwoValues"
-            },
-            {
-                "page6type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page6type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page6value2",
@@ -2838,29 +2899,24 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page6type": "FourValues"
-            },
-            {
-                "page6type": "FourValues2"
-            },
-            {
-                "page6type": "RollPitch"
-            },
-            {
-                "page6type": "SixValues"
-            },
-            {
-                "page6type": "ThreeValues"
-            },
-            {
-                "page6type": "TwoValues"
-            },
-            {
-                "page6type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page6type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page6value3",
@@ -2872,23 +2928,22 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page6type": "FourValues"
-            },
-            {
-                "page6type": "FourValues2"
-            },
-            {
-                "page6type": "SixValues"
-            },
-            {
-                "page6type": "ThreeValues"
-            },
-            {
-                "page6type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page6type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page6value4",
@@ -2900,20 +2955,21 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page6type": "FourValues"
-            },
-            {
-                "page6type": "FourValues2"
-            },
-            {
-                "page6type": "SixValues"
-            },
-            {
-                "page6type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page6type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page6value5",
@@ -2925,14 +2981,19 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page6type": "SixValues"
-            },
-            {
-                "page6type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page6type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page6value6",
@@ -2944,14 +3005,19 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page6type": "SixValues"
-            },
-            {
-                "page6type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page6type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page6fluid",
@@ -3064,35 +3130,25 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page7type": "Fluid"
-            },
-            {
-                "page7type": "FourValues"
-            },
-            {
-                "page7type": "FourValues2"
-            },
-            {
-                "page7type": "OneValue"
-            },
-            {
-                "page7type": "RollPitch"
-            },
-            {
-                "page7type": "SixValues"
-            },
-            {
-                "page7type": "ThreeValues"
-            },
-            {
-                "page7type": "TwoValues"
-            },
-            {
-                "page7type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page7type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page7value2",
@@ -3104,29 +3160,23 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page7type": "FourValues"
-            },
-            {
-                "page7type": "FourValues2"
-            },
-            {
-                "page7type": "RollPitch"
-            },
-            {
-                "page7type": "SixValues"
-            },
-            {
-                "page7type": "ThreeValues"
-            },
-            {
-                "page7type": "TwoValues"
-            },
-            {
-                "page7type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page7type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page7value3",
@@ -3138,23 +3188,21 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page7type": "FourValues"
-            },
-            {
-                "page7type": "FourValues2"
-            },
-            {
-                "page7type": "SixValues"
-            },
-            {
-                "page7type": "ThreeValues"
-            },
-            {
-                "page7type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page7type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page7value4",
@@ -3166,20 +3214,20 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page7type": "FourValues"
-            },
-            {
-                "page7type": "FourValues2"
-            },
-            {
-                "page7type": "SixValues"
-            },
-            {
-                "page7type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page7type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page7value5",
@@ -3191,14 +3239,18 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page7type": "SixValues"
-            },
-            {
-                "page7type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page7type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page7value6",
@@ -3210,14 +3262,18 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page7type": "SixValues"
-            },
-            {
-                "page7type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page7type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page7fluid",
@@ -3327,35 +3383,24 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page8type": "Fluid"
-            },
-            {
-                "page8type": "FourValues"
-            },
-            {
-                "page8type": "FourValues2"
-            },
-            {
-                "page8type": "OneValue"
-            },
-            {
-                "page8type": "RollPitch"
-            },
-            {
-                "page8type": "SixValues"
-            },
-            {
-                "page8type": "ThreeValues"
-            },
-            {
-                "page8type": "TwoValues"
-            },
-            {
-                "page8type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page8type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page8value2",
@@ -3367,29 +3412,22 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page8type": "FourValues"
-            },
-            {
-                "page8type": "FourValues2"
-            },
-            {
-                "page8type": "RollPitch"
-            },
-            {
-                "page8type": "SixValues"
-            },
-            {
-                "page8type": "ThreeValues"
-            },
-            {
-                "page8type": "TwoValues"
-            },
-            {
-                "page8type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page8type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page8value3",
@@ -3401,23 +3439,20 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page8type": "FourValues"
-            },
-            {
-                "page8type": "FourValues2"
-            },
-            {
-                "page8type": "SixValues"
-            },
-            {
-                "page8type": "ThreeValues"
-            },
-            {
-                "page8type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page8type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page8value4",
@@ -3429,20 +3464,19 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page8type": "FourValues"
-            },
-            {
-                "page8type": "FourValues2"
-            },
-            {
-                "page8type": "SixValues"
-            },
-            {
-                "page8type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page8type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page8value5",
@@ -3454,14 +3488,17 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page8type": "SixValues"
-            },
-            {
-                "page8type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page8type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page8value6",
@@ -3473,14 +3510,17 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page8type": "SixValues"
-            },
-            {
-                "page8type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page8type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page8fluid",
@@ -3587,35 +3627,23 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page9type": "Fluid"
-            },
-            {
-                "page9type": "FourValues"
-            },
-            {
-                "page9type": "FourValues2"
-            },
-            {
-                "page9type": "OneValue"
-            },
-            {
-                "page9type": "RollPitch"
-            },
-            {
-                "page9type": "SixValues"
-            },
-            {
-                "page9type": "ThreeValues"
-            },
-            {
-                "page9type": "TwoValues"
-            },
-            {
-                "page9type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page9type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page9value2",
@@ -3627,29 +3655,21 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page9type": "FourValues"
-            },
-            {
-                "page9type": "FourValues2"
-            },
-            {
-                "page9type": "RollPitch"
-            },
-            {
-                "page9type": "SixValues"
-            },
-            {
-                "page9type": "ThreeValues"
-            },
-            {
-                "page9type": "TwoValues"
-            },
-            {
-                "page9type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page9type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page9value3",
@@ -3661,23 +3681,19 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page9type": "FourValues"
-            },
-            {
-                "page9type": "FourValues2"
-            },
-            {
-                "page9type": "SixValues"
-            },
-            {
-                "page9type": "ThreeValues"
-            },
-            {
-                "page9type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page9type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page9value4",
@@ -3689,20 +3705,18 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page9type": "FourValues"
-            },
-            {
-                "page9type": "FourValues2"
-            },
-            {
-                "page9type": "SixValues"
-            },
-            {
-                "page9type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page9type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page9value5",
@@ -3714,14 +3728,16 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page9type": "SixValues"
-            },
-            {
-                "page9type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page9type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page9value6",
@@ -3733,14 +3749,16 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page9type": "SixValues"
-            },
-            {
-                "page9type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page9type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page9fluid",
@@ -3844,35 +3862,22 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page10type": "Fluid"
-            },
-            {
-                "page10type": "FourValues"
-            },
-            {
-                "page10type": "FourValues2"
-            },
-            {
-                "page10type": "OneValue"
-            },
-            {
-                "page10type": "RollPitch"
-            },
-            {
-                "page10type": "SixValues"
-            },
-            {
-                "page10type": "ThreeValues"
-            },
-            {
-                "page10type": "TwoValues"
-            },
-            {
-                "page10type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page10type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                10
+            ]
+        }
     },
     {
         "name": "page10value2",
@@ -3884,29 +3889,20 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page10type": "FourValues"
-            },
-            {
-                "page10type": "FourValues2"
-            },
-            {
-                "page10type": "RollPitch"
-            },
-            {
-                "page10type": "SixValues"
-            },
-            {
-                "page10type": "ThreeValues"
-            },
-            {
-                "page10type": "TwoValues"
-            },
-            {
-                "page10type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page10type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                10
+            ]
+        }
     },
     {
         "name": "page10value3",
@@ -3918,23 +3914,18 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page10type": "FourValues"
-            },
-            {
-                "page10type": "FourValues2"
-            },
-            {
-                "page10type": "SixValues"
-            },
-            {
-                "page10type": "ThreeValues"
-            },
-            {
-                "page10type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page10type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                10
+            ]
+        }
     },
     {
         "name": "page10value4",
@@ -3946,20 +3937,17 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page10type": "FourValues"
-            },
-            {
-                "page10type": "FourValues2"
-            },
-            {
-                "page10type": "SixValues"
-            },
-            {
-                "page10type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page10type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                10
+            ]
+        }
     },
     {
         "name": "page10value5",
@@ -3971,14 +3959,15 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page10type": "SixValues"
-            },
-            {
-                "page10type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page10type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                10
+            ]
+        }
     },
     {
         "name": "page10value6",
@@ -3990,14 +3979,15 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page10type": "SixValues"
-            },
-            {
-                "page10type": "WindRoseFlex"
-            }
-        ]
+        "condition": {
+            "page10type": [
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                10
+            ]
+        }
     },
     {
         "name": "page10fluid",
@@ -4046,4 +4036,3 @@
         ]
     }
 ]
-

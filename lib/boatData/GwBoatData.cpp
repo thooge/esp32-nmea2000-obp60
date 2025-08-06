@@ -254,6 +254,10 @@ static void writeToString(GwTextWriter *writer, const int16_t &value)
 {
     writer->writeInteger(value);
 }
+static void writeToString(GwTextWriter *writer, String value)
+{
+    writer->writeString(value.c_str());
+}
 static void writeToString(GwTextWriter *writer, GwSatInfoList &value)
 {
     writer->writeInteger(value.getNumSats());
