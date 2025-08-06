@@ -6,6 +6,7 @@
 #define GWTYPE_UINT32 2
 #define GWTYPE_UINT16 3
 #define GWTYPE_INT16 4
+#define GWTYPE_STRING 5
 #define GWTYPE_USER 100
 
 class GwBoatItemTypes
@@ -15,6 +16,7 @@ public:
     static int getType(const uint16_t &x) { return GWTYPE_UINT16; }
     static int getType(const int16_t &x) { return GWTYPE_INT16; }
     static int getType(const double &x) { return GWTYPE_DOUBLE; }
+    static int getType(const String &x) { return GWTYPE_STRING; }
     static int getType(const GwSatInfoList &x) { return GWTYPE_USER + 1; }
 };
 

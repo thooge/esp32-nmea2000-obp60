@@ -58,6 +58,7 @@ class GwBoatItemBase{
         GWSC(formatRot);
         GWSC(formatDate);
         GWSC(formatTime);
+        GWSC(formatName);
     protected:
         int type;
         unsigned long lastSet=0;
@@ -235,6 +236,7 @@ class GwBoatData{
     GWBOATDATA(double,XTE,formatXte) // cross track error
     GWBOATDATA(double,WPLat,formatLatitude) // waypoint latitude
     GWBOATDATA(double,WPLon,formatLongitude) // waypoint longitude
+    GWBOATDATA(String,WPName,formatName) // waypoint name
     GWSPECBOATDATA(GwBoatDataSatList,SatInfo,GwSatInfoList::toType,formatFixed0);
     public:
         GwBoatData(GwLog *logger, GwConfigHandler *cfg);
