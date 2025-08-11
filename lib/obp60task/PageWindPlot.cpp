@@ -118,7 +118,7 @@ public:
         GwConfigHandler* config = commonData->config;
         GwLog* logger = commonData->logger;
 
-        float twsValue; // TWS value in chart area
+//        float twsValue; // TWS value in chart area
         static String twdName, twdUnit; // TWD name and unit
         static int updFreq; // Update frequency for TWD
         static int16_t twdLowest, twdHighest; // TWD range
@@ -161,7 +161,7 @@ public:
         static int wndRight; // chart wind right value position
         static int chrtRng; // Range of wind values from mid wind value to min/max wind value in degrees
         int diffRng; // Difference between mid and current wind value
-        static const int dfltRng = 40; // Default range for chart
+        static const int dfltRng = 60; // Default range for chart
         int midWndDir; // New value for wndCenter after chart start / shift
         static int simTwd; // Simulation value for TWD
         static float simTws; // Simulation value for TWS
@@ -189,7 +189,7 @@ public:
             numNoData = 0;
             simTwd = pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg;
             simTws = 0;
-            twsValue = 0;
+//            twsValue = 0;
             bufStart = 0;
             oldDataIntv = 0;
             numAddedBufVals, currIdx, lastIdx = 0;
@@ -264,6 +264,7 @@ public:
             } else if (diffRng + 10 < chrtRng) { // Reduce chart range for higher resolution if possible
                 chrtRng = max(dfltRng, int((diffRng + (diffRng >= 0 ? 9 : -1)) / 10) * 10);
             }
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Range adjust: wndCenter: %d, diffRng: %d, chrtRng: %d", wndCenter, diffRng, chrtRng);
         }
         chrtScl = float(width) / float(chrtRng) / 2.0; // Chart scale: pixels per degree
         wndLeft = wndCenter - chrtRng;
@@ -331,8 +332,7 @@ public:
                     x = ((chrtVal - wndLeft + 360) % 360) * chrtScl;
                     y = yOffset + cHeight - i; // Position in chart area
 
-//                    if (i >= (numWndVals / dataIntv) - 10)
-                    if (i >= (numWndVals / dataIntv) - 1)
+                    if (i >= (numWndVals / dataIntv) - 1) // log chart data for 1 or more lines
                         LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Chart: i: %d, chrtVal: %d, bufStart: %d, count: %d, linesToShow: %d", i, chrtVal, bufStart, count, (numWndVals / dataIntv));
 
                     if ((i == 0) || (chrtPrevVal == INT16_MIN)) {
@@ -367,8 +367,11 @@ public:
                     int minWndDir = pageData.boatHstry.twdHstry->getMin(numWndVals) / 1000.0 * radToDeg;
                     int maxWndDir = pageData.boatHstry.twdHstry->getMax(numWndVals) / 1000.0 * radToDeg;
                     LOG_DEBUG(GwLog::DEBUG, "PageWindPlot FreeTop: Minimum: %d, Maximum: %d, OldwndCenter: %d", minWndDir, maxWndDir, wndCenter);
-//                    if ((minWndDir + 540 >= wndCenter + 540) || (maxWndDir + 540 <= wndCenter + 540)) {
-                    if (((minWndDir - wndCenter >= 0) && (minWndDir - wndCenter < 180)) || ((maxWndDir - wndCenter <= 0) && (maxWndDir - wndCenter >=180))) {
+                    // if (((minWndDir - wndCenter >= 0) && (minWndDir - wndCenter < 180)) || ((maxWndDir - wndCenter <= 0) && (maxWndDir - wndCenter >=180))) {
+                    if ((wndRight > wndCenter && (minWndDir >= wndCenter && minWndDir <= wndRight)) ||
+                        (wndRight <= wndCenter && (minWndDir >= wndCenter || minWndDir <= wndRight)) ||
+                        (wndLeft < wndCenter && (maxWndDir <= wndCenter && maxWndDir >= wndLeft)) ||
+                        (wndLeft >= wndCenter && (maxWndDir <= wndCenter || maxWndDir >= wndLeft))) {
                         // Check if all wind value are left or right of center value -> optimize chart range
                         midWndDir = pageData.boatHstry.twdHstry->getMid(numWndVals) / 1000.0 * radToDeg;
                         if (midWndDir != INT16_MIN) {
@@ -396,7 +399,7 @@ public:
             int xPosTws;
             static const int yPosTws = yOffset + 40;
 
-            twsValue = pageData.boatHstry.twsHstry->getLast() / 10.0 * 1.94384; // TWS value in knots
+//            twsValue = pageData.boatHstry.twsHstry->getLast() / 10.0 * 1.94384; // TWS value in knots
 
             xPosTws = flipTws ? 20 : width - 138;
             currentZone = (y >= yPosTws - 38) && (y <= yPosTws + 6) && (x >= xPosTws - 4) && (x <= xPosTws + 146) ? 1 : 0; // Define current zone for TWS value
@@ -424,12 +427,12 @@ public:
             }
             getdisplay().setFont(&Ubuntu_Bold12pt8b);
             getdisplay().setCursor(xPosTws + 82, yPosTws - 14);
-//            getdisplay().print("TWS"); // Name
+            //            getdisplay().print("TWS"); // Name
             getdisplay().print(BDataName[1]); // Name
             getdisplay().setFont(&Ubuntu_Bold8pt8b);
-//            getdisplay().setCursor(xPosTws + 78, yPosTws + 1);
+            //            getdisplay().setCursor(xPosTws + 78, yPosTws + 1);
             getdisplay().setCursor(xPosTws + 82, yPosTws + 1);
-//            getdisplay().printf(" kn"); // Unit
+            //            getdisplay().printf(" kn"); // Unit
             getdisplay().print(BDataUnit[1]); // Unit
         }
 
@@ -472,7 +475,7 @@ PageDescription registerPageWindPlot(
     createPage, // Action
     0, // Number of bus values depends on selection in Web configuration
     { "TWD", "TWS" }, // Bus values we need in the page
-//    {}, // Bus values we need in the page
+    //    {}, // Bus values we need in the page
     true // Show display header on/off
 );
 
