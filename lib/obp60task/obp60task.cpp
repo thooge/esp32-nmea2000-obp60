@@ -45,7 +45,7 @@ void OBP60Init(GwApi *api){
     String devicename = api->getConfig()->getConfigItem(api->getConfig()->deviceName,true)->asString();
     api->getConfig()->setValue(GwConfigDefinitions::systemName, devicename, GwConfigInterface::ConfigType::HIDDEN);
 
-    api->getLogger()->logDebug(GwLog::LOG,"obp60init running");
+    logger->logDebug(GwLog::LOG,"obp60init running");
     
     // Check I2C devices
     
@@ -54,7 +54,7 @@ void OBP60Init(GwApi *api){
 
     // Init power
     String powermode = api->getConfig()->getConfigItem(api->getConfig()->powerMode,true)->asString();
-    api->getLogger()->logDebug(GwLog::DEBUG,"Power Mode is: %s", powermode.c_str());
+    logger->logDebug(GwLog::DEBUG,"Power Mode is: %s", powermode.c_str());
     powerInit(powermode);
 
     #ifdef BOARD_OBP40S3
@@ -77,7 +77,7 @@ void OBP60Init(GwApi *api){
                    break;
             }
             uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-            LOG_DEBUG(GwLog::LOG,"SD card type %s of size %d MB detected", sdtype, cardSize);
+            logger->logDebug(GwLog::LOG,"SD card type %s of size %d MB detected", sdtype, cardSize);
         }
     }
 
@@ -89,7 +89,7 @@ void OBP60Init(GwApi *api){
 
     // Settings for e-paper display
     String fastrefresh = api->getConfig()->getConfigItem(api->getConfig()->fastRefresh,true)->asString();
-    api->getLogger()->logDebug(GwLog::DEBUG,"Fast Refresh Mode is: %s", fastrefresh.c_str());
+    logger->logDebug(GwLog::DEBUG,"Fast Refresh Mode is: %s", fastrefresh.c_str());
     #ifdef DISPLAY_GDEY042T81
     if(fastrefresh == "true"){
         static const bool useFastFullUpdate = true;   // Enable fast full display update only for GDEY042T81
@@ -108,11 +108,11 @@ void OBP60Init(GwApi *api){
 
     // Get CPU speed
     int freq = getCpuFrequencyMhz();
-    api->getLogger()->logDebug(GwLog::LOG,"CPU speed at boot: %i MHz", freq);
+    logger->logDebug(GwLog::LOG,"CPU speed at boot: %i MHz", freq);
     
     // Settings for backlight
     String backlightMode = api->getConfig()->getConfigItem(api->getConfig()->backlight,true)->asString();
-    api->getLogger()->logDebug(GwLog::DEBUG,"Backlight Mode is: %s", backlightMode.c_str());
+    logger->logDebug(GwLog::DEBUG,"Backlight Mode is: %s", backlightMode.c_str());
     uint brightness = uint(api->getConfig()->getConfigItem(api->getConfig()->blBrightness,true)->asInt());
     String backlightColor = api->getConfig()->getConfigItem(api->getConfig()->blColor,true)->asString();
     if(String(backlightMode) == "On"){
@@ -127,7 +127,7 @@ void OBP60Init(GwApi *api){
 
     // Settings flash LED mode
     String ledMode = api->getConfig()->getConfigItem(api->getConfig()->flashLED,true)->asString();
-    api->getLogger()->logDebug(GwLog::DEBUG,"LED Mode is: %s", ledMode.c_str());
+    logger->logDebug(GwLog::DEBUG,"LED Mode is: %s", ledMode.c_str());
     if(String(ledMode) == "Off"){
         setBlinkingLED(false);
     }

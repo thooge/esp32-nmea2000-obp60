@@ -47,9 +47,6 @@
 class PageSystem : public Page
 {
 private:
-    GwConfigHandler *config;
-    GwLog *logger;
-
     // NVRAM config options
     String flashLED;
 
@@ -72,6 +69,8 @@ private:
     double homelat;
     double homelon;
 
+    Nmea2kTwai *NMEA2000;
+
     char mode = 'N'; // (N)ormal, (S)ettings, (C)onfiguration, (D)evice list, c(A)rd
     int8_t editmode = -1; // marker for menu/edit/set function
 
@@ -93,6 +92,7 @@ private:
         } else {
             mode = 'N';
         }
+        if (hasFRAM) fram.write(FRAM_SYSTEM_MODE, mode);
     }
 
     void decMode() {
@@ -111,6 +111,7 @@ private:
         } else {
             mode = 'D';
         }
+        if (hasFRAM) fram.write(FRAM_SYSTEM_MODE, mode);
     }
 
     void displayModeNormal() {
@@ -381,6 +382,10 @@ private:
         epd->setCursor(20, 100);
         epd->print("TxD: ");
         epd->print(String(commonData->status.n2kTx));
+
+        epd->setCursor(20, 140);
+        epd->printf("N2k source address: %d", NMEA2000->GetN2kSource());
+
     }
 
    void storeConfig() {
@@ -393,9 +398,10 @@ public:
         config = commonData->config;
         logger = commonData->logger;
 
-        logger->logDebug(GwLog::LOG,"Instantiate PageSystem");
+        logger->logDebug(GwLog::LOG, "Instantiate PageSystem");
         if (hasFRAM) {
             mode = fram.read(FRAM_SYSTEM_MODE);
+            logger->logDebug(GwLog::LOG, "Loaded mode '%c' from FRAM", mode);
         }
         flashLED = common.config->getString(common.config->flashLED);
 
@@ -452,7 +458,6 @@ public:
         commonData->logger->logDebug(GwLog::LOG, "System keyboard handler");
         if (key == 2) {
             incMode();
-            if (hasFRAM) fram.write(FRAM_SYSTEM_MODE, mode);
             return 0;
         }
 #ifdef BOARD_OBP60S3
@@ -518,9 +523,15 @@ public:
         }
     }
 
+    void displayNew(PageData &pageData){
+    };
+
     int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
+        // GwConfigHandler *config = commonData->config;
+        // GwLog *logger = commonData->logger;
+
+        NMEA2000 = pageData.api->getNMEA2000();
+        logger->logDebug(GwLog::LOG, "PageSystem: N2k source address=%d", NMEA2000->GetN2kSource());
 
         // Optical warning by limit violation (unused)
         if(flashLED == "Limit Violation"){
@@ -529,11 +540,11 @@ public:
         }
 
         // Logging page information
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageSystem, Mode=%c", mode);
+        logger->logDebug(GwLog::LOG,"Drawing at PageSystem, Mode=%c", mode);
 
         // Get references from API
-        Nmea2kTwai *NMEA2000 = pageData.api->getNMEA2000();
-        LOG_DEBUG(GwLog::LOG,"N2k source address=%d", NMEA2000->GetN2kSource());
+        // NMEA2000 = pageData.api->getNMEA2000();
+        // LOG_DEBUG(GwLog::LOG,"N2k source address=%d", NMEA2000->GetN2kSource());
 
         // Set display in partial refresh mode
         epd->setPartialWindow(0, 0, epd->width(), epd->height());

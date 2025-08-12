@@ -1,0 +1,19 @@
+- fix unstable accesspoint availability
+
+- page refresh after page change and not connected to key codes
+
+- fix sd card code
+
+- config: getFloat, getDouble
+
+- dseg7 font to new version
+
+- new pages: ais, autopilot, epropulsion
+
+- automate config.json generation with extra_task.py
+
+- extend boatdata: ais, waypoints, alarms
+
+- page clock: sunrise / sunset in local time or UTC
+
+- implement alerts
