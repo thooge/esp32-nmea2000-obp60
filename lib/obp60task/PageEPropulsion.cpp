@@ -12,8 +12,6 @@
 class PageEPropulsion : public Page
 {
 private:
-    GwConfigHandler *config;
-    GwLog *logger;
     bool simulation = false;
     bool holdvalues = false;
     String flashLED;
@@ -48,11 +46,8 @@ private:
     }
 
 public:
-    PageEPropulsion(CommonData &common) 
+    PageEPropulsion(CommonData &common) : Page(common)
     {
-        commonData = &common;
-        config = commonData->config;
-        logger = commonData->logger;
         logger->logDebug(GwLog::LOG,"Instantiate PageEPropulsion");
 
         // preload configuration data

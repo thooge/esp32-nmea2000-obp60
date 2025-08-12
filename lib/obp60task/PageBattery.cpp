@@ -9,9 +9,9 @@ class PageBattery : public Page
     int average = 0; // Average type [0...3], 0=off, 1=10s, 2=60s, 3=300s
 
     public:
-    PageBattery(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageBattery");
+    PageBattery(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageBattery");
     }
 
     virtual void setupKeys(){
@@ -36,9 +36,7 @@ class PageBattery : public Page
     }
 
     int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
-        
+
         // Old values for hold function
         double value1 = 0;
         static String svalue1old = "";

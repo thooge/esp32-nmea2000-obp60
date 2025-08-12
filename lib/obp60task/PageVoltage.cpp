@@ -15,12 +15,9 @@ private:
     char mode = 'D';                    // display mode (A)nalog | (D)igital
 
 public:
-    PageVoltage(CommonData &common){
-        commonData = &common;
-        config = commonData->config;
-        logger = commonData->logger;
-
-        logger->logDebug(GwLog::LOG,"Instantiate PageVoltage");
+    PageVoltage(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageVoltage");
         if (hasFRAM) {
             average = fram.read(FRAM_VOLTAGE_AVG);
             trend = fram.read(FRAM_VOLTAGE_TREND);
@@ -29,17 +26,17 @@ public:
     }
 
     ~PageVoltage(){
-	    logger->logDebug(GwLog::LOG,"Destroy PageVoltage");
+	    logger->logDebug(GwLog::LOG, "Destroy PageVoltage");
 	}
 
-    virtual void setupKeys(){
+    void setupKeys(){
         Page::setupKeys();
         commonData->keydata[0].label = "AVG";
         commonData->keydata[1].label = "MODE";
         commonData->keydata[4].label = "TRD";
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key){
          // Change average
         if(key == 1){
             average ++;
@@ -109,9 +106,7 @@ public:
         epd->fillRect(x + 16, y + 11, 6, 3, color);
     }
 
-    int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
+    int displayPage(PageData &pageData) {
         
         // Get config data
         bool simulation = config->getBool(config->useSimuData);

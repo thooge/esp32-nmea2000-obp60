@@ -19,8 +19,6 @@
 class PageAIS : public Page
 {
 private:
-    GwConfigHandler *config;
-    GwLog *logger;
     bool simulation = false;
     bool holdvalues = false;
     String flashLED;
@@ -84,11 +82,8 @@ private:
     }
 
 public:
-    PageAIS(CommonData &common) 
+    PageAIS(CommonData &common) : Page(common)
     {
-        commonData = &common;
-        config = commonData->config;
-        logger = commonData->logger;
         logger->logDebug(GwLog::LOG,"Instantiate PageAIS");
 
         // preload configuration data

@@ -29,9 +29,9 @@ class PageCompass : public Page
     int WhichDataDisplay = ShowHDM; 
 
     public:
-    PageCompass(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageCompass");
+    PageCompass(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageCompass");
     }
 
     virtual void setupKeys(){
@@ -63,9 +63,7 @@ class PageCompass : public Page
     }
 
     int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
-    
+
         // Old values for hold function
         static String OldDataText[HowManyValues] = {"", "", "","", "", ""};
         static String OldDataUnits[HowManyValues] = {"", "", "","", "", ""};

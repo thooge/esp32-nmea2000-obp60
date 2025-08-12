@@ -7,10 +7,10 @@
 
 class PageFourValues2 : public Page
 {
-    public:
-    PageFourValues2(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageFourValues2");
+public:
+    PageFourValues2(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG,"Instantiate PageFourValues2");
     }
 
     virtual int handleKey(int key){
@@ -23,8 +23,6 @@ class PageFourValues2 : public Page
     }
 
     int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
 
         // Old values for hold function
         static String svalue1old = "";

@@ -6,10 +6,10 @@
 
 class PageBME280 : public Page
 {
-    public:
-    PageBME280(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageBME280");
+public:
+    PageBME280(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG,"Instantiate PageBME280");
     }
 
     virtual int handleKey(int key){
@@ -22,8 +22,6 @@ class PageBME280 : public Page
     }
 
     int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
 
         double value1 = 0;
         double value2 = 0;

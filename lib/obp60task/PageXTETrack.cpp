@@ -33,11 +33,11 @@ class PageXTETrack : public Page
     bool holdvalues = false;
 
     public:
-    PageXTETrack(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageXTETrack");
-        simulation = common.config->getBool(common.config->useSimuData);
-        holdvalues = common.config->getBool(common.config->holdvalues);
+    PageXTETrack(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageXTETrack");
+        simulation = config->getBool(config->useSimuData);
+        holdvalues = config->getBool(config->holdvalues);
     }
 
     void drawSegment(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,

@@ -13,17 +13,17 @@ bool trend = true;                  // Trend indicator [0|1], 0=off, 1=on
 double raw = 0;
 
 public:
-    PageBattery2(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageBattery2");
+    PageBattery2(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageBattery2");
     }
 
-    virtual void setupKeys(){
+    void setupKeys(){
         Page::setupKeys();
         commonData->keydata[0].label = "AVG";
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key) {
          // Change average
         if(key == 1){
             average ++;
@@ -45,11 +45,7 @@ public:
         return key;
     }
 
-    int displayPage(PageData &pageData)
-    {
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
-
+    int displayPage(PageData &pageData) {
         // Polynominal coefficients second order for battery energy level calculation
         // index 0 = Pb, 1 = Gel, 2 = AGM, 3 = LiFePo4
         float x0[4] = {+3082.5178, +1656.1571, +1316.8766, +14986.9336};    // Offset

@@ -10,13 +10,13 @@ class PageWindRose : public Page
 int16_t lp = 80;                    // Pointer length
 
 public:
-    PageWindRose(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageWindRose");
+    PageWindRose(CommonData &common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageWindRose");
     }
 
     // Key functions
-    virtual int handleKey(int key){
+    int handleKey(int key){
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -25,9 +25,7 @@ public:
         return key;
     }
 
-    int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
+    int displayPage(PageData &pageData) {
 
         static String svalue1old = "";
         static String unit1old = "";

@@ -12,8 +12,6 @@
 class PageAutopilot : public Page
 {
 private:
-    GwConfigHandler *config;
-    GwLog *logger;
     bool simulation = false;
     bool holdvalues = false;
     String flashLED;
@@ -48,12 +46,9 @@ private:
     }
 
 public:
-    PageAutopilot(CommonData &common) 
+    PageAutopilot(CommonData &common) : Page(common)
     {
-        commonData = &common;
-        config = commonData->config;
-        logger = commonData->logger;
-        logger->logDebug(GwLog::LOG,"Instantiate PageAutopilot");
+        logger->logDebug(GwLog::LOG, "Instantiate PageAutopilot");
 
         // preload configuration data
         simulation = config->getBool(config->useSimuData);

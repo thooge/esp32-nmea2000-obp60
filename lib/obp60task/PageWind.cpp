@@ -221,9 +221,9 @@ char mode = 'N';                    // page mode (N)ormal | (L)ens | e(X)ample
 char source = 'A';                  // data source (A)pparent | (T)rue
 
 public:
-    PageWind(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageWind");
+    PageWind(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageWind");
         if (hasFRAM) {
             lp = fram.read(FRAM_WIND_SIZE);
             source = fram.read(FRAM_WIND_SRC);
@@ -231,7 +231,7 @@ public:
         }
     }
 
-    virtual void setupKeys(){
+    void setupKeys(){
         Page::setupKeys();
         commonData->keydata[0].label = "MODE";
         if (mode == 'X') {
@@ -243,7 +243,7 @@ public:
     }
 
     // Key functions
-    virtual int handleKey(int key){
+    int handleKey(int key){
 
         if(key == 1){               // Mode switch
             if(mode == 'N'){
@@ -297,10 +297,7 @@ public:
         return key;
     }
 
-    int displayPage(PageData &pageData)
-    {
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
+    int displayPage(PageData &pageData) {
 
         static String svalue1old = "";
         static String unit1old = "";

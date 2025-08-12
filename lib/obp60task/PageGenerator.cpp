@@ -8,11 +8,12 @@
 class PageGenerator : public Page
 {
 public:
-    PageGenerator(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageGenerator");
+    PageGenerator(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageGenerator");
     }
-    virtual int handleKey(int key){
+
+    int handleKey(int key){
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -21,10 +22,7 @@ public:
         return key;
     }
 
-    int displayPage(PageData &pageData)
-    {
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
+    int displayPage(PageData &pageData) {
         
         // Get config data
         bool simulation = config->getBool(config->useSimuData);

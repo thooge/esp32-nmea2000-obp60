@@ -8,13 +8,13 @@
 class PageRudderPosition : public Page
 {
 public:
-    PageRudderPosition(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Show PageRudderPosition");
+    PageRudderPosition(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Show PageRudderPosition");
     }
 
     // Key functions
-    virtual int handleKey(int key){
+    int handleKey(int key){
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -23,9 +23,7 @@ public:
         return key;
     }
 
-   int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
+   int displayPage(PageData &pageData) {
 
         static String unit1old = "";
         double value1 = 0.1;

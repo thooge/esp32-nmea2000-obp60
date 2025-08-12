@@ -51,8 +51,6 @@ static unsigned char anchor_bits[] = {
 class PageAnchor : public Page
 {
 private:
-    GwConfigHandler *config;
-    GwLog *logger;
     bool simulation = false;
     bool holdvalues = false;
     String flashLED;
@@ -244,11 +242,8 @@ private:
     }
 
 public:
-    PageAnchor(CommonData &common) 
+    PageAnchor(CommonData &common) : Page(common)
     {
-        commonData = &common;
-        config = commonData->config;
-        logger = commonData->logger;
         logger->logDebug(GwLog::LOG,"Instantiate PageAnchor");
 
         // preload configuration data

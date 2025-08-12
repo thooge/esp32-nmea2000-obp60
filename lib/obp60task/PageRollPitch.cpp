@@ -7,13 +7,13 @@
 class PageRollPitch : public Page
 {
 public:
-    PageRollPitch(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageRollPitch");
+    PageRollPitch(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageRollPitch");
     }
 
     // Key functions
-    virtual int handleKey(int key){
+    int handleKey(int key){
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -22,9 +22,7 @@ public:
         return key;
     }
 
-    int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
+    int displayPage(PageData &pageData) {
 
         double value1 = 0;
         double value2 = 0;
@@ -32,7 +30,6 @@ public:
         String svalue1old = "";
         String svalue2 = "";
         String svalue2old = "";
-
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);

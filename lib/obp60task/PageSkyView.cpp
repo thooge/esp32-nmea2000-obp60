@@ -11,9 +11,9 @@
 class PageSkyView : public Page
 {
 public:
-    PageSkyView(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Show PageSkyView");
+    PageSkyView(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG,"Instantiate PageSkyView");
     }
 
     int handleKey(int key){
@@ -26,8 +26,6 @@ public:
     }
 
     int displayPage(PageData &pageData) {
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
 
         // Get config data
         String flashLED = config->getString(config->flashLED);
@@ -41,7 +39,7 @@ public:
         }
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageSkyView");
+        logger->logDebug(GwLog::LOG, "Drawing at PageSkyView");
 
         // Draw page
         //***********************************************************

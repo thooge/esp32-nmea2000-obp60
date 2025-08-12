@@ -267,7 +267,7 @@ private:
         for (int i = 0 ; i < menu->getItemCount(); i++) {
             ConfigMenuItem *itm = menu->getItemByIndex(i);
             if (!itm) {
-                LOG_DEBUG(GwLog::ERROR, "Menu item not found: %d", i);
+                logger->logDebug(GwLog::ERROR, "Menu item not found: %d", i);
             } else {
                 Rect r = menu->getItemRect(i);
                 bool inverted = (i == menu->getActiveIndex());
@@ -416,36 +416,33 @@ private:
    }
 
 public:
-    PageSystem(CommonData &common){
-        commonData = &common;
-        config = commonData->config;
-        logger = commonData->logger;
-
+    PageSystem(CommonData &common) : Page(common)
+    {
         logger->logDebug(GwLog::LOG, "Instantiate PageSystem");
         if (hasFRAM) {
             mode = fram.read(FRAM_SYSTEM_MODE);
             logger->logDebug(GwLog::LOG, "Loaded mode '%c' from FRAM", mode);
         }
-        flashLED = common.config->getString(common.config->flashLED);
+        flashLED = config->getString(config->flashLED);
 
         chipid = ESP.getEfuseMac();
-        simulation = common.config->getBool(common.config->useSimuData);
+        simulation = config->getBool(config->useSimuData);
 #ifdef BOARD_OBP40S3
-        sdcard = common.config->getBool(common.config->useSDCard);
+        sdcard = config->getBool(config->useSDCard);
 #endif
-        buzzer_mode = common.config->getString(common.config->buzzerMode);
+        buzzer_mode = config->getString(config->buzzerMode);
         buzzer_mode.toLowerCase();
-        buzzer_power = common.config->getInt(common.config->buzzerPower);
-        cpuspeed = common.config->getString(common.config->cpuSpeed);
-        env_module = common.config->getString(common.config->useEnvSensor);
-        rtc_module = common.config->getString(common.config->useRTC);
-        gps_module = common.config->getString(common.config->useGPS);
-        batt_sensor = common.config->getString(common.config->usePowSensor1);
-        solar_sensor = common.config->getString(common.config->usePowSensor2);
-        gen_sensor = common.config->getString(common.config->usePowSensor3);
-        rot_sensor = common.config->getString(common.config->useRotSensor);
-        homelat = common.config->getString(common.config->homeLAT).toDouble();
-        homelon = common.config->getString(common.config->homeLON).toDouble();
+        buzzer_power = config->getInt(config->buzzerPower);
+        cpuspeed = config->getString(config->cpuSpeed);
+        env_module = config->getString(config->useEnvSensor);
+        rtc_module = config->getString(config->useRTC);
+        gps_module = config->getString(config->useGPS);
+        batt_sensor = config->getString(config->usePowSensor1);
+        solar_sensor = config->getString(config->usePowSensor2);
+        gen_sensor = config->getString(config->usePowSensor3);
+        rot_sensor = config->getString(config->useRotSensor);
+        homelat = config->getString(config->homeLAT).toDouble();
+        homelon = config->getString(config->homeLON).toDouble();
 
         // CPU speed: 80 | 160 | 240
         // Power mode: Max | 5V | Min
@@ -478,7 +475,7 @@ public:
     virtual int handleKey(int key){
         // do *NOT* handle key #1 this handled by obp60task as exit
         // Switch display mode
-        commonData->logger->logDebug(GwLog::LOG, "System keyboard handler");
+        logger->logDebug(GwLog::LOG, "System keyboard handler");
         if (key == 2) {
             incMode();
             return 0;
@@ -547,14 +544,12 @@ public:
     }
 
     void displayNew(PageData &pageData){
+        // Get references from API
+        NMEA2000 = pageData.api->getNMEA2000();
     };
 
     int displayPage(PageData &pageData){
-        // GwConfigHandler *config = commonData->config;
-        // GwLog *logger = commonData->logger;
 
-        NMEA2000 = pageData.api->getNMEA2000();
-        logger->logDebug(GwLog::LOG, "PageSystem: N2k source address=%d", NMEA2000->GetN2kSource());
 
         // Optical warning by limit violation (unused)
         if(flashLED == "Limit Violation"){
@@ -563,11 +558,7 @@ public:
         }
 
         // Logging page information
-        logger->logDebug(GwLog::LOG,"Drawing at PageSystem, Mode=%c", mode);
-
-        // Get references from API
-        // NMEA2000 = pageData.api->getNMEA2000();
-        // LOG_DEBUG(GwLog::LOG,"N2k source address=%d", NMEA2000->GetN2kSource());
+        logger->logDebug(GwLog::LOG, "Drawing at PageSystem, Mode=%c", mode);
 
         // Set display in partial refresh mode
         epd->setPartialWindow(0, 0, epd->width(), epd->height());

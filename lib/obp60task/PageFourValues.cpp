@@ -7,13 +7,13 @@
 
 class PageFourValues : public Page
 {
-    public:
-    PageFourValues(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageFourValues");
+public:
+    PageFourValues(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageFourValues");
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key){
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -23,8 +23,6 @@ class PageFourValues : public Page
     }
 
     int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
 
         // Old values for hold function
         static String svalue1old = "";

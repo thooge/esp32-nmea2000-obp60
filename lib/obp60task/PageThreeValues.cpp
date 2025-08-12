@@ -8,12 +8,12 @@
 class PageThreeValues : public Page
 {
     public:
-    PageThreeValues(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageThreeValue");
+    PageThreeValues(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageThreeValue");
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key){
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -22,9 +22,7 @@ class PageThreeValues : public Page
         return key;
     }
 
-    int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
+    int displayPage(PageData &pageData) {
 
         // Old values for hold function
         static String svalue1old = "";

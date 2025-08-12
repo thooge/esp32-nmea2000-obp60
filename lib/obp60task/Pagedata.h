@@ -130,6 +130,12 @@ protected:
     GwConfigHandler *config;
     GwLog *logger;
 public:
+    Page(){}
+    Page(CommonData &common) {
+        commonData = &common;
+        config = commonData->config;
+        logger = commonData->logger;
+    }
     int refreshtime = 1000;
     virtual int displayPage(PageData &pageData)=0;
     virtual void displayNew(PageData &pageData){}

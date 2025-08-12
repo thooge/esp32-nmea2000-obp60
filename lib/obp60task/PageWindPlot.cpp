@@ -57,13 +57,12 @@ class PageWindPlot : public Page {
     bool showTWS = true; // Show TWS value in chart area
 
 public:
-    PageWindPlot(CommonData& common)
+    PageWindPlot(CommonData& common) : Page(common)
     {
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG, "Instantiate PageWindPlot");
+        logger->logDebug(GwLog::LOG, "Instantiate PageWindPlot");
     }
 
-    virtual void setupKeys()
+    void setupKeys()
     {
         Page::setupKeys();
         //        commonData->keydata[0].label = "MODE";
@@ -72,7 +71,7 @@ public:
     }
 
     // Key functions
-    virtual int handleKey(int key)
+    int handleKey(int key)
     {
         // Set chart mode TWD | TWS -> to be implemented
         if (key == 1) {
@@ -114,10 +113,7 @@ public:
         return key;
     }
 
-    int displayPage(PageData& pageData)
-    {
-        GwConfigHandler* config = commonData->config;
-        GwLog* logger = commonData->logger;
+    int displayPage(PageData& pageData) {
 
         float twsValue; // TWS value in chart area
         static String twdName, twdUnit; // TWD name and unit

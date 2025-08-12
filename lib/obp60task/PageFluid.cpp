@@ -75,11 +75,11 @@ class PageFluid : public Page
     int fluidtype;
 
     public:
-    PageFluid(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageFluid");
-        simulation = common.config->getBool(common.config->useSimuData);
-        holdvalues = common.config->getBool(common.config->holdvalues);
+    PageFluid(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG,"Instantiate PageFluid");
+        simulation = config->getBool(config->useSimuData);
+        holdvalues = config->getBool(config->holdvalues);
         simval = double(random(0, 100));
         simgoto = double(random(0, 100));
         simstep = (simgoto - simval) / 20.0;
@@ -95,13 +95,11 @@ class PageFluid : public Page
     }
 
     virtual void displayNew(PageData &pageData){
-        fluidtype = commonData->config->getInt("page" + String(pageData.pageNumber) + "fluid", 0);
-        commonData->logger->logDebug(GwLog::LOG,"New PageFluid: fluidtype=%d", fluidtype);
+        fluidtype = config->getInt("page" + String(pageData.pageNumber) + "fluid", 0);
+        logger->logDebug(GwLog::LOG, "New PageFluid: fluidtype=%d", fluidtype);
     }
 
     int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
 
         // Old values for hold function
         static double value1old;

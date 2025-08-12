@@ -17,9 +17,9 @@ class PageWhite : public Page
 char mode = 'W';  // display mode (W)hite | (L)ogo | (M)FD logo
 
 public:
-    PageWhite(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageWhite");
+    PageWhite(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageWhite");
         refreshtime = 15000;
     }
 
@@ -39,8 +39,6 @@ public:
     }
 
     int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
 
         // Get config data
         String flashLED = config->getString(config->flashLED);

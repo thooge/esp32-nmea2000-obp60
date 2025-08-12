@@ -7,9 +7,9 @@
 class PageDST810 : public Page
 {
 public:
-    PageDST810(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageDST810");
+    PageDST810(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageDST810");
     }
 
     virtual int handleKey(int key){
@@ -22,8 +22,6 @@ public:
     }
 
     int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
 
         // Old values for hold function
         static String svalue1old = "";

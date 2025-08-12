@@ -17,34 +17,35 @@
 
 class PageClock : public Page
 {
-bool simulation = false;
-int simtime;
-bool keylock = false;
-char source = 'R';  // time source (R)TC | (G)PS | (N)TP
-char mode = 'A';    // display mode (A)nalog | (D)igital | race (T)imer
-char tz = 'L';      // time zone (L)ocal | (U)TC
-double timezone = 0; // there are timezones with non int offsets, e.g. 5.5 or 5.75
-double homelat;
-double homelon;
-bool homevalid = false; // homelat and homelon are valid
+private:
+    bool simulation = false;
+    int simtime;
+    bool keylock = false;
+    char source = 'R';  // time source (R)TC | (G)PS | (N)TP
+    char mode = 'A';    // display mode (A)nalog | (D)igital | race (T)imer
+    char tz = 'L';      // time zone (L)ocal | (U)TC
+    double timezone = 0; // there are timezones with non int offsets, e.g. 5.5 or 5.75
+    double homelat;
+    double homelon;
+    bool homevalid = false; // homelat and homelon are valid
 
-    public:
-    PageClock(CommonData &common){
-        commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageClock");
+public:
+    PageClock(CommonData &common) : Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageClock");
 
         // WIP time source
 #ifdef BOARD_OBP60S3
-        String use_rtc = common.config->getString(common.config->useRTC);
+        String use_rtc = config->getString(config->useRTC);
         if (use_rtc == "off") {
             source = 'G';
         }
 #endif
 
-        simulation = common.config->getBool(common.config->useSimuData);
-        timezone = common.config->getString(common.config->timeZone).toDouble();
-        homelat = common.config->getString(common.config->homeLAT).toDouble();
-        homelon = common.config->getString(common.config->homeLON).toDouble();
+        simulation = config->getBool(config->useSimuData);
+        timezone = config->getString(config->timeZone).toDouble();
+        homelat = config->getString(config->homeLAT).toDouble();
+        homelon = config->getString(config->homeLON).toDouble();
         homevalid = homelat >= -180.0 and homelat <= 180 and homelon >= -90.0 and homelon <= 90.0;
         simtime = 38160; // time value 11:36
     }
@@ -97,9 +98,6 @@ bool homevalid = false; // homelat and homelon are valid
 
     int displayPage(PageData &pageData)
     {
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
-
         static String svalue1old = "";
         static String unit1old = "";
         static String svalue2old = "";
