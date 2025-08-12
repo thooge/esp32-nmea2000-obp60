@@ -192,6 +192,29 @@ private:
         }
 #endif
 
+        // Uptime
+        int64_t uptime = esp_timer_get_time() / 1000000;
+        String uptime_unit;
+        if (uptime < 120) {
+            uptime_unit = " seconds";
+        } else {
+            if (uptime < 2 * 3600) {
+                uptime /= 60;
+                uptime_unit = " minutes";
+            } else if (uptime < 2 * 3600 * 24) {
+                uptime /= 3600;
+                uptime_unit = " hours";
+            } else {
+                uptime /= 86400;
+                uptime_unit = " days";
+            }
+        }
+        epd->setCursor(8, y0 + 80);
+        epd->print("Uptime:");
+        epd->setCursor(90, y0 + 80);
+        epd->print(uptime);
+        epd->print(uptime_unit);
+
         // CPU speed config / active
         epd->setCursor(202, y0);
         epd->print("CPU speed:");
