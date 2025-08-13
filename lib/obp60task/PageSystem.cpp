@@ -9,9 +9,11 @@
 #include "qrcode.h"
 #include "Nmea2kTwai.h"
 
+
 #ifdef BOARD_OBP40S3
-#include <SD.h>
-#include <FS.h>
+// #include <SD.h>
+// #include <FS.h>
+#include "dirent.h"
 #endif
 
 #define STRINGIZE_IMPL(x) #x
@@ -54,7 +56,7 @@ private:
 
     uint64_t chipid;
     bool simulation;
-    bool sdcard;
+    bool use_sdcard;
     String buzzer_mode;
     uint8_t buzzer_power;
     String cpuspeed;
@@ -84,7 +86,7 @@ private:
         } else if (mode == 'C') { // Config
             mode = 'D';
         } else if (mode == 'D') { // Device list
-            if (sdcard) {
+            if (use_sdcard) {
                 mode = 'A';       // SD-Card
             } else {
                 mode = 'N';
@@ -97,7 +99,7 @@ private:
 
     void decMode() {
         if (mode == 'N') {
-            if (sdcard) {
+            if (use_sdcard) {
                 mode = 'A';
             } else {
                 mode = 'D';
@@ -184,9 +186,10 @@ private:
         epd->setCursor(8, y0 + 48);
         epd->print("SD-Card:");
         epd->setCursor(90, y0 + 48);
-        if (sdcard) {
-            uint64_t cardsize = SD.cardSize() / (1024 * 1024);
-            epd->print(String(cardsize) + String(" MB"));
+        if (hasSDCard) {
+            uint64_t cardsize = ((uint64_t) sdcard->csd.capacity) * sdcard->csd.sector_size / (1024 * 1024);
+            // epd->print(String(cardsize) + String(" MB"));
+            epd->printf("%llu MB", cardsize);
         } else {
             epd->print("off");
         }
@@ -385,11 +388,98 @@ private:
 
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(8, 48);
-        epd->print("SD Card info");
+        epd->print("SD card info");
 
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(x0, y0);
         epd->print("Work in progress...");
+
+        // TODO directories IMG, MAP, HIST should exist.
+        // Show state: Files and used size
+
+        // Simple test for one file in root
+        epd->setCursor(x0, y0 + 32);
+        String file_test = MOUNT_POINT "/IMG/icon-settings2.pbm";
+        logger->logDebug(GwLog::LOG, "Testfile: %s", file_test.c_str());
+        struct stat st;
+        if (stat(file_test.c_str(), &st) == 0) {
+            epd->printf("File %s exists", file_test.c_str());
+        } else {
+            epd->printf("File %s not found", file_test.c_str());
+        }
+
+        // Root directory check
+        DIR* dir = opendir(MOUNT_POINT);
+        if (dir != NULL) {
+            logger->logDebug(GwLog::LOG, "Root directory: %s", MOUNT_POINT);
+            struct dirent* entry;
+            while ((entry = readdir(dir)) != NULL) {
+                logger->logDebug(GwLog::LOG, "    %s type %d", entry->d_name, entry->d_type);
+                // type 1 is file
+                // type 2 is dir
+            }
+            closedir(dir);
+        } else {
+            logger->logDebug(GwLog::LOG, "Failed to open root directory");
+        }
+
+        // try to load example pbm file 
+        // TODO create PBM load function in imglib
+        String filepath = MOUNT_POINT "/IMG/icon-settings2.pbm";
+        const char* file_img = filepath.c_str();
+        FILE* fh = fopen(file_img, "r");
+        if (fh != NULL) {
+            logger->logDebug(GwLog::LOG, "Open file for reading: %s", file_img);
+
+            char magic[3];
+            char buffer[80];
+
+            // 2 Byte Magic: P1=ASCII, P4=Binary
+            fgets(magic, sizeof(magic), fh);
+            if (strcmp(magic, "P1") != 0) {
+                logger->logDebug(GwLog::LOG, "Not a valid PBM file of type P1 (%s)", magic);
+            } else {
+                uint16_t width = 0;
+                uint16_t height = 0;
+                while (fgets(buffer, sizeof(buffer), fh)) {
+                     // logger->logDebug(GwLog::LOG, "%s", buffer);
+                     if (buffer[0] == '#') {
+                         continue; // skip comment
+                     }
+                     if (sscanf(buffer, "%d %d", &width, &height) == 2) {
+                         break;
+                     }
+                }
+                logger->logDebug(GwLog::LOG, "Image: %dx%d", width, height);
+            }
+
+            /*size_t bytesRead = fread(buffer, sizeof(char), sizeof(buffer) - 1, fh);
+            buffer[bytesRead] = '\0';  // Null-terminate the string
+            if (bytesRead > 0) {
+                logger->logDebug(GwLog::LOG, "Read %d bytes", bytesRead);
+                logger->logDebug(GwLog::LOG, ">%s<", buffer);
+            } */
+
+            /*  WIP
+            // Read pixel data and pack into the buffer
+            for (int i = 0; i < width * height; i++) {
+                int pixel;
+                fscanf(file, "%d", &pixel);
+
+                // Calculate the byte index and bit position
+                int byteIndex = i / 8;
+                int bitPosition = 7 - (i % 8); // Store MSB first
+
+                // Set the corresponding bit in the byte
+                if (pixel == 1) {
+                    buffer[byteIndex] |= (1 << bitPosition);
+                }
+            }
+            */
+
+            fclose(fh);
+            // epd->drawXBitmap(20, 200, buffer, width, height, commonData.fgcolor);
+        }
     }
 
     void displayModeDevicelist() {
@@ -428,7 +518,7 @@ public:
         chipid = ESP.getEfuseMac();
         simulation = config->getBool(config->useSimuData);
 #ifdef BOARD_OBP40S3
-        sdcard = config->getBool(config->useSDCard);
+        use_sdcard = config->getBool(config->useSDCard);
 #endif
         buzzer_mode = config->getString(config->buzzerMode);
         buzzer_mode.toLowerCase();
@@ -461,9 +551,12 @@ public:
         newitem = menu->addItem("simulation", "Simulation", "on/off", 0, "");
         menu->setItemActive("accesspoint");
 
+        // Create info-file if not exists
+        // TODO
+
     }
 
-    virtual void setupKeys(){
+    void setupKeys() {
         commonData->keydata[0].label = "EXIT";
         commonData->keydata[1].label = "MODE";
         commonData->keydata[2].label = "";
@@ -472,7 +565,7 @@ public:
         commonData->keydata[5].label = "ILUM";
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key) {
         // do *NOT* handle key #1 this handled by obp60task as exit
         // Switch display mode
         logger->logDebug(GwLog::LOG, "System keyboard handler");
@@ -491,7 +584,8 @@ public:
         }
         // standby / deep sleep
         if (key == 5) {
-           deepSleep(*commonData);
+            logger->logDebug(GwLog::LOG, "System going into deep sleep mode...");
+            deepSleep(*commonData);
         }
         // Code for keylock
         if (key == 11) {
@@ -511,6 +605,7 @@ public:
         }
         // standby / deep sleep
         if (key == 12) {
+            logger->logDebug(GwLog::LOG, "System going into deep sleep mode...");
             deepSleep(*commonData);
         }
 #endif
@@ -543,13 +638,13 @@ public:
         }
     }
 
-    void displayNew(PageData &pageData){
+    void displayNew(PageData &pageData) {
         // Get references from API
+        logger->logDebug(GwLog::LOG, "New page display: PageSystem");
         NMEA2000 = pageData.api->getNMEA2000();
     };
 
-    int displayPage(PageData &pageData){
-
+    int displayPage(PageData &pageData) {
 
         // Optical warning by limit violation (unused)
         if(flashLED == "Limit Violation"){

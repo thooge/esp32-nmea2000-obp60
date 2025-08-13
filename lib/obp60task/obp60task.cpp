@@ -19,8 +19,6 @@
 
 #ifdef BOARD_OBP40S3
 #include "driver/rtc_io.h"              // Needs for weakup from deep sleep
-#include <FS.h>                         // SD-Card access
-#include <SD.h>
 #include <SPI.h>
 #endif
 
@@ -42,45 +40,23 @@ void OBP60Init(GwApi *api){
     GwConfigHandler *config = api->getConfig();
 
     // Set a new device name and hidden the original name in the main config
-    String devicename = api->getConfig()->getConfigItem(api->getConfig()->deviceName,true)->asString();
-    api->getConfig()->setValue(GwConfigDefinitions::systemName, devicename, GwConfigInterface::ConfigType::HIDDEN);
+    String devicename = config->getConfigItem(config->deviceName, true)->asString();
+    config->setValue(GwConfigDefinitions::systemName, devicename, GwConfigInterface::ConfigType::HIDDEN);
 
+    logger->prefix = devicename + ":";
     logger->logDebug(GwLog::LOG,"obp60init running");
-    
+
     // Check I2C devices
-    
+
+    // Init power
+    String powermode = config->getConfigItem(config->powerMode,true)->asString();
+    logger->logDebug(GwLog::DEBUG, "Power Mode is: %s", powermode.c_str());
+    powerInit(powermode);
+
     // Init hardware
     hardwareInit(api);
 
-    // Init power
-    String powermode = api->getConfig()->getConfigItem(api->getConfig()->powerMode,true)->asString();
-    logger->logDebug(GwLog::DEBUG,"Power Mode is: %s", powermode.c_str());
-    powerInit(powermode);
-
-    #ifdef BOARD_OBP40S3
-    bool sdcard = config->getBool(config->useSDCard);
-    if (sdcard) {
-        SPIClass SD_SPI = SPIClass(HSPI);
-        SD_SPI.begin(SD_SPI_CLK, SD_SPI_MISO, SD_SPI_MOSI);
-        if (SD.begin(SD_SPI_CS, SD_SPI, 80000000)) {
-            String sdtype = "unknown";
-            uint8_t cardType = SD.cardType();
-            switch (cardType) {
-                case CARD_MMC:
-                   sdtype = "MMC";
-                   break;
-                case CARD_SD:
-                   sdtype = "SDSC";
-                   break;
-                case CARD_SDHC:
-                   sdtype = "SDHC";
-                   break;
-            }
-            uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-            logger->logDebug(GwLog::LOG,"SD card type %s of size %d MB detected", sdtype, cardSize);
-        }
-    }
-
+#ifdef BOARD_OBP40S3
     // Deep sleep wakeup configuration
     esp_sleep_enable_ext0_wakeup(OBP_WAKEWUP_PIN, 0);   // 1 = High, 0 = Low
     rtc_gpio_pullup_en(OBP_WAKEWUP_PIN);                // Activate pullup resistor
@@ -695,9 +671,9 @@ void OBP60Task(GwApi *api){
     double homelon = commonData.config->getString(commonData.config->homeLON).toDouble();
     bool homevalid = homelat >= -180.0 and homelat <= 180 and homelon >= -90.0 and homelon <= 90.0;
     if (homevalid) {
-        LOG_DEBUG(GwLog::LOG, "Home location set to %f : %f", homelat, homelon);
+        logger->logDebug(GwLog::LOG, "Home location set to lat=%f, lon=%f", homelat, homelon);
     } else {
-        LOG_DEBUG(GwLog::LOG, "No valid home location found");
+        logger->logDebug(GwLog::LOG, "No valid home location found");
     }
 
     // refreshmode defined in init section
@@ -729,6 +705,7 @@ void OBP60Task(GwApi *api){
     //####################################################################################
 
     bool systemPage = false;
+    bool systemPageNew = false;
     Page *currentPage;
     while (true){
         delay(100);     // Delay 100ms (loop time)
@@ -781,6 +758,7 @@ void OBP60Task(GwApi *api){
                     systemPage = true; // System page is out of band
                     syspage->setupKeys();
                     keyboardMessage = 0;
+                    systemPageNew = true;
                 }
                 else {
                     currentPage = pages[pageNumber].page;
@@ -977,6 +955,10 @@ void OBP60Task(GwApi *api){
                     displayFooter(commonData);
                     PageData sysparams; // empty
                     sysparams.api = api;
+                    if (systemPageNew) {
+                        syspage->displayNew(sysparams);
+                        systemPageNew = false;
+                    }
                     syspage->displayPage(sysparams);
                 }
                 else {

@@ -83,12 +83,12 @@ static size_t ledsToBuffer(int numLeds,const Color *leds,uint8_t *buffer){
 bool prepareGpio(GwLog *logger, uint8_t pin){
     esp_err_t err=gpio_set_direction((gpio_num_t)pin,GPIO_MODE_OUTPUT);
     if (err != ESP_OK){
-        LOG_DEBUG(GwLog::ERROR,"unable to set gpio mode for %d: %d",pin,(int)err);
+        logger->logDebug(GwLog::ERROR, "unable to set gpio mode for %d: %d", pin, (int)err);
         return false;
     }
     err=gpio_set_level((gpio_num_t)pin,0);
     if (err != ESP_OK){
-        LOG_DEBUG(GwLog::ERROR,"unable to set gpio level for %d: %d",pin,(int)err);
+        logger->logDebug(GwLog::ERROR, "unable to set gpio level for %d: %d", pin, (int)err);
         return false;
     }
     return true;
@@ -114,8 +114,8 @@ bool prepareSpi(GwLog *logger,spi_host_device_t bus,spi_device_handle_t *device)
         };   
     esp_err_t err=spi_bus_initialize(bus,&buscfg,SPI_DMA_CH_AUTO);    
     if (err != ESP_OK){
-        LOG_DEBUG(GwLog::ERROR,"unable to initialize SPI bus %d,mosi=%d, error=%d",
-        (int)bus,-1,(int)err);
+        logger->logDebug(GwLog::ERROR, "unable to initialize SPI bus %d,mosi=%d, error=%d",
+            (int)bus, -1, (int)err);
         return false;
     }
     spi_device_interface_config_t devcfg = {
@@ -133,16 +133,16 @@ bool prepareSpi(GwLog *logger,spi_host_device_t bus,spi_device_handle_t *device)
         };
     err=spi_bus_add_device(bus,&devcfg,device);
     if (err != ESP_OK){
-        LOG_DEBUG(GwLog::ERROR,"unable to add device to SPI bus %d,mosi=%d, error=%d",
-        (int)bus,-1,(int)err);
+        logger->logDebug(GwLog::ERROR, "unable to add device to SPI bus %d,mosi=%d, error=%d",
+            (int)bus, -1, (int)err);
         return false;
     }
     //slightly speed up the transactions
     //as we are the only ones using the bus we can safely acquire it forever
     err=spi_device_acquire_bus(*device,portMAX_DELAY);
     if (err != ESP_OK){
-        LOG_DEBUG(GwLog::ERROR,"unable to acquire SPI bus %d,mosi=%d, error=%d",
-        (int)bus,-1,(int)err);
+        logger->logDebug(GwLog::ERROR,"unable to acquire SPI bus %d,mosi=%d, error=%d",
+            (int)bus, -1, (int)err);
         return false;
     }
     return true;
@@ -172,7 +172,7 @@ bool sendToLeds(GwLog *logger, uint8_t pin, int numLeds, Color *leds, spi_host_d
         buffer = (uint8_t *)heap_caps_malloc(bufferSize, MALLOC_CAP_DMA|MALLOC_CAP_32BIT);
         if (!buffer)
         {
-            LOG_DEBUG(GwLog::ERROR, "unable to allocate %d bytes of DMA buffer", (int)bufferSize);
+            logger->logDebug(GwLog::ERROR, "unable to allocate %d bytes of DMA buffer", (int)bufferSize);
             return false;
         }
     }
@@ -193,12 +193,12 @@ bool sendToLeds(GwLog *logger, uint8_t pin, int numLeds, Color *leds, spi_host_d
     int64_t end = esp_timer_get_time();
     if (ret != ESP_OK)
     {
-        LOG_DEBUG(GwLog::ERROR, "unable to send led data: %d", (int)ret);
+        logger->logDebug(GwLog::ERROR, "unable to send led data: %d", (int)ret);
         rv = false;
     }
     else
     {
-        LOG_DEBUG(GwLog::DEBUG, "successfully send led data for %d leds, %lld us", numLeds, end - now);
+        logger->logDebug(GwLog::DEBUG, "successfully send led data for %d leds, %lld us", numLeds, end - now);
     }
     if (ownsBuffer)
     {
@@ -211,10 +211,10 @@ bool sendToLeds(GwLog *logger, uint8_t pin, int numLeds, Color *leds, spi_host_d
 void handleSpiLeds(void *param){
     LedTaskData *taskData=(LedTaskData*)param;
     GwLog *logger=taskData->api->getLogger();
-    LOG_DEBUG(GwLog::ERROR,"spi led task initialized");
+    logger->logDebug(GwLog::ERROR, "spi led task initialized");
     spi_host_device_t bus=SPI3_HOST;
     bool spiValid=false;
-    LOG_DEBUG(GwLog::ERROR,"SpiLed task started");
+    LOG_DEBUG(GwLog::ERROR, "SpiLed task started");
     
     if (! prepareGpio(logger,OBP_FLASH_LED)){
         EXIT_TASK;
@@ -233,15 +233,15 @@ void handleSpiLeds(void *param){
         LedInterface newLeds=taskData->getLedData();
         if (first || current.backlightChanged(newLeds) || current.flasChanged(newLeds)){
             first=false;
-            LOG_DEBUG(GwLog::ERROR,"handle SPI leds");
+            logger->logDebug(GwLog::ERROR, "handle SPI leds");
             if (current.backlightChanged(newLeds) || first){
-                LOG_DEBUG(GwLog::ERROR,"setting backlight r=%02d,g=%02d,b=%02d",
-                 newLeds.backlight[0].r,newLeds.backlight[0].g,newLeds.backlight[0].b);
+                logger->logDebug(GwLog::ERROR, "setting backlight r=%02d,g=%02d,b=%02d",
+                    newLeds.backlight[0].r,newLeds.backlight[0].g,newLeds.backlight[0].b);
                 sendToLeds(logger,OBP_BACKLIGHT_LED,newLeds.backlightLen(),newLeds.backlight,bus,device);
             }
             if (current.flasChanged(newLeds) || first){
-                LOG_DEBUG(GwLog::ERROR,"setting flashr=%02d,g=%02d,b=%02d",
-                 newLeds.flash[0].r,newLeds.flash[0].g,newLeds.flash[0].b);
+                logger->logDebug(GwLog::ERROR, "setting flashr=%02d,g=%02d,b=%02d",
+                    newLeds.flash[0].r,newLeds.flash[0].g,newLeds.flash[0].b);
                 sendToLeds(logger,OBP_FLASH_LED,newLeds.flashLen(),newLeds.flash,bus,device);
             }
             current=newLeds;

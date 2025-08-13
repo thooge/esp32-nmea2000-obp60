@@ -75,8 +75,8 @@ LedTaskData *ledTaskData=nullptr;
 
 void hardwareInit(GwApi *api)
 {
-    GwLog *logger=api->getLogger();
-    GwConfigHandler *config=api->getConfig();
+    GwLog *logger = api->getLogger();
+    GwConfigHandler *config = api->getConfig();
 
     Wire.begin();
     // Init PCF8574 digital outputs
@@ -87,7 +87,7 @@ void hardwareInit(GwApi *api)
     fram = Adafruit_FRAM_I2C();
     if (esp_reset_reason() ==  ESP_RST_POWERON) {
         // help initialize FRAM
-        LOG_DEBUG(GwLog::LOG,"Delaying I2C init for 250ms due to cold boot");
+        logger->logDebug(GwLog::LOG, "Delaying I2C init for 250ms due to cold boot");
         delay(250);
     }
     // FRAM (e.g. MB85RC256V)
@@ -99,11 +99,11 @@ void hardwareInit(GwApi *api)
         // Boot counter
         uint8_t framcounter = fram.read(0x0000);
         fram.write(0x0000, framcounter+1);
-        LOG_DEBUG(GwLog::LOG,"FRAM detected: 0x%04x/0x%04x (counter=%d)", manufacturerID, productID, framcounter);
+        logger->logDebug(GwLog::LOG, "FRAM detected: 0x%04x/0x%04x (counter=%d)", manufacturerID, productID, framcounter);
     }
     else {
         hasFRAM = false;
-        LOG_DEBUG(GwLog::LOG,"NO FRAM detected");
+        logger->logDebug(GwLog::LOG, "NO FRAM detected");
     }
     // SD Card
     hasSDCard = false;
@@ -112,6 +112,7 @@ void hardwareInit(GwApi *api)
         esp_err_t ret;
         sdmmc_host_t host = SDSPI_HOST_DEFAULT();
         host.slot = SPI3_HOST;
+        logger->logDebug(GwLog::DEBUG, "SDSPI_HOST: max_freq_khz=%d" , host.max_freq_khz);
         spi_bus_config_t bus_cfg = {
             .mosi_io_num = SD_SPI_MOSI,
             .miso_io_num = SD_SPI_MISO,
@@ -122,7 +123,7 @@ void hardwareInit(GwApi *api)
         };
         ret = spi_bus_initialize((spi_host_device_t) host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
         if (ret != ESP_OK) {
-            LOG_DEBUG(GwLog::ERROR,"Failed to initialize SPI bus for SD card");
+            logger->logDebug(GwLog::ERROR, "Failed to initialize SPI bus for SD card");
         } else {
             sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
             slot_config.gpio_cs = SD_SPI_CS;
@@ -135,14 +136,28 @@ void hardwareInit(GwApi *api)
             ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &sdcard);
             if (ret != ESP_OK) {
                 if (ret == ESP_FAIL) {
-                    LOG_DEBUG(GwLog::ERROR,"Failed to mount SD card filesystem");
+                    logger->logDebug(GwLog::ERROR, "Failed to mount SD card filesystem");
                 } else {
-                    LOG_DEBUG(GwLog::ERROR,"Failed to initialize SD card");
+                    // ret == 263 could be not powered up yet
+                    logger->logDebug(GwLog::ERROR, "Failed to initialize SD card (error #%d)", ret);
                 }
             } else {
-                LOG_DEBUG(GwLog::ERROR,"SD card filesystem mounted");
+                logger->logDebug(GwLog::LOG, "SD card filesystem mounted at '%s'", MOUNT_POINT);
                 hasSDCard = true;
             }
+        }
+        if (hasSDCard) {
+            // read some stats
+            String features = "";
+            if (sdcard->is_mem) features += "MEM "; // Memory card
+            if (sdcard->is_sdio) features += "IO "; // IO Card
+            if (sdcard->is_mmc) features += "MMC "; // MMC Card
+            if (sdcard->is_ddr) features += "DDR ";
+            // if (sdcard->is_uhs1) features += "UHS-1 ";
+            // ext_csd. Extended information
+            // uint8_t rev, uint8_t power_class
+            logger->logDebug(GwLog::LOG, "SD card features: %s", features);
+            logger->logDebug(GwLog::LOG, "SD card size: %lluMB", ((uint64_t) sdcard->csd.capacity) * sdcard->csd.sector_size / (1024 * 1024));
         }
     }
 #endif
@@ -276,31 +291,31 @@ void setBacklightLED(uint brightness, const Color &color){
     ledTaskData->setLedData(current);    
 }
 
-void toggleBacklightLED(uint brightness, const Color &color){
+void toggleBacklightLED(uint brightness, const Color &color) {
     if (ledTaskData == nullptr) return;
     statusBacklightLED = !statusBacklightLED;
-    Color nv=setBrightness(statusBacklightLED?color:COLOR_BLACK,brightness);
-    LedInterface current=ledTaskData->getLedData();
+    Color nv = setBrightness(statusBacklightLED ? color : COLOR_BLACK, brightness);
+    LedInterface current = ledTaskData->getLedData();
     current.setBacklight(nv);
     ledTaskData->setLedData(current); 
 }
 
-void setFlashLED(bool status){
+void setFlashLED(bool status) {
     if (ledTaskData == nullptr) return;
-    Color c=status?COLOR_RED:COLOR_BLACK;
+    Color c = status?COLOR_RED:COLOR_BLACK;
     LedInterface current=ledTaskData->getLedData();
     current.setFlash(c);
     ledTaskData->setLedData(current);
 }
 
-void blinkingFlashLED(){
-    if(blinkingLED == true){
+void blinkingFlashLED() {
+    if (blinkingLED == true) {
         statusLED = !statusLED;     // Toggle LED for each run
         setFlashLED(statusLED);
-    }    
+    }
 }
 
-void setBlinkingLED(bool status){
+void setBlinkingLED(bool status) {
     blinkingLED = status;
 }
 

@@ -23,6 +23,7 @@
 #define FRAM_VOLTAGE_AVG 0x000A
 #define FRAM_VOLTAGE_TREND 0x000B
 #define FRAM_VOLTAGE_MODE 0x000C
+// Wind page
 #define FRAM_WIND_SIZE 0x000D
 #define FRAM_WIND_SRC 0x000E
 #define FRAM_WIND_MODE 0x000F
@@ -32,6 +33,10 @@
 
 extern Adafruit_FRAM_I2C fram;
 extern bool hasFRAM;
+extern bool hasSDCard;
+#ifdef BOARD_OBP40S3
+extern sdmmc_card_t *sdcard;
+#endif
 
 // Fonts declarations for display (#includes see OBP60Extensions.cpp)
 extern const GFXfont DSEG7Classic_BoldItalic16pt7b;

@@ -38,7 +38,7 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
 
         instance = std::string(config->getString(calInstance, "---").c_str());
         if (instance == "---") {
-            LOG_DEBUG(GwLog::LOG, "no calibration data for instance no. %d", i + 1);
+            logger->logDebug(GwLog::LOG, "no calibration data for instance no. %d", i + 1);
             continue;
         }
         calibMap[instance] = { 0.0f, 1.0f, 1.0f, 0.0f, false };
@@ -101,10 +101,10 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
         calibMap[instance].slope = slope;
         calibMap[instance].smooth = smooth;
         calibMap[instance].isCalibrated = false;
-        LOG_DEBUG(GwLog::LOG, "stored calibration data: %s, offset: %f, slope: %f, smoothing: %f", instance.c_str(),
+        logger->logDebug(GwLog::LOG, "stored calibration data: %s, offset: %f, slope: %f, smoothing: %f", instance.c_str(),
             calibMap[instance].offset, calibMap[instance].slope, calibMap[instance].smooth);
     }
-    LOG_DEBUG(GwLog::LOG, "all calibration data read");
+    logger->logDebug(GwLog::LOG, "all calibration data read");
 }
 
 void CalibrationDataList::calibrateInstance(GwApi::BoatValue* boatDataValue, GwLog* logger)
@@ -117,7 +117,7 @@ void CalibrationDataList::calibrateInstance(GwApi::BoatValue* boatDataValue, GwL
     std::string format = "";
 
     if (calibMap.find(instance) == calibMap.end()) {
-        LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s not found in calibration data list", instance.c_str());
+        logger->logDebug(GwLog::DEBUG, "BoatDataCalibration: %s not found in calibration data list", instance.c_str());
         return;
     } else if (!boatDataValue->valid) { // no valid boat data value, so we don't want to apply calibration data
         calibMap[instance].isCalibrated = false;
@@ -127,7 +127,7 @@ void CalibrationDataList::calibrateInstance(GwApi::BoatValue* boatDataValue, GwL
         slope = calibMap[instance].slope;
         dataValue = boatDataValue->value;
         format = boatDataValue->getFormat().c_str();
-        LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: value: %f, format: %s", instance.c_str(), dataValue, format.c_str());
+        logger->logDebug(GwLog::DEBUG, "BoatDataCalibration: %s: value: %f, format: %s", instance.c_str(), dataValue, format.c_str());
 
         if (format == "formatWind") { // instance is of type angle
             dataValue = (dataValue * slope) + offset;
@@ -156,7 +156,7 @@ void CalibrationDataList::calibrateInstance(GwApi::BoatValue* boatDataValue, GwL
         calibrationData.smoothInstance(boatDataValue, logger); // smooth the boat data value
         calibMap[instance].value = boatDataValue->value; // store the calibrated + smoothed value in the list
 
-        LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: Offset: %f, Slope: %f, Result: %f", instance.c_str(), offset, slope, calibMap[instance].value);
+        logger->logDebug(GwLog::DEBUG, "BoatDataCalibration: %s: Offset: %f, Slope: %f, Result: %f", instance.c_str(), offset, slope, calibMap[instance].value);
     }
 }
 
@@ -173,7 +173,7 @@ void CalibrationDataList::smoothInstance(GwApi::BoatValue* boatDataValue, GwLog*
     if (!boatDataValue->valid) { // no valid boat data value, so we don't want to smoothen value
         return;
     } else if (calibMap.find(instance) == calibMap.end()) {
-        LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: smooth factor for %s not found in calibration data list", instance.c_str());
+        logger->logDebug(GwLog::DEBUG, "BoatDataCalibration: smooth factor for %s not found in calibration data list", instance.c_str());
         return;
     } else {
         smoothFactor = calibMap[instance].smooth;
@@ -185,7 +185,7 @@ void CalibrationDataList::smoothInstance(GwApi::BoatValue* boatDataValue, GwLog*
         lastValue[instance] = dataValue; // store the new value for next cycle; first time, store only the current value and return
         boatDataValue->value = dataValue; // set the smoothed value to the boat data value
 
-        LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: Smoothing factor: %f, Smoothed value: %f", instance.c_str(), smoothFactor, dataValue);
+        logger->logDebug(GwLog::DEBUG, "BoatDataCalibration: %s: Smoothing factor: %f, Smoothed value: %f", instance.c_str(), smoothFactor, dataValue);
     }
 }
 
