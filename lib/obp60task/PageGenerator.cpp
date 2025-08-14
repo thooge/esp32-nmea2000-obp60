@@ -7,10 +7,20 @@
 
 class PageGenerator : public Page
 {
+private:
+    String batVoltage;
+    int genPower;
+    String powerSensor;
+
 public:
     PageGenerator(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageGenerator");
+
+        // Get config data
+        batVoltage = config->getString(config->batteryVoltage);
+        genPower = config->getInt(config->genPower);
+        powerSensor = config->getString(config->usePowSensor3);
     }
 
     int handleKey(int key){
@@ -24,15 +34,6 @@ public:
 
     int displayPage(PageData &pageData) {
         
-        // Get config data
-        bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String batVoltage = config->getString(config->batteryVoltage);
-        int genPower = config->getInt(config->genPower);
-        String backlightMode = config->getString(config->backlight);
-        String powerSensor = config->getString(config->usePowSensor3);
-
         double value1 = 0;  // Solar voltage
         double value2 = 0;  // Solar current
         double value3 = 0;  // Solar output power
@@ -76,7 +77,7 @@ public:
         }
         
         // Logging voltage value
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageGenerator, Type:%iW %s:=%f", genPower, name1.c_str(), value1);
+        logger->logDebug(GwLog::LOG, "Drawing at PageGenerator, Type:%iW %s:=%f", genPower, name1.c_str(), value1);
 
         // Draw page
         //***********************************************************

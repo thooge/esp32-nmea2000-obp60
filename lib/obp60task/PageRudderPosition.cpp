@@ -7,14 +7,20 @@
 
 class PageRudderPosition : public Page
 {
+private:
+    String lengthformat;
+
 public:
     PageRudderPosition(CommonData &common) : Page(common)
     {
-        logger->logDebug(GwLog::LOG, "Show PageRudderPosition");
+        logger->logDebug(GwLog::LOG, "Instantiate PageRudderPosition");
+
+        // Get config data
+        String lengthformat = config->getString(config->lengthFormat);
     }
 
     // Key functions
-    int handleKey(int key){
+    int handleKey(int key) {
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -29,13 +35,6 @@ public:
         double value1 = 0.1;
         double value1old = 0.1;
 
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-
         // Get boat values for rudder position
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list
         String name1 = bvalue1->getName().c_str();      // Value name
@@ -46,15 +45,14 @@ public:
         String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
 
-        if(valid1 == true){
+        if (valid1 == true) {
             value1old = value1;   	                    // Save old value
             unit1old = unit1;                           // Save old unit
         } else {
-            if(simulation == true){
-                value1 = (3 + float(random(0, 50)) / 10.0)/360*2*PI;
+            if (simulation == true) {
+                value1 = (3 + float(random(0, 50)) / 10.0) / 360 * 2 * M_PI;
                 unit1 = "Deg";
-            }
-            else{
+            } else {
                 value1 = 0;
             }
         }
@@ -67,7 +65,7 @@ public:
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageRudderPosition, %s:%f", name1.c_str(), value1);
+        logger->logDebug(GwLog::LOG, "Drawing at PageRudderPosition, %s:%f", name1.c_str(), value1);
 
         // Draw page
         //***********************************************************
@@ -79,7 +77,7 @@ public:
         
         // Draw RudderPosition
         int rInstrument = 110;     // Radius of RudderPosition
-        float pi = 3.141592;
+        const float pi = 3.141592;
 
         epd->fillCircle(200, 150, rInstrument + 10, commonData->fgcolor);    // Outer circle
         epd->fillCircle(200, 150, rInstrument + 7, commonData->bgcolor);        // Outer circle
@@ -127,7 +125,7 @@ public:
 
             // Draw sub scale with lines (two triangles)
             if(i % 30 == 0){
-                float dx=2;   // Line thickness = 2*dx+1
+                float dx = 2;   // Line thickness = 2*dx+1
                 float xx1 = -dx;
                 float xx2 = +dx;
                 float yy1 =  -(rInstrument-10);

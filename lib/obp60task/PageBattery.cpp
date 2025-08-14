@@ -6,20 +6,25 @@
 
 class PageBattery : public Page
 {
+private:
+    String powsensor1;
     int average = 0; // Average type [0...3], 0=off, 1=10s, 2=60s, 3=300s
 
-    public:
+public:
     PageBattery(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageBattery");
+
+        // Get config data
+        String powsensor1 = config->getString(config->usePowSensor1);
     }
 
-    virtual void setupKeys(){
+    void setupKeys(){
         Page::setupKeys();
         commonData->keydata[0].label = "AVG";
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key){
         // Change average
         if(key == 1){
             average ++;
@@ -47,15 +52,7 @@ class PageBattery : public Page
         double value3 = 0;
         static String svalue3old = "";
         static String unit3old = "";
-
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        // bool simulation = config->getBool(config->useSimuData);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-        String powsensor1 = config->getString(config->usePowSensor1);
-        bool simulation = config->getBool(config->useSimuData);
-        
+       
         // Get voltage value
         String name1 = "VBat";                       // Value name
         if(String(powsensor1) == "INA219" || String(powsensor1) == "INA226"){
@@ -151,7 +148,7 @@ class PageBattery : public Page
         }
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageBattery, %s: %f, %s: %f, %s: %f, Avg: %d", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, average);
+        logger->logDebug(GwLog::LOG, "Drawing at PageBattery, %s: %f, %s: %f, %s: %f, Avg: %d", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, average);
 
         // Draw page
         //***********************************************************

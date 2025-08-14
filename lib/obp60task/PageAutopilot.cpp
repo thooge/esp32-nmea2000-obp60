@@ -12,18 +12,13 @@
 class PageAutopilot : public Page
 {
 private:
-    bool simulation = false;
-    bool holdvalues = false;
-    String flashLED;
-    String backlightMode;
-
     char mode = 'N'; // (N)ormal, (C)onfig
 
     void displayModeNormal(PageData &pageData) {
 
         // TBD Boatvalues: ...
 
-        LOG_DEBUG(GwLog::DEBUG,"Drawing at PageAutopilot");
+        logger->logDebug(GwLog::DEBUG, "Drawing at PageAutopilot");
 
         // Title and corner value headings
         epd->setTextColor(commonData->fgcolor);
@@ -49,22 +44,15 @@ public:
     PageAutopilot(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageAutopilot");
+    }
 
-        // preload configuration data
-        simulation = config->getBool(config->useSimuData);
-        holdvalues = config->getBool(config->holdvalues);
-        flashLED = config->getString(config->flashLED);
-        backlightMode = config->getString(config->backlight);
-
-     }
-
-    void setupKeys(){
+    void setupKeys() {
         Page::setupKeys();
         commonData->keydata[0].label = "MODE";
     }
 
 #ifdef BOARD_OBP60S3
-    int handleKey(int key){
+    int handleKey(int key) {
         if (key == 1) { // Switch between normal and config mode
             if (mode == 'N') {
                 mode = 'C';
@@ -106,7 +94,7 @@ public:
     int displayPage(PageData &pageData){
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageAutopilot; Mode=%c", mode);
+        logger->logDebug(GwLog::LOG, "Drawing at PageAutopilot; Mode=%c", mode);
 
         // Set display in partial refresh mode
         epd->setPartialWindow(0, 0, epd->width(), epd->height());

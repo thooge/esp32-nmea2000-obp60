@@ -7,10 +7,15 @@
 
 class PageOneValue : public Page
 {
-    public:
+private:
+    String lengthformat;
+public:
     PageOneValue(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageOneValue");
+
+        // Get config data
+        lengthformat = config->getString(config->lengthFormat);
     }
 
     int handleKey(int key) {
@@ -28,12 +33,6 @@ class PageOneValue : public Page
         static String svalue1old = "";
         static String unit1old = "";
 
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        // bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
         
         // Get boat values
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
@@ -53,7 +52,7 @@ class PageOneValue : public Page
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageOneValue, %s: %f", name1.c_str(), value1);
+        logger->logDebug(GwLog::LOG, "Drawing at PageOneValue, %s: %f", name1.c_str(), value1);
 
         // Draw page
         //***********************************************************

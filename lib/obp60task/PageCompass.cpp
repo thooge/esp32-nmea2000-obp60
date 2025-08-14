@@ -25,56 +25,48 @@ const float Compass_LineDelta = 8.0;// compass band: 1deg = 5 Pixels, 10deg = 50
 
 class PageCompass : public Page
 {
+private:
     int WhichDataCompass = ShowHDM; 
     int WhichDataDisplay = ShowHDM; 
 
-    public:
+public:
     PageCompass(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageCompass");
     }
 
-    virtual void setupKeys(){
+    void setupKeys(){
         Page::setupKeys();
         commonData->keydata[0].label = "CMP";
         commonData->keydata[1].label = "SRC";
-   }
+    }
     
-    virtual int handleKey(int key){
+    int handleKey(int key){
         // Code for keylock
-   
-        if ( key == 1 ) {
+        if (key == 1) {
             WhichDataCompass += 1;
             if ( WhichDataCompass > ShowCOG)
                  WhichDataCompass = ShowHDM;
            return 0;
-            }
-      if ( key == 2 ) {
+        }
+        if (key == 2) {
             WhichDataDisplay += 1;
-            if ( WhichDataDisplay > ShowDBS)
+            if (WhichDataDisplay > ShowDBS)
                  WhichDataDisplay = ShowHDM;
-             }
-
-        if(key == 11){
+        }
+        if (key == 11) {
             commonData->keylock = !commonData->keylock;
             return 0;                   // Commit the key
         }
         return key;
     }
 
-    int displayPage(PageData &pageData){
+    int displayPage(PageData &pageData) {
 
         // Old values for hold function
         static String OldDataText[HowManyValues] = {"", "", "","", "", ""};
         static String OldDataUnits[HowManyValues] = {"", "", "","", "", ""};
 
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        // bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-        
         GwApi::BoatValue *bvalue;
         String DataName[HowManyValues];
         double DataValue[HowManyValues];
@@ -94,7 +86,7 @@ class PageCompass : public Page
             DataValue[i] = TheFormattedData.value;  // Value as double in SI unit
             DataValid[i] = bvalue->valid;
             DataFormat[i] = bvalue->getFormat();    // Unit of value
-            LOG_DEBUG(GwLog::LOG,"Drawing at PageCompass: %d %s %f %s %s",  i,  DataName[i], DataValue[i], DataFormat[i], DataText[i] );
+            logger->logDebug(GwLog::LOG, "Drawing at PageCompass: %d %s %f %s %s",  i,  DataName[i], DataValue[i], DataFormat[i], DataText[i] );
         }
 
         // Optical warning by limit violation (unused)

@@ -7,10 +7,15 @@
 
 class PageThreeValues : public Page
 {
-    public:
+private:
+    String lengthformat;
+public:
     PageThreeValues(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageThreeValue");
+
+        // Get config data
+        lengthformat = config->getString(config->lengthFormat);
     }
 
     int handleKey(int key){
@@ -32,13 +37,6 @@ class PageThreeValues : public Page
         static String svalue3old = "";
         static String unit3old = "";
 
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        // bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-        
         // Get boat values #1
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
         String name1 = xdrDelete(bvalue1->getName());   // Value name
@@ -77,7 +75,7 @@ class PageThreeValues : public Page
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageThreeValues, %s: %f, %s: %f, %s: %f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3);
+        logger->logDebug(GwLog::LOG, "Drawing at PageThreeValues, %s: %f, %s: %f, %s: %f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3);
 
         // Draw page
         //***********************************************************

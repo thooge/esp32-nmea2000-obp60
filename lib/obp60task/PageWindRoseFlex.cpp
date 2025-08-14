@@ -7,16 +7,21 @@
 
 class PageWindRoseFlex : public Page
 {
-int16_t lp = 80;                    // Pointer length
+private:
+    String lengthformat;
+    int16_t lp = 80; // Pointer length
 
 public:
     PageWindRoseFlex(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageWindRoseFlex");
+
+        // Get config data
+        lengthformat = config->getString(config->lengthFormat);
     }
 
     // Key functions
-    int handleKey(int key){
+    int handleKey(int key) {
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -25,7 +30,7 @@ public:
         return key;
     }
 
-    int displayPage(PageData &pageData){
+    int displayPage(PageData &pageData) {
 
         static String svalue1old = "";
         static String unit1old = "";
@@ -39,13 +44,6 @@ public:
         static String unit5old = "";
         static String svalue6old = "";
         static String unit6old = "";
-
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
 
         // Get boat values #1
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
@@ -140,7 +138,7 @@ public:
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
-        LOG_DEBUG(GwLog::LOG, "Drawing at PageWindRoseFlex, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, name4.c_str(), value4, name5.c_str(), value5, name6.c_str(), value6);
+        logger->logDebug(GwLog::LOG, "Drawing at PageWindRoseFlex, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, name4.c_str(), value4, name5.c_str(), value5, name6.c_str(), value6);
 
         // Draw page
         //***********************************************************

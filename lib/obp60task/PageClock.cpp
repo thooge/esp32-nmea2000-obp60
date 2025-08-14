@@ -18,7 +18,7 @@
 class PageClock : public Page
 {
 private:
-    bool simulation = false;
+    String dateformat;
     int simtime;
     bool keylock = false;
     char source = 'R';  // time source (R)TC | (G)PS | (N)TP
@@ -34,23 +34,24 @@ public:
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageClock");
 
-        // WIP time source
-#ifdef BOARD_OBP60S3
-        String use_rtc = config->getString(config->useRTC);
-        if (use_rtc == "off") {
-            source = 'G';
-        }
-#endif
-
-        simulation = config->getBool(config->useSimuData);
+        // Get config data
+        dateformat = config->getString(config->dateFormat);
         timezone = config->getString(config->timeZone).toDouble();
         homelat = config->getString(config->homeLAT).toDouble();
         homelon = config->getString(config->homeLON).toDouble();
         homevalid = homelat >= -180.0 and homelat <= 180 and homelon >= -90.0 and homelon <= 90.0;
         simtime = 38160; // time value 11:36
+
+#ifdef BOARD_OBP60S3
+        // WIP time source
+        String use_rtc = config->getString(config->useRTC);
+        if (use_rtc == "off") {
+            source = 'G';
+        }
+#endif
     }
 
-    virtual void setupKeys(){
+    void setupKeys(){
         Page::setupKeys();
         commonData->keydata[0].label = "SRC";
         commonData->keydata[1].label = "MODE";
@@ -58,7 +59,7 @@ public:
     }
 
     // Key functions
-    virtual int handleKey(int key){
+    int handleKey(int key){
         // Time source
         if (key == 1) {
             if (source == 'G') {
@@ -112,13 +113,6 @@ public:
         double value2 = 0; // GPS date FIXME date defined as uint32_t!
         double value3 = 0; // HDOP
         bool gpsvalid = false;
-
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        String dateformat = config->getString(config->dateFormat);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
 
         // Get boat values for GPS time
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
@@ -175,7 +169,7 @@ public:
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageClock, %s:%f,  %s:%f, %s:%f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3);
+        logger->logDebug(GwLog::LOG, "Drawing at PageClock, %s:%f,  %s:%f, %s:%f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3);
 
         // Draw page
         //***********************************************************
@@ -392,7 +386,7 @@ public:
         if (hour > 12) {
             hour -= 12.0;
         }
-        LOG_DEBUG(GwLog::DEBUG,"... PageClock, value1: %f hour: %f minute:%f", value1, hour, minute);
+        logger->logDebug(GwLog::DEBUG, "... PageClock, value1: %f hour: %f minute:%f", value1, hour, minute);
 
         // Draw hour pointer
         float startwidth = 8;       // Start width of pointer

@@ -49,7 +49,7 @@ int getRng(const RingBuffer<int16_t>& windDirHstry, int center, size_t amount)
 
 // ****************************************************************
 class PageWindPlot : public Page {
-
+private:
     bool keylock = false; // Keylock
     char chrtMode = 'D'; // Chart mode: 'D' for TWD, 'S' for TWS, 'B' for both
     int dataIntv = 1; // Update interval for wind history chart:
@@ -62,8 +62,7 @@ public:
         logger->logDebug(GwLog::LOG, "Instantiate PageWindPlot");
     }
 
-    void setupKeys()
-    {
+    void setupKeys() {
         Page::setupKeys();
         //        commonData->keydata[0].label = "MODE";
         commonData->keydata[1].label = "INTV";
@@ -71,8 +70,7 @@ public:
     }
 
     // Key functions
-    int handleKey(int key)
-    {
+    int handleKey(int key) {
         // Set chart mode TWD | TWS -> to be implemented
         if (key == 1) {
             if (chrtMode == 'D') {
@@ -134,8 +132,6 @@ public:
         static bool isInitialized = false; // Flag to indicate that page is initialized
         static bool wndDataValid = false; // Flag to indicate if wind data is valid
         static int numNoData; // Counter for multiple invalid data values in a row
-        static bool simulation = false;
-        static bool holdValues = false;
 
         static int width; // Screen width
         static int height; // Screen height
@@ -169,13 +165,7 @@ public:
         int chrtVal; // Current wind value
         static int chrtPrevVal; // Last wind value in chart area for check if value crosses 180 degree line
 
-        LOG_DEBUG(GwLog::LOG, "Display page WindPlot");
-
-        // Get config data
-        simulation = config->getBool(config->useSimuData);
-        holdValues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
+        logger->logDebug(GwLog::LOG, "Display page WindPlot");
 
         if (!isInitialized) {
             width = epd->width();
@@ -237,7 +227,7 @@ public:
                 bufStart = max(0, bufStart - numAddedBufVals);
             }
         }
-        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Dataset: count: %d, TWD: %.0f, TWS: %.1f, TWD_valid? %d, intvBufSize: %d, numWndVals: %d, bufStart: %d, numAddedBufVals: %d, lastIdx: %d, old: %d, act: %d",
+        logger->logDebug(GwLog::DEBUG, "PageWindPlot Dataset: count: %d, TWD: %.0f, TWS: %.1f, TWD_valid? %d, intvBufSize: %d, numWndVals: %d, bufStart: %d, numAddedBufVals: %d, lastIdx: %d, old: %d, act: %d",
             count, pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg, pageData.boatHstry.twsHstry->getLast() / 10.0 * 1.94384, BDataValid[0],
             intvBufSize, numWndVals, bufStart, numAddedBufVals, pageData.boatHstry.twdHstry->getLastIdx(), oldDataIntv, dataIntv);
 
@@ -250,7 +240,7 @@ public:
             } else {
                 wndCenter = 0;
             }
-            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Range Init: count: %d, TWD: %.0f, wndCenter: %d, diffRng: %d, chrtRng: %d", count, pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg,
+            logger->logDebug(GwLog::DEBUG, "PageWindPlot Range Init: count: %d, TWD: %.0f, wndCenter: %d, diffRng: %d, chrtRng: %d", count, pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg,
                 wndCenter, diffRng, chrtRng);
         } else {
             // check and adjust range between left, center, and right chart limit
@@ -330,7 +320,7 @@ public:
 
 //                    if (i >= (numWndVals / dataIntv) - 10)
                     if (i >= (numWndVals / dataIntv) - 1)
-                        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Chart: i: %d, chrtVal: %d, bufStart: %d, count: %d, linesToShow: %d", i, chrtVal, bufStart, count, (numWndVals / dataIntv));
+                        logger->logDebug(GwLog::DEBUG, "PageWindPlot Chart: i: %d, chrtVal: %d, bufStart: %d, count: %d, linesToShow: %d", i, chrtVal, bufStart, count, (numWndVals / dataIntv));
 
                     if ((i == 0) || (chrtPrevVal == INT16_MIN)) {
                         // just a dot for 1st chart point or after some invalid values
@@ -363,7 +353,7 @@ public:
 
                     int minWndDir = pageData.boatHstry.twdHstry->getMin(numWndVals) / 1000.0 * radToDeg;
                     int maxWndDir = pageData.boatHstry.twdHstry->getMax(numWndVals) / 1000.0 * radToDeg;
-                    LOG_DEBUG(GwLog::DEBUG, "PageWindPlot FreeTop: Minimum: %d, Maximum: %d, OldwndCenter: %d", minWndDir, maxWndDir, wndCenter);
+                    logger->logDebug(GwLog::DEBUG, "PageWindPlot FreeTop: Minimum: %d, Maximum: %d, OldwndCenter: %d", minWndDir, maxWndDir, wndCenter);
 //                    if ((minWndDir + 540 >= wndCenter + 540) || (maxWndDir + 540 <= wndCenter + 540)) {
                     if (((minWndDir - wndCenter >= 0) && (minWndDir - wndCenter < 180)) || ((maxWndDir - wndCenter <= 0) && (maxWndDir - wndCenter >=180))) {
                         // Check if all wind value are left or right of center value -> optimize chart range
@@ -372,14 +362,14 @@ public:
                             wndCenter = int((midWndDir + (midWndDir >= 0 ? 5 : -5)) / 10) * 10; // Set new center value; round to nearest 10 degree value
                         }
                     }
-                    LOG_DEBUG(GwLog::DEBUG, "PageWindPlot FreeTop: cHeight: %d, bufStart: %d, numWndVals: %d, wndCenter: %d", cHeight, bufStart, numWndVals, wndCenter);
+                    logger->logDebug(GwLog::DEBUG, "PageWindPlot FreeTop: cHeight: %d, bufStart: %d, numWndVals: %d, wndCenter: %d", cHeight, bufStart, numWndVals, wndCenter);
                     break;
                 }
             }
 
         } else {
             // No valid data available
-            LOG_DEBUG(GwLog::LOG, "PageWindPlot: No valid data available");
+            logger->logDebug(GwLog::LOG, "PageWindPlot: No valid data available");
             epd->setFont(&Ubuntu_Bold10pt8b);
             epd->fillRect(xCenter - 33, height / 2 - 20, 66, 24, commonData->bgcolor); // Clear area for message
             drawTextCenter(xCenter, height / 2 - 10, "No data");

@@ -215,15 +215,21 @@ static unsigned char front_bits[] PROGMEM = {
 
 class PageWind : public Page
 {
-bool keylock = false;               // Keylock
-int8_t lp = 80;                     // Pointer length
-char mode = 'N';                    // page mode (N)ormal | (L)ens | e(X)ample
-char source = 'A';                  // data source (A)pparent | (T)rue
+private:
+    String lengthformat;
+    bool keylock = false;   // Keylock
+    int8_t lp = 80;         // Pointer length
+    char mode = 'N';        // page mode (N)ormal | (L)ens | e(X)ample
+    char source = 'A';      // data source (A)pparent | (T)rue
 
 public:
     PageWind(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageWind");
+
+        // Get config data
+        lengthformat = config->getString(config->lengthFormat);
+
         if (hasFRAM) {
             lp = fram.read(FRAM_WIND_SIZE);
             source = fram.read(FRAM_WIND_SRC);
@@ -231,7 +237,7 @@ public:
         }
     }
 
-    void setupKeys(){
+    void setupKeys() {
         Page::setupKeys();
         commonData->keydata[0].label = "MODE";
         if (mode == 'X') {
@@ -243,7 +249,7 @@ public:
     }
 
     // Key functions
-    int handleKey(int key){
+    int handleKey(int key) {
 
         if(key == 1){               // Mode switch
             if(mode == 'N'){
@@ -304,13 +310,6 @@ public:
         static String svalue2old = "";
         static String unit2old = "";
 
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-
         GwApi::BoatValue *bvalue1; // Value 1 for speed on top
         GwApi::BoatValue *bvalue2; // Value 2 for angle on bottom
 
@@ -353,7 +352,7 @@ public:
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageWind, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
+        logger->logDebug(GwLog::LOG, "Drawing at PageWind, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
 
         // Draw page
         //***********************************************************

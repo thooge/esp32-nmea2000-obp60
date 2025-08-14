@@ -51,10 +51,6 @@ static unsigned char anchor_bits[] = {
 class PageAnchor : public Page
 {
 private:
-    bool simulation = false;
-    bool holdvalues = false;
-    String flashLED;
-    String backlightMode;
     String lengthformat;
 
     int scale = 50; // Radius of display circle in meter
@@ -98,7 +94,7 @@ private:
         String sval_hdop = formatValue(bv_hdop, *commonData).svalue;
         String sunit_hdop = formatValue(bv_hdop, *commonData).unit; 
 
-        LOG_DEBUG(GwLog::DEBUG,"Drawing at PageAnchor; DBS=%f, HDT=%f, AWS=%f", bv_dbs->value, bv_hdt->value, bv_aws->value);
+        logger->logDebug(GwLog::DEBUG, "Drawing at PageAnchor; DBS=%f, HDT=%f, AWS=%f", bv_dbs->value, bv_hdt->value, bv_aws->value);
 
         Point c = {200, 150}; // center = anchor position
         uint16_t r = 125;
@@ -194,7 +190,7 @@ private:
             // alarm range in meter has to be smaller than the scale in meter
             // r and r_range are pixel values
             uint16_t r_range = int(alarm_range * r / scale);
-            LOG_DEBUG(GwLog::LOG,"Drawing at PageAnchor; Alarm range = %d", r_range);
+            logger->logDebug(GwLog::LOG, "Drawing at PageAnchor; Alarm range = %d", r_range);
             epd->drawCircle(c.x, c.y, r_range, commonData->fgcolor);
         }
  
@@ -220,7 +216,7 @@ private:
         for (int i = 0 ; i < menu->getItemCount(); i++) {
             ConfigMenuItem *itm = menu->getItemByIndex(i);
             if (!itm) {
-                LOG_DEBUG(GwLog::ERROR, "Menu item not found: %d", i);
+                logger->logDebug(GwLog::ERROR, "Menu item not found: %d", i);
             } else {
                 Rect r = menu->getItemRect(i);
                 bool inverted = (i == menu->getActiveIndex());
@@ -244,13 +240,9 @@ private:
 public:
     PageAnchor(CommonData &common) : Page(common)
     {
-        logger->logDebug(GwLog::LOG,"Instantiate PageAnchor");
+        logger->logDebug(GwLog::LOG, "Instantiate PageAnchor");
 
         // preload configuration data
-        simulation = config->getBool(config->useSimuData);
-        holdvalues = config->getBool(config->holdvalues);
-        flashLED = config->getString(config->flashLED);
-        backlightMode = config->getString(config->backlight);
         lengthformat = config->getString(config->lengthFormat);
         chain_length = config->getInt(config->chainLength);
 
@@ -266,7 +258,7 @@ public:
         newitem = menu->addItem("chain", "Chain out", "int", 0, "m");
         if (! newitem) {
             // Demo: in case of failure exit here, should never be happen
-            logger->logDebug(GwLog::ERROR,"Menu item creation failed");
+            logger->logDebug(GwLog::ERROR, "Menu item creation failed");
             return;
         }
         newitem->setRange(0, 200, {1, 5, 10});
@@ -392,7 +384,7 @@ public:
     int displayPage(PageData &pageData){
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageAnchor; Mode=%c", mode);
+        logger->logDebug(GwLog::LOG, "Drawing at PageAnchor; Mode=%c", mode);
 
         // Set display in partial refresh mode
         epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update

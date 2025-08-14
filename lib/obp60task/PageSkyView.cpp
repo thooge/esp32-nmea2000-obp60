@@ -13,7 +13,7 @@ class PageSkyView : public Page
 public:
     PageSkyView(CommonData &common) : Page(common)
     {
-        logger->logDebug(GwLog::LOG,"Instantiate PageSkyView");
+        logger->logDebug(GwLog::LOG, "Instantiate PageSkyView");
     }
 
     int handleKey(int key){
@@ -27,11 +27,6 @@ public:
 
     int displayPage(PageData &pageData) {
 
-        // Get config data
-        String flashLED = config->getString(config->flashLED);
-        String displaycolor = config->getString(config->displaycolor);
-        String backlightMode = config->getString(config->backlight);
-        
         // Optical warning by limit violation (unused)
         if(String(flashLED) == "Limit Violation"){
             setBlinkingLED(false);

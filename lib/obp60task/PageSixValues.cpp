@@ -21,7 +21,7 @@ public:
         logger->logDebug(GwLog::LOG, "Instantiate PageSixValues");
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key) {
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;

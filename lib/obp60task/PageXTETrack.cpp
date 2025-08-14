@@ -29,15 +29,18 @@ static unsigned char ship_bits[] PROGMEM = {
 
 class PageXTETrack : public Page
 {
-    bool simulation = false;
-    bool holdvalues = false;
+private:
+    String trackStep;
+    double seg_step;
 
-    public:
+public:
     PageXTETrack(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageXTETrack");
-        simulation = config->getBool(config->useSimuData);
-        holdvalues = config->getBool(config->holdvalues);
+
+        // Get config data
+        String trackStep = config->getString(config->trackStep);
+        seg_step = trackStep.toDouble() * M_PI / 180;
     }
 
     void drawSegment(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
@@ -57,7 +60,7 @@ class PageXTETrack : public Page
        }
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key) {
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -66,16 +69,7 @@ class PageXTETrack : public Page
         return key;
     }
 
-    int displayPage(PageData &pageData){
-        GwConfigHandler *config = commonData->config;
-        GwLog *logger = commonData->logger;
-
-        // Get config data
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-
-        String trackStep = config->getString(config->trackStep);
-        double seg_step = trackStep.toFloat() * PI / 180;
+    int displayPage(PageData &pageData) {
 
         // Optical warning by limit violation (unused)
         if(String(flashLED) == "Limit Violation"){
@@ -84,7 +78,7 @@ class PageXTETrack : public Page
         }
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageXTETrack");
+        logger->logDebug(GwLog::LOG, "Drawing at PageXTETrack");
 
         // Draw page
         //***********************************************************

@@ -14,7 +14,8 @@
 
 class PageWhite : public Page
 {
-char mode = 'W';  // display mode (W)hite | (L)ogo | (M)FD logo
+private:
+    char mode = 'W';  // display mode (W)hite | (L)ogo | (M)FD logo
 
 public:
     PageWhite(CommonData &common) : Page(common)
@@ -23,7 +24,7 @@ public:
         refreshtime = 15000;
     }
 
-    virtual int handleKey(int key) {
+    int handleKey(int key) {
          // Change display mode
         if (key == 1) {
             if (mode == 'W') {
@@ -38,10 +39,7 @@ public:
         return key;
     }
 
-    int displayPage(PageData &pageData){
-
-        // Get config data
-        String flashLED = config->getString(config->flashLED);
+    int displayPage(PageData &pageData) {
 
         // Optical warning by limit violation (unused)
         if(String(flashLED) == "Limit Violation"){
@@ -50,7 +48,7 @@ public:
         }
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageWhite");
+        logger->logDebug(GwLog::LOG, "Drawing at PageWhite");
 
         // Draw page
         //***********************************************************

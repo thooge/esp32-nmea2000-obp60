@@ -8,6 +8,8 @@
 class PageVoltage : public Page
 {
 private:
+    String batVoltage;
+    String batType;
     bool init = false;                  // Marker for init done
     uint8_t average = 0;                // Average type [0...3], 0=off, 1=10s, 2=60s, 3=300s
     bool trend = true;                  // Trend indicator [0|1], 0=off, 1=on
@@ -18,6 +20,11 @@ public:
     PageVoltage(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageVoltage");
+
+        // Get config data
+        batVoltage = config->getString(config->batteryVoltage);
+        batType = config->getString(config->batteryType);
+
         if (hasFRAM) {
             average = fram.read(FRAM_VOLTAGE_AVG);
             trend = fram.read(FRAM_VOLTAGE_TREND);
@@ -29,14 +36,14 @@ public:
 	    logger->logDebug(GwLog::LOG, "Destroy PageVoltage");
 	}
 
-    void setupKeys(){
+    void setupKeys() {
         Page::setupKeys();
         commonData->keydata[0].label = "AVG";
         commonData->keydata[1].label = "MODE";
         commonData->keydata[4].label = "TRD";
     }
 
-    int handleKey(int key){
+    int handleKey(int key) {
          // Change average
         if(key == 1){
             average ++;
@@ -107,14 +114,6 @@ public:
     }
 
     int displayPage(PageData &pageData) {
-        
-        // Get config data
-        bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String batVoltage = config->getString(config->batteryVoltage);
-        String batType = config->getString(config->batteryType);
-        String backlightMode = config->getString(config->backlight);
 
         double value1 = 0;
         double valueTrend = 0;  // Average over 10 values
@@ -191,7 +190,7 @@ public:
         }
         
         // Logging voltage value
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageVoltage, Type:%s %s:=%f", batType, name1.c_str(), raw);
+        logger->logDebug(GwLog::LOG, "Drawing at PageVoltage, Type:%s %s:=%f", batType, name1.c_str(), raw);
 
         // Draw page
         //***********************************************************

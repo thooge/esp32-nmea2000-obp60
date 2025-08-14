@@ -7,10 +7,20 @@
 
 class PageSolar : public Page
 {
+private:
+    String batVoltage;
+    int solPower;
+    String powerSensor;
+
 public:
     PageSolar(CommonData &common) : Page(common)
     {
-        logger->logDebug(GwLog::LOG,"Instantiate PageSolar");
+        logger->logDebug(GwLog::LOG, "Instantiate PageSolar");
+
+        // Get config data
+        String batVoltage = config->getString(config->batteryVoltage);
+        int solPower = config->getInt(config->solarPower);
+        String powerSensor = config->getString(config->usePowSensor2);
     }
 
     int handleKey(int key){
@@ -24,15 +34,6 @@ public:
 
     int displayPage(PageData &pageData) {
         
-        // Get config data
-        bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String batVoltage = config->getString(config->batteryVoltage);
-        int solPower = config->getInt(config->solarPower);
-        String backlightMode = config->getString(config->backlight);
-        String powerSensor = config->getString(config->usePowSensor2);
-
         double value1 = 0;  // Solar voltage
         double value2 = 0;  // Solar current
         double value3 = 0;  // Solar output power
@@ -76,7 +77,7 @@ public:
         }
         
         // Logging voltage value
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageSolar, Type:%iW %s:=%f", solPower, name1.c_str(), value1);
+        logger->logDebug(GwLog::LOG, "Drawing at PageSolar, Type:%iW %s:=%f", solPower, name1.c_str(), value1);
 
         // Draw page
         //***********************************************************

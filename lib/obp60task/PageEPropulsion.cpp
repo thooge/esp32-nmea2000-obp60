@@ -12,18 +12,13 @@
 class PageEPropulsion : public Page
 {
 private:
-    bool simulation = false;
-    bool holdvalues = false;
-    String flashLED;
-    String backlightMode;
-
     char mode = 'N'; // (N)ormal, (C)onfig
 
     void displayModeNormal(PageData &pageData) {
 
         // TBD Boatvalues: ...
 
-        LOG_DEBUG(GwLog::DEBUG,"Drawing at PageEPropulsion");
+        logger->logDebug(GwLog::DEBUG, "Drawing at PageEPropulsion");
 
         // Title and corner value headings
         epd->setTextColor(commonData->fgcolor);
@@ -49,14 +44,7 @@ public:
     PageEPropulsion(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG,"Instantiate PageEPropulsion");
-
-        // preload configuration data
-        simulation = config->getBool(config->useSimuData);
-        holdvalues = config->getBool(config->holdvalues);
-        flashLED = config->getString(config->flashLED);
-        backlightMode = config->getString(config->backlight);
-
-     }
+    }
 
     void setupKeys(){
         Page::setupKeys();
@@ -105,7 +93,7 @@ public:
     int displayPage(PageData &pageData){
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageEPropulsion; Mode=%c", mode);
+        logger->logDebug(GwLog::LOG,"Drawing at PageEPropulsion; Mode=%c", mode);
 
         // Set display in partial refresh mode
         epd->setPartialWindow(0, 0, epd->width(), epd->height());

@@ -6,10 +6,20 @@
 
 class PageKeelPosition : public Page
 {
+private:
+    String lengthformat;
+    String rotsensor;
+    String rotfunction;
+
 public:
     PageKeelPosition(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageKeelPosition");
+
+        // Get config data
+        lengthformat = config->getString(config->lengthFormat);
+        rotsensor = config->getString(config->useRotSensor);
+        rotfunction = config->getString(config->rotFunction);
     }
 
     // Key functions
@@ -26,15 +36,6 @@ public:
 
         double value1 = 0;
         double value1old = 0;
-
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-        String rotsensor = config->getString(config->useRotSensor);
-        String rotfunction = config->getString(config->rotFunction);
 
         // Get boat values for Keel position
         bool valid1 = commonData->data.validRotAngle;    // Valid information 
@@ -60,7 +61,7 @@ public:
         }
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageKeelPosition, Keel:%f", value1);
+        logger->logDebug(GwLog::LOG, "Drawing at PageKeelPosition, Keel:%f", value1);
 
         // Draw page
         //***********************************************************

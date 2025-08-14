@@ -6,10 +6,26 @@
 
 class PageRollPitch : public Page
 {
+private:
+    String lengthformat;
+    int rolllimit;
+    String roffset;
+    double rolloffset;
+    String poffset;
+    double pitchoffset;
+
 public:
     PageRollPitch(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageRollPitch");
+
+        // Get config data
+        String lengthformat = config->getString(config->lengthFormat);
+        rolllimit = config->getInt(config->rollLimit);
+        roffset = config->getString(config->rollOffset);
+        rolloffset = roffset.toFloat() / 360 * (2 * M_PI);
+        poffset = config->getString(config->pitchOffset);
+        pitchoffset = poffset.toFloat() / 360 * (2 * M_PI);
     }
 
     // Key functions
@@ -30,18 +46,6 @@ public:
         String svalue1old = "";
         String svalue2 = "";
         String svalue2old = "";
-
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-        int rolllimit = config->getInt(config->rollLimit);
-        String roffset = config->getString(config->rollOffset);
-        double rolloffset = roffset.toFloat()/360*(2*M_PI);
-        String poffset = config->getString(config->pitchOffset);
-        double pitchoffset = poffset.toFloat()/360*(2*M_PI);
 
         // Get boat values for roll
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (xdrRoll)
@@ -108,7 +112,7 @@ public:
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageRollPitch, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
+        logger->logDebug(GwLog::LOG, "Drawing at PageRollPitch, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
 
         // Draw page
         //***********************************************************

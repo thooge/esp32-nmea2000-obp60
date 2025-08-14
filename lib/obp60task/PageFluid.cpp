@@ -67,25 +67,22 @@ static unsigned char fish_bits[] = {
 
 class PageFluid : public Page
 {
-    bool simulation = false;
+private:
     double simgoto;
     double simval;
     double simstep;
-    bool holdvalues = false;
     int fluidtype;
 
-    public:
+public:
     PageFluid(CommonData &common) : Page(common)
     {
-        logger->logDebug(GwLog::LOG,"Instantiate PageFluid");
-        simulation = config->getBool(config->useSimuData);
-        holdvalues = config->getBool(config->holdvalues);
+        logger->logDebug(GwLog::LOG, "Instantiate PageFluid");
         simval = double(random(0, 100));
         simgoto = double(random(0, 100));
         simstep = (simgoto - simval) / 20.0;
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key) {
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -94,12 +91,12 @@ class PageFluid : public Page
         return key;
     }
 
-    virtual void displayNew(PageData &pageData){
+    void displayNew(PageData &pageData) {
         fluidtype = config->getInt("page" + String(pageData.pageNumber) + "fluid", 0);
         logger->logDebug(GwLog::LOG, "New PageFluid: fluidtype=%d", fluidtype);
     }
 
-    int displayPage(PageData &pageData){
+    int displayPage(PageData &pageData) {
 
         // Old values for hold function
         static double value1old;
@@ -131,7 +128,7 @@ class PageFluid : public Page
         }
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageFluid: value=%f", bvalue1->value);
+        logger->logDebug(GwLog::LOG, "Drawing at PageFluid: value=%f", bvalue1->value);
 
         // Draw page
         //***********************************************************

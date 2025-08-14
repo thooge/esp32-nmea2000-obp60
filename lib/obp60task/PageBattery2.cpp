@@ -7,15 +7,26 @@
 
 class PageBattery2 : public Page
 {
-bool init = false;                  // Marker for init done
-int average = 0;                    // Average type [0...3], 0=off, 1=10s, 2=60s, 3=300s
-bool trend = true;                  // Trend indicator [0|1], 0=off, 1=on
-double raw = 0;
+private:
+    String batVoltage;
+    int batCapacity;
+    String batType;
+    String powerSensor;
+    bool init = false;  // Marker for init done
+    int average = 0;    // Average type [0...3], 0=off, 1=10s, 2=60s, 3=300s
+    bool trend = true;  // Trend indicator [0|1], 0=off, 1=on
+    double raw = 0;
 
 public:
     PageBattery2(CommonData &common) : Page(common)
     {
         logger->logDebug(GwLog::LOG, "Instantiate PageBattery2");
+
+        // Get config data
+        batVoltage = config->getString(config->batteryVoltage);
+        batCapacity = config->getInt(config->batteryCapacity);
+        batType = config->getString(config->batteryType);
+        powerSensor = config->getString(config->usePowSensor1);
     }
 
     void setupKeys(){
@@ -54,16 +65,6 @@ public:
         int batPercentage = 0;      // Battery level
         float batRange = 0;         // Range in hours
         
-        // Get config data
-        bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String batVoltage = config->getString(config->batteryVoltage);
-        int batCapacity = config->getInt(config->batteryCapacity);
-        String batType = config->getString(config->batteryType);
-        String backlightMode = config->getString(config->backlight);
-        String powerSensor = config->getString(config->usePowSensor1);
-
         double value1 = 0;  // Battery voltage
         double value2 = 0;  // Battery current
         double value3 = 0;  // Battery power consumption
@@ -175,7 +176,7 @@ public:
         }
         
         // Logging voltage value
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageBattery2, Type:%s %s:=%f", batType.c_str(), name1.c_str(), raw);
+        logger->logDebug(GwLog::LOG, "Drawing at PageBattery2, Type:%s %s:=%f", batType.c_str(), name1.c_str(), raw);
 
         // Draw page
         //***********************************************************

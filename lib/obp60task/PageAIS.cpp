@@ -19,10 +19,6 @@
 class PageAIS : public Page
 {
 private:
-    bool simulation = false;
-    bool holdvalues = false;
-    String flashLED;
-    String backlightMode;
 
     int scale = 5; // Radius of display circle in nautical miles
 
@@ -36,7 +32,7 @@ private:
 
         // TBD Boatvalues: ...
 
-        LOG_DEBUG(GwLog::DEBUG,"Drawing at PageAIS");
+        logger->logDebug(GwLog::DEBUG,"Drawing at PageAIS");
 
         Point c = {200, 150}; // center = current boat position
         uint16_t r = 125;
@@ -84,17 +80,9 @@ private:
 public:
     PageAIS(CommonData &common) : Page(common)
     {
-        logger->logDebug(GwLog::LOG,"Instantiate PageAIS");
-
-        // preload configuration data
-        simulation = config->getBool(config->useSimuData);
-        holdvalues = config->getBool(config->holdvalues);
-        flashLED = config->getString(config->flashLED);
-        backlightMode = config->getString(config->backlight);
-
+        logger->logDebug(GwLog::LOG, "Instantiate PageAIS");
         alarm_range = 3;
-
-     }
+    }
 
     void setupKeys(){
         Page::setupKeys();
@@ -143,7 +131,7 @@ public:
     int displayPage(PageData &pageData){
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageAIS; Mode=%c", mode);
+        logger->logDebug(GwLog::LOG, "Drawing at PageAIS; Mode=%c", mode);
 
         // Set display in partial refresh mode
         epd->setPartialWindow(0, 0, epd->width(), epd->height());

@@ -6,13 +6,21 @@
 
 class PageBME280 : public Page
 {
+private:
+    String tempformat;
+    String useenvsensor;
+
 public:
     PageBME280(CommonData &common) : Page(common)
     {
-        logger->logDebug(GwLog::LOG,"Instantiate PageBME280");
+        logger->logDebug(GwLog::LOG, "Instantiate PageBME280");
+
+        // Get config data
+        tempformat = config->getString(config->tempFormat);
+        useenvsensor = config->getString(config->useEnvSensor);
     }
 
-    virtual int handleKey(int key){
+    int handleKey(int key){
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -29,13 +37,6 @@ public:
         String svalue1 = "";
         String svalue2 = "";
         String svalue3 = "";
-
-        // Get config data
-        String tempformat = config->getString(config->tempFormat);
-        bool simulation = config->getBool(config->useSimuData);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-        String useenvsensor = config->getString(config->useEnvSensor);
         
         // Get sensor values #1
         String name1 = "Temp";                          // Value name
@@ -98,7 +99,7 @@ public:
         }
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageBME280, %s: %f, %s: %f, %s: %f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3);
+        logger->logDebug(GwLog::LOG, "Drawing at PageBME280, %s: %f, %s: %f, %s: %f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3);
 
         // Draw page
         //***********************************************************

@@ -1,29 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
-#include "Pagedata.h"
-#include "OBP60Extensions.h"
-#include "ConfigMenu.h"
-#include "images/logo64.xbm"
-#include <esp32/clk.h>
-#include "qrcode.h"
-#include "Nmea2kTwai.h"
-
-
-#ifdef BOARD_OBP40S3
-// #include <SD.h>
-// #include <FS.h>
-#include "dirent.h"
-#endif
-
-#define STRINGIZE_IMPL(x) #x
-#define STRINGIZE(x) STRINGIZE_IMPL(x)
-#define VERSINFO STRINGIZE(GWDEVVERSION)
-#define BOARDINFO STRINGIZE(BOARD)
-#define PCBINFO STRINGIZE(PCBVERS)
-#define DISPLAYINFO STRINGIZE(EPDTYPE)
-#define GXEPD2INFO STRINGIZE(GXEPD2VERS)
-
 /*
  * Special system page, called directly with fast key sequence 5,4
  * Out of normal page order.
@@ -46,6 +23,26 @@
  *         powerInit(powermode);
  */
 
+#include "Pagedata.h"
+#include "OBP60Extensions.h"
+#include "ConfigMenu.h"
+#include "images/logo64.xbm"
+#include <esp32/clk.h>
+#include "qrcode.h"
+#include "Nmea2kTwai.h"
+
+#ifdef BOARD_OBP40S3
+#include "dirent.h"
+#endif
+
+#define STRINGIZE_IMPL(x) #x
+#define STRINGIZE(x) STRINGIZE_IMPL(x)
+#define VERSINFO STRINGIZE(GWDEVVERSION)
+#define BOARDINFO STRINGIZE(BOARD)
+#define PCBINFO STRINGIZE(PCBVERS)
+#define DISPLAYINFO STRINGIZE(EPDTYPE)
+#define GXEPD2INFO STRINGIZE(GXEPD2VERS)
+
 class PageSystem : public Page
 {
 private:
@@ -55,7 +52,6 @@ private:
     // Generic data access
 
     uint64_t chipid;
-    bool simulation;
     bool use_sdcard;
     String buzzer_mode;
     uint8_t buzzer_power;
@@ -86,7 +82,7 @@ private:
         } else if (mode == 'C') { // Config
             mode = 'D';
         } else if (mode == 'D') { // Device list
-            if (use_sdcard) {
+            if (hasSDCard) {
                 mode = 'A';       // SD-Card
             } else {
                 mode = 'N';
@@ -99,7 +95,7 @@ private:
 
     void decMode() {
         if (mode == 'N') {
-            if (use_sdcard) {
+            if (hasSDCard) {
                 mode = 'A';
             } else {
                 mode = 'D';
@@ -188,8 +184,10 @@ private:
         epd->setCursor(90, y0 + 48);
         if (hasSDCard) {
             uint64_t cardsize = ((uint64_t) sdcard->csd.capacity) * sdcard->csd.sector_size / (1024 * 1024);
-            // epd->print(String(cardsize) + String(" MB"));
             epd->printf("%llu MB", cardsize);
+            if (!use_sdcard) {
+                epd->print(" (disabled)");
+            }
         } else {
             epd->print("off");
         }
@@ -394,8 +392,16 @@ private:
         epd->setCursor(x0, y0);
         epd->print("Work in progress...");
 
-        // TODO directories IMG, MAP, HIST should exist.
-        // Show state: Files and used size
+#ifdef BOARD_OBP40S3
+        /* TODO identify card as OBP-Card:
+        magic.dat
+        version.dat
+        readme.txt
+        IMAGES/
+        CHARTS/
+        LOGS/
+        DATA/
+        */
 
         // Simple test for one file in root
         epd->setCursor(x0, y0 + 32);
@@ -480,6 +486,7 @@ private:
             fclose(fh);
             // epd->drawXBitmap(20, 200, buffer, width, height, commonData.fgcolor);
         }
+#endif
     }
 
     void displayModeDevicelist() {
@@ -516,7 +523,6 @@ public:
         flashLED = config->getString(config->flashLED);
 
         chipid = ESP.getEfuseMac();
-        simulation = config->getBool(config->useSimuData);
 #ifdef BOARD_OBP40S3
         use_sdcard = config->getBool(config->useSDCard);
 #endif

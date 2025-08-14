@@ -129,12 +129,20 @@ protected:
     CommonData *commonData;
     GwConfigHandler *config;
     GwLog *logger;
+    bool simulation = false;
+    bool holdvalues = false;
+    String flashLED;
+    String backlightMode;
 public:
-    Page(){}
     Page(CommonData &common) {
         commonData = &common;
         config = commonData->config;
         logger = commonData->logger;
+        // preload generic configuration data
+        simulation = config->getBool(config->useSimuData);
+        holdvalues = config->getBool(config->holdvalues);
+        flashLED = config->getString(config->flashLED);
+        backlightMode = config->getString(config->backlight);
     }
     int refreshtime = 1000;
     virtual int displayPage(PageData &pageData)=0;
