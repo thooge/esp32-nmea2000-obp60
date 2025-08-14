@@ -61,6 +61,16 @@ public:
         return key;
     }
 
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+    };
+
     int displayPage(PageData &pageData) {
 
         // Old values for hold function
@@ -87,12 +97,6 @@ public:
             DataValid[i] = bvalue->valid;
             DataFormat[i] = bvalue->getFormat();    // Unit of value
             logger->logDebug(GwLog::LOG, "Drawing at PageCompass: %d %s %f %s %s",  i,  DataName[i], DataValue[i], DataFormat[i], DataText[i] );
-        }
-
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false); 
         }
 
         if (bvalue == NULL) return PAGE_OK; // WTF why this statement?

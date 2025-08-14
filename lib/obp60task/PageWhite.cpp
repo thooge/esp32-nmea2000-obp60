@@ -39,13 +39,17 @@ public:
         return key;
     }
 
-    int displayPage(PageData &pageData) {
-
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
             setBlinkingLED(false);
-            setFlashLED(false); 
+            setFlashLED(false);
         }
+#endif
+    };
+
+    int displayPage(PageData &pageData) {
 
         // Logging boat values
         logger->logDebug(GwLog::LOG, "Drawing at PageWhite");

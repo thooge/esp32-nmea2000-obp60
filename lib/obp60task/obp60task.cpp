@@ -66,13 +66,13 @@ void OBP60Init(GwApi *api){
     // Settings for e-paper display
     String fastrefresh = api->getConfig()->getConfigItem(api->getConfig()->fastRefresh,true)->asString();
     logger->logDebug(GwLog::DEBUG,"Fast Refresh Mode is: %s", fastrefresh.c_str());
-    #ifdef DISPLAY_GDEY042T81
+#ifdef DISPLAY_GDEY042T81
     if(fastrefresh == "true"){
         static const bool useFastFullUpdate = true;   // Enable fast full display update only for GDEY042T81
     }
-    #endif
+#endif
 
-    #ifdef BOARD_OBP60S3
+#ifdef BOARD_OBP60S3
     touchSleepWakeUpEnable(TP1, 45); // TODO sensitivity should be configurable via web interface
     touchSleepWakeUpEnable(TP2, 45);
     touchSleepWakeUpEnable(TP3, 45);
@@ -80,7 +80,7 @@ void OBP60Init(GwApi *api){
     touchSleepWakeUpEnable(TP5, 45);
     touchSleepWakeUpEnable(TP6, 45);
     esp_sleep_enable_touchpad_wakeup();
-    #endif
+#endif
 
     // Get CPU speed
     int freq = getCpuFrequencyMhz();
@@ -282,16 +282,16 @@ void underVoltageDetection(GwApi *api, CommonData &common){
     double voffset = (api->getConfig()->getConfigItem(api->getConfig()->vOffset,true)->asString()).toFloat();
     double vslope = (api->getConfig()->getConfigItem(api->getConfig()->vSlope,true)->asString()).toFloat();
     // Read supply voltage
-    #if defined VOLTAGE_SENSOR && defined LIPO_ACCU_1200
+#if defined VOLTAGE_SENSOR && defined LIPO_ACCU_1200
     float actVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.53) * 2;   // Vin = 1/2 for OBP40
     float minVoltage = 3.65;  // Absolut minimum volatge for 3,7V LiPo accu
-    #else
+#else
     float actVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.17) * 20;   // Vin = 1/20 for OBP60
     float minVoltage = MIN_VOLTAGE;
-    #endif
+#endif
     double calVoltage = actVoltage * vslope + voffset;  // Calibration
     if(calVoltage < minVoltage){
-        #if defined VOLTAGE_SENSOR && defined LIPO_ACCU_1200
+#if defined VOLTAGE_SENSOR && defined LIPO_ACCU_1200
         // Switch off all power lines
         setPortPin(OBP_BACKLIGHT_LED, false);   // Backlight Off
         setFlashLED(false);                     // Flash LED Off            
@@ -311,7 +311,7 @@ void underVoltageDetection(GwApi *api, CommonData &common){
         epd->powerOff();                // Display power off
         setPortPin(OBP_POWER_EPD, false);       // Power off ePaper display
         setPortPin(OBP_POWER_SD, false);        // Power off SD card
-        #else
+#else
         // Switch off all power lines
         setPortPin(OBP_BACKLIGHT_LED, false);   // Backlight Off
         setFlashLED(false);                     // Flash LED Off            
@@ -329,7 +329,7 @@ void underVoltageDetection(GwApi *api, CommonData &common){
         epd->print("To wake up repower system");
         epd->nextPage();                // Partial update
         epd->powerOff();                // Display power off
-        #endif
+#endif
         // Stop system
         while(true){
             esp_deep_sleep_start();             // Deep Sleep without weakup. Weakup only after power cycle (restart).
@@ -500,15 +500,15 @@ void OBP60Task(GwApi *api){
     bool symbolmode = (config->getString(config->headerFormat) == "ICON");
     String fastrefresh = api->getConfig()->getConfigItem(api->getConfig()->fastRefresh,true)->asString();
     uint fullrefreshtime = uint(api->getConfig()->getConfigItem(api->getConfig()->fullRefreshTime,true)->asInt());
-    #ifdef BOARD_OBP40S3
+#ifdef BOARD_OBP40S3
     bool syspage_enabled = config->getBool(config->systemPage);
-    #endif
+#endif
 
-    #ifdef DISPLAY_GDEY042T81
+#ifdef DISPLAY_GDEY042T81
         epd->init(115200, true, 2, false);  // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
-    #else
+#else
         epd->init(115200);                  // Init for normal displays
-    #endif
+#endif
 
     epd->setRotation(0);                 // Set display orientation (horizontal)
     epd->setFullWindow();                // Set full Refresh
@@ -643,9 +643,9 @@ void OBP60Task(GwApi *api){
     allParameters.page0=3;
     allParameters.queue=xQueueCreate(10,sizeof(int));
     allParameters.sensitivity= api->getConfig()->getInt(GwConfigDefinitions::tSensitivity);
-    #ifdef BOARD_OBP40S3
+#ifdef BOARD_OBP40S3
     allParameters.use_syspage = syspage_enabled;
-    #endif
+#endif
     xTaskCreate(keyboardTask,"keyboard",2000,&allParameters,configMAX_PRIORITIES-1,NULL);
     SharedData *shared=new SharedData(api);
     createSensorTask(shared);
@@ -785,12 +785,12 @@ void OBP60Task(GwApi *api){
                             toggleBacklightLED(commonData.backlight.brightness, commonData.backlight.color);
                         }
                     }
-                    #ifdef BOARD_OBP40S3
+#ifdef BOARD_OBP40S3
                     // #3 Deep sleep mode for OBP40
                     if ((keyboardMessage == 3) and !syspage_enabled){
                         deepSleep(commonData);
                     }
-                    #endif
+#endif
                     // #9 Swipe right or #4 key right
                     if ((keyboardMessage == 9) or (keyboardMessage == 4))
                     {
@@ -854,11 +854,11 @@ void OBP60Task(GwApi *api){
                 }
                 else{
                     epd->fillScreen(commonData.fgcolor); // Clear display
-                    #ifdef DISPLAY_GDEY042T81
+#ifdef DISPLAY_GDEY042T81
                         epd->init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
-                    #else
+#else
                         epd->init(115200);               // Init for normal displays
-                    #endif
+#endif
                     epd->firstPage();                    // Full update
                     epd->nextPage();                     // Full update
 //                    epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
@@ -881,11 +881,11 @@ void OBP60Task(GwApi *api){
                 }
                 else{
                     epd->fillScreen(commonData.fgcolor); // Clear display
-                    #ifdef DISPLAY_GDEY042T81
+#ifdef DISPLAY_GDEY042T81
                         epd->init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
-                    #else
+#else
                         epd->init(115200);               // Init for normal displays
-                    #endif
+#endif
                     epd->firstPage();                    // Full update
                     epd->nextPage();                     // Full update
 //                    epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
@@ -905,11 +905,11 @@ void OBP60Task(GwApi *api){
                 }
                 else{
                     epd->fillScreen(commonData.fgcolor); // Clear display
-                    #ifdef DISPLAY_GDEY042T81
+#ifdef DISPLAY_GDEY042T81
                         epd->init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
-                    #else
+#else
                         epd->init(115200);               // Init for normal displays
-                    #endif
+#endif
                     epd->firstPage();                    // Full update
                     epd->nextPage();                     // Full update
 //                    epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update

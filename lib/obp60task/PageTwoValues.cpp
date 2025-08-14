@@ -9,6 +9,7 @@ class PageTwoValues : public Page
 {
 private:
     String lengthformat;
+
 public:
     PageTwoValues(CommonData &common) : Page(common)
     {
@@ -26,6 +27,16 @@ public:
         }
         return key;
     }
+
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+    };
 
     int displayPage(PageData &pageData) {
 
@@ -55,12 +66,6 @@ public:
         bool valid2 = bvalue2->valid;                   // Valid information 
         String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
-
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false); 
-        }
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?

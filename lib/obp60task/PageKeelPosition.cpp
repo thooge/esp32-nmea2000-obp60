@@ -32,6 +32,16 @@ public:
         return key;
     }
 
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+    };
+
     int displayPage(PageData &pageData) {
 
         double value1 = 0;
@@ -52,12 +62,6 @@ public:
         String unit1 = "Deg";                           // Unit of value
         if(valid1 == true){
             value1old = value1;   	                    // Save old value
-        }
-
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false); 
         }
 
         // Logging boat values

@@ -30,6 +30,16 @@ public:
         return key;
     }
 
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+    };
+
     int displayPage(PageData &pageData) {
 
         static String svalue1old = "";
@@ -130,12 +140,6 @@ public:
             unit6old = unit6;                           // Save old unit
         }
 
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false);
-        }
-
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
         logger->logDebug(GwLog::LOG, "Drawing at PageWindRoseFlex, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, name4.c_str(), value4, name5.c_str(), value5, name6.c_str(), value6);
@@ -158,12 +162,7 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(10, 115);
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit2);                   // Unit
-        }
-        else{
-            epd->print(unit2old);                // Unit
-        }
+        epd->print(holdvalues ? unit2old : unit2);
 
         // Horizintal separator left
         epd->fillRect(0, 149, 60, 3, commonData->fgcolor);
@@ -178,12 +177,8 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(10, 190);
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit3);                   // Unit
-        }
-        else{
-            epd->print(unit3old);                // Unit
-        }
+        epd->print(holdvalues ? unit3old : unit3);
+
 
         // Show value 4 at top right
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
@@ -201,12 +196,8 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(335, 115);
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit4);                   // Unit
-        }
-        else{
-            epd->print(unit4old);                // Unit
-        }
+        epd->print(holdvalues ? unit4old : unit4);
+
 
         // Horizintal separator right
         epd->fillRect(340, 149, 80, 3, commonData->fgcolor);
@@ -221,13 +212,7 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(335, 190);
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit5);                   // Unit
-        }
-        else{
-            epd->print(unit5old);                // Unit
-        }
-
+        epd->print(holdvalues ? unit5old : unit5);
 
 //*******************************************************************************************
 
@@ -340,12 +325,7 @@ public:
             epd->setCursor(190, 90);
         }
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit6);                   // Unit
-        }
-        else{
-            epd->print(unit6old);                // Unit
-        }
+        epd->print(holdvalues ? unit6old : unit6);
 
         return PAGE_UPDATE;
     };

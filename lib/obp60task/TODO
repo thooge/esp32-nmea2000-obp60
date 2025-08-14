@@ -2,8 +2,6 @@
 
 - page refresh after page change and not connected to key codes
 
-- fix sd card code
-
 - config: getFloat, getDouble
 
 - dseg7 font to new version

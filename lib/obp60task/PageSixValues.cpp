@@ -30,6 +30,16 @@ public:
         return key;
     }
 
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+    };
+
     int displayPage(PageData &pageData) {
          
         // Old values for hold function
@@ -61,12 +71,6 @@ public:
             DataText[i] = formatValue(bvalue, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
             DataUnits[i] = formatValue(bvalue, *commonData).unit;   
             DataFormat[i] = bvalue->getFormat();     // Unit of value
-        }
-    
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false); 
         }
     
         if (bvalue == NULL) return PAGE_OK; // WTF why this statement?

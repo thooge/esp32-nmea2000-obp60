@@ -99,13 +99,12 @@ public:
         }
 
         // Optical warning by limit violation
-        if(String(flashLED) == "Limit Violation"){
+        if (flashLED == "Limit Violation") {
             // Limits for roll
-            if(value1*360/(2*M_PI) >= -1*rolllimit && value1*360/(2*M_PI) <= rolllimit){
+            if (value1*360/(2*M_PI) >= -1*rolllimit && value1*360/(2*M_PI) <= rolllimit) {
                 setBlinkingLED(false);
                 setFlashLED(false);
-            }
-            else{
+            } else {
                 setBlinkingLED(true);
             } 
         }

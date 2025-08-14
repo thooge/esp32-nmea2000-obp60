@@ -60,22 +60,17 @@ public:
         bool valid1 = true;
 
         // Optical warning by limit violation
-        if(String(flashLED) == "Limit Violation"){
-            // Over voltage
-            if(value1 > 14.8 && batVoltage == "12V"){
-                setBlinkingLED(true);
-            }
-            if(value1 <= 14.8 && batVoltage == "12V"){
+        if (flashLED == "Limit Violation") {
+            // Over voltage?
+            if (batVoltage == "12V") {
+                setBlinkingLED(value1 > 14.8);
+            } else if (batVoltage == "24V") {
+                setBlinkingLED(value1 > 29.6);
+            } else {
                 setBlinkingLED(false);
             }
-            if(value1 > 29.6 && batVoltage == "24V"){
-                setBlinkingLED(true);
-            }
-            if(value1 <= 29.6 && batVoltage == "24V"){
-                setBlinkingLED(false);
-            }     
         }
-        
+
         // Logging voltage value
         logger->logDebug(GwLog::LOG, "Drawing at PageGenerator, Type:%iW %s:=%f", genPower, name1.c_str(), value1);
 

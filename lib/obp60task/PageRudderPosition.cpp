@@ -29,6 +29,16 @@ public:
         return key;
     }
 
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+    };
+
    int displayPage(PageData &pageData) {
 
         static String unit1old = "";
@@ -57,12 +67,6 @@ public:
             }
         }
 
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false); 
-        }
-
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
         logger->logDebug(GwLog::LOG, "Drawing at PageRudderPosition, %s:%f", name1.c_str(), value1);
@@ -89,21 +93,20 @@ public:
             float x = 200 + (rInstrument-30)*sin(i/180.0*pi);  //  x-coordinate dots
             float y = 150 - (rInstrument-30)*cos(i/180.0*pi);  //  y-coordinate cots 
             const char *ii = " ";
-            switch (i)
-            {
-            case 0: ii=" "; break;      // Use a blank for a empty scale value
-            case 30 : ii=" "; break;
-            case 60 : ii=" "; break;
-            case 90 : ii="45"; break;
-            case 120 : ii="30"; break;
-            case 150 : ii="15"; break;
-            case 180 : ii="0"; break;
-            case 210 : ii="15"; break;
-            case 240 : ii="30"; break;
-            case 270 : ii="45"; break;
-            case 300 : ii=" "; break;
-            case 330 : ii=" "; break;
-            default: break;
+            switch (i) {
+                case 0: ii=" "; break;      // Use a blank for a empty scale value
+                case 30 : ii=" "; break;
+                case 60 : ii=" "; break;
+                case 90 : ii="45"; break;
+                case 120 : ii="30"; break;
+                case 150 : ii="15"; break;
+                case 180 : ii="0"; break;
+                case 210 : ii="15"; break;
+                case 240 : ii="30"; break;
+                case 270 : ii="45"; break;
+                case 300 : ii=" "; break;
+                case 330 : ii=" "; break;
+                default: break;
             }
 
             // Print text centered on position x, y

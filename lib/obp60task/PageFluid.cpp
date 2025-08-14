@@ -94,22 +94,19 @@ public:
     void displayNew(PageData &pageData) {
         fluidtype = config->getInt("page" + String(pageData.pageNumber) + "fluid", 0);
         logger->logDebug(GwLog::LOG, "New PageFluid: fluidtype=%d", fluidtype);
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
     }
 
     int displayPage(PageData &pageData) {
 
         // Old values for hold function
         static double value1old;
-
-        // Get config data
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false);
-        }
 
         GwApi::BoatValue *bvalue1 = pageData.values[0];
         String name1 = bvalue1->getName();

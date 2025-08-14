@@ -30,6 +30,16 @@ public:
         return key;
     }
 
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+    };
+
     int displayPage(PageData &pageData) {
 
         static String svalue1old = "";
@@ -130,12 +140,6 @@ public:
             unit6old = unit6;                           // Save old unit
         }
 
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false); 
-        }
-
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
         logger->logDebug(GwLog::LOG, "Drawing at PageWindRose, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, name4.c_str(), value4, name5.c_str(), value5, name6.c_str(), value6);
@@ -158,12 +162,7 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(10, 115);
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit1);                   // Unit
-        }
-        else{
-            epd->print(unit1old);                // Unit
-        }
+        epd->print(holdvalues ? unit1old : unit1);
 
         // Horizintal separator left
         epd->fillRect(0, 149, 60, 3, commonData->fgcolor);
@@ -178,12 +177,7 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(10, 190);
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit2);                   // Unit
-        }
-        else{
-            epd->print(unit2old);                // Unit
-        }
+        epd->print(holdvalues ? unit2old : unit2);
 
         // Show values TWD
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
@@ -200,12 +194,7 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(335, 115);
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit3);                   // Unit
-        }
-        else{
-            epd->print(unit3old);                // Unit
-        }
+        epd->print(holdvalues ? unit3old : unit3);
 
         // Horizintal separator right
         epd->fillRect(340, 149, 80, 3, commonData->fgcolor);
@@ -220,12 +209,7 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(335, 190);
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit4);                   // Unit
-        }
-        else{  
-            epd->print(unit4old);                // Unit
-        }
+        epd->print(holdvalues ? unit4old : unit4);
 
 //*******************************************************************************************
         
@@ -244,21 +228,20 @@ public:
             float x = 200 + (rInstrument-30)*sin(i/180.0*pi);  //  x-coordinate dots
             float y = 150 - (rInstrument-30)*cos(i/180.0*pi);  //  y-coordinate cots
             const char *ii = "";
-            switch (i)
-{
-            case 0: ii="0"; break;
-            case 30 : ii="30"; break;
-            case 60 : ii="60"; break;
-            case 90 : ii="90"; break;
-            case 120 : ii="120"; break;
-            case 150 : ii="150"; break;
-            case 180 : ii="180"; break;
-            case 210 : ii="210"; break;
-            case 240 : ii="240"; break;
-            case 270 : ii="270"; break;
-            case 300 : ii="300"; break;
-            case 330 : ii="330"; break;
-            default: break;
+            switch (i) {
+                case 0: ii="0"; break;
+                case 30 : ii="30"; break;
+                case 60 : ii="60"; break;
+                case 90 : ii="90"; break;
+                case 120 : ii="120"; break;
+                case 150 : ii="150"; break;
+                case 180 : ii="180"; break;
+                case 210 : ii="210"; break;
+                case 240 : ii="240"; break;
+                case 270 : ii="270"; break;
+                case 300 : ii="300"; break;
+                case 330 : ii="330"; break;
+                default: break;
             }
 
             // Print text centered on position x, y
@@ -266,7 +249,7 @@ public:
             uint16_t w, h;      // Return values of getTextBounds
             epd->getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
             epd->setCursor(x-w/2, y+h/2);
-            if(i % 30 == 0){
+            if (i % 30 == 0) {
                 epd->setFont(&Ubuntu_Bold8pt8b);
                 epd->print(ii);
             }
@@ -333,12 +316,7 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(190, 215);
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit5);                   // Unit
-        }
-        else{  
-            epd->print(unit5old);                // Unit
-        }
+        epd->print(holdvalues ? unit5old : unit5);
 
         // Show values STW
         epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
@@ -347,12 +325,7 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(190, 90);
         epd->print(" ");
-        if(holdvalues == false){
-            epd->print(unit6);                   // Unit
-        }
-        else{  
-            epd->print(unit6old);                // Unit
-        }
+        epd->print(holdvalues ? unit6old : unit6);
 
         return PAGE_UPDATE;
     };

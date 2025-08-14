@@ -140,36 +140,20 @@ public:
         if(batRange > 99) batRange = 99;
 
         // Optical warning by limit violation
-        if(String(flashLED) == "Limit Violation"){
-            // Limits for Pb battery
-            if(String(batType) == "Pb" && (raw < 11.8 || raw > 14.8)){
+        if (flashLED == "Limit Violation") {
+            bool violation = false;
+            if (batType == "Pb") {
+                violation = (raw < 11.8 || raw > 14.8);
+            } else if (batType == "Gel") {
+                violation = (raw < 11.8 || raw > 14.4);
+            } else if (batType == "AGM") {
+                violation = (raw < 11.8 || raw > 14.7);
+            } else if (batType == "LiFePo4") {
+                violation = (raw < 12.0 || raw > 14.6);
+            }
+            if (violation) {
                 setBlinkingLED(true);
-            }
-            if(String(batType) == "Pb" && (raw >= 11.8 && raw <= 14.8)){
-                setBlinkingLED(false);
-                setFlashLED(false);
-            }
-            // Limits for Gel battery
-            if(String(batType) == "Gel" && (raw < 11.8 || raw > 14.4)){
-                setBlinkingLED(true);
-            }
-            if(String(batType) == "Gel" && (raw >= 11.8 && raw <= 14.4)){
-                setBlinkingLED(false);
-                setFlashLED(false);
-            }
-            // Limits for AGM battery
-            if(String(batType) == "AGM" && (raw < 11.8 || raw > 14.7)){
-                setBlinkingLED(true);
-            }
-            if(String(batType) == "AGM" && (raw >= 11.8 && raw <= 14.7)){
-                setBlinkingLED(false);
-                setFlashLED(false);
-            }
-            // Limits for LiFePo4 battery
-            if(String(batType) == "LiFePo4" && (raw < 12.0 || raw > 14.6)){
-                setBlinkingLED(true);
-            }
-            if(String(batType) == "LiFePo4" && (raw >= 12.0 && raw <= 14.6)){
+            } else {
                 setBlinkingLED(false);
                 setFlashLED(false);
             }

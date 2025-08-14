@@ -391,7 +391,12 @@ private:
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(x0, y0);
         epd->print("Work in progress...");
-
+#ifdef BOARD_OBP60S3
+            // This mode should not be callable by devices without card hardware
+            // In case of accidential reaching this, display a friendly message
+            epd->print("This mode is not indended to be reached!\n");
+            epd->print("There's nothing to see here. Move on.");
+#endif
 #ifdef BOARD_OBP40S3
         /* TODO identify card as OBP-Card:
         magic.dat
@@ -645,18 +650,19 @@ public:
     }
 
     void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
         // Get references from API
         logger->logDebug(GwLog::LOG, "New page display: PageSystem");
         NMEA2000 = pageData.api->getNMEA2000();
     };
 
     int displayPage(PageData &pageData) {
-
-        // Optical warning by limit violation (unused)
-        if(flashLED == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false); 
-        }
 
         // Logging page information
         logger->logDebug(GwLog::LOG, "Drawing at PageSystem, Mode=%c", mode);

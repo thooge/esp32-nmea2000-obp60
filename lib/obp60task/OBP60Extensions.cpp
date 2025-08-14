@@ -302,8 +302,8 @@ void toggleBacklightLED(uint brightness, const Color &color) {
 
 void setFlashLED(bool status) {
     if (ledTaskData == nullptr) return;
-    Color c = status?COLOR_RED:COLOR_BLACK;
-    LedInterface current=ledTaskData->getLedData();
+    Color c = status ? COLOR_RED : COLOR_BLACK;
+    LedInterface current = ledTaskData->getLedData();
     current.setFlash(c);
     ledTaskData->setLedData(current);
 }

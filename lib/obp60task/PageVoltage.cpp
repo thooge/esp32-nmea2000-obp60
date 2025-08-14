@@ -154,41 +154,25 @@ public:
         bool valid1 = true;
 
         // Optical warning by limit violation
-        if(String(flashLED) == "Limit Violation"){
-            // Limits for Pb battery
-            if(String(batType) == "Pb" && (raw < 11.8 || raw > 14.8)){
+        if (flashLED == "Limit Violation") {
+            bool violation = false;
+            if (batType == "Pb") {
+                violation = (raw < 11.8 || raw > 14.8);
+            } else if (batType == "Gel") {
+                violation = (raw < 11.8 || raw > 14.4);
+            } else if (batType == "AGM") {
+                violation = (raw < 11.8 || raw > 14.7);
+            } else if (batType == "LiFePo4") {
+                violation = (raw < 12.0 || raw > 14.6);
+            }
+            if (violation) {
                 setBlinkingLED(true);
-            }
-            if(String(batType) == "Pb" && (raw >= 11.8 && raw <= 14.8)){
-                setBlinkingLED(false);
-                setFlashLED(false);
-            }
-            // Limits for Gel battery
-            if(String(batType) == "Gel" && (raw < 11.8 || raw > 14.4)){
-                setBlinkingLED(true);
-            }
-            if(String(batType) == "Gel" && (raw >= 11.8 && raw <= 14.4)){
-                setBlinkingLED(false);
-                setFlashLED(false);
-            }
-            // Limits for AGM battery
-            if(String(batType) == "AGM" && (raw < 11.8 || raw > 14.7)){
-                setBlinkingLED(true);
-            }
-            if(String(batType) == "AGM" && (raw >= 11.8 && raw <= 14.7)){
-                setBlinkingLED(false);
-                setFlashLED(false);
-            }
-            // Limits for LiFePo4 battery
-            if(String(batType) == "LiFePo4" && (raw < 12.0 || raw > 14.6)){
-                setBlinkingLED(true);
-            }
-            if(String(batType) == "LiFePo4" && (raw >= 12.0 && raw <= 14.6)){
+            } else {
                 setBlinkingLED(false);
                 setFlashLED(false);
             }
         }
-        
+
         // Logging voltage value
         logger->logDebug(GwLog::LOG, "Drawing at PageVoltage, Type:%s %s:=%f", batType, name1.c_str(), raw);
 
@@ -207,7 +191,7 @@ public:
             epd->setCursor(20, 100);
             epd->print(name1);                           // Value name
 
-            #if defined BOARD_OBP40S3 && defined LIPO_ACCU_1200 && defined VOLTAGE_SENSOR
+#if defined BOARD_OBP40S3 && defined LIPO_ACCU_1200 && defined VOLTAGE_SENSOR
             // Show charge status
             epd->setFont(&Ubuntu_Bold8pt8b);
             epd->setCursor(185, 100);
@@ -217,7 +201,7 @@ public:
             else{
                 epd->print("Discharge");
             }
-            #endif
+#endif
 
             // Show unit
             epd->setFont(&Ubuntu_Bold20pt8b);
@@ -227,12 +211,12 @@ public:
             // Show battery type
             epd->setFont(&Ubuntu_Bold8pt8b);
             epd->setCursor(295, 100);
-            #ifdef BOARD_OBP60S3
+#ifdef BOARD_OBP60S3
             epd->print(batType);
-            #endif
-            #if defined BOARD_OBP40S3 && defined LIPO_ACCU_1200 && defined VOLTAGE_SENSOR
+#endif
+#if defined BOARD_OBP40S3 && defined LIPO_ACCU_1200 && defined VOLTAGE_SENSOR
             epd->print("LiPo");
-            #endif
+#endif
 
             // Show average settings
             printAvg(average, 320, 84, true);

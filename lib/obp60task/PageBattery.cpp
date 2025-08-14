@@ -40,6 +40,16 @@ public:
         return key;
     }
 
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+    };
+
     int displayPage(PageData &pageData){
 
         // Old values for hold function
@@ -140,12 +150,6 @@ public:
         }
         String svalue3 = String(value3);                // Formatted value as string including unit conversion and switching decimal places
         String unit3 = "W";                             // Unit of value
-
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false); 
-        }
 
         // Logging boat values
         logger->logDebug(GwLog::LOG, "Drawing at PageBattery, %s: %f, %s: %f, %s: %f, Avg: %d", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, average);

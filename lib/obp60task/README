@@ -4,6 +4,12 @@ Development information
 This file contains some hints concerning building the firmware as well as
 developing and debugging it.
 
+Coding style
+------------
+WIP
+Please format your new code the same as already existing code.
+Preprocessor directives go to column zero.
+
 
 Git commands
 ------------
