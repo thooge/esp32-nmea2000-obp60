@@ -82,7 +82,7 @@
     // Direction pin for RS485 NMEA0183
     #define OBP_DIRECTION_PIN 8
     // I2C
-    #define I2C_SPEED 10000UL       // 10kHz clock speed on I2C bus
+    #define I2C_SPEED 100000UL       // 100kHz clock speed on I2C bus
     #define OBP_I2C_SDA 21
     #define OBP_I2C_SCL 38
     // DS1388 RTC
@@ -120,10 +120,10 @@
     #define SHOW_TIME 6000        // Show time in [ms] for logo and WiFi QR code
     #define FULL_REFRESH_TIME 600 // Refresh cycle time in [s][600...3600] for full display update (very important healcy function)
     // SPI SD-Card
-    #define SD_SPI_CS 10
-    #define SD_SPI_MOSI 40
-    #define SD_SPI_CLK 39
-    #define SD_SPI_MISO 13
+    #define SD_SPI_CS GPIO_NUM_10
+    #define SD_SPI_MOSI GPIO_NUM_40
+    #define SD_SPI_CLK GPIO_NUM_39
+    #define SD_SPI_MISO GPIO_NUM_13
 
     // GPS (NEO-6M, NEO-M8N, ATGM336H)
     #define OBP_GPS_RX 19
