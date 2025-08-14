@@ -973,12 +973,13 @@ void OBP60Task(GwApi *api){
                         epd->print("Here be dragons!");
                         epd->nextPage(); // Partial update (fast)
                     }
-                    else{
+                    else {
                         if (lastPage != pageNumber){
-                            if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember page for device restart
+                            pages[lastPage].page->leavePage(pages[lastPage].parameters); // call page cleanup code
+                            if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember new page for device restart
                             currentPage->setupKeys();
                             currentPage->displayNew(pages[pageNumber].parameters);
-                            lastPage=pageNumber;
+                            lastPage = pageNumber;
                         }
                         //call the page code
                         LOG_DEBUG(GwLog::DEBUG,"calling page %d",pageNumber);

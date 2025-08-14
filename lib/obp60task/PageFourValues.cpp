@@ -291,7 +291,14 @@ public:
 
         return PAGE_UPDATE;
     };
+
+    void leavePage(PageData &pageData) {
+        logger->logDebug(GwLog::LOG, "Leaving PageFourvalues");
+    }
+
 };
+
+
 
 static Page *createPage(CommonData &common){
     return new PageFourValues(common);

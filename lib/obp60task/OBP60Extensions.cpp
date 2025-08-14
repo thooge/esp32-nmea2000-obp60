@@ -62,6 +62,7 @@ sdmmc_card_t *sdcard;
 bool hasSDCard = false;
 
 // Global vars
+bool heartbeat = false;         // Heartbeat indicator with two different states
 bool blinkingLED = false;       // Enable / disable blinking flash LED
 bool statusLED = false;         // Actual status of flash LED on/off
 bool statusBacklightLED = false;// Actual status of flash LED on/off
@@ -459,7 +460,6 @@ void displayTrendLow(int16_t x, int16_t y, uint16_t size, uint16_t color){
 // Show header informations
 void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *date, GwApi::BoatValue *time, GwApi::BoatValue *hdop){
 
-    static bool heartbeat = false;
     static unsigned long usbRxOld = 0;
     static unsigned long usbTxOld = 0;
     static unsigned long serRxOld = 0;

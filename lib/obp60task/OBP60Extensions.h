@@ -38,6 +38,8 @@ extern bool hasSDCard;
 extern sdmmc_card_t *sdcard;
 #endif
 
+extern bool heartbeat;
+
 // Fonts declarations for display (#includes see OBP60Extensions.cpp)
 extern const GFXfont DSEG7Classic_BoldItalic16pt7b;
 extern const GFXfont DSEG7Classic_BoldItalic20pt7b;
