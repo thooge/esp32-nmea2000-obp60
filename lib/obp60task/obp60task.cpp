@@ -273,6 +273,8 @@ void registerAllPages(GwLog *logger, PageList &list){
     list.add(&registerPageAnchor);
     extern PageDescription registerPageAIS;
     list.add(&registerPageAIS);
+    extern PageDescription registerPageBarograph;
+    list.add(&registerPageBarograph);
     logger->logDebug(GwLog::LOG,"Memory after registering pages: stack=%d, heap=%d", uxTaskGetStackHighWaterMark(NULL), ESP.getFreeHeap());
 }
 
