@@ -1,10 +1,18 @@
-#ifdef BOARD_OBP60S3
+// SPDX-License-Identifier: GPL-2.0-or-later
+#if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
+
+/*
+ * Barograph WIP
+ *   - Zoom feature
+ *   - Saves data in FRAM if available
+ */
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
 
-class PageBarograph : public Page{
-
+class PageBarograph : public Page
+{
+private:
     bool keylock = false;
     bool has_fram = false;
     String flashLED;
@@ -60,12 +68,13 @@ class PageBarograph : public Page{
         // TODO implement history buffer
     };
 
-    public:
-    PageBarograph(CommonData &common){
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageBarograph");
+public:
+    PageBarograph(CommonData &common): Page(common)
+    {
+        logger->logDebug(GwLog::LOG, "Instantiate PageBarograph");
+
         // Get config data
-        flashLED = common.config->getString(common.config->flashLED);
-        useenvsensor = common.config->getString(common.config->useEnvSensor);
+        useenvsensor = config->getString(common.config->useEnvSensor);
         // possible values for internal sensor
         static std::vector<String> sensorList = {
             "BME280", "BMP280", "BMP180", "BMP085", "HTU21", "SHT21"
@@ -80,7 +89,7 @@ class PageBarograph : public Page{
         loadData(); // initial load
     }
 
-    virtual int handleKey(int key) {
+    int handleKey(int key) {
         if (key == 1) {
             // zoom in
             if (zoomindex > 0) {
@@ -102,33 +111,36 @@ class PageBarograph : public Page{
         return key;
     }
 
-    virtual void displayPage(CommonData &commonData, PageData &pageData){
-        GwLog *logger=commonData.logger;
-
-        // Optical warning by limit violation (unused)
-        if (String(flashLED) == "Limit Violation") {
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
             setBlinkingLED(false);
-            setFlashLED(false); 
+            setFlashLED(false);
         }
+#endif
+    };
+
+    int displayPage(PageData &pageData) {
 
         // Logging boat values
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageBarograph");
+        logger->logDebug(GwLog::LOG, "Drawing at PageBarograph");
 
         // Draw page
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
 
         // Frames 
-        getdisplay().fillRect(0, 75, 400, 2, commonData.fgcolor);  // fillRect: x, y, w, h
-        getdisplay().fillRect(130, 20, 2, 55, commonData.fgcolor);
-        getdisplay().fillRect(270, 20, 2, 55, commonData.fgcolor);
-        getdisplay().fillRect(325, 20, 2, 55, commonData.fgcolor);
+        epd->fillRect(0, 75, 400, 2, commonData->fgcolor);  // fillRect: x, y, w, h
+        epd->fillRect(130, 20, 2, 55, commonData->fgcolor);
+        epd->fillRect(270, 20, 2, 55, commonData->fgcolor);
+        epd->fillRect(325, 20, 2, 55, commonData->fgcolor);
 
-        getdisplay().setTextColor(commonData.fgcolor);
+        epd->setTextColor(commonData->fgcolor);
 
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        epd->setFont(&Ubuntu_Bold8pt8b);
         if (source == 'I') {
             drawTextCenter(360, 40, useenvsensor);
         } else {
@@ -139,7 +151,7 @@ class PageBarograph : public Page{
         drawTextCenter(295, 62, "0.0");
 
         // Alarm placeholder
-         drawTextCenter(70, 62, "Alarm Off");
+        drawTextCenter(70, 62, "Alarm Off");
 
         // Zoom
         int datastep = series[zoomindex];
@@ -156,9 +168,9 @@ class PageBarograph : public Page{
         drawTextCenter(360, 62, fmt);
 
         // Current measurement
-        getdisplay().setFont(&Ubuntu_Bold16pt7b);
-        drawTextCenter(200, 40, String(commonData.data.airPressure / 100, 1));
-        getdisplay().setFont(&Ubuntu_Bold8pt7b);
+        epd->setFont(&Ubuntu_Bold16pt8b);
+        drawTextCenter(200, 40, String(commonData->data.airPressure / 100, 1));
+        epd->setFont(&Ubuntu_Bold8pt8b);
         drawTextCenter(200, 62, "hPa"); // Unit
 
         // Diagram
@@ -168,20 +180,20 @@ class PageBarograph : public Page{
         const int w = 7 * 48;
         const int h = 180;
 
-        // getdisplay().drawRect(x0 - w, y0 - h, w, h, commonData.fgcolor);
+        // epd->drawRect(x0 - w, y0 - h, w, h, commonData->fgcolor);
 
         // x-axis are hours
         for (int i = 1; i <= 6; i++) {
             String label = String(-1 * zoom[zoomindex] * i);
-            getdisplay().drawLine(x0 - i * xstep, y0, x0 - i * xstep, y0 - h, commonData.fgcolor);
+            epd->drawLine(x0 - i * xstep, y0, x0 - i * xstep, y0 - h, commonData->fgcolor);
             drawTextCenter(x0 - i * xstep, y0 - 10, label);
         }
 
         // y-axis
-        getdisplay().drawLine(x0 + 5, y0, x0 + 5, y0 - h, commonData.fgcolor);  // drawLine: x1, y1, x2, y2
-        getdisplay().drawLine(x0 - w, y0, x0 - w, y0 - h, commonData.fgcolor);
-        getdisplay().drawLine(x0 - w - 5, y0, x0 - w - 5, y0 - h, commonData.fgcolor);
-        getdisplay().drawLine(x0, y0, x0, y0 - h, commonData.fgcolor);
+        epd->drawLine(x0 + 5, y0, x0 + 5, y0 - h, commonData->fgcolor);  // drawLine: x1, y1, x2, y2
+        epd->drawLine(x0 - w, y0, x0 - w, y0 - h, commonData->fgcolor);
+        epd->drawLine(x0 - w - 5, y0, x0 - w - 5, y0 - h, commonData->fgcolor);
+        epd->drawLine(x0, y0, x0, y0 - h, commonData->fgcolor);
 
         int16_t dy = 9; // px for one hPa
         int16_t y = y0;
@@ -189,21 +201,19 @@ class PageBarograph : public Page{
         while (y >= y0 - h) {
             if (y % scalestep == 0) {
                 // big step, show label and long line
-                getdisplay().setCursor(x0 + 10, y + 5);
-                getdisplay().print(String(ys));
-                getdisplay().drawLine(x0 + 5, y, x0 - w - 5, y, commonData.fgcolor);
+                epd->setCursor(x0 + 10, y + 5);
+                epd->print(String(ys));
+                epd->drawLine(x0 + 5, y, x0 - w - 5, y, commonData->fgcolor);
             } else {
                 // small step, only short lines left and right
-                getdisplay().drawLine(x0 + 5, y, x0, y, commonData.fgcolor);
-                getdisplay().drawLine(x0 - w - 5, y, x0 - w, y, commonData.fgcolor);
+                epd->drawLine(x0 + 5, y, x0, y, commonData->fgcolor);
+                epd->drawLine(x0 - w - 5, y, x0 - w, y, commonData->fgcolor);
             }
             y -= dy;
             ys += 1;
         }
 
-        // Update display
-        getdisplay().nextPage();    // Partial update (fast)
-
+        return PAGE_UPDATE;
     };
 };
 
@@ -222,7 +232,7 @@ PageDescription registerPageBarograph(
     "Barograph",    // Page name
     createPage,     // Action
     0,              // No bus values needed
-    true           // Show display header on/off
+    true            // Show display header on/off
 );
 
 #endif

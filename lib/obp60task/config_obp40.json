@@ -1372,6 +1372,7 @@
         "list": [
             "AIS",
             "Anchor",
+            "Barograph",
             "BME280",
             "Battery",
             "Battery2",
@@ -1682,6 +1683,7 @@
         "list": [
             "AIS",
             "Anchor",
+            "Barograph",
             "BME280",
             "Battery",
             "Battery2",
@@ -1983,6 +1985,7 @@
         "list": [
             "AIS",
             "Anchor",
+            "Barograph",
             "BME280",
             "Battery",
             "Battery2",
@@ -2275,6 +2278,7 @@
         "list": [
             "AIS",
             "Anchor",
+            "Barograph",
             "BME280",
             "Battery",
             "Battery2",
@@ -2558,6 +2562,7 @@
         "list": [
             "AIS",
             "Anchor",
+            "Barograph",
             "BME280",
             "Battery",
             "Battery2",
@@ -2832,6 +2837,7 @@
         "list": [
             "AIS",
             "Anchor",
+            "Barograph",
             "BME280",
             "Battery",
             "Battery2",
@@ -3097,6 +3103,7 @@
         "list": [
             "AIS",
             "Anchor",
+            "Barograph",
             "BME280",
             "Battery",
             "Battery2",
@@ -3353,6 +3360,7 @@
         "list": [
             "AIS",
             "Anchor",
+            "Barograph",
             "BME280",
             "Battery",
             "Battery2",
@@ -3600,6 +3608,7 @@
         "list": [
             "AIS",
             "Anchor",
+            "Barograph",
             "BME280",
             "Battery",
             "Battery2",
@@ -3838,6 +3847,7 @@
         "list": [
             "AIS",
             "Anchor",
+            "Barograph",
             "BME280",
             "Battery",
             "Battery2",
