@@ -12,7 +12,7 @@ typedef struct {
 class HstryBuf {
 
 public:
-    void fillWndBufSimData(tBoatHstryData& hstryBufs); // Fill most part of the TWD and TWS history buffer with simulated data
+
 };
 
 class WindUtils {

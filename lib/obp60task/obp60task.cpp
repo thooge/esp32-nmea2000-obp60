@@ -376,7 +376,6 @@ void underVoltageDetection(GwApi *api, CommonData &common){
     }
 }
 
-//bool addTrueWind(GwApi* api, BoatValueList* boatValues, double *twd, double *tws, double *twa) {
 bool addTrueWind(GwApi* api, BoatValueList* boatValues) {
     // Calculate true wind data and add to obp60task boat data list
 
@@ -423,7 +422,7 @@ bool addTrueWind(GwApi* api, BoatValueList* boatValues) {
             twaBVal->valid = true;
         }
     }
-    api->getLogger()->logDebug(GwLog::DEBUG,"obp60task addTrueWind: TWD_isValid %d, isCalculated %d, TWD %.1f, TWA %.1f, TWS %.1f", twdBVal->valid, isCalculated, twdBVal->value * RAD_TO_DEG,
+    api->getLogger()->logDebug(GwLog::DEBUG,"obp60task addTrueWind: isCalculated %d, TWD %.1f, TWA %.1f, TWS %.1f", isCalculated, twdBVal->value * RAD_TO_DEG,
         twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852);
 
     return isCalculated;
@@ -447,7 +446,7 @@ void initHstryBuf(GwApi* api, BoatValueList* boatValues, tBoatHstryData hstryBuf
     GwApi::BoatValue *twaBVal = boatValues->findValueOrCreate("TWA");
 }
 
-void handleHstryBuf(GwApi* api, BoatValueList* boatValues, tBoatHstryData hstryBufList) {
+void handleHstryBuf(GwApi* api, BoatValueList* boatValues, tBoatHstryData hstryBufList, bool useSimuData) {
     // Handle history buffers for TWD, TWS
 
     GwLog *logger = api->getLogger();
@@ -456,18 +455,18 @@ void handleHstryBuf(GwApi* api, BoatValueList* boatValues, tBoatHstryData hstryB
     int16_t twdHstryMax = hstryBufList.twdHstry->getMaxVal();
     int16_t twsHstryMin = hstryBufList.twsHstry->getMinVal();
     int16_t twsHstryMax = hstryBufList.twsHstry->getMaxVal();
-    int16_t twdBuf, twsBuf;
+    static int16_t twdBuf, twsBuf = 20; //initial value only relevant if we use simulation data
     GwApi::BoatValue *calBVal; // temp variable just for data calibration -> we don't want to calibrate the original data here
 
     GwApi::BoatValue *twdBVal = boatValues->findValueOrCreate(hstryBufList.twdHstry->getName());
     GwApi::BoatValue *twsBVal = boatValues->findValueOrCreate(hstryBufList.twsHstry->getName());
     GwApi::BoatValue *twaBVal = boatValues->findValueOrCreate("TWA");
-
     api->getLogger()->logDebug(GwLog::DEBUG,"obp60task handleHstryBuf: TWD_isValid? %d, twdBVal: %.1f, twaBVal: %.1f, twsBVal: %.1f", twdBVal->valid, twdBVal->value * RAD_TO_DEG,
         twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852);
-    calBVal = new GwApi::BoatValue("TWD"); // temporary solution for calibration of history buffer values
-    calBVal->setFormat(twdBVal->getFormat());
+
     if (twdBVal->valid) {
+        calBVal = new GwApi::BoatValue("TWD"); // temporary solution for calibration of history buffer values
+        calBVal->setFormat(twdBVal->getFormat());
         calBVal->value = twdBVal->value;
         calBVal->valid = twdBVal->valid;
         calibrationData.calibrateInstance(calBVal, logger); // Check if boat data value is to be calibrated
@@ -475,13 +474,18 @@ void handleHstryBuf(GwApi* api, BoatValueList* boatValues, tBoatHstryData hstryB
         if (twdBuf >= twdHstryMin && twdBuf <= twdHstryMax) {
             hstryBufList.twdHstry->add(twdBuf);
         }
+        delete calBVal;
+        calBVal = nullptr;
+    } else if (useSimuData) {
+        twdBuf += random(-20, 20);
+        twdBuf = WindUtils::to360(twdBuf);
+        api->getLogger()->logDebug(GwLog::DEBUG,"obp60task Simu: twdBVal: %d", twdBuf);
+        hstryBufList.twdHstry->add(static_cast<int16_t>(DegToRad(twdBuf) * 1000.0));
     }
-    delete calBVal;
-    calBVal = nullptr;
 
-    calBVal = new GwApi::BoatValue("TWS"); // temporary solution for calibration of history buffer values
-    calBVal->setFormat(twsBVal->getFormat());
     if (twsBVal->valid) {
+        calBVal = new GwApi::BoatValue("TWS"); // temporary solution for calibration of history buffer values
+        calBVal->setFormat(twsBVal->getFormat());
         calBVal->value = twsBVal->value;
         calBVal->valid = twsBVal->valid;
         calibrationData.calibrateInstance(calBVal, logger); // Check if boat data value is to be calibrated
@@ -489,9 +493,14 @@ void handleHstryBuf(GwApi* api, BoatValueList* boatValues, tBoatHstryData hstryB
         if (twsBuf >= twsHstryMin && twsBuf <= twsHstryMax) {
             hstryBufList.twsHstry->add(twsBuf);
         }
+        delete calBVal;
+        calBVal = nullptr;
+    } else if (useSimuData) {
+        twsBuf += random(-50, 50); // TWS value in m/s; expands to 1 decimal
+        twsBuf = constrain(twsBuf, 0, 250); // Limit TWS to [0..25] m/s
+        api->getLogger()->logDebug(GwLog::DEBUG,"obp60task Simu: twsBVal: %d", twsBuf);
+        hstryBufList.twsHstry->add(twsBuf);
     }
-    delete calBVal;
-    calBVal = nullptr;
 }
 
 // OBP60 Task
@@ -663,7 +672,7 @@ void OBP60Task(GwApi *api){
 
     // Check user setting for true wind calculation
     bool calcTrueWnds = api->getConfig()->getBool(api->getConfig()->calcTrueWnds, false);
-    // bool simulation = api->getConfig()->getBool(api->getConfig()->useSimuData, false);
+    bool useSimuData = api->getConfig()->getBool(api->getConfig()->useSimuData, false);
 
     // Initialize history buffer for certain boat data
     initHstryBuf(api, &boatValues, hstryBufList);
@@ -974,7 +983,7 @@ void OBP60Task(GwApi *api){
                     addTrueWind(api, &boatValues);
                 }
                 // Handle history buffers for TWD, TWS for wind plot page and other usage
-                 handleHstryBuf(api, &boatValues, hstryBufList);
+                 handleHstryBuf(api, &boatValues, hstryBufList, useSimuData);
 
                 // Clear display
                 // getdisplay().fillRect(0, 0, getdisplay().width(), getdisplay().height(), commonData.bgcolor);
