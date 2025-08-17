@@ -83,7 +83,7 @@ class PageCompass : public Page
         String DataText[HowManyValues];
         String DataUnits[HowManyValues];
         String DataFormat[HowManyValues];
-        FormatedData TheFormattedData;
+        FormattedData TheFormattedData;
 
         for (int i = 0; i < HowManyValues; i++){
             bvalue = pageData.values[i];

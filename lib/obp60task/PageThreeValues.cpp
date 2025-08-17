@@ -51,7 +51,7 @@ class PageThreeValues : public Page
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
 
         // Get boat values #2
-        GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list (only one value by PageOneValue)
+        GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list
         String name2 = xdrDelete(bvalue2->getName());   // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue2, logger); // Check if boat data value is to be calibrated
@@ -61,7 +61,7 @@ class PageThreeValues : public Page
         String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
 
         // Get boat values #3
-        GwApi::BoatValue *bvalue3 = pageData.values[2]; // Second element in list (only one value by PageOneValue)
+        GwApi::BoatValue *bvalue3 = pageData.values[2]; // Third element in list
         String name3 = xdrDelete(bvalue3->getName());      // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue3, logger); // Check if boat data value is to be calibrated

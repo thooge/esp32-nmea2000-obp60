@@ -64,6 +64,12 @@ PCF8574 pcf8574_Out(PCF8574_I2C_ADDR1); // First digital output modul PCF8574 fr
 Adafruit_FRAM_I2C fram;
 bool hasFRAM = false;
 
+// SD Card
+#ifdef BOARD_OBP40S3
+sdmmc_card_t *sdcard;
+#endif
+bool hasSDCard = false;
+
 // Global vars
 bool blinkingLED = false;       // Enable / disable blinking flash LED
 bool statusLED = false;         // Actual status of flash LED on/off
@@ -78,6 +84,9 @@ LedTaskData *ledTaskData=nullptr;
 
 void hardwareInit(GwApi *api)
 {
+    GwLog *logger = api->getLogger();
+    GwConfigHandler *config = api->getConfig();
+
     Wire.begin();
     // Init PCF8574 digital outputs
     Wire.setClock(I2C_SPEED);       // Set I2C clock on 10 kHz
@@ -87,7 +96,7 @@ void hardwareInit(GwApi *api)
     fram = Adafruit_FRAM_I2C();
     if (esp_reset_reason() ==  ESP_RST_POWERON) {
         // help initialize FRAM
-        api->getLogger()->logDebug(GwLog::LOG,"Delaying I2C init for 250ms due to cold boot");
+        logger->logDebug(GwLog::LOG, "Delaying I2C init for 250ms due to cold boot");
         delay(250);
     }
     // FRAM (e.g. MB85RC256V)
@@ -99,11 +108,88 @@ void hardwareInit(GwApi *api)
         // Boot counter
         uint8_t framcounter = fram.read(0x0000);
         fram.write(0x0000, framcounter+1);
-        api->getLogger()->logDebug(GwLog::LOG,"FRAM detected: 0x%04x/0x%04x (counter=%d)", manufacturerID, productID, framcounter);
+        logger->logDebug(GwLog::LOG, "FRAM detected: 0x%04x/0x%04x (counter=%d)", manufacturerID, productID, framcounter);
     }
     else {
         hasFRAM = false;
-        api->getLogger()->logDebug(GwLog::LOG,"NO FRAM detected");
+        logger->logDebug(GwLog::LOG, "NO FRAM detected");
+    }
+    // SD Card
+    hasSDCard = false;
+#ifdef BOARD_OBP40S3
+    if (config->getBool(config->useSDCard)) {
+        esp_err_t ret;
+        sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+        host.slot = SPI3_HOST;
+        logger->logDebug(GwLog::DEBUG, "SDSPI_HOST: max_freq_khz=%d" , host.max_freq_khz);
+        spi_bus_config_t bus_cfg = {
+            .mosi_io_num = SD_SPI_MOSI,
+            .miso_io_num = SD_SPI_MISO,
+            .sclk_io_num = SD_SPI_CLK,
+            .quadwp_io_num = -1,
+            .quadhd_io_num = -1,
+            .max_transfer_sz = 4000,
+        };
+        ret = spi_bus_initialize((spi_host_device_t) host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
+        if (ret != ESP_OK) {
+            logger->logDebug(GwLog::ERROR, "Failed to initialize SPI bus for SD card");
+        } else {
+            sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
+            slot_config.gpio_cs = SD_SPI_CS;
+            slot_config.host_id = (spi_host_device_t) host.slot;
+            esp_vfs_fat_sdmmc_mount_config_t mount_config = {
+                .format_if_mount_failed = false,
+                .max_files = 5,
+                .allocation_unit_size = 16 * 1024
+            };
+            ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_config, &mount_config, &sdcard);
+            if (ret != ESP_OK) {
+                if (ret == ESP_FAIL) {
+                    logger->logDebug(GwLog::ERROR, "Failed to mount SD card filesystem");
+                } else {
+                    // ret == 263 could be not powered up yet
+                    logger->logDebug(GwLog::ERROR, "Failed to initialize SD card (error #%d)", ret);
+                }
+            } else {
+                logger->logDebug(GwLog::LOG, "SD card filesystem mounted at '%s'", MOUNT_POINT);
+                hasSDCard = true;
+            }
+        }
+        if (hasSDCard) {
+            // read some stats
+            String features = "";
+            if (sdcard->is_mem) features += "MEM "; // Memory card
+            if (sdcard->is_sdio) features += "IO "; // IO Card
+            if (sdcard->is_mmc) features += "MMC "; // MMC Card
+            if (sdcard->is_ddr) features += "DDR ";
+            // if (sdcard->is_uhs1) features += "UHS-1 ";
+            // ext_csd. Extended information
+            // uint8_t rev, uint8_t power_class
+            logger->logDebug(GwLog::LOG, "SD card features: %s", features);
+            logger->logDebug(GwLog::LOG, "SD card size: %lluMB", ((uint64_t) sdcard->csd.capacity) * sdcard->csd.sector_size / (1024 * 1024));
+        }
+    }
+#endif
+}
+
+void powerInit(String powermode) {
+    // Max Power | Only 5.0V | Min Power
+    if (powermode == "Max Power" || powermode == "Only 5.0V") {
+#ifdef HARDWARE_V21
+        setPortPin(OBP_POWER_50, true); // Power on 5.0V rail
+#endif
+#ifdef BOARD_OBP40S3
+        setPortPin(OBP_POWER_EPD, true);// Power on ePaper display
+        setPortPin(OBP_POWER_SD, true); // Power on SD card
+#endif
+    } else { // Min Power
+#ifdef HARDWARE_V21
+        setPortPin(OBP_POWER_50, false); // Power off 5.0V rail
+#endif
+#ifdef BOARD_OBP40S3
+        setPortPin(OBP_POWER_EPD, false);// Power off ePaper display
+        setPortPin(OBP_POWER_SD, false); // Power off SD card
+#endif
     }
 }
 

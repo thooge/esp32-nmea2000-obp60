@@ -223,11 +223,11 @@ static Page* createPage(CommonData &common){
  * this will be number of BoatValue pointers in pageData.values
  */
 PageDescription registerPageXTETrack(
-    "XTETrack",            // Page name
-    createPage,             // Action
-    0,                      // Number of bus values depends on selection in Web configuration
+    "XTETrack", // Page name
+    createPage, // Action
+    0,          // Number of bus values depends on selection in Web configuration
     {"XTE", "COG", "DTW", "BTW"}, // Bus values we need in the page
-    true                    // Show display header on/off
+    true        // Show display header on/off
 );
 
 #endif
