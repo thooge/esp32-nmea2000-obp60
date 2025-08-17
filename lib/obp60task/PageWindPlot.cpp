@@ -6,16 +6,16 @@
 #include "Pagedata.h"
 #include <vector>
 
-static const double radToDeg = 180.0 / PI; // Conversion factor from radians to degrees
+static const double radToDeg = 180.0 / M_PI; // Conversion factor from radians to degrees
 
-// Get maximum difference of last <amount> of TWD ringbuffer values to center chart
+// Get maximum difference of last <amount> of TWD ringbuffer values to center chart; returns "0" if data is not valid
 int getCntr(const RingBuffer<int16_t>& windDirHstry, size_t amount)
 {
     int minVal = windDirHstry.getMinVal();
     size_t count = windDirHstry.getCurrentSize();
 
     if (windDirHstry.isEmpty() || amount <= 0) {
-        return minVal;
+        return 0;
     }
     if (amount > count)
         amount = count;
@@ -54,7 +54,6 @@ int getRng(const RingBuffer<int16_t>& windDirHstry, int center, size_t amount)
     int maxRng = minVal;
     // Start from the newest value (last) and go backwards x times
     for (size_t i = 0; i < amount; i++) {
-        //        value = windDirHstry.get(((last - i) % capacity + capacity) % capacity);
         value = windDirHstry.get(count - 1 - i);
 
         if (value == minVal) {
@@ -78,23 +77,37 @@ class PageWindPlot : public Page {
 
     bool keylock = false; // Keylock
     char chrtMode = 'D'; // Chart mode: 'D' for TWD, 'S' for TWS, 'B' for both
+    bool showTruW = true; // Show true wind or apparant wind in chart area
     int dataIntv = 1; // Update interval for wind history chart:
                       // (1)|(2)|(3)|(4) seconds for approx. 4, 8, 12, 16 min. history chart
-    bool showTWS = true; // Show TWS value in chart area
+    bool useSimuData;
+    String flashLED;
+    String backlightMode;
 
 public:
     PageWindPlot(CommonData& common)
     {
         commonData = &common;
         common.logger->logDebug(GwLog::LOG, "Instantiate PageWindPlot");
+
+        // Get config data
+        useSimuData = common.config->getBool(common.config->useSimuData);
+        // holdValues = common.config->getBool(common.config->holdvalues);
+        flashLED = common.config->getString(common.config->flashLED);
+        backlightMode = common.config->getString(common.config->backlight);
+
     }
 
     virtual void setupKeys()
     {
         Page::setupKeys();
         //        commonData->keydata[0].label = "MODE";
+#if defined BOARD_OBP60S3
+        commonData->keydata[1].label = "SRC";
+        commonData->keydata[4].label = "INTV";
+#elif defined BOARD_OBP40S3
         commonData->keydata[1].label = "INTV";
-        commonData->keydata[4].label = "TWS";
+#endif
     }
 
     // Key functions
@@ -112,8 +125,18 @@ public:
             return 0; // Commit the key
         }
 
-        // Set interval for wind history chart update time
+#if defined BOARD_OBP60S3
+        // Set data source TRUE | APP
         if (key == 2) {
+            showTruW = !showTruW;
+            return 0; // Commit the key
+        }
+
+        // Set interval for wind history chart update time (interval)
+        if (key == 5) {
+#elif defined BOARD_OBP40S3
+        if (key == 2) {
+#endif
             if (dataIntv == 1) {
                 dataIntv = 2;
             } else if (dataIntv == 2) {
@@ -126,12 +149,6 @@ public:
             return 0; // Commit the key
         }
 
-        // Switch TWS on/off
-        if (key == 5) {
-            showTWS = !showTWS;
-            return 0; // Commit the key
-        }
-
         // Keylock function
         if (key == 11) { // Code for keylock
             commonData->keylock = !commonData->keylock;
@@ -140,19 +157,39 @@ public:
         return key;
     }
 
+    virtual void displayNew(PageData &pageData){
+#ifdef BOARD_OBP40S3
+        String wndSrc; // Wind source true/apparant wind - preselection for OBP40
+
+        wndSrc = commonData->config->getString("page" + String(pageData.pageNumber) + "wndsrc");
+        if (wndSrc =="True wind") {
+            showTruW = true;
+        } else {
+            showTruW = false; // Wind source is apparant wind
+        }
+        commonData->logger->logDebug(GwLog::LOG,"New PageWindPlot: wind source=%s", wndSrc);
+#endif
+    }
+
+
+
     int displayPage(PageData& pageData)
     {
         GwConfigHandler* config = commonData->config;
         GwLog* logger = commonData->logger;
 
-        float twsValue; // TWS value in chart area
-        static String twdName, twdUnit; // TWD name and unit
-        static int updFreq; // Update frequency for TWD
-        static int16_t twdLowest, twdHighest; // TWD range
-        // static int16_t twdBufMinVal; // lowest possible twd buffer value; used for non-set data
+        static RingBuffer<int16_t>* wdHstry; // Wind direction data buffer
+        static RingBuffer<int16_t>* wsHstry; // Wind speed data buffer
+        static String wdName, wdFormat; // Wind direction name and format
+        static String wsName, wsFormat; // Wind speed name and format
+        static int updFreq; // Update frequency for wind direction
+        static int16_t wdLowest, wdHighest; // Wind direction range
+        float wsValue; // Wind speed value in chart area
+        String wsUnit; // Wind speed unit in chart area
+        static GwApi::BoatValue* wsBVal = new GwApi::BoatValue("TWS"); // temp BoatValue for wind speed unit identification; required by OBP60Formater
 
-        // current boat data values; TWD only for validation test, TWS for display of current value
-        const int numBoatData = 2;
+        // current boat data values; TWD/AWD only for validation test, TWS/AWS for display of current value
+        const int numBoatData = 4;
         GwApi::BoatValue* bvalue;
         String BDataName[numBoatData];
         double BDataValue[numBoatData];
@@ -164,8 +201,6 @@ public:
         static bool isInitialized = false; // Flag to indicate that page is initialized
         static bool wndDataValid = false; // Flag to indicate if wind data is valid
         static int numNoData; // Counter for multiple invalid data values in a row
-        // static bool useSimuData = false;
-        // static bool holdValues = false;
 
         static int width; // Screen width
         static int height; // Screen height
@@ -182,6 +217,7 @@ public:
         static size_t lastIdx; // Last index of TWD history buffer
         static size_t lastAddedIdx = 0; // Last index of TWD history buffer when new data was added
         static int oldDataIntv; // remember recent user selection of data interval
+        static bool oldShowTruW; // remember recent user selection of wind data type
 
         static int wndCenter; // chart wind center value position
         static int wndLeft; // chart wind left value position
@@ -190,8 +226,6 @@ public:
         int diffRng; // Difference between mid and current wind value
         static const int dfltRng = 60; // Default range for chart
         int midWndDir; // New value for wndCenter after chart start / shift
-        // static int simTwd; // Simulation value for TWD
-        // static float simTws; // Simulation value for TWS
 
         int x, y; // x and y coordinates for drawing
         static int prevX, prevY; // Last x and y coordinates for drawing
@@ -199,29 +233,33 @@ public:
         int chrtVal; // Current wind value
         static int chrtPrevVal; // Last wind value in chart area for check if value crosses 180 degree line
 
-        LOG_DEBUG(GwLog::LOG, "Display page WindPlot");
+        LOG_DEBUG(GwLog::LOG, "Display PageWindPlot");
 
-        // Get config data
+/*        // Get config data
         bool useSimuData = config->getBool(config->useSimuData);
         // holdValues = config->getBool(config->holdvalues);
         String flashLED = config->getString(config->flashLED);
         String backlightMode = config->getString(config->backlight);
-
+*/
         if (!isInitialized) {
             width = getdisplay().width();
             height = getdisplay().height();
             xCenter = width / 2;
             cHeight = height - yOffset - 22;
-            bufSize = pageData.boatHstry.twdHstry->getCapacity();
             numNoData = 0;
-            // simTwd = pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg;
-            // simTws = 0;
-            twsValue = 0;
             bufStart = 0;
             oldDataIntv = 0;
+            oldShowTruW = false; // we want to initialize wind buffers at 1st time routine runs
+            wdHstry = pageData.boatHstry.twdHstry;
+            bufSize = wdHstry->getCapacity();
+            wsHstry = pageData.boatHstry.twsHstry;
+            bufSize = wsHstry->getCapacity();
+            wdHstry->getMetaData(wdName, wdFormat, updFreq, wdLowest, wdHighest);
+            wsHstry->getMetaData(wsName, wsFormat, updFreq, wdLowest, wdHighest);
+            wsValue = 0;
+            wsBVal->setFormat(wsHstry->getFormat());
             numAddedBufVals, currIdx, lastIdx = 0;
-            lastAddedIdx = pageData.boatHstry.twdHstry->getLastIdx();
-            pageData.boatHstry.twdHstry->getMetaData(twdName, twdUnit, updFreq, twdLowest, twdHighest);
+            lastAddedIdx = wdHstry->getLastIdx();
             wndCenter = INT_MIN;
             midWndDir = 0;
             diffRng = dfltRng;
@@ -249,9 +287,25 @@ public:
             setFlashLED(false);
         }
 
+        if (showTruW != oldShowTruW) {
+            if (showTruW) {
+                wdHstry = pageData.boatHstry.twdHstry;
+                wsHstry = pageData.boatHstry.twsHstry;
+            } else {
+                wdHstry = pageData.boatHstry.awdHstry;
+                wsHstry = pageData.boatHstry.awsHstry;
+            }
+            wdHstry->getMetaData(wdName, wdFormat, updFreq, wdLowest, wdHighest);
+            wsHstry->getMetaData(wsName, wsFormat, updFreq, wdLowest, wdHighest);
+            bufSize = wdHstry->getCapacity();
+            wsBVal->setFormat(wsHstry->getFormat());
+
+            oldShowTruW = showTruW;
+        }
+
         // Identify buffer size and buffer start position for chart
-        count = pageData.boatHstry.twdHstry->getCurrentSize();
-        currIdx = pageData.boatHstry.twdHstry->getLastIdx();
+        count = wdHstry->getCurrentSize();
+        currIdx = wdHstry->getLastIdx();
         numAddedBufVals = (currIdx - lastAddedIdx + bufSize) % bufSize; // Number of values added to buffer since last display
         if (dataIntv != oldDataIntv || count == 1) {
             // new data interval selected by user
@@ -267,24 +321,25 @@ public:
                 bufStart = max(0, bufStart - numAddedBufVals);
             }
         }
-        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Dataset: count: %d, TWD: %.0f, TWS: %.1f, TWD_valid? %d, intvBufSize: %d, numWndVals: %d, bufStart: %d, numAddedBufVals: %d, lastIdx: %d, old: %d, act: %d",
-            count, pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg, pageData.boatHstry.twsHstry->getLast() / 10.0 * 1.94384, BDataValid[0],
-            intvBufSize, numWndVals, bufStart, numAddedBufVals, pageData.boatHstry.twdHstry->getLastIdx(), oldDataIntv, dataIntv);
+        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Dataset: count: %d, xWD: %.0f, xWS: %.1f, xWD_valid? %d, intvBufSize: %d, numWndVals: %d, bufStart: %d, numAddedBufVals: %d, lastIdx: %d, wind source: %s",
+            count, wdHstry->getLast() / 1000.0 * radToDeg, wsHstry->getLast() / 10.0 * 1.94384, BDataValid[0], intvBufSize, numWndVals, bufStart, numAddedBufVals, wdHstry->getLastIdx(),
+            showTruW ? "True" : "App");
 
         // Set wndCenter from 1st real buffer value
         if (wndCenter == INT_MIN || (wndCenter == 0 && count == 1)) {
-            wndCenter = getCntr(*pageData.boatHstry.twdHstry, numWndVals);
-            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Range Init: count: %d, TWD: %.0f, wndCenter: %d, diffRng: %d, chrtRng: %d, Min: %.0f, Max: %.0f", count, pageData.boatHstry.twdHstry->getLast() / 1000.0 * radToDeg,
-                wndCenter, diffRng, chrtRng, pageData.boatHstry.twdHstry->getMin(numWndVals) / 1000.0 * radToDeg, pageData.boatHstry.twdHstry->getMax(numWndVals) / 1000.0 * radToDeg);
+            wndCenter = getCntr(*wdHstry, numWndVals);
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Range Init: count: %d, xWD: %.0f, wndCenter: %d, diffRng: %d, chrtRng: %d, Min: %.0f, Max: %.0f", count, wdHstry->getLast() / 1000.0 * radToDeg,
+                wndCenter, diffRng, chrtRng, wdHstry->getMin(numWndVals) / 1000.0 * radToDeg, wdHstry->getMax(numWndVals) / 1000.0 * radToDeg);
         } else {
             // check and adjust range between left, center, and right chart limit
-            diffRng = getRng(*pageData.boatHstry.twdHstry, wndCenter, numWndVals);
+            diffRng = getRng(*wdHstry, wndCenter, numWndVals);
             diffRng = (diffRng == INT16_MIN ? 0 : diffRng);
             if (diffRng > chrtRng) {
                 chrtRng = int((diffRng + (diffRng >= 0 ? 9 : -1)) / 10) * 10; // Round up to next 10 degree value
             } else if (diffRng + 10 < chrtRng) { // Reduce chart range for higher resolution if possible
                 chrtRng = max(dfltRng, int((diffRng + (diffRng >= 0 ? 9 : -1)) / 10) * 10);
-                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Range adjust: wndCenter: %d, diffRng: %d, chrtRng: %d, Min: %.0f, Max: %.0f", wndCenter, diffRng, chrtRng, pageData.boatHstry.twdHstry->getMin(numWndVals) / 1000.0 * radToDeg, pageData.boatHstry.twdHstry->getMax(numWndVals) / 1000.0 * radToDeg);
+                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Range adjust: wndCenter: %d, diffRng: %d, chrtRng: %d, Min: %.0f, Max: %.0f", wndCenter, diffRng, chrtRng,
+                    wdHstry->getMin(numWndVals) / 1000.0 * radToDeg, wdHstry->getMax(numWndVals) / 1000.0 * radToDeg);
             }
         }
         chrtScl = float(width) / float(chrtRng) / 2.0; // Chart scale: pixels per degree
@@ -310,7 +365,8 @@ public:
         char sWndLbl[4]; // char buffer for Wind angle label
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(xCenter - 88, yOffset - 3);
-        getdisplay().print("TWD"); // Wind data name
+//        getdisplay().print("TWD"); // Wind data name
+        getdisplay().print(wdName); // Wind data name
         snprintf(sWndLbl, 4, "%03d", (wndCenter < 0) ? (wndCenter + 360) : wndCenter);
         drawTextCenter(xCenter, yOffset - 11, sWndLbl);
         getdisplay().drawCircle(xCenter + 25, yOffset - 17, 2, commonData->fgcolor); // <degree> symbol
@@ -326,7 +382,7 @@ public:
         getdisplay().drawCircle(width - 5, yOffset - 17, 2, commonData->fgcolor); // <degree> symbol
         getdisplay().drawCircle(width - 5, yOffset - 17, 3, commonData->fgcolor); // <degree> symbol
 
-        if (pageData.boatHstry.twdHstry->getMax() == pageData.boatHstry.twdHstry->getMinVal()) {
+        if (wdHstry->getMax() == wdHstry->getMinVal()) {
             // only <INT16_MIN> values in buffer -> no valid wind data available
             wndDataValid = false;
         } else if (!BDataValid[0] && !useSimuData) {
@@ -345,7 +401,7 @@ public:
         //***********************************************************************
         if (wndDataValid) {
             for (int i = 0; i < (numWndVals / dataIntv); i++) {
-                chrtVal = static_cast<int>(pageData.boatHstry.twdHstry->get(bufStart + (i * dataIntv))); // show the latest wind values in buffer; keep 1st value constant in a rolling buffer
+                chrtVal = static_cast<int>(wdHstry->get(bufStart + (i * dataIntv))); // show the latest wind values in buffer; keep 1st value constant in a rolling buffer
                 if (chrtVal == INT16_MIN) {
                     chrtPrevVal = INT16_MIN;
                 } else {
@@ -385,62 +441,60 @@ public:
                 if (i >= (cHeight - 1)) {
                     oldDataIntv = 0; // force reset of buffer start and number of values to show in next display loop
 
-                    int minWndDir = pageData.boatHstry.twdHstry->getMin(numWndVals) / 1000.0 * radToDeg;
-                    int maxWndDir = pageData.boatHstry.twdHstry->getMax(numWndVals) / 1000.0 * radToDeg;
+                    int minWndDir = wdHstry->getMin(numWndVals) / 1000.0 * radToDeg;
+                    int maxWndDir = wdHstry->getMax(numWndVals) / 1000.0 * radToDeg;
                     LOG_DEBUG(GwLog::DEBUG, "PageWindPlot FreeTop: Minimum: %d, Maximum: %d, OldwndCenter: %d", minWndDir, maxWndDir, wndCenter);
                     // if (((minWndDir - wndCenter >= 0) && (minWndDir - wndCenter < 180)) || ((maxWndDir - wndCenter <= 0) && (maxWndDir - wndCenter >=180))) {
                     if ((wndRight > wndCenter && (minWndDir >= wndCenter && minWndDir <= wndRight)) || (wndRight <= wndCenter && (minWndDir >= wndCenter || minWndDir <= wndRight)) || (wndLeft < wndCenter && (maxWndDir <= wndCenter && maxWndDir >= wndLeft)) || (wndLeft >= wndCenter && (maxWndDir <= wndCenter || maxWndDir >= wndLeft))) {
                         // Check if all wind value are left or right of center value -> optimize chart center
-                        wndCenter = getCntr(*pageData.boatHstry.twdHstry, numWndVals);
+                        wndCenter = getCntr(*wdHstry, numWndVals);
                     }
                     LOG_DEBUG(GwLog::DEBUG, "PageWindPlot FreeTop: cHeight: %d, bufStart: %d, numWndVals: %d, wndCenter: %d", cHeight, bufStart, numWndVals, wndCenter);
                     break;
                 }
             }
 
-            // Print TWS value
-            if (showTWS) {
-                int currentZone;
-                static int lastZone = 0;
-                static bool flipTws = false;
-                int xPosTws;
-                static const int yPosTws = yOffset + 40;
+            // Print wind speed value
+            int currentZone;
+            static int lastZone = 0;
+            static bool flipTws = false;
+            int xPosTws;
+            static const int yPosTws = yOffset + 40;
 
-                xPosTws = flipTws ? 20 : width - 145;
-                currentZone = (y >= yPosTws - 38) && (y <= yPosTws + 6) && (x >= xPosTws - 4) && (x <= xPosTws + 146) ? 1 : 0; // Define current zone for TWS value
-                if (currentZone != lastZone) {
-                    // Only flip when x moves to a different zone
-                    if ((y >= yPosTws - 38) && (y <= yPosTws + 6) && (x >= xPosTws - 4) && (x <= xPosTws + 146)) {
-                        flipTws = !flipTws;
-                        xPosTws = flipTws ? 20 : width - 145;
-                    }
+            xPosTws = flipTws ? 20 : width - 145;
+            currentZone = (y >= yPosTws - 38) && (y <= yPosTws + 6) && (x >= xPosTws - 4) && (x <= xPosTws + 146) ? 1 : 0; // Define current zone for TWS value
+            if (currentZone != lastZone) {
+                // Only flip when x moves to a different zone
+                if ((y >= yPosTws - 38) && (y <= yPosTws + 6) && (x >= xPosTws - 4) && (x <= xPosTws + 146)) {
+                    flipTws = !flipTws;
+                    xPosTws = flipTws ? 20 : width - 145;
                 }
-                lastZone = currentZone;
-
-                twsValue = pageData.boatHstry.twsHstry->getLast();
-                getdisplay().fillRect(xPosTws - 4, yPosTws - 38, 142, 44, commonData->bgcolor); // Clear area for TWS value
-                getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
-                getdisplay().setCursor(xPosTws, yPosTws);
-                if (twsValue == pageData.boatHstry.twsHstry->getMinVal()) {
-                    getdisplay().print("--.-");
-                } else {
-                    twsValue = twsValue / 10.0 * 1.94384; // TWS value in knots
-                    if (twsValue < 10.0) {
-                        getdisplay().printf("!%3.1f", twsValue); // Value, round to 1 decimal
-                    } else {
-                        getdisplay().printf("%4.1f", twsValue); // Value, round to 1 decimal
-                    }
-                }
-                getdisplay().setFont(&Ubuntu_Bold12pt8b);
-                getdisplay().setCursor(xPosTws + 82, yPosTws - 14);
-                // getdisplay().print("TWS"); // Name
-                getdisplay().print(BDataName[1]); // Name
-                getdisplay().setFont(&Ubuntu_Bold8pt8b);
-                // getdisplay().setCursor(xPosTws + 78, yPosTws + 1);
-                getdisplay().setCursor(xPosTws + 82, yPosTws + 1);
-                // getdisplay().printf(" kn"); // Unit
-                getdisplay().print(BDataUnit[1]); // Unit
             }
+            lastZone = currentZone;
+
+            wsValue = wsHstry->getLast();
+            wsBVal->value = wsValue; // temp variable to retreive data unit from OBP60Formater
+            wsBVal->valid = (static_cast<int16_t>(wsValue) != wsHstry->getMinVal());
+            wsUnit = formatValue(wsBVal, *commonData).unit; // Unit of value
+            getdisplay().fillRect(xPosTws - 4, yPosTws - 38, 142, 44, commonData->bgcolor); // Clear area for TWS value
+            getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
+            getdisplay().setCursor(xPosTws, yPosTws);
+            if (!wsBVal->valid) {
+                getdisplay().print("--.-");
+            } else {
+                wsValue = wsValue / 10.0 * 1.94384; // Wind speed value in knots
+                if (wsValue < 10.0) {
+                    getdisplay().printf("!%3.1f", wsValue); // Value, round to 1 decimal
+                } else {
+                    getdisplay().printf("%4.1f", wsValue); // Value, round to 1 decimal
+                }
+            }
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
+            getdisplay().setCursor(xPosTws + 82, yPosTws - 14);
+            getdisplay().print(wsName); // Name
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
+            getdisplay().setCursor(xPosTws + 82, yPosTws + 1);
+            getdisplay().print(wsUnit); // Unit
 
         } else {
             // No valid data available
@@ -477,19 +531,17 @@ static Page* createPage(CommonData& common)
 {
     return new PageWindPlot(common);
 }
-/**
- * with the code below we make this page known to the PageTask
+
+/* with the code below we make this page known to the PageTask
  * we give it a type (name) that can be selected in the config
  * we define which function is to be called
  * and we provide the number of user parameters we expect (0 here)
- * and will will provide the names of the fixed values we need
- */
+ * and will will provide the names of the fixed values we need */
 PageDescription registerPageWindPlot(
     "WindPlot", // Page name
     createPage, // Action
     0, // Number of bus values depends on selection in Web configuration
-    { "TWD", "TWS" }, // Bus values we need in the page
-    //    {}, // Bus values we need in the page
+    { "TWD", "TWS", "AWD", "AWS" }, // Bus values we need in the page
     true // Show display header on/off
 );
 

@@ -77,6 +77,25 @@ void WindUtils::calcTwdSA(const double* AWA, const double* AWS,
     //    Serial.println("calcTwdSA: TWD: " + String(*TWD) + ", TWS: " + String(*TWS));
 }
 
+double WindUtils::calcHDT(const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal)
+{
+    double hdt;
+    double minSogVal = 0.1; // SOG below this value (m/s) is assumed to be  data noise from GPS sensor
+    static const double DBL_MIN = std::numeric_limits<double>::lowest();
+
+    // Serial.println("\ncalcTrueWind: HDT: " + String(*hdtVal) + ", HDM: " + String(*hdmVal) + ", VAR: " + String(*varVal) + ", SOG: " + String(*sogVal) + ", COG: " + String(*cogVal));
+    if (*hdmVal != DBL_MIN) {
+        hdt = *hdmVal + (*varVal != DBL_MIN ? *varVal : 0.0); // Use corrected HDM if HDT is not available (or just HDM if VAR is not available)
+        hdt = to2PI(hdt);
+    } else if (*cogVal != DBL_MIN && *sogVal >= minSogVal) {
+        hdt = *cogVal; // Use COG as fallback if HDT and HDM are not available, and SOG is not data noise
+    } else {
+        hdt = DBL_MIN; // Cannot calculate HDT without valid HDM or HDM+VAR or COG
+    }
+
+    return hdt;
+}
+
 bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
     const double* cogVal, const double* stwVal, const double* sogVal, const double* hdtVal,
     const double* hdmVal, const double* varVal, double* twdVal, double* twsVal, double* twaVal)
@@ -87,7 +106,7 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
     static const double DBL_MIN = std::numeric_limits<double>::lowest();
 
     // Serial.println("\ncalcTrueWind: HDT: " + String(*hdtVal) + ", HDM: " + String(*hdmVal) + ", VAR: " + String(*varVal) + ", SOG: " + String(*sogVal) + ", COG: " + String(*cogVal));
-    if (*hdtVal != DBL_MIN) {
+/*    if (*hdtVal != DBL_MIN) {
         hdt = *hdtVal; // Use HDT if available
     } else {
         if (*hdmVal != DBL_MIN) {
@@ -98,6 +117,11 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
         } else {
             return false; // Cannot calculate without valid HDT or HDM+VAR or COG
         }
+    } */
+    if (*hdtVal != DBL_MIN) {
+        hdt = *hdtVal; // Use HDT if available
+    } else {
+        hdt = calcHDT(hdmVal, varVal, cogVal, sogVal);
     }
 
     if (*cogVal != DBL_MIN && *sogVal >= minSogVal) { // if SOG is data noise, we don't trust COG
