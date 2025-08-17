@@ -5,7 +5,7 @@
 
 class PageBattery : public Page
 {
-    int average = 0;                    // Average type [0...3], 0=off, 1=10s, 2=60s, 3=300s
+    int average = 0; // Average type [0...3], 0=off, 1=10s, 2=60s, 3=300s
 
     public:
     PageBattery(CommonData &common){

@@ -18,8 +18,6 @@
 
 #ifdef BOARD_OBP40S3
 #include "driver/rtc_io.h"              // Needs for weakup from deep sleep
-#include <FS.h>                         // SD-Card access
-#include <SD.h>
 #include <SPI.h>
 #endif
 
@@ -34,7 +32,6 @@
 #include "OBP60QRWiFi.h"                // Functions lib for WiFi QR code
 #include "OBPSensorTask.h"              // Functions lib for sensor data
 
-
 // Global vars
 bool initComplete = false;      // Initialization complete
 int taskRunCounter = 0;         // Task couter for loop section
@@ -47,63 +44,23 @@ void OBP60Init(GwApi *api){
     GwConfigHandler *config = api->getConfig();
 
     // Set a new device name and hidden the original name in the main config
-    String devicename = api->getConfig()->getConfigItem(api->getConfig()->deviceName,true)->asString();
-    api->getConfig()->setValue(GwConfigDefinitions::systemName, devicename, GwConfigInterface::ConfigType::HIDDEN);
+    String devicename = config->getConfigItem(config->deviceName, true)->asString();
+    config->setValue(GwConfigDefinitions::systemName, devicename, GwConfigInterface::ConfigType::HIDDEN);
 
-    api->getLogger()->logDebug(GwLog::LOG,"obp60init running");
-    
+    logger->prefix = devicename + ":";
+    logger->logDebug(GwLog::LOG,"obp60init running");
+
     // Check I2C devices
-    
+
+    // Init power
+    String powermode = config->getConfigItem(config->powerMode,true)->asString();
+    logger->logDebug(GwLog::DEBUG, "Power Mode is: %s", powermode.c_str());
+    powerInit(powermode);
 
     // Init hardware
     hardwareInit(api);
 
-    // Init power rail 5.0V
-    String powermode = api->getConfig()->getConfigItem(api->getConfig()->powerMode,true)->asString();
-    api->getLogger()->logDebug(GwLog::DEBUG,"Power Mode is: %s", powermode.c_str());
-    if(powermode == "Max Power" || powermode == "Only 5.0V"){
-        #ifdef HARDWARE_V21
-        setPortPin(OBP_POWER_50, true); // Power on 5.0V rail
-        #endif
-        #ifdef BOARD_OBP40S3
-        setPortPin(OBP_POWER_EPD, true);// Power on ePaper display
-        setPortPin(OBP_POWER_SD, true); // Power on SD card
-        #endif
-    }
-    else{
-        #ifdef HARDWARE_V21
-        setPortPin(OBP_POWER_50, false); // Power off 5.0V rail
-        #endif
-        #ifdef BOARD_OBP40S3
-        setPortPin(OBP_POWER_EPD, false);// Power off ePaper display
-        setPortPin(OBP_POWER_SD, false); // Power off SD card
-        #endif
-    }
-
-    #ifdef BOARD_OBP40S3
-    bool sdcard = config->getBool(config->useSDCard);
-    if (sdcard) {
-        SPIClass SD_SPI = SPIClass(HSPI);
-        SD_SPI.begin(SD_SPI_CLK, SD_SPI_MISO, SD_SPI_MOSI);
-        if (SD.begin(SD_SPI_CS, SD_SPI, 80000000)) {
-            String sdtype = "unknown";
-            uint8_t cardType = SD.cardType();
-            switch (cardType) {
-                case CARD_MMC:
-                   sdtype = "MMC";
-                   break;
-                case CARD_SD:
-                   sdtype = "SDSC";
-                   break;
-                case CARD_SDHC:
-                   sdtype = "SDHC";
-                   break;
-            }
-            uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-            LOG_DEBUG(GwLog::LOG,"SD card type %s of size %d MB detected", sdtype, cardSize);
-        }
-    }
-
+#ifdef BOARD_OBP40S3
     // Deep sleep wakeup configuration
     esp_sleep_enable_ext0_wakeup(OBP_WAKEWUP_PIN, 0);   // 1 = High, 0 = Low
     rtc_gpio_pullup_en(OBP_WAKEWUP_PIN);                // Activate pullup resistor
@@ -112,7 +69,7 @@ void OBP60Init(GwApi *api){
 
     // Settings for e-paper display
     String fastrefresh = api->getConfig()->getConfigItem(api->getConfig()->fastRefresh,true)->asString();
-    api->getLogger()->logDebug(GwLog::DEBUG,"Fast Refresh Mode is: %s", fastrefresh.c_str());
+    logger->logDebug(GwLog::DEBUG, "Fast Refresh Mode is: %s", fastrefresh.c_str());
     #ifdef DISPLAY_GDEY042T81
     if(fastrefresh == "true"){
         static const bool useFastFullUpdate = true;   // Enable fast full display update only for GDEY042T81
@@ -131,11 +88,11 @@ void OBP60Init(GwApi *api){
 
     // Get CPU speed
     int freq = getCpuFrequencyMhz();
-    api->getLogger()->logDebug(GwLog::LOG,"CPU speed at boot: %i MHz", freq);
+    logger->logDebug(GwLog::LOG,"CPU speed at boot: %i MHz", freq);
     
     // Settings for backlight
     String backlightMode = api->getConfig()->getConfigItem(api->getConfig()->backlight,true)->asString();
-    api->getLogger()->logDebug(GwLog::DEBUG,"Backlight Mode is: %s", backlightMode.c_str());
+    logger->logDebug(GwLog::DEBUG,"Backlight Mode is: %s", backlightMode.c_str());
     uint brightness = uint(api->getConfig()->getConfigItem(api->getConfig()->blBrightness,true)->asInt());
     String backlightColor = api->getConfig()->getConfigItem(api->getConfig()->blColor,true)->asString();
     if(String(backlightMode) == "On"){
@@ -150,7 +107,7 @@ void OBP60Init(GwApi *api){
 
     // Settings flash LED mode
     String ledMode = api->getConfig()->getConfigItem(api->getConfig()->flashLED,true)->asString();
-    api->getLogger()->logDebug(GwLog::DEBUG,"LED Mode is: %s", ledMode.c_str());
+    logger->logDebug(GwLog::DEBUG,"LED Mode is: %s", ledMode.c_str());
     if(String(ledMode) == "Off"){
         setBlinkingLED(false);
     }
@@ -282,7 +239,7 @@ void registerAllPages(PageList &list){
     extern PageDescription registerPageWindRose;
     list.add(&registerPageWindRose);
     extern PageDescription registerPageWindRoseFlex;
-    list.add(&registerPageWindRoseFlex); // 
+    list.add(&registerPageWindRoseFlex);
     extern PageDescription registerPageVoltage;
     list.add(&registerPageVoltage);
     extern PageDescription registerPageDST810;
@@ -789,7 +746,7 @@ void OBP60Task(GwApi *api){
     double homelon = commonData.config->getString(commonData.config->homeLON).toDouble();
     bool homevalid = homelat >= -180.0 and homelat <= 180 and homelon >= -90.0 and homelon <= 90.0;
     if (homevalid) {
-        LOG_DEBUG(GwLog::LOG, "Home location set to %f : %f", homelat, homelon);
+        LOG_DEBUG(GwLog::LOG, "Home location set to lat=%f, lon=%f", homelat, homelon);
     } else {
         LOG_DEBUG(GwLog::LOG, "No valid home location found");
     }
@@ -823,6 +780,7 @@ void OBP60Task(GwApi *api){
     //####################################################################################
 
     bool systemPage = false;
+    bool systemPageNew = false;
     Page *currentPage;
     while (true){
         delay(100);     // Delay 100ms (loop time)
@@ -875,6 +833,7 @@ void OBP60Task(GwApi *api){
                     systemPage = true; // System page is out of band
                     syspage->setupKeys();
                     keyboardMessage = 0;
+                    systemPageNew = true;
                 }
                 else {
                     currentPage = pages[pageNumber].page;
@@ -971,6 +930,7 @@ void OBP60Task(GwApi *api){
                 else{
                     getdisplay().fillScreen(commonData.fgcolor); // Clear display
                     #ifdef DISPLAY_GDEY042T81
+                        getdisplay().hibernate();                  // Set display in hybenate mode
                         getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
                     #else
                         getdisplay().init(115200);               // Init for normal displays
@@ -998,6 +958,7 @@ void OBP60Task(GwApi *api){
                 else{
                     getdisplay().fillScreen(commonData.fgcolor); // Clear display
                     #ifdef DISPLAY_GDEY042T81
+                        getdisplay().hibernate();                  // Set display in hybenate mode
                         getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
                     #else
                         getdisplay().init(115200);               // Init for normal displays
@@ -1022,6 +983,7 @@ void OBP60Task(GwApi *api){
                 else{
                     getdisplay().fillScreen(commonData.fgcolor); // Clear display
                     #ifdef DISPLAY_GDEY042T81
+                        getdisplay().hibernate();                  // Set display in hybenate mode
                         getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
                     #else
                         getdisplay().init(115200);               // Init for normal displays
@@ -1070,6 +1032,10 @@ void OBP60Task(GwApi *api){
                 if (systemPage) {
                     displayFooter(commonData);
                     PageData sysparams; // empty
+                    if (systemPageNew) {
+                        syspage->displayNew(sysparams);
+                        systemPageNew = false;
+                    }
                     syspage->displayPage(sysparams);
                 }
                 else {
@@ -1086,10 +1052,11 @@ void OBP60Task(GwApi *api){
                     }
                     else{
                         if (lastPage != pageNumber){
-                            if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember page for device restart
+                            pages[lastPage].page->leavePage(pages[lastPage].parameters); // call page cleanup code
+                            if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember new page for device restart
                             currentPage->setupKeys();
                             currentPage->displayNew(pages[pageNumber].parameters);
-                            lastPage=pageNumber;
+                            lastPage = pageNumber;
                         }
                         //call the page code
                         LOG_DEBUG(GwLog::DEBUG,"calling page %d",pageNumber);

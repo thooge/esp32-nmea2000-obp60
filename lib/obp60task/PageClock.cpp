@@ -120,7 +120,7 @@ bool homevalid = false; // homelat and homelon are valid
         }
         else{
             value1 = simtime++;                         // Simulation data for time value 11:36 in seconds
-        }                                               // Other simulation data see OBP60Formater.cpp
+        }                                               // Other simulation data see OBP60Formatter.cpp
         bool valid1 = bvalue1->valid;                   // Valid information 
         String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value

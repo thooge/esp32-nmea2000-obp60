@@ -7,6 +7,12 @@
 #include <GxEPD2_BW.h>                  // E-paper lib V2
 #include <Adafruit_FRAM_I2C.h>          // I2C FRAM
 
+#ifdef BOARD_OBP40S3
+#include "esp_vfs_fat.h"
+#include "sdmmc_cmd.h"
+#define MOUNT_POINT "/sdcard"
+#endif
+
 // FRAM address reservations 32kB: 0x0000 - 0x7FFF
 // 0x0000 - 0x03ff: single variables
 #define FRAM_PAGE_NO 0x0002
@@ -15,6 +21,7 @@
 #define FRAM_VOLTAGE_AVG 0x000A
 #define FRAM_VOLTAGE_TREND 0x000B
 #define FRAM_VOLTAGE_MODE 0x000C
+// Wind page
 #define FRAM_WIND_SIZE 0x000D
 #define FRAM_WIND_SRC 0x000E
 #define FRAM_WIND_MODE 0x000F
@@ -24,6 +31,10 @@
 
 extern Adafruit_FRAM_I2C fram;
 extern bool hasFRAM;
+extern bool hasSDCard;
+#ifdef BOARD_OBP40S3
+extern sdmmc_card_t *sdcard;
+#endif
 
 // Fonts declarations for display (#includes see OBP60Extensions.cpp)
 extern const GFXfont DSEG7Classic_BoldItalic16pt7b;
@@ -75,6 +86,7 @@ void deepSleep(CommonData &common);
 uint8_t getLastPage();
 
 void hardwareInit(GwApi *api);
+void powerInit(String powermode);
 
 void setPortPin(uint pin, bool value);          // Set port pin for extension port
 
