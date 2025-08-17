@@ -32,6 +32,7 @@ public:
     void setMetaData(String name, String format, int updateFrequency, T minValue, T maxValue); // Set meta data for buffer
     bool getMetaData(String& name, String& format, int& updateFrequency, T& minValue, T& maxValue); // Get meta data of buffer
     String getName() const; // Get buffer name
+    String getFormat() const; // Get buffer data format
     void add(const T& value); // Add a new value to  buffer
     T get(size_t index) const; // Get value at specific position (0-based index from oldest to newest)
     T getFirst() const; // Get the first (oldest) value in buffer

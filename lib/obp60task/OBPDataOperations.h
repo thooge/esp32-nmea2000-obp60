@@ -1,18 +1,20 @@
 #pragma once
 #include "GwApi.h"
 #include "OBPRingBuffer.h"
-#include <Arduino.h>
+// #include <Arduino.h>
 #include <math.h>
 
 typedef struct {
     RingBuffer<int16_t>* twdHstry;
     RingBuffer<int16_t>* twsHstry;
+    RingBuffer<int16_t>* awdHstry;
+    RingBuffer<int16_t>* awsHstry;
 } tBoatHstryData; // Holds pointers to all history buffers for boat data
 
 class HstryBuf {
 
 public:
-    void fillWndBufSimData(tBoatHstryData& hstryBufs); // Fill most part of the TWD and TWS history buffer with simulated data
+
 };
 
 class WindUtils {
@@ -30,6 +32,7 @@ public:
     static void calcTwdSA(const double* AWA, const double* AWS,
         const double* CTW, const double* STW, const double* HDT,
         double* TWD, double* TWS, double* TWA);
+    static double calcHDT(const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal);
     static bool calcTrueWind(const double* awaVal, const double* awsVal,
         const double* cogVal, const double* stwVal, const double* sogVal, const double* hdtVal,
         const double* hdmVal, const double* varVal, double* twdVal, double* twsVal, double* twaVal);
