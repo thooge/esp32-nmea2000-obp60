@@ -439,21 +439,34 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
     //########################################################
     else if (value->getFormat() == "formatXte"){
         double xte = 0;
-        if (!usesimudata) {
-            xte = abs(value->value);
+        if(usesimudata == false) {
+            xte = value->value;
             rawvalue = value->value;
-        } else {
+        }
+        else{
             rawvalue = 6.0 + float(random(0, 4));
             xte = rawvalue;
         }
-        if (xte >= 100) {
-            snprintf(buffer, bsize, fmt_dec_100, value->value);
-        } else if (xte >= 10) {
-            snprintf(buffer, bsize, fmt_dec_10, value->value);
-        } else {
-            snprintf(buffer, bsize, fmt_dec_1, value->value);
+        if(String(distanceFormat) == "km"){
+            xte = xte * 0.001;
+            result.unit = "km";
         }
-        result.unit = "nm";
+        else if(String(distanceFormat) == "nm"){
+            xte = xte * 0.000539957;
+            result.unit = "nm";
+        }
+        else{;
+            result.unit = "m";
+        }
+        if(xte < 10){
+            snprintf(buffer,bsize,"%3.2f",xte);
+        }
+        if(xte >= 10 && xte < 100){
+            snprintf(buffer,bsize,"%3.1f",xte);
+        }
+        if(xte >= 100){
+            snprintf(buffer,bsize,"%3.0f",xte);
+        }
     }
     //########################################################
     else if (value->getFormat() == "kelvinToC"){
