@@ -64,6 +64,13 @@ String RingBuffer<T>::getName() const
     return dataName;
 }
 
+// Get buffer data format
+template <typename T>
+String RingBuffer<T>::getFormat() const
+{
+    return dataFmt;
+}
+
 // Add a new value to buffer
 template <typename T>
 void RingBuffer<T>::add(const T& value)

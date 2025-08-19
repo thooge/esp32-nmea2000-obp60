@@ -1675,6 +1675,26 @@
         ]
     },
     {
+        "name": "page1wndsrc",
+        "label": "Wind source",
+        "type": "list",
+        "default": "True wind",
+        "description": "Wind source for page 1: [true|apparant]",
+        "list": [
+            "True wind",
+            "Apparant wind"
+        ],
+        "category": "OBP40 Page 1",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            {
+                "page1type": "WindPlot"
+            }
+        ]
+    },
+    {
         "name": "page2type",
         "label": "Type",
         "type": "list",
@@ -1977,6 +1997,26 @@
         ]
     },
     {
+        "name": "page2wndsrc",
+        "label": "Wind source",
+        "type": "list",
+        "default": "True wind",
+        "description": "Wind source for page 2: [true|apparant]",
+        "list": [
+            "True wind",
+            "Apparant wind"
+        ],
+        "category": "OBP40 Page 2",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            {
+                "page2type": "WindPlot"
+            }
+        ]
+    },
+    {
         "name": "page3type",
         "label": "Type",
         "type": "list",
@@ -2270,6 +2310,26 @@
         ]
     },
     {
+        "name": "page3wndsrc",
+        "label": "Wind source",
+        "type": "list",
+        "default": "True wind",
+        "description": "Wind source for page 3: [true|apparant]",
+        "list": [
+            "True wind",
+            "Apparant wind"
+        ],
+        "category": "OBP40 Page 3",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            {
+                "page3type": "WindPlot"
+            }
+        ]
+    },
+    {
         "name": "page4type",
         "label": "Type",
         "type": "list",
@@ -2554,6 +2614,26 @@
         ]
     },
     {
+        "name": "page4wndsrc",
+        "label": "Wind source",
+        "type": "list",
+        "default": "True wind",
+        "description": "Wind source for page 4: [true|apparant]",
+        "list": [
+            "True wind",
+            "Apparant wind"
+        ],
+        "category": "OBP40 Page 4",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            {
+                "page4type": "WindPlot"
+            }
+        ]
+    },
+    {
         "name": "page5type",
         "label": "Type",
         "type": "list",
@@ -2829,6 +2909,26 @@
         ]
     },
     {
+        "name": "page5wndsrc",
+        "label": "Wind source",
+        "type": "list",
+        "default": "True wind",
+        "description": "Wind source for page 5: [true|apparant]",
+        "list": [
+            "True wind",
+            "Apparant wind"
+        ],
+        "category": "OBP40 Page 5",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            {
+                "page5type": "WindPlot"
+            }
+        ]
+    },
+    {
         "name": "page6type",
         "label": "Type",
         "type": "list",
@@ -3095,6 +3195,26 @@
         ]
     },
     {
+        "name": "page6wndsrc",
+        "label": "Wind source",
+        "type": "list",
+        "default": "True wind",
+        "description": "Wind source for page 6: [true|apparant]",
+        "list": [
+            "True wind",
+            "Apparant wind"
+        ],
+        "category": "OBP40 Page 6",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            {
+                "page6type": "WindPlot"
+            }
+        ]
+    },
+    {
         "name": "page7type",
         "label": "Type",
         "type": "list",
@@ -3352,6 +3472,26 @@
         ]
     },
     {
+        "name": "page7wndsrc",
+        "label": "Wind source",
+        "type": "list",
+        "default": "True wind",
+        "description": "Wind source for page 7: [true|apparant]",
+        "list": [
+            "True wind",
+            "Apparant wind"
+        ],
+        "category": "OBP40 Page 7",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            {
+                "page7type": "WindPlot"
+            }
+        ]
+    },
+    {
         "name": "page8type",
         "label": "Type",
         "type": "list",
@@ -3600,6 +3740,26 @@
         ]
     },
     {
+        "name": "page8wndsrc",
+        "label": "Wind source",
+        "type": "list",
+        "default": "True wind",
+        "description": "Wind source for page 8: [true|apparant]",
+        "list": [
+            "True wind",
+            "Apparant wind"
+        ],
+        "category": "OBP40 Page 8",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            {
+                "page8type": "WindPlot"
+            }
+        ]
+    },
+    {
         "name": "page9type",
         "label": "Type",
         "type": "list",
@@ -3839,6 +3999,26 @@
         ]
     },
     {
+        "name": "page9wndsrc",
+        "label": "Wind source",
+        "type": "list",
+        "default": "True wind",
+        "description": "Wind source for page 9: [true|apparant]",
+        "list": [
+            "True wind",
+            "Apparant wind"
+        ],
+        "category": "OBP40 Page 9",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            {
+                "page9type": "WindPlot"
+            }
+        ]
+    },
+    {
         "name": "page10type",
         "label": "Type",
         "type": "list",
@@ -4065,6 +4245,26 @@
         "condition": [
             {
                 "page10type": "Fluid"
+            }
+        ]
+    },
+    {
+        "name": "page10wndsrc",
+        "label": "Wind source",
+        "type": "list",
+        "default": "True wind",
+        "description": "Wind source for page 10: [true|apparant]",
+        "list": [
+            "True wind",
+            "Apparant wind"
+        ],
+        "category": "OBP40 Page 10",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            {
+                "page10type": "WindPlot"
             }
         ]
     }

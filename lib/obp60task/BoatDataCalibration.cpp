@@ -173,7 +173,7 @@ void CalibrationDataList::smoothInstance(GwApi::BoatValue* boatDataValue, GwLog*
     if (!boatDataValue->valid) { // no valid boat data value, so we don't want to smoothen value
         return;
     } else if (calibMap.find(instance) == calibMap.end()) {
-        logger->logDebug(GwLog::DEBUG, "BoatDataCalibration: smooth factor for %s not found in calibration data list", instance.c_str());
+        logger->logDebug(GwLog::DEBUG, "BoatDataCalibration: smooth factor for %s not found in calibration list", instance.c_str());
         return;
     } else {
         smoothFactor = calibMap[instance].smooth;
@@ -184,8 +184,6 @@ void CalibrationDataList::smoothInstance(GwApi::BoatValue* boatDataValue, GwLog*
         }
         lastValue[instance] = dataValue; // store the new value for next cycle; first time, store only the current value and return
         boatDataValue->value = dataValue; // set the smoothed value to the boat data value
-
-        logger->logDebug(GwLog::DEBUG, "BoatDataCalibration: %s: Smoothing factor: %f, Smoothed value: %f", instance.c_str(), smoothFactor, dataValue);
     }
 }
 

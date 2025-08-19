@@ -77,30 +77,56 @@ void WindUtils::calcTwdSA(const double* AWA, const double* AWS,
     //    Serial.println("calcTwdSA: TWD: " + String(*TWD) + ", TWS: " + String(*TWS));
 }
 
+double WindUtils::calcHDT(const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal)
+{
+    double hdt;
+    double minSogVal = 0.1; // SOG below this value (m/s) is assumed to be  data noise from GPS sensor
+    static const double DBL_MIN = std::numeric_limits<double>::lowest();
+
+    // Serial.println("\ncalcTrueWind: HDT: " + String(*hdtVal) + ", HDM: " + String(*hdmVal) + ", VAR: " + String(*varVal) + ", SOG: " + String(*sogVal) + ", COG: " + String(*cogVal));
+    if (*hdmVal != DBL_MIN) {
+        hdt = *hdmVal + (*varVal != DBL_MIN ? *varVal : 0.0); // Use corrected HDM if HDT is not available (or just HDM if VAR is not available)
+        hdt = to2PI(hdt);
+    } else if (*cogVal != DBL_MIN && *sogVal >= minSogVal) {
+        hdt = *cogVal; // Use COG as fallback if HDT and HDM are not available, and SOG is not data noise
+    } else {
+        hdt = DBL_MIN; // Cannot calculate HDT without valid HDM or HDM+VAR or COG
+    }
+
+    return hdt;
+}
+
 bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
     const double* cogVal, const double* stwVal, const double* sogVal, const double* hdtVal,
     const double* hdmVal, const double* varVal, double* twdVal, double* twsVal, double* twaVal)
 {
     double stw, hdt, ctw;
     double twd, tws, twa;
+    double minSogVal = 0.1; // SOG below this value (m/s) is assumed to be  data noise from GPS sensor
     static const double DBL_MIN = std::numeric_limits<double>::lowest();
 
-    if (*hdtVal != DBL_MIN) {
+    // Serial.println("\ncalcTrueWind: HDT: " + String(*hdtVal) + ", HDM: " + String(*hdmVal) + ", VAR: " + String(*varVal) + ", SOG: " + String(*sogVal) + ", COG: " + String(*cogVal));
+/*    if (*hdtVal != DBL_MIN) {
         hdt = *hdtVal; // Use HDT if available
     } else {
-        if (*hdmVal != DBL_MIN && *varVal != DBL_MIN) {
-            hdt = *hdmVal + *varVal; // Use corrected HDM if HDT is not available
+        if (*hdmVal != DBL_MIN) {
+            hdt = *hdmVal + (*varVal != DBL_MIN ? *varVal : 0.0); // Use corrected HDM if HDT is not available (or just HDM if VAR is not available)
             hdt = to2PI(hdt);
-        } else if (*cogVal != DBL_MIN) {
-            hdt = *cogVal; // Use COG as fallback if HDT and HDM are not available
+        } else if (*cogVal != DBL_MIN && *sogVal >= minSogVal) {
+            hdt = *cogVal; // Use COG as fallback if HDT and HDM are not available, and SOG is not data noise
         } else {
             return false; // Cannot calculate without valid HDT or HDM+VAR or COG
         }
+    } */
+    if (*hdtVal != DBL_MIN) {
+        hdt = *hdtVal; // Use HDT if available
+    } else {
+        hdt = calcHDT(hdmVal, varVal, cogVal, sogVal);
     }
 
-    if (*cogVal != DBL_MIN) {
-        ctw = *cogVal; // Use COG as CTW if available
-        //    ctw = *cogVal + ((*cogVal - hdt) / 2); // Estimate CTW from COG
+    if (*cogVal != DBL_MIN && *sogVal >= minSogVal) { // if SOG is data noise, we don't trust COG
+
+        ctw = *cogVal; // Use COG for CTW if available
     } else {
         ctw = hdt; // 2nd approximation for CTW; hdt must exist if we reach this part of the code
     }
@@ -113,6 +139,7 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
         // If STW and SOG are not available, we cannot calculate true wind
         return false;
     }
+    // Serial.println("\ncalcTrueWind: HDT: " + String(hdt) + ", CTW: " + String(ctw) + ", STW: " + String(stw));
 
     if ((*awaVal == DBL_MIN) || (*awsVal == DBL_MIN)) {
         // Cannot calculate true wind without valid AWA, AWS; other checks are done earlier
@@ -126,32 +153,3 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
         return true;
     }
 }
-
-void HstryBuf::fillWndBufSimData(tBoatHstryData& hstryBufs)
-// Fill most part of TWD and TWS history buffer with simulated data
-{
-    double value = 20.0;
-    int16_t value2 = 0;
-    for (int i = 0; i < 900; i++) {
-        value += random(-20, 20);
-        value = WindUtils::to360(value);
-        value2 = static_cast<int16_t>(value * DEG_TO_RAD * 1000);
-        hstryBufs.twdHstry->add(value2);
-    }
-}
-
-/* double genTwdSimDat()
-{
-    simTwd += random(-20, 20);
-    if (simTwd < 0.0)
-        simTwd += 360.0;
-    if (simTwd >= 360.0)
-        simTwd -= 360.0;
-
-    int16_t z = static_cast<int16_t>(DegToRad(simTwd) * 1000.0);
-    pageData.boatHstry.twdHstry->add(z); // Fill the buffer with some test data
-
-    simTws += random(-200, 150) / 10.0; // TWS value in knots
-    simTws = constrain(simTws, 0.0f, 50.0f); // Ensure TWS is between 0 and 50 knots
-    twsValue = simTws;
-}*/

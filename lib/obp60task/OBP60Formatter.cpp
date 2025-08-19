@@ -439,21 +439,30 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
     //########################################################
     else if (value->getFormat() == "formatXte"){
         double xte = 0;
-        if (!usesimudata) {
-            xte = abs(value->value);
+        if (usesimudata == false) {
+            xte = value->value;
             rawvalue = value->value;
         } else {
             rawvalue = 6.0 + float(random(0, 4));
             xte = rawvalue;
         }
-        if (xte >= 100) {
-            snprintf(buffer, bsize, fmt_dec_100, value->value);
-        } else if (xte >= 10) {
-            snprintf(buffer, bsize, fmt_dec_10, value->value);
+        if (distanceFormat == "km") {
+            xte = xte * 0.001;
+            result.unit = "km";
+        } else if (distanceFormat == "nm") {
+            xte = xte * 0.000539957;
+            result.unit = "nm";
         } else {
-            snprintf(buffer, bsize, fmt_dec_1, value->value);
+            result.unit = "m";
         }
-        result.unit = "nm";
+        if (xte < 10) {
+            snprintf(buffer, bsize, "%3.2f", xte);
+        } else if (xte < 100) {
+            snprintf(buffer,bsize,"%3.1f",xte);
+        }
+        else {
+            snprintf(buffer, bsize, "%3.0f", xte);
+        }
     }
     //########################################################
     else if (value->getFormat() == "kelvinToC"){
