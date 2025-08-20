@@ -9,6 +9,13 @@
 #define GW_BOAT_VALUE_LEN 32
 #define GWSC(name) static constexpr const char* name=#name
 
+#define GWTYPE_DOUBLE 1
+#define GWTYPE_UINT32 2
+#define GWTYPE_UINT16 3
+#define GWTYPE_INT16 4
+#define GWTYPE_STRING 5
+#define GWTYPE_USER 100
+
 //see https://github.com/wellenvogel/esp32-nmea2000/issues/44
 //factor to convert from N2k/SI rad/s to current NMEA rad/min
 #define ROT_WA_FACTOR 60
@@ -93,6 +100,7 @@ class GwBoatItemBase{
         virtual int getLastSource(){return lastUpdateSource;}
         virtual void refresh(unsigned long ts=0){uls(ts);}
         virtual double getDoubleValue()=0;
+        virtual String getStringValue()=0;
         String getName(){return name;}
         const String & getFormat() const{return format;}
         virtual void setInvalidTime(GwConfigHandler *cfg);
@@ -128,6 +136,10 @@ template<class T> class GwBoatItem : public GwBoatItemBase{
                 return (double)data;
             }
         }
+        virtual String getStringValue(){
+            return (String)data;
+        }
+
         virtual void fillString();
         virtual void toJsonDoc(GwJsonDocument *doc, unsigned long minTime);
         virtual int getLastSource(){return lastUpdateSource;}

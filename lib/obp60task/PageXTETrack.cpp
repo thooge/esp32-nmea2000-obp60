@@ -133,6 +133,8 @@ public:
         epd->setCursor(360-w, 257);
         epd->print(sval_btw);
 
+        GwApi::BoatValue *bv_wpname = pageData.values[4]; // WPName
+
         bool valid = bv_cog->valid && bv_btw->valid;
 
         // XTETrack view
@@ -144,7 +146,7 @@ public:
         String sval_wpname = "no data";
 
         if (valid) {
-            sval_wpname = "Tonne 122";
+            sval_wpname = bv_wpname->svalue;
         }
 
         epd->setFont(&Ubuntu_Bold10pt8b);
@@ -225,7 +227,7 @@ PageDescription registerPageXTETrack(
     "XTETrack", // Page name
     createPage, // Action
     0,          // Number of bus values depends on selection in Web configuration
-    {"XTE", "COG", "DTW", "BTW"}, // Bus values we need in the page
+    {"XTE", "COG", "DTW", "BTW", "WPName"}, // Bus values we need in the page
     true        // Show display header on/off
 );
 

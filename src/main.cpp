@@ -302,9 +302,15 @@ public:
         if (newValid != list[i]->valid) list[i]->changed=true;
         list[i]->valid=newValid;
         if (newValid){
-          double newValue=item->getDoubleValue();
-          if (newValue != list[i]->value) list[i]->changed=true;
-          list[i]->value=newValue;
+          if (item->getCurrentType() == GWTYPE_STRING) {
+              String newValue=item->getStringValue();
+              if (newValue != list[i]->svalue) list[i]->changed=true;
+              list[i]->svalue=newValue;
+          } else {
+              double newValue=item->getDoubleValue();
+              if (newValue != list[i]->value) list[i]->changed=true;
+              list[i]->value=newValue;
+          }
           int newSource=item->getLastSource();
           if (newSource != list[i]->source){
             list[i]->source=newSource;

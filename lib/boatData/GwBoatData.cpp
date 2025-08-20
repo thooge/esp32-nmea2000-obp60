@@ -2,12 +2,6 @@
 #include <GwJsonDocument.h>
 #include <ArduinoJson/Json/TextFormatter.hpp>
 #include "GWConfig.h"
-#define GWTYPE_DOUBLE 1
-#define GWTYPE_UINT32 2
-#define GWTYPE_UINT16 3
-#define GWTYPE_INT16 4
-#define GWTYPE_STRING 5
-#define GWTYPE_USER 100
 
 class GwBoatItemTypes
 {
@@ -294,6 +288,7 @@ template class GwBoatItem<double>;
 template class GwBoatItem<uint32_t>;
 template class GwBoatItem<uint16_t>;
 template class GwBoatItem<int16_t>;
+template class GwBoatItem<String>;
 void GwSatInfoList::houseKeeping(unsigned long ts)
 {
     if (ts == 0)

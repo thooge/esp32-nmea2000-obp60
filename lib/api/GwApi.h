@@ -24,6 +24,7 @@ class GwApi{
             bool formatSet=false;
             public:
                 double value=0;
+                String svalue="";
                 bool valid=false;
                 int source=-1;
                 bool changed=false; //will be set by getBoatDataValues

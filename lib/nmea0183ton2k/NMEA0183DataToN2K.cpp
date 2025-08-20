@@ -355,6 +355,7 @@ private:
             AppendN2kRouteWPInfo(n2kMsg,destinationId,rmb.destID,rmb.latitude,rmb.longitude);
             send(n2kMsg,msg.sourceId);
             }
+        boatData->WPName->update(String(rmb.destID), msg.sourceId);
     }
     void convertRMC(const SNMEA0183Msg &msg)
     {
