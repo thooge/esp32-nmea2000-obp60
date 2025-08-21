@@ -110,25 +110,25 @@ public:
         uint16_t w, h;
 
         GwApi::BoatValue *bv_xte = pageData.values[0]; // XTE
-        String sval_xte = formatValue(bv_xte, *commonData).svalue;
+        String sval_xte = commonData->fmt->formatValue(bv_xte, *commonData).svalue;
         epd->getTextBounds(sval_xte, 0, 0, &x, &y, &w, &h);
         epd->setCursor(160-w, 170);
         epd->print(sval_xte);
 
         GwApi::BoatValue *bv_cog = pageData.values[1]; // COG
-        String sval_cog = formatValue(bv_cog, *commonData).svalue;
+        String sval_cog = commonData->fmt->formatValue(bv_cog, *commonData).svalue;
         epd->getTextBounds(sval_cog, 0, 0, &x, &y, &w, &h);
         epd->setCursor(360-w, 170);
         epd->print(sval_cog);
 
         GwApi::BoatValue *bv_dtw = pageData.values[2]; // DTW
-        String sval_dtw = formatValue(bv_dtw, *commonData).svalue;
+        String sval_dtw = commonData->fmt->formatValue(bv_dtw, *commonData).svalue;
         epd->getTextBounds(sval_dtw, 0, 0, &x, &y, &w, &h);
         epd->setCursor(160-w, 257);
         epd->print(sval_dtw);
 
         GwApi::BoatValue *bv_btw = pageData.values[3]; // BTW
-        String sval_btw = formatValue(bv_btw, *commonData).svalue;
+        String sval_btw = commonData->fmt->formatValue(bv_btw, *commonData).svalue;
         epd->getTextBounds(sval_btw, 0, 0, &x, &y, &w, &h);
         epd->setCursor(360-w, 257);
         epd->print(sval_btw);

@@ -521,7 +521,7 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
                 epd->print("USB ");
             }
         }
-        double gpshdop = formatValue(hdop, commonData).value;
+        double gpshdop = commonData.fmt->formatValue(hdop, commonData).value;
         if(commonData.config->getString(commonData.config->useGPS) != "off" &&  gpshdop <= commonData.config->getInt(commonData.config->hdopAccuracy) && hdop->valid == true){
             if (symbolmode) {
                 epd->drawXBitmap(symbol_x, 1, iconmap["GPS"], icon_width, icon_height, commonData.fgcolor);
@@ -606,9 +606,9 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
         else if (timesource == "GPS") {
             // Show date and time if date present
             if(date->valid == true){
-                String acttime = formatValue(time, commonData).svalue;
+                String acttime = commonData.fmt->formatValue(time, commonData).svalue;
                 acttime = acttime.substring(0, 5);
-                String actdate = formatValue(date, commonData).svalue;
+                String actdate = commonData.fmt->formatValue(date, commonData).svalue;
                 epd->print(acttime);
                 epd->print(" ");
                 epd->print(actdate);

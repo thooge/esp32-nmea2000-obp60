@@ -62,9 +62,9 @@ public:
         calibrationData.calibrateInstance(bvalue1, logger); // Check if boat data value is to be calibrated
         double value1 = bvalue1->value;                 // Value as double in SI unit
         bool valid1 = bvalue1->valid;                   // Valid information
-        value1 = formatValue(bvalue1, *commonData).value;// Format only nesaccery for simulation data for pointer
-        String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
+        value1 = commonData->fmt->formatValue(bvalue1, *commonData).value;// Format only nesaccery for simulation data for pointer
+        String svalue1 = commonData->fmt->formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit1 = commonData->fmt->formatValue(bvalue1, *commonData).unit;        // Unit of value
         if(valid1 == true){
             svalue1old = svalue1;   	                // Save old value
             unit1old = unit1;                           // Save old unit
@@ -77,8 +77,8 @@ public:
         calibrationData.calibrateInstance(bvalue2, logger); // Check if boat data value is to be calibrated
         double value2 = bvalue2->value;                 // Value as double in SI unit
         bool valid2 = bvalue2->valid;                   // Valid information 
-        String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
+        String svalue2 = commonData->fmt->formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit2 = commonData->fmt->formatValue(bvalue2, *commonData).unit;        // Unit of value
         if(valid2 == true){
             svalue2old = svalue2;   	                // Save old value
             unit2old = unit2;                           // Save old unit
@@ -91,8 +91,8 @@ public:
         calibrationData.calibrateInstance(bvalue3, logger); // Check if boat data value is to be calibrated
         double value3 = bvalue3->value;                 // Value as double in SI unit
         bool valid3 = bvalue3->valid;                   // Valid information 
-        String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit3 = formatValue(bvalue3, *commonData).unit;        // Unit of value
+        String svalue3 = commonData->fmt->formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit3 = commonData->fmt->formatValue(bvalue3, *commonData).unit;        // Unit of value
         if(valid3 == true){
             svalue3old = svalue3;   	                // Save old value
             unit3old = unit3;                           // Save old unit
@@ -105,8 +105,8 @@ public:
         calibrationData.calibrateInstance(bvalue4, logger); // Check if boat data value is to be calibrated
         double value4 = bvalue4->value;                 // Value as double in SI unit
         bool valid4 = bvalue4->valid;                   // Valid information 
-        String svalue4 = formatValue(bvalue4, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit4 = formatValue(bvalue4, *commonData).unit;        // Unit of value
+        String svalue4 = commonData->fmt->formatValue(bvalue4, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit4 = commonData->fmt->formatValue(bvalue4, *commonData).unit;        // Unit of value
         if(valid4 == true){
             svalue4old = svalue4;   	                // Save old value
             unit4old = unit4;                           // Save old unit
@@ -119,8 +119,8 @@ public:
         calibrationData.calibrateInstance(bvalue5, logger); // Check if boat data value is to be calibrated
         double value5 = bvalue5->value;                 // Value as double in SI unit
         bool valid5 = bvalue5->valid;                   // Valid information 
-        String svalue5 = formatValue(bvalue5, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit5 = formatValue(bvalue5, *commonData).unit;        // Unit of value
+        String svalue5 = commonData->fmt->formatValue(bvalue5, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit5 = commonData->fmt->formatValue(bvalue5, *commonData).unit;        // Unit of value
         if(valid5 == true){
             svalue5old = svalue5;   	                // Save old value
             unit5old = unit5;                           // Save old unit
@@ -133,8 +133,8 @@ public:
         calibrationData.calibrateInstance(bvalue6, logger); // Check if boat data value is to be calibrated
         double value6 = bvalue6->value;                 // Value as double in SI unit
         bool valid6 = bvalue6->valid;                   // Valid information 
-        String svalue6 = formatValue(bvalue6, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit6 = formatValue(bvalue6, *commonData).unit;        // Unit of value
+        String svalue6 = commonData->fmt->formatValue(bvalue6, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit6 = commonData->fmt->formatValue(bvalue6, *commonData).unit;        // Unit of value
         if(valid6 == true){
             svalue6old = svalue6;   	                // Save old value
             unit6old = unit6;                           // Save old unit

@@ -88,10 +88,10 @@ public:
 
         for (int i = 0; i < HowManyValues; i++){
             bvalue = pageData.values[i];
-            TheFormattedData = formatValue(bvalue, *commonData);   
+            TheFormattedData = commonData->fmt->formatValue(bvalue, *commonData);   
             DataName[i] = xdrDelete(bvalue->getName());
             DataName[i] = DataName[i].substring(0, 6);  // String length limit for value name
-            DataUnits[i] = formatValue(bvalue, *commonData).unit;   
+            DataUnits[i] = commonData->fmt->formatValue(bvalue, *commonData).unit;   
             DataText[i] = TheFormattedData.svalue;  // Formatted value as string including unit conversion and switching decimal places
             DataValue[i] = TheFormattedData.value;  // Value as double in SI unit
             DataValid[i] = bvalue->valid;

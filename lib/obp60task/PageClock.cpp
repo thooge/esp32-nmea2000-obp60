@@ -135,8 +135,8 @@ public:
             value1 = simtime++;                         // Simulation data for time value 11:36 in seconds
         }                                               // Other simulation data see OBP60Formatter.cpp
         bool valid1 = bvalue1->valid;                   // Valid information 
-        String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
+        String svalue1 = commonData->fmt->formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit1 = commonData->fmt->formatValue(bvalue1, *commonData).unit;        // Unit of value
         if(valid1 == true){
             svalue1old = svalue1;                       // Save old value
             unit1old = unit1;                           // Save old unit
@@ -148,8 +148,8 @@ public:
         name2 = name2.substring(0, 6);                  // String length limit for value name
         value2 = bvalue2->value;                        // Value as double in SI unit
         bool valid2 = bvalue2->valid;                   // Valid information 
-        String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
+        String svalue2 = commonData->fmt->formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit2 = commonData->fmt->formatValue(bvalue2, *commonData).unit;        // Unit of value
         if(valid2 == true){
             svalue2old = svalue2;                       // Save old value
             unit2old = unit2;                           // Save old unit
@@ -161,8 +161,8 @@ public:
         name3 = name3.substring(0, 6);                  // String length limit for value name
         value3 = bvalue3->value;                        // Value as double in SI unit
         bool valid3 = bvalue3->valid;                   // Valid information 
-        String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit3 = formatValue(bvalue3, *commonData).unit;        // Unit of value
+        String svalue3 = commonData->fmt->formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit3 = commonData->fmt->formatValue(bvalue3, *commonData).unit;        // Unit of value
         if(valid3 == true){
             svalue3old = svalue3;                       // Save old value
             unit3old = unit3;                           // Save old unit

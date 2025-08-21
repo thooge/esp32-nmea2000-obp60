@@ -22,76 +22,7 @@ Formatter::Formatter(GwConfigHandler *config) {
     dateFormat = config->getString(config->dateFormat);
     usesimudata = config->getBool(config->useSimuData);
     precision = config->getString(config->valueprecision);
-}
 
-String formatDate(String fmttype, uint16_t year, uint8_t month, uint8_t day) {
-    char buffer[12];
-    if (fmttype == "GB") {
-        snprintf(buffer, 12, "%02d/%02d/%04d", day , month, year);
-    }
-    else if (fmttype == "US") {
-        snprintf(buffer, 12, "%02d/%02d/%04d", month, day, year);
-    }
-    else if (fmttype == "ISO") {
-        snprintf(buffer, 12, "%04d-%02d-%02d", year, month, day);
-    }
-    else {
-        snprintf(buffer, 12, "%02d.%02d.%04d", day, month, year);
-    }
-    return String(buffer);
-}
-
-String formatTime(char fmttype, uint8_t hour, uint8_t minute, uint8_t second) {
-    // fmttype: s: with seconds, m: only minutes
-    char buffer[10];
-    if (fmttype == 'm') {
-        snprintf(buffer, 10, "%02d:%02d", hour , minute);
-    }
-    else {
-        snprintf(buffer, 10, "%02d:%02d:%02d", hour, minute, second);
-    }
-    return String(buffer);
-}
-
-String formatLatitude(double lat) {
-    float degree = abs(int(lat));
-    float minute = abs((lat - int(lat)) * 60);
-    return String(degree, 0) + "\x90 " + String(minute, 4) + "' " + ((lat > 0) ? "N" : "S");
-}
-
-String formatLongitude(double lon) {
-    float degree = abs(int(lon));
-    float minute = abs((lon - int(lon)) * 60);
-    return String(degree, 0) + "\x90 " + String(minute, 4) + "' " + ((lon > 0) ? "E" : "W");
-}
-
-FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
-    GwLog *logger = commondata.logger;
-    FormattedData result;
-    static int dayoffset = 0;
-    double rawvalue = 0;
-
-    // Load configuration values
-    String stimeZone = commondata.config->getString(commondata.config->timeZone);               // [UTC -14.00...+12.00]
-    double timeZone = stimeZone.toDouble();
-    String lengthFormat = commondata.config->getString(commondata.config->lengthFormat);        // [m|ft]
-    String distanceFormat = commondata.config->getString(commondata.config->distanceFormat);    // [m|km|nm]
-    String speedFormat = commondata.config->getString(commondata.config->speedFormat);          // [m/s|km/h|kn]
-    String windspeedFormat = commondata.config->getString(commondata.config->windspeedFormat);  // [m/s|km/h|kn|bft]
-    String tempFormat = commondata.config->getString(commondata.config->tempFormat);            // [K|°C|°F]
-    String dateFormat = commondata.config->getString(commondata.config->dateFormat);            // [DE|GB|US]
-    bool usesimudata = commondata.config->getBool(commondata.config->useSimuData);              // [on|off]
-    String precision = commondata.config->getString(commondata.config->valueprecision);         // [1|2]
-
-    // If boat value not valid
-    if (! value->valid && !usesimudata){
-        result.svalue = "---";
-        return result;
-    }
-
-    const char* fmt_dec_1;
-    const char* fmt_dec_10;
-    const char* fmt_dec_100;
     if (precision == "1") {
         fmt_dec_1 = "%3.1f";
         fmt_dec_10 = "%3.0f";
@@ -100,6 +31,20 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
         fmt_dec_1 = "%3.2f";
         fmt_dec_10 = "%3.1f";
         fmt_dec_100 = "%3.0f";
+    }
+
+}
+
+FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &commondata){
+    GwLog *logger = commondata.logger;
+    FormattedData result;
+    static int dayoffset = 0;
+    double rawvalue = 0;
+
+    // If boat value not valid
+    if (! value->valid && !usesimudata){
+        result.svalue = "---";
+        return result;
     }
 
 //    LOG_DEBUG(GwLog::DEBUG,"formatValue init: getFormat: %s date->value: %f time->value: %f", value->getFormat(), commondata.date->value, commondata.time->value);
@@ -855,6 +800,47 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
     result.value = rawvalue;        // Return value is only necessary in case of simulation of graphic pointer
     result.svalue = String(buffer);
     return result;
+}
+
+String formatDate(String fmttype, uint16_t year, uint8_t month, uint8_t day) {
+    char buffer[12];
+    if (fmttype == "GB") {
+        snprintf(buffer, 12, "%02d/%02d/%04d", day , month, year);
+    }
+    else if (fmttype == "US") {
+        snprintf(buffer, 12, "%02d/%02d/%04d", month, day, year);
+    }
+    else if (fmttype == "ISO") {
+        snprintf(buffer, 12, "%04d-%02d-%02d", year, month, day);
+    }
+    else {
+        snprintf(buffer, 12, "%02d.%02d.%04d", day, month, year);
+    }
+    return String(buffer);
+}
+
+String formatTime(char fmttype, uint8_t hour, uint8_t minute, uint8_t second) {
+    // fmttype: s: with seconds, m: only minutes
+    char buffer[10];
+    if (fmttype == 'm') {
+        snprintf(buffer, 10, "%02d:%02d", hour , minute);
+    }
+    else {
+        snprintf(buffer, 10, "%02d:%02d:%02d", hour, minute, second);
+    }
+    return String(buffer);
+}
+
+String formatLatitude(double lat) {
+    float degree = abs(int(lat));
+    float minute = abs((lat - int(lat)) * 60);
+    return String(degree, 0) + "\x90 " + String(minute, 4) + "' " + ((lat > 0) ? "N" : "S");
+}
+
+String formatLongitude(double lon) {
+    float degree = abs(int(lon));
+    float minute = abs((lon - int(lon)) * 60);
+    return String(degree, 0) + "\x90 " + String(minute, 4) + "' " + ((lon > 0) ? "E" : "W");
 }
 
 #endif

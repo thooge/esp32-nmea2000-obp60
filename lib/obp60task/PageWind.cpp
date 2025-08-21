@@ -334,8 +334,8 @@ public:
         calibrationData.calibrateInstance(bvalue1, logger); // Check if boat data value is to be calibrated
         double value1 = bvalue1->value;                 // Value as double in SI unit
         // bool valid1 = bvalue1->valid;                   // Valid information
-        String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
+        String svalue1 = commonData->fmt->formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit1 = commonData->fmt->formatValue(bvalue1, *commonData).unit;        // Unit of value
 
         // Get boat values for angle (AWD/TWD)
         if (source == 'A') {
@@ -351,8 +351,8 @@ public:
         if (simulation) {
             value2 = 0.62731; // some random value
         }
-        String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
+        String svalue2 = commonData->fmt->formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit2 = commonData->fmt->formatValue(bvalue2, *commonData).unit;        // Unit of value
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?

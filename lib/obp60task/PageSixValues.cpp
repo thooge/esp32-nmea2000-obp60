@@ -68,8 +68,8 @@ public:
             calibrationData.calibrateInstance(bvalue, logger);          // Check if boat data value is to be calibrated
             DataValue[i] = bvalue->value;                 // Value as double in SI unit
             DataValid[i] = bvalue->valid;
-            DataText[i] = formatValue(bvalue, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-            DataUnits[i] = formatValue(bvalue, *commonData).unit;   
+            DataText[i] = commonData->fmt->formatValue(bvalue, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+            DataUnits[i] = commonData->fmt->formatValue(bvalue, *commonData).unit;   
             DataFormat[i] = bvalue->getFormat();     // Unit of value
         }
     

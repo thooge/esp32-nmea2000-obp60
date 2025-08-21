@@ -261,8 +261,8 @@ public:
             calibrationData.calibrateInstance(bvalue, logger); // Check if boat data value is to be calibrated
             BDataValue[i] = bvalue->value; // Value as double in SI unit
             BDataValid[i] = bvalue->valid;
-            BDataText[i] = formatValue(bvalue, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
-            BDataUnit[i] = formatValue(bvalue, *commonData).unit;
+            BDataText[i] = commonData->fmt->formatValue(bvalue, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
+            BDataUnit[i] = commonData->fmt->formatValue(bvalue, *commonData).unit;
             BDataFormat[i] = bvalue->getFormat(); // Unit of value
         }
 
@@ -459,7 +459,7 @@ public:
             wsValue = wsHstry->getLast();
             wsBVal->value = wsValue; // temp variable to retreive data unit from OBP60Formater
             wsBVal->valid = (static_cast<int16_t>(wsValue) != wsHstry->getMinVal());
-            wsUnit = formatValue(wsBVal, *commonData).unit; // Unit of value
+            wsUnit = commonData->fmt->formatValue(wsBVal, *commonData).unit; // Unit of value
             epd->fillRect(xPosTws - 4, yPosTws - 38, 142, 44, commonData->bgcolor); // Clear area for TWS value
             epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
             epd->setCursor(xPosTws, yPosTws);

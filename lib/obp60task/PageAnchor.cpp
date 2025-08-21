@@ -77,22 +77,22 @@ private:
 
         // Boatvalues: DBS, HDT, AWS, AWD, LAT, LON, HDOP
         GwApi::BoatValue *bv_dbs = pageData.values[0]; // DBS
-        String sval_dbs = formatValue(bv_dbs, *commonData).svalue;
-        String sunit_dbs = formatValue(bv_dbs, *commonData).unit; 
+        String sval_dbs = commonData->fmt->formatValue(bv_dbs, *commonData).svalue;
+        String sunit_dbs = commonData->fmt->formatValue(bv_dbs, *commonData).unit; 
         GwApi::BoatValue *bv_hdt = pageData.values[1]; // HDT
-        String sval_hdt = formatValue(bv_hdt, *commonData).svalue;
+        String sval_hdt = commonData->fmt->formatValue(bv_hdt, *commonData).svalue;
         GwApi::BoatValue *bv_aws = pageData.values[2]; // AWS
-        String sval_aws = formatValue(bv_aws, *commonData).svalue;
-        String sunit_aws = formatValue(bv_aws, *commonData).unit; 
+        String sval_aws = commonData->fmt->formatValue(bv_aws, *commonData).svalue;
+        String sunit_aws = commonData->fmt->formatValue(bv_aws, *commonData).unit; 
         GwApi::BoatValue *bv_awd = pageData.values[3]; // AWD
-        String sval_awd = formatValue(bv_awd, *commonData).svalue;
+        String sval_awd = commonData->fmt->formatValue(bv_awd, *commonData).svalue;
         GwApi::BoatValue *bv_lat = pageData.values[4]; // LAT
-        String sval_lat = formatValue(bv_lat, *commonData).svalue;
+        String sval_lat = commonData->fmt->formatValue(bv_lat, *commonData).svalue;
         GwApi::BoatValue *bv_lon = pageData.values[5]; // LON
-        String sval_lon = formatValue(bv_lon, *commonData).svalue;
+        String sval_lon = commonData->fmt->formatValue(bv_lon, *commonData).svalue;
         GwApi::BoatValue *bv_hdop = pageData.values[6]; // HDOP
-        String sval_hdop = formatValue(bv_hdop, *commonData).svalue;
-        String sunit_hdop = formatValue(bv_hdop, *commonData).unit; 
+        String sval_hdop = commonData->fmt->formatValue(bv_hdop, *commonData).svalue;
+        String sunit_hdop = commonData->fmt->formatValue(bv_hdop, *commonData).unit; 
 
         logger->logDebug(GwLog::DEBUG, "Drawing at PageAnchor; DBS=%f, HDT=%f, AWS=%f", bv_dbs->value, bv_hdt->value, bv_aws->value);
 

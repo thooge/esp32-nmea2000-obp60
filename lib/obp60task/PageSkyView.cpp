@@ -50,17 +50,17 @@ public:
         epd->setFont(&Ubuntu_Bold8pt8b);
 
         GwApi::BoatValue *bv_lat = pageData.values[0];
-        String sv_lat = formatValue(bv_lat, *commonData).svalue;
+        String sv_lat = commonData->fmt->formatValue(bv_lat, *commonData).svalue;
         //epd->setCursor(300, 40);
         //epd->print(sv_lat);
 
         GwApi::BoatValue *bv_lon = pageData.values[1];
-        String sv_lon = formatValue(bv_lon, *commonData).svalue;
+        String sv_lon = commonData->fmt->formatValue(bv_lon, *commonData).svalue;
         //epd->setCursor(300, 60);
         //epd->print(sv_lon);
 
         GwApi::BoatValue *bv_hdop = pageData.values[2];
-        String sv_hdop = formatValue(bv_hdop, *commonData).svalue;
+        String sv_hdop = commonData->fmt->formatValue(bv_hdop, *commonData).svalue;
         //epd->setCursor(300, 80);
         //epd->print(sv_hdop);
 

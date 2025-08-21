@@ -96,8 +96,6 @@ typedef struct {
 } FormattedData;
 
 // Formatter for boat values
-FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata);
-
 class Formatter {
 private:
     String stimeZone = "0";
@@ -109,9 +107,15 @@ private:
     String tempFormat = "C";       // [K|°C|°F]
     String dateFormat = "ISO";     // [DE|GB|US|ISO]
     bool usesimudata = false;      // [on|off]
+
     String precision = "2";        // [1|2]
+    const char* fmt_dec_1;
+    const char* fmt_dec_10;
+    const char* fmt_dec_100;
+
 public:
     Formatter(GwConfigHandler *config);
+    FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata);
 };
 
 // Standard format functions without overhead
