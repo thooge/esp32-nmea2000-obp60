@@ -2,6 +2,7 @@
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 #include "obp60task.h"
 #include "Pagedata.h"                   // Data exchange for pages
+#include "OBP60Formatter.h"             // Data formatting for boat values
 #include "OBP60Hardware.h"              // PIN definitions
 #include <Wire.h>                       // I2C connections
 #include <MCP23017.h>                   // MCP23017 extension Port
@@ -274,7 +275,7 @@ void registerAllPages(GwLog *logger, PageList &list){
     extern PageDescription registerPageAIS;
     list.add(&registerPageAIS);
     extern PageDescription registerPageBarograph;
-    list.add(&registerPageBarograph);   
+    list.add(&registerPageBarograph);
     logger->logDebug(GwLog::LOG,"Memory after registering pages: stack=%d, heap=%d", uxTaskGetStackHighWaterMark(NULL), ESP.getFreeHeap());
 }
 
@@ -548,8 +549,9 @@ void OBP60Task(GwApi *api){
     PageList allPages;
     registerAllPages(logger, allPages);
     CommonData commonData;
-    commonData.logger=logger;
-    commonData.config=config;
+    commonData.logger = logger;
+    commonData.config = config;
+    commonData.fmt = new Formatter(config);
 
 #ifdef HARDWARE_V21
     // Keyboard coordinates for page footer

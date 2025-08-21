@@ -15,3 +15,5 @@
 - page clock: sunrise / sunset in local time or UTC
 
 - implement alerts
+
+- implement formatter as class

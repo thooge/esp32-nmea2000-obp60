@@ -105,22 +105,24 @@ typedef struct{
     int voltage = 0;
 } AvgData;
 
+class Formatter; // forward declaration
 typedef struct{
-  GwApi::Status status;
-  GwLog *logger=NULL;
-  GwConfigHandler *config=NULL;
-  SensorData data;
-  SunData sundata;
-  TouchKeyData keydata[6];
-  BacklightData backlight;
-  AlarmData alarm;
-  AvgData avgdata;
-  GwApi::BoatValue *time=NULL;
-  GwApi::BoatValue *date=NULL;
-  uint16_t fgcolor;
-  uint16_t bgcolor;
-  bool keylock = false;
-  String powermode;
+    GwApi::Status status;
+    GwLog *logger = nullptr;
+    GwConfigHandler *config = nullptr;
+    Formatter *fmt = nullptr;
+    SensorData data;
+    SunData sundata;
+    TouchKeyData keydata[6];
+    BacklightData backlight;
+    AlarmData alarm;
+    AvgData avgdata;
+    GwApi::BoatValue *time = nullptr;
+    GwApi::BoatValue *date = nullptr;
+    uint16_t fgcolor;
+    uint16_t bgcolor;
+    bool keylock = false;
+    String powermode;
 } CommonData;
 
 //a base class that all pages must inherit from
@@ -210,19 +212,3 @@ class PageStruct{
         PageData parameters;
         PageDescription *description=NULL;
 };
-
-// Standard format functions without overhead
-String formatDate(String fmttype, uint16_t year, uint8_t month, uint8_t day);
-String formatTime(char fmttype, uint8_t hour, uint8_t minute, uint8_t second);
-String formatLatitude(double lat);
-String formatLongitude(double lon);
-
-// Structure for formatted boat values
-typedef struct{
-  double value;
-  String svalue;
-  String unit;
-} FormattedData;
-
-// Formatter for boat values
-FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata);

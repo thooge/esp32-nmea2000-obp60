@@ -4,6 +4,7 @@
 
 #include <Arduino.h>
 #include "OBP60Hardware.h"
+#include "OBP60Formatter.h"
 #include "LedSpiTask.h"
 #include "Graphics.h"
 #include <GxEPD2_BW.h>                  // E-paper lib V2

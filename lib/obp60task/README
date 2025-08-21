@@ -10,6 +10,7 @@ WIP
 Please format your new code the same as already existing code.
 Preprocessor directives go to column zero.
 
+Identation is 4 spaces
 
 Git commands
 ------------

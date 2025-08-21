@@ -3,10 +3,26 @@
 #include <Arduino.h>
 #include "GwApi.h"
 #include "Pagedata.h"
+#include "OBP60Formatter.h"
 
 // ToDo
 // simulation data
 // hold values by missing data
+
+Formatter::Formatter(GwConfigHandler *config) {
+    // Load configuration values
+    // TODO do not use strings but enums, see header file
+    stimeZone = config->getString(config->timeZone);
+    timeZone = stimeZone.toDouble();
+    lengthFormat = config->getString(config->lengthFormat);
+    distanceFormat = config->getString(config->distanceFormat);
+    speedFormat = config->getString(config->speedFormat);
+    windspeedFormat = config->getString(config->windspeedFormat);
+    tempFormat = config->getString(config->tempFormat);
+    dateFormat = config->getString(config->dateFormat);
+    usesimudata = config->getBool(config->useSimuData);
+    precision = config->getString(config->valueprecision);
+}
 
 String formatDate(String fmttype, uint16_t year, uint8_t month, uint8_t day) {
     char buffer[12];
