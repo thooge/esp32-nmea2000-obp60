@@ -9,8 +9,7 @@
 template <typename T>
 class RingBuffer {
 private:
-    mutable SemaphoreHandle_t bufLocker;
-    std::vector<T> buffer;
+    std::vector<T> buffer; // THE buffer vector
     size_t capacity;
     size_t head; // Points to the next insertion position
     size_t first; // Points to the first (oldest) valid element
@@ -19,6 +18,7 @@ private:
     bool is_Full; // Indicates that all buffer elements are used and ringing is in use
     T MIN_VAL; // lowest possible value of buffer
     T MAX_VAL; // highest possible value of buffer of type <T>
+    mutable SemaphoreHandle_t bufLocker;
 
     // metadata for buffer
     String dataName; // Name of boat data in buffer
@@ -27,10 +27,14 @@ private:
     T smallest; // Value range of buffer: smallest value
     T largest; // Value range of buffer: biggest value
 
+    void initCommon();
+
 public:
+    RingBuffer();
     RingBuffer(size_t size);
     void setMetaData(String name, String format, int updateFrequency, T minValue, T maxValue); // Set meta data for buffer
     bool getMetaData(String& name, String& format, int& updateFrequency, T& minValue, T& maxValue); // Get meta data of buffer
+    bool getMetaData(String& name, String& format);
     String getName() const; // Get buffer name
     String getFormat() const; // Get buffer data format
     void add(const T& value); // Add a new value to  buffer
@@ -54,6 +58,7 @@ public:
     T getMinVal() const; // Get lowest possible value for buffer; used for initialized buffer data
     T getMaxVal() const; // Get highest possible value for buffer
     void clear(); // Clear buffer
+    void resize(size_t size); // Delete buffer and set new size
     T operator[](size_t index) const; // Operator[] for convenient access (same as get())
     std::vector<T> getAllValues() const; // Get all current values as a vector
 };

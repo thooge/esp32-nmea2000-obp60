@@ -1,6 +1,31 @@
 #include "OBPRingBuffer.h"
 
 template <typename T>
+void RingBuffer<T>::initCommon() {
+    MIN_VAL = std::numeric_limits<T>::lowest();
+    MAX_VAL = std::numeric_limits<T>::max();
+    dataName = "";
+    dataFmt = "";
+    updFreq = -1;
+    smallest = MIN_VAL;
+    largest = MAX_VAL;
+    bufLocker = xSemaphoreCreateMutex();
+}
+
+template <typename T>
+RingBuffer<T>::RingBuffer()
+    : capacity(0)
+    , head(0)
+    , first(0)
+    , last(0)
+    , count(0)
+    , is_Full(false)
+{
+    initCommon();
+    // <buffer> stays empty
+}
+
+template <typename T>
 RingBuffer<T>::RingBuffer(size_t size)
     : capacity(size)
     , head(0)
@@ -9,23 +34,8 @@ RingBuffer<T>::RingBuffer(size_t size)
     , count(0)
     , is_Full(false)
 {
-    bufLocker = xSemaphoreCreateMutex();
-
-    if (size == 0) {
-        // return false;
-    }
-
-    MIN_VAL = std::numeric_limits<T>::lowest();
-    MAX_VAL = std::numeric_limits<T>::max();
-    dataName = "";
-    dataFmt = "";
-    updFreq = -1;
-    smallest = MIN_VAL;
-    largest = MAX_VAL;
-
+    initCommon();
     buffer.resize(size, MIN_VAL);
-
-    // return true;
 }
 
 // Specify meta data of buffer content
@@ -54,6 +64,20 @@ bool RingBuffer<T>::getMetaData(String& name, String& format, int& updateFrequen
     updateFrequency = updFreq;
     minValue = smallest;
     maxValue = largest;
+    return true;
+}
+
+// Get meta data of buffer content
+template <typename T>
+bool RingBuffer<T>::getMetaData(String& name, String& format)
+{
+    if (dataName == "" || dataFmt == "") {
+        return false; // Meta data not set
+    }
+
+    GWSYNCHRONIZED(&bufLocker);
+    name = dataName;
+    format = dataFmt;
     return true;
 }
 
@@ -366,6 +390,22 @@ void RingBuffer<T>::clear()
     last = 0;
     count = 0;
     is_Full = false;
+}
+
+// Delete buffer and set new size
+template <typename T>
+void RingBuffer<T>::resize(size_t newSize)
+{
+    GWSYNCHRONIZED(&bufLocker);
+    capacity = newSize;
+    head = 0;
+    first = 0;
+    last = 0;
+    count = 0;
+    is_Full = false;
+
+    buffer.clear();
+    buffer.resize(newSize, MIN_VAL);
 }
 
 // Get all current values as a vector
