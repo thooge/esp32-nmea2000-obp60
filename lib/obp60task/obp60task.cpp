@@ -279,64 +279,62 @@ void registerAllPages(GwLog *logger, PageList &list){
 }
 
 // Undervoltage detection for shutdown display
-void underVoltageDetection(GwApi *api, CommonData &common){
-    // Read settings
-    double voffset = (api->getConfig()->getConfigItem(api->getConfig()->vOffset,true)->asString()).toFloat();
-    double vslope = (api->getConfig()->getConfigItem(api->getConfig()->vSlope,true)->asString()).toFloat();
+void underVoltageError(CommonData &common) {
+#if defined VOLTAGE_SENSOR && defined LIPO_ACCU_1200
+    // Switch off all power lines
+    setPortPin(OBP_BACKLIGHT_LED, false);   // Backlight Off
+    setFlashLED(false);                     // Flash LED Off
+    buzzer(TONE4, 20);                      // Buzzer tone 4kHz 20ms
+    // Shutdown EInk display
+    epd->setFullWindow();           // Set full Refresh
+    //epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+    epd->fillScreen(common.bgcolor);// Clear screen
+    epd->setTextColor(common.fgcolor);
+    epd->setFont(&Ubuntu_Bold20pt8b);
+    epd->setCursor(65, 150);
+    epd->print("Undervoltage");
+    epd->setFont(&Ubuntu_Bold8pt8b);
+    epd->setCursor(65, 175);
+    epd->print("Charge battery and restart system");
+    epd->nextPage();                // Partial update
+    epd->powerOff();                // Display power off
+    setPortPin(OBP_POWER_EPD, false);       // Power off ePaper display
+    setPortPin(OBP_POWER_SD, false);        // Power off SD card
+#else
+    // Switch off all power lines
+    setPortPin(OBP_BACKLIGHT_LED, false);   // Backlight Off
+    setFlashLED(false);                     // Flash LED Off
+    buzzer(TONE4, 20);                      // Buzzer tone 4kHz 20ms
+    setPortPin(OBP_POWER_50, false);        // Power rail 5.0V Off
+    // Shutdown EInk display
+    epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+    epd->fillScreen(common.bgcolor);// Clear screen
+    epd->setTextColor(common.fgcolor);
+    epd->setFont(&Ubuntu_Bold20pt8b);
+    epd->setCursor(65, 150);
+    epd->print("Undervoltage");
+    epd->setFont(&Ubuntu_Bold8pt8b);
+    epd->setCursor(65, 175);
+    epd->print("To wake up repower system");
+    epd->nextPage();                // Partial update
+    epd->powerOff();                // Display power off
+#endif
+    while (true) {
+        esp_deep_sleep_start(); // Deep Sleep without wakeup. Wakeup only after power cycle (restart).
+    }
+}
+
+inline bool underVoltageDetection(float voffset, float vslope) {
     // Read supply voltage
 #if defined VOLTAGE_SENSOR && defined LIPO_ACCU_1200
-    float actVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.53) * 2;   // Vin = 1/2 for OBP40
+    float actVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.53) * 2; // Vin = 1/2 for OBP40
     float minVoltage = 3.65;  // Absolut minimum volatge for 3,7V LiPo accu
 #else
-    float actVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.17) * 20;   // Vin = 1/20 for OBP60
+    float actVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.17) * 20; // Vin = 1/20 for OBP60
     float minVoltage = MIN_VOLTAGE;
 #endif
-    double calVoltage = actVoltage * vslope + voffset;  // Calibration
-    if(calVoltage < minVoltage){
-#if defined VOLTAGE_SENSOR && defined LIPO_ACCU_1200
-        // Switch off all power lines
-        setPortPin(OBP_BACKLIGHT_LED, false);   // Backlight Off
-        setFlashLED(false);                     // Flash LED Off            
-        buzzer(TONE4, 20);                      // Buzzer tone 4kHz 20ms
-        // Shutdown EInk display
-        epd->setFullWindow();           // Set full Refresh
-        //epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
-        epd->fillScreen(common.bgcolor);// Clear screen
-        epd->setTextColor(common.fgcolor);
-        epd->setFont(&Ubuntu_Bold20pt8b);
-        epd->setCursor(65, 150);
-        epd->print("Undervoltage");
-        epd->setFont(&Ubuntu_Bold8pt8b);
-        epd->setCursor(65, 175);
-        epd->print("Charge battery and restart system");
-        epd->nextPage();                // Partial update
-        epd->powerOff();                // Display power off
-        setPortPin(OBP_POWER_EPD, false);       // Power off ePaper display
-        setPortPin(OBP_POWER_SD, false);        // Power off SD card
-#else
-        // Switch off all power lines
-        setPortPin(OBP_BACKLIGHT_LED, false);   // Backlight Off
-        setFlashLED(false);                     // Flash LED Off            
-        buzzer(TONE4, 20);                      // Buzzer tone 4kHz 20ms
-        setPortPin(OBP_POWER_50, false);        // Power rail 5.0V Off
-        // Shutdown EInk display
-        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
-        epd->fillScreen(common.bgcolor);// Clear screen
-        epd->setTextColor(common.fgcolor);
-        epd->setFont(&Ubuntu_Bold20pt8b);
-        epd->setCursor(65, 150);
-        epd->print("Undervoltage");
-        epd->setFont(&Ubuntu_Bold8pt8b);
-        epd->setCursor(65, 175);
-        epd->print("To wake up repower system");
-        epd->nextPage();                // Partial update
-        epd->powerOff();                // Display power off
-#endif
-        // Stop system
-        while(true){
-            esp_deep_sleep_start();             // Deep Sleep without weakup. Weakup only after power cycle (restart).
-        }
-    }
+    float calVoltage = actVoltage * vslope + voffset;  // Calibration
+    return (calVoltage < minVoltage);
 }
 
 // Calculate true wind data and add to obp60task boat data list
@@ -746,7 +744,9 @@ void OBP60Task(GwApi *api){
     commonData.backlight.brightness = 2.55 * uint(config->getConfigItem(config->blBrightness,true)->asInt());
     commonData.powermode = api->getConfig()->getConfigItem(api->getConfig()->powerMode,true)->asString();
 
-    bool uvoltage = api->getConfig()->getConfigItem(api->getConfig()->underVoltage,true)->asBoolean();
+    bool uvoltage = config->getConfigItem(config->underVoltage, true)->asBoolean();
+    float voffset = (config->getConfigItem(config->vOffset,true)->asString()).toFloat();
+    float vslope = (config->getConfigItem(config->vSlope,true)->asString()).toFloat();
     String cpuspeed = api->getConfig()->getConfigItem(api->getConfig()->cpuSpeed,true)->asString();
     uint hdopAccuracy = uint(api->getConfig()->getConfigItem(api->getConfig()->hdopAccuracy,true)->asInt());
 
@@ -795,8 +795,11 @@ void OBP60Task(GwApi *api){
         bool keypressed = false;
 
         // Undervoltage detection
-        if(uvoltage == true){
-            underVoltageDetection(api, commonData);
+        if (uvoltage == true) {
+            if (underVoltageDetection(voffset, vslope)) {
+                LOG_DEBUG(GwLog::ERROR, "Undervoltage detected, shutting down!");
+                underVoltageError(commonData);
+            }
         }
 
         // Set CPU speed after boot after 1min 
