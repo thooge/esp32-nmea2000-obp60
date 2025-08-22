@@ -88,7 +88,7 @@ public:
 
         // directions 
 
-        int16_t  x1, y1;
+        int16_t x1, y1;
         uint16_t w, h;
         epd->setFont(&Ubuntu_Bold12pt8b);
 

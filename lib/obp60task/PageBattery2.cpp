@@ -286,7 +286,7 @@ public:
                 if(value1 > 99.9) epd->print(value1, 0);
             }
             else{
-            epd->print("---");                       // Missing bus data
+                epd->print(commonData->fmt->placeholder); // Missing bus data
             }
         }
         epd->setFont(&Ubuntu_Bold16pt8b);
@@ -300,7 +300,9 @@ public:
             if(value2 > 9.9 && value2 <= 99.9)epd->print(value2, 1);
             if(value2 > 99.9) epd->print(value2, 0);
         }
-        else  epd->print("---");
+        else {
+            epd->print(commonData->fmt->placeholder);
+        }
         epd->setFont(&Ubuntu_Bold16pt8b);
         epd->print("A");
 
@@ -312,7 +314,9 @@ public:
             if(value3 > 9.9 && value3 <= 99.9)epd->print(value3, 1);
             if(value3 > 99.9) epd->print(value3, 0);
         }
-        else  epd->print("---");
+        else {
+            epd->print(commonData->fmt->placeholder);
+        }
         epd->setFont(&Ubuntu_Bold16pt8b);
         epd->print("W");
 

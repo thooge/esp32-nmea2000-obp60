@@ -208,7 +208,7 @@ public:
                      epd->print(formatDate(dateformat, commonData->data.rtcTime.tm_year + 1900, commonData->data.rtcTime.tm_mon + 1, commonData->data.rtcTime.tm_mday));
                  }
             } else {
-                epd->print("---");
+                epd->print(commonData->fmt->placeholder);
             }
         } else {
             epd->print(svalue2old);
@@ -235,7 +235,7 @@ public:
                       epd->print(formatTime('s', commonData->data.rtcTime.tm_hour, commonData->data.rtcTime.tm_min, commonData->data.rtcTime.tm_sec));
                  }
             } else {
-                epd->print("---");
+                epd->print(commonData->fmt->placeholder);
             }
         }
         else {
@@ -246,7 +246,7 @@ public:
         epd->print("Time");                          // Name
 
         // Show values sunrise
-        String sunrise = "---";
+        String sunrise = commonData->fmt->placeholder;
         if (((source == 'G') and gpsvalid) or (homevalid and commonData->data.rtcValid)) {
             sunrise = String(commonData->sundata.sunriseHour) + ":" + String(commonData->sundata.sunriseMinute + 100).substring(1);
             svalue5old = sunrise;
@@ -266,7 +266,7 @@ public:
         epd->fillRect(340, 149, 80, 3, commonData->fgcolor);
 
         // Show values sunset
-        String sunset = "---";
+        String sunset = commonData->fmt->placeholder;
         if (((source == 'G') and gpsvalid) or (homevalid and commonData->data.rtcValid)) {
             sunset = String(commonData->sundata.sunsetHour) + ":" +  String(commonData->sundata.sunsetMinute + 100).substring(1);
             svalue6old = sunset;

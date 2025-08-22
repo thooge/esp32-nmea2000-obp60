@@ -70,7 +70,7 @@ XDR units
  */
 
 // Possible formats as scoped enums
-enum class fmtDate {DE, EN, GB, ISO};
+enum class fmtDate {DE, GB, US, ISO};
 enum class fmtTime {MMHH, MMHHSS};
 enum class fmtLength {METER, FEET, FATHOM, CABLE};
 enum class fmtDepth {METER, FEET, FATHOM};
@@ -116,6 +116,7 @@ private:
 public:
     Formatter(GwConfigHandler *config);
     FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata);
+    String placeholder = "---";
 };
 
 // Standard format functions without overhead

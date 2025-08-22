@@ -249,7 +249,7 @@ public:
                     }
                 }
                 else{
-                epd->print("---");                       // Missing bus data
+                    epd->print(commonData->fmt->placeholder); // Missing bus data
                 }
             }
 

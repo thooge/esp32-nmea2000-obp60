@@ -156,7 +156,7 @@ class BoatValueList{
     //additionally we put the necessary values into the paga data - see below
     GwApi::BoatValue *allBoatValues[MAXVALUES];
     int numValues=0;
-    
+
     bool addValueToList(GwApi::BoatValue *v){
         for (int i=0;i<numValues;i++){
             if (allBoatValues[i] == v){
@@ -186,7 +186,6 @@ class BoatValueList{
 //this way each page can easily be added here
 //needs some minor tricks for the safe static initialization
 typedef std::vector<PageDescription*> Pages;
-//the page list class
 class PageList{
     public:
         Pages pages;

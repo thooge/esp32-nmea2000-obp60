@@ -227,7 +227,7 @@ public:
             epd->print(value1,2);                    // Real value as formated string
         }
         else{
-            epd->print("---");                       // No sensor data (sensor is off)
+            epd->print(commonData->fmt->placeholder);  // No sensor data (sensor is off)
         }
 
         // ############### Horizontal Line ################
@@ -256,7 +256,7 @@ public:
             epd->print(value2,1);                    // Real value as formated string
         }
         else{
-            epd->print("---");                       // No sensor data (sensor is off)
+            epd->print(commonData->fmt->placeholder); // No sensor data (sensor is off)
         }
 
         // ############### Horizontal Line ################
@@ -285,7 +285,7 @@ public:
             epd->print(value3,1);                    // Real value as formated string
         }
         else{
-            epd->print("---");                       // No sensor data (sensor is off)
+            epd->print(commonData->fmt->placeholder);  // No sensor data (sensor is off)
         }
 
         return PAGE_UPDATE;

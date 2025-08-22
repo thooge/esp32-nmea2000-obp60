@@ -43,7 +43,7 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
 
     // If boat value not valid
     if (! value->valid && !usesimudata){
-        result.svalue = "---";
+        result.svalue = placeholder;
         return result;
     }
 

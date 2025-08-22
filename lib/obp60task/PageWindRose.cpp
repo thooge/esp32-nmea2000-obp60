@@ -182,11 +182,11 @@ public:
         // Show values TWD
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(295, 65);
-        if(valid3 == true){
+        if (valid3 == true) {
             epd->print(abs(value3 * 180 / PI), 0);   // Value
         }
-        else{
-            epd->print("---");                   // Value
+        else {
+            epd->print(commonData->fmt->placeholder);
         }
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(335, 95);

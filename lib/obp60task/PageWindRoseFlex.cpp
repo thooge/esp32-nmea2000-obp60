@@ -207,7 +207,7 @@ public:
             epd->print(svalue4);     // Value
         }
         else{
-            epd->print("---");                   // Value
+            epd->print(commonData->fmt->placeholder);
         }
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(335, 95);
