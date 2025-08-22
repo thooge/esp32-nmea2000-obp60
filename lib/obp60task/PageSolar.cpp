@@ -160,9 +160,13 @@ public:
             // Check for valid real data, display also if hold values activated
             if(valid1 == true || holdvalues == true){
                 // Resolution switching
-                if(value1 <= 9.9) epd->print(value1, 2);
-                if(value1 > 9.9 && value1 <= 99.9)epd->print(value1, 1);
-                if(value1 > 99.9) epd->print(value1, 0);
+                if (value1 <= 9.9) {
+                    epd->print(value1, 2);
+                } else if (value1 <= 99.9) {
+                    epd->print(value1, 1);
+                } else {
+                    epd->print(value1, 0);
+                }
             }
             else {
                 epd->print(commonData->fmt->placeholder); // Missing bus data
@@ -174,10 +178,14 @@ public:
         // Show actual current in A
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(260, 200);
-        if((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false){
-            if(value2 <= 9.9) epd->print(value2, 2);
-            if(value2 > 9.9 && value2 <= 99.9)epd->print(value2, 1);
-            if(value2 > 99.9) epd->print(value2, 0);
+        if ((powerSensor == "INA219" || powerSensor == "INA226") && (simulation == false)) {
+            if (value2 <= 9.9) {
+                epd->print(value2, 2);
+            } else if (value2 <= 99.9) {
+                epd->print(value2, 1);
+            } else {
+                epd->print(value2, 0);
+            }
         }
         else {
             epd->print(commonData->fmt->placeholder);
@@ -188,10 +196,14 @@ public:
         // Show actual consumption in W
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(260, 260);
-        if((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false){
-            if(value3 <= 9.9) epd->print(value3, 2);
-            if(value3 > 9.9 && value3 <= 99.9)epd->print(value3, 1);
-            if(value3 > 99.9) epd->print(value3, 0);
+        if ((powerSensor == "INA219" || powerSensor == "INA226") && (simulation == false)) {
+            if (value3 <= 9.9) {
+                epd->print(value3, 2);
+            } else if (value3 <= 99.9) {
+                epd->print(value3, 1);
+            } else {
+                epd->print(value3, 0);
+            }
         }
         else {
             epd->print(commonData->fmt->placeholder);

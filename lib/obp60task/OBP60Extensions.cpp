@@ -474,6 +474,7 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
     uint16_t symbol_x = 2;
     static const uint16_t symbol_offset = 20;
 
+    // TODO invert and get rid of the if
     if(commonData.config->getBool(commonData.config->statusLine) == true){
 
         // Show status info

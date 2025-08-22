@@ -177,10 +177,15 @@ public:
         // Show actual current in A
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(260, 200);
-        if((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false){
-            if(value2 <= 9.9) epd->print(value2, 2);
-            if(value2 > 9.9 && value2 <= 99.9)epd->print(value2, 1);
-            if(value2 > 99.9) epd->print(value2, 0);
+        if ((powerSensor == "INA219" || powerSensor == "INA226") && (simulation == false)) {
+            // TODO use formatter for this?
+            if (value2 <= 9.9) {
+                epd->print(value2, 2);
+            } else if (value2 <= 99.9) {
+                epd->print(value2, 1);
+            } else {
+                epd->print(value2, 0);
+            }
         }
         else {
             epd->print(commonData->fmt->placeholder);
@@ -191,10 +196,14 @@ public:
         // Show actual consumption in W
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(260, 260);
-        if((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false){
-            if(value3 <= 9.9) epd->print(value3, 2);
-            if(value3 > 9.9 && value3 <= 99.9)epd->print(value3, 1);
-            if(value3 > 99.9) epd->print(value3, 0);
+        if ((powerSensor == "INA219" || powerSensor == "INA226") && (simulation == false)) {
+            if(value3 <= 9.9) {
+                epd->print(value3, 2);
+            } else if (value3 <= 99.9) {
+                epd->print(value3, 1);
+            } else {
+                epd->print(value3, 0);
+            }
         }
         else {
             epd->print(commonData->fmt->placeholder);

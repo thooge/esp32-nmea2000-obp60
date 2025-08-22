@@ -65,8 +65,8 @@ void OBP60Init(GwApi *api){
 #endif
 
     // Settings for e-paper display
-    String fastrefresh = api->getConfig()->getConfigItem(api->getConfig()->fastRefresh,true)->asString();
-    logger->logDebug(GwLog::DEBUG,"Fast Refresh Mode is: %s", fastrefresh.c_str());
+    String fastrefresh = config->getConfigItem(config->fastRefresh,true)->asString();
+    logger->logDebug(GwLog::DEBUG, "Fast Refresh Mode is: %s", fastrefresh.c_str());
 #ifdef DISPLAY_GDEY042T81
     if(fastrefresh == "true"){
         static const bool useFastFullUpdate = true;   // Enable fast full display update only for GDEY042T81
@@ -88,24 +88,24 @@ void OBP60Init(GwApi *api){
     logger->logDebug(GwLog::LOG,"CPU speed at boot: %i MHz", freq);
     
     // Settings for backlight
-    String backlightMode = api->getConfig()->getConfigItem(api->getConfig()->backlight,true)->asString();
-    logger->logDebug(GwLog::DEBUG,"Backlight Mode is: %s", backlightMode.c_str());
-    uint brightness = uint(api->getConfig()->getConfigItem(api->getConfig()->blBrightness,true)->asInt());
-    String backlightColor = api->getConfig()->getConfigItem(api->getConfig()->blColor,true)->asString();
-    if(String(backlightMode) == "On"){
-           setBacklightLED(brightness, colorMapping(backlightColor));
+    String backlightMode = config->getConfigItem(config->backlight,true)->asString();
+    logger->logDebug(GwLog::DEBUG, "Backlight Mode is: %s", backlightMode.c_str());
+    uint brightness = uint(config->getConfigItem(config->blBrightness,true)->asInt());
+    String backlightColor = config->getConfigItem(config->blColor,true)->asString();
+    if (backlightMode == "On") {
+        setBacklightLED(brightness, colorMapping(backlightColor));
     }
-    else if(String(backlightMode) == "Off"){
-           setBacklightLED(0, COLOR_BLACK); // Backlight LEDs off (blue without britghness)
+    else if (backlightMode == "Off") {
+        setBacklightLED(0, COLOR_BLACK); // Backlight LEDs off (blue without britghness)
     }
-    else if(String(backlightMode) == "Control by Key"){
-           setBacklightLED(0, COLOR_BLUE); // Backlight LEDs off (blue without britghness)
+    else if (backlightMode == "Control by Key") {
+        setBacklightLED(0, COLOR_BLUE); // Backlight LEDs off (blue without britghness)
     }
 
     // Settings flash LED mode
-    String ledMode = api->getConfig()->getConfigItem(api->getConfig()->flashLED,true)->asString();
+    String ledMode = config->getConfigItem(config->flashLED,true)->asString();
     logger->logDebug(GwLog::DEBUG,"LED Mode is: %s", ledMode.c_str());
-    if(String(ledMode) == "Off"){
+    if (ledMode == "Off") {
         setBlinkingLED(false);
     }
 
@@ -114,7 +114,7 @@ void OBP60Init(GwApi *api){
     initComplete = true;
 
     // Buzzer tone for initialization finish
-    setBuzzerPower(uint(api->getConfig()->getConfigItem(api->getConfig()->buzzerPower,true)->asInt()));
+    setBuzzerPower(uint(config->getConfigItem(config->buzzerPower,true)->asInt()));
     buzzer(TONE4, 500);
 
 }
@@ -538,8 +538,8 @@ void handleHstryBuf(GwApi* api, BoatValueList* boatValues, tBoatHstryData hstryB
 void OBP60Task(GwApi *api){
 //    vTaskDelete(NULL);
 //    return;
-    GwLog *logger=api->getLogger();
-    GwConfigHandler *config=api->getConfig();
+    GwLog *logger = api->getLogger();
+    GwConfigHandler *config = api->getConfig();
 #ifdef HARDWARE_V21
     startLedTask(api);
 #endif
@@ -563,8 +563,8 @@ void OBP60Task(GwApi *api){
     }
 
     // Init E-Ink display
-    String displaymode = api->getConfig()->getConfigItem(api->getConfig()->display,true)->asString();
-    String displaycolor = api->getConfig()->getConfigItem(api->getConfig()->displaycolor,true)->asString();
+    String displaymode = config->getConfigItem(config->display,true)->asString();
+    String displaycolor = config->getConfigItem(config->displaycolor,true)->asString();
     if (displaycolor == "Normal") {
         commonData.fgcolor = GxEPD_BLACK;
         commonData.bgcolor = GxEPD_WHITE;
@@ -573,12 +573,12 @@ void OBP60Task(GwApi *api){
         commonData.fgcolor = GxEPD_WHITE;
         commonData.bgcolor = GxEPD_BLACK;
     }
-    String systemname = api->getConfig()->getConfigItem(api->getConfig()->systemName,true)->asString();
-    String wifipass = api->getConfig()->getConfigItem(api->getConfig()->apPassword,true)->asString();
-    bool refreshmode = api->getConfig()->getConfigItem(api->getConfig()->refresh,true)->asBoolean();
+    String systemname = config->getConfigItem(config->systemName, true)->asString();
+    String wifipass = config->getConfigItem(config->apPassword, true)->asString();
+    bool refreshmode = config->getConfigItem(config->refresh, true)->asBoolean();
     bool symbolmode = (config->getString(config->headerFormat) == "ICON");
-    String fastrefresh = api->getConfig()->getConfigItem(api->getConfig()->fastRefresh,true)->asString();
-    uint fullrefreshtime = uint(api->getConfig()->getConfigItem(api->getConfig()->fullRefreshTime,true)->asInt());
+    String fastrefresh = config->getConfigItem(config->fastRefresh, true)->asString();
+    uint fullrefreshtime = uint(config->getConfigItem(config->fullRefreshTime, true)->asInt());
 #ifdef BOARD_OBP40S3
     bool syspage_enabled = config->getBool(config->systemPage);
 #endif
@@ -735,23 +735,23 @@ void OBP60Task(GwApi *api){
     //####################################################################################
 
     // Configuration values for main loop
-    String gpsFix = api->getConfig()->getConfigItem(api->getConfig()->flashLED,true)->asString();
-    String gpsOn=api->getConfig()->getConfigItem(api->getConfig()->useGPS,true)->asString();
-    float tz = api->getConfig()->getConfigItem(api->getConfig()->timeZone,true)->asFloat();
+    String gpsFix = config->getConfigItem(config->flashLED,true)->asString();
+    String gpsOn = config->getConfigItem(config->useGPS,true)->asString();
+    float tz = config->getConfigItem(config->timeZone,true)->asFloat();
 
-    commonData.backlight.mode = backlightMapping(config->getConfigItem(config->backlight,true)->asString());
-    commonData.backlight.color = colorMapping(config->getConfigItem(config->blColor,true)->asString());
-    commonData.backlight.brightness = 2.55 * uint(config->getConfigItem(config->blBrightness,true)->asInt());
-    commonData.powermode = api->getConfig()->getConfigItem(api->getConfig()->powerMode,true)->asString();
+    commonData.backlight.mode = backlightMapping(config->getConfigItem(config->backlight, true)->asString());
+    commonData.backlight.color = colorMapping(config->getConfigItem(config->blColor, true)->asString());
+    commonData.backlight.brightness = 2.55 * uint(config->getConfigItem(config->blBrightness, true)->asInt());
+    commonData.powermode = api->getConfig()->getConfigItem(api->getConfig()->powerMode, true)->asString();
 
     bool uvoltage = config->getConfigItem(config->underVoltage, true)->asBoolean();
     float voffset = (config->getConfigItem(config->vOffset,true)->asString()).toFloat();
     float vslope = (config->getConfigItem(config->vSlope,true)->asString()).toFloat();
-    String cpuspeed = api->getConfig()->getConfigItem(api->getConfig()->cpuSpeed,true)->asString();
-    uint hdopAccuracy = uint(api->getConfig()->getConfigItem(api->getConfig()->hdopAccuracy,true)->asInt());
+    String cpuspeed = config->getConfigItem(config->cpuSpeed, true)->asString();
+    uint hdopAccuracy = uint(config->getConfigItem(config->hdopAccuracy, true)->asInt());
 
-    double homelat = commonData.config->getString(commonData.config->homeLAT).toDouble();
-    double homelon = commonData.config->getString(commonData.config->homeLON).toDouble();
+    double homelat = config->getString(config->homeLAT).toDouble();
+    double homelon = config->getString(config->homeLON).toDouble();
     bool homevalid = homelat >= -180.0 and homelat <= 180 and homelon >= -90.0 and homelon <= 90.0;
     if (homevalid) {
         logger->logDebug(GwLog::LOG, "Home location set to lat=%f, lon=%f", homelat, homelon);

@@ -86,12 +86,7 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
         else{
             snprintf(buffer, bsize, "01.01.2022"); 
         }
-        if(timeZone == 0){
-            result.unit = "UTC";
-        }
-        else{
-            result.unit = "LOT";
-        }
+        result.unit = ((timeZone == 0) ? "UTC" : "LOT");
     }
     //########################################################
     else if(value->getFormat() == "formatTime"){
@@ -121,12 +116,7 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
             snprintf(buffer, bsize, "11:36:%02i", int(sec));
             lasttime = millis();
         }
-        if(timeZone == 0){
-            result.unit = "UTC";
-        }
-        else{
-            result.unit = "LOT";
-        }
+        result.unit = ((timeZone == 0) ? "UTC" : "LOT");
     }
     //########################################################
     else if (value->getFormat() == "formatFixed0"){
@@ -286,13 +276,13 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
         if (rotation < -100){
             rotation = -99;
         }
-        if (rotation > 100){
+        else if (rotation > 100){
             rotation = 99;
         }
         if (rotation > -10 && rotation < 10){
             snprintf(buffer, bsize, "%3.2f", rotation);
         }
-        if (rotation <= -10 || rotation >= 10){
+        else {
             snprintf(buffer, bsize, "%3.0f", rotation);
         }
     }
@@ -330,12 +320,7 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
             String latdir = "";
             float degree = abs(int(lat));
             float minute = abs((lat - int(lat)) * 60);
-            if (lat > 0){
-                latdir = "N";
-            }
-            else {
-                latdir = "S";
-            }
+            latdir = (lat > 0) ? "N" : "S";
             latitude = String(degree,0) + "\x90 " + String(minute,4) + "' " + latdir;
             result.unit = "";
             strcpy(buffer, latitude.c_str());
@@ -354,12 +339,7 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
             String londir = "";
             float degree = abs(int(lon));
             float minute = abs((lon - int(lon)) * 60);
-            if (lon > 0){
-                londir = "E";
-            }
-            else {
-                londir = "W";
-            }
+            londir = (lon > 0) ? "E" : "W";
             longitude = String(degree,0) + "\x90 " + String(minute,4) + "' " + londir;
             result.unit = "";
             strcpy(buffer, longitude.c_str());
@@ -381,7 +361,7 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
             depth = rawvalue;
         }
         if(String(lengthFormat) == "ft"){
-            depth = depth * 3.28084;
+            depth = depth * 3.28084; // TODO use global defined factor
             result.unit = "ft";
         }
         else{
@@ -411,7 +391,7 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
             xte = xte * 0.001;
             result.unit = "km";
         } else if (distanceFormat == "nm") {
-            xte = xte * 0.000539957;
+            xte = xte * 0.000539957; // TODO use global defined factor
             result.unit = "nm";
         } else {
             result.unit = "m";
@@ -447,7 +427,7 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
         else{
             result.unit = "K";
         }
-        if(temp < 10) {
+        if (temp < 10) {
             snprintf(buffer, bsize, fmt_dec_1, temp);
         }
         else if (temp < 100) {
@@ -473,7 +453,7 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
             result.unit = "km";
         }
         else if (String(distanceFormat) == "nm") {
-            distance = distance * 0.000539957;
+            distance = distance * 0.000539957; // TODO use global defined factor
             result.unit = "nm";
         }
         else {
