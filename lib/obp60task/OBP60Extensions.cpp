@@ -584,7 +584,7 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
         heartbeat = !heartbeat;
 
         // Date and time
-        String fmttype = commonData.config->getString(commonData.config->dateFormat);
+        fmtDate fmttype = commonData.fmt->getDateFormat(commonData.config->getString(commonData.config->dateFormat));
         String timesource = commonData.config->getString(commonData.config->timeSource);
         double tz = commonData.config->getString(commonData.config->timeZone).toDouble();
         epd->setTextColor(commonData.fgcolor);
@@ -595,7 +595,7 @@ void displayHeader(CommonData &commonData, bool symbolmode, GwApi::BoatValue *da
             if (commonData.data.rtcValid) {
                 time_t tv = mktime(&commonData.data.rtcTime) + (int)(tz * 3600);
                 struct tm *local_tm = localtime(&tv);
-                epd->print(formatTime('m', local_tm->tm_hour, local_tm->tm_min, 0));
+                epd->print(formatTime(fmtTime::MMHH, local_tm->tm_hour, local_tm->tm_min, 0));
                 epd->print(" ");
                 epd->print(formatDate(fmttype, local_tm->tm_year + 1900, local_tm->tm_mon + 1, local_tm->tm_mday));
                 epd->print(" ");

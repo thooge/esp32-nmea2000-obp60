@@ -18,7 +18,7 @@
 class PageClock : public Page
 {
 private:
-    String dateformat;
+    fmtDate dateformat;
     int simtime;
     bool keylock = false;
     char source = 'R';  // time source (R)TC | (G)PS | (N)TP
@@ -35,7 +35,7 @@ public:
         logger->logDebug(GwLog::LOG, "Instantiate PageClock");
 
         // Get config data
-        dateformat = config->getString(config->dateFormat);
+        dateformat = common.fmt->getDateFormat(config->getString(config->dateFormat));
         timezone = config->getString(config->timeZone).toDouble();
         homelat = config->getString(config->homeLAT).toDouble();
         homelon = config->getString(config->homeLON).toDouble();
@@ -229,10 +229,10 @@ public:
             }
             else if (commonData->data.rtcValid) {
                  if (tz == 'L') {
-                      epd->print(formatTime('s', local_tm->tm_hour, local_tm->tm_min, local_tm->tm_sec));
+                      epd->print(formatTime(fmtTime::MMHHSS, local_tm->tm_hour, local_tm->tm_min, local_tm->tm_sec));
                  }
                  else {
-                      epd->print(formatTime('s', commonData->data.rtcTime.tm_hour, commonData->data.rtcTime.tm_min, commonData->data.rtcTime.tm_sec));
+                      epd->print(formatTime(fmtTime::MMHHSS, commonData->data.rtcTime.tm_hour, commonData->data.rtcTime.tm_min, commonData->data.rtcTime.tm_sec));
                  }
             } else {
                 epd->print(commonData->fmt->placeholder);

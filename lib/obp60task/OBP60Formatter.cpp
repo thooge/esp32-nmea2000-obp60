@@ -20,6 +20,7 @@ Formatter::Formatter(GwConfigHandler *config) {
     windspeedFormat = config->getString(config->windspeedFormat);
     tempFormat = config->getString(config->tempFormat);
     dateFormat = config->getString(config->dateFormat);
+    dateFmt = getDateFormat(dateFormat);
     usesimudata = config->getBool(config->useSimuData);
     precision = config->getString(config->valueprecision);
 
@@ -33,6 +34,37 @@ Formatter::Formatter(GwConfigHandler *config) {
         fmt_dec_100 = "%3.0f";
     }
 
+}
+
+fmtType Formatter::stringToFormat(const char* formatStr) {
+    auto it = formatMap.find(formatStr);
+    if (it != formatMap.end()) {
+        return it->second;
+    }
+    return fmtType::XDR_G; // generic as default
+}
+
+fmtDate Formatter::getDateFormat(String sformat) {
+    if (sformat == "DE") {
+        return fmtDate::DE;
+    }
+    if (sformat == "GB") {
+        return fmtDate::GB;
+    }
+    if (sformat == "US") {
+        return fmtDate::US;
+    }
+    return fmtDate::ISO; // default
+}
+
+fmtTime Formatter::getTimeFormat(String sformat) {
+    if (sformat == "MMHH") {
+        return fmtTime::MMHH;
+    }
+    if (sformat == "MMHHSS") {
+        return fmtTime::MMHHSS;
+    }
+    return fmtTime::MMHH; // default
 }
 
 FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &commondata){
@@ -782,31 +814,35 @@ FormattedData Formatter::formatValue(GwApi::BoatValue *value, CommonData &common
     return result;
 }
 
-String formatDate(String fmttype, uint16_t year, uint8_t month, uint8_t day) {
+String formatDate(fmtDate fmttype, uint16_t year, uint8_t month, uint8_t day) {
     char buffer[12];
-    if (fmttype == "GB") {
+    if (fmttype == fmtDate::GB) {
         snprintf(buffer, 12, "%02d/%02d/%04d", day , month, year);
     }
-    else if (fmttype == "US") {
+    else if (fmttype == fmtDate::US) {
         snprintf(buffer, 12, "%02d/%02d/%04d", month, day, year);
     }
-    else if (fmttype == "ISO") {
+    else if (fmttype == fmtDate::ISO) {
         snprintf(buffer, 12, "%04d-%02d-%02d", year, month, day);
     }
-    else {
+    else if (fmttype == fmtDate::DE) {
         snprintf(buffer, 12, "%02d.%02d.%04d", day, month, year);
+    } else {
+        snprintf(buffer, 12, "%04d-%02d-%02d", year, month, day);
     }
     return String(buffer);
 }
 
-String formatTime(char fmttype, uint8_t hour, uint8_t minute, uint8_t second) {
-    // fmttype: s: with seconds, m: only minutes
+String formatTime(fmtTime fmttype, uint8_t hour, uint8_t minute, uint8_t second) {
     char buffer[10];
-    if (fmttype == 'm') {
+    if (fmttype == fmtTime::MMHH) {
         snprintf(buffer, 10, "%02d:%02d", hour , minute);
     }
-    else {
+    else if (fmttype == fmtTime::MMHHSS) {
         snprintf(buffer, 10, "%02d:%02d:%02d", hour, minute, second);
+    }
+    else {
+        snprintf(buffer, 10, "%02d%02d%02d", hour, minute, second);
     }
     return String(buffer);
 }

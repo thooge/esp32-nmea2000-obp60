@@ -2,40 +2,9 @@
 #ifndef _OBP60FORMATTER_H
 #define _OBP60FORMATTER_H
 
+#include <unordered_map>
+
 /*
-
-Formatter names as defined in BoatItemBase
-    formatCourse
-    formatKnots
-    formatWind
-    formatLatitude
-    formatLongitude
-    formatXte
-    formatFixed0
-    formatDepth
-    kelvinToC      TODO not a format but conversion
-    mtr2nm         TODO not a format but conversion
-    formatDop      dilution of precision
-    formatRot
-    formatDate
-    formatTime
-    formatName
-
-XDR Formatter names
-    formatXdr:P:P // pressure percent
-    formatXdr:P:B // pressure bar
-    formatXdr:U:V // voltage volt
-    formatXdr:I:A // current ampere
-    formatXdr:C:K // temperature kelvin
-    formatXdr:C:C // temperature celsius
-    formatXdr:H:P // humidity percent
-    formatXdr:V:P // volume percent
-    formatXdr:V:M // volume cubic meters
-    formatXdr:R:I // flow liter per second?
-    formatXdr:G:  // generic
-    formatXdr:A:P // angle percent
-    formatXdr:A:D // angle degrees
-    formatXdr:T:R // tachometer rpm
 
 XDR types
     A 	Angular displacement
@@ -68,6 +37,75 @@ XDR units
     V   Volt
  
  */
+
+enum class fmtType {
+    // Formatter names as defined in BoatItemBase
+    COURSE,
+    KNOTS,
+    WIND,
+    LATITUDE,
+    LONGITUDE,
+    XTE,
+    FIXED0,
+    DEPTH,
+    DOP,       // dilution of precision
+    ROT,
+    DATE,
+    TIME,
+    NAME,
+
+    kelvinToC, // TODO not a format but conversion
+    mtr2nm,    // TODO not a format but conversion
+
+    // XDR Formatter names
+    XDR_PP,     // pressure percent
+    XDR_PB,     // pressure bar
+    XDR_UV,     // voltage volt
+    XDR_IA,     // current ampere
+    XDR_CK,     // temperature kelvin
+    XDR_CC,     // temperature celsius
+    XDR_HP,     // humidity percent
+    XDR_VP,     // volume percent
+    XDR_VM,     // volume cubic meters
+    XDR_RI,     // flow liter per second?
+    XDR_G,      // generic
+    XDR_AP,     // angle percent
+    XDR_AD,     // angle degrees
+    XDR_TR      // tachometer rpm
+};
+
+// Hint: String is not supported
+static std::unordered_map<const char*, fmtType> formatMap PROGMEM = {
+    {"formatCourse", fmtType::COURSE},
+    {"formatKnots", fmtType::KNOTS},
+    {"formatWind", fmtType::WIND},
+    {"formatLatitude", fmtType::LATITUDE},
+    {"formatLongitude", fmtType::LONGITUDE},
+    {"formatXte", fmtType::XTE},
+    {"formatFixed0", fmtType::FIXED0},
+    {"formatDepth", fmtType::DEPTH},
+    {"formatDop", fmtType::DOP},
+    {"formatRot", fmtType::ROT},
+    {"formatDate", fmtType::DATE},
+    {"formatTime", fmtType::TIME},
+    {"formatName", fmtType::NAME},
+    {"kelvinToC", fmtType::kelvinToC},
+    {"mtr2nm", fmtType::mtr2nm},
+    {"formatXdr:P:P", fmtType::XDR_PP},
+    {"formatXdr:P:B", fmtType::XDR_PB},
+    {"formatXdr:U:V", fmtType::XDR_UV},
+    {"formatXdr:I:A", fmtType::XDR_IA},
+    {"formatXdr:C:K", fmtType::XDR_CK},
+    {"formatXdr:C:C", fmtType::XDR_CC},
+    {"formatXdr:H:P", fmtType::XDR_HP},
+    {"formatXdr:V:P", fmtType::XDR_VP},
+    {"formatXdr:V:M", fmtType::XDR_VM},
+    {"formatXdr:R:I", fmtType::XDR_RI},
+    {"formatXdr:G:", fmtType::XDR_G},
+    {"formatXdr:A:P", fmtType::XDR_AP},
+    {"formatXdr:A:D", fmtType::XDR_AD},
+    {"formatXdr:T:R", fmtType::XDR_TR}
+};
 
 // Possible formats as scoped enums
 enum class fmtDate {DE, GB, US, ISO};
@@ -106,6 +144,7 @@ private:
     String windspeedFormat = "kn"; // [m/s|km/h|kn|bft]
     String tempFormat = "C";       // [K|°C|°F]
     String dateFormat = "ISO";     // [DE|GB|US|ISO]
+    fmtDate dateFmt;
     bool usesimudata = false;      // [on|off]
 
     String precision = "2";        // [1|2]
@@ -115,13 +154,16 @@ private:
 
 public:
     Formatter(GwConfigHandler *config);
+    fmtType stringToFormat(const char* formatStr);
+    fmtDate getDateFormat(String sformat);
+    fmtTime getTimeFormat(String sformat);
     FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata);
     String placeholder = "---";
 };
 
-// Standard format functions without overhead
-String formatDate(String fmttype, uint16_t year, uint8_t month, uint8_t day);
-String formatTime(char fmttype, uint8_t hour, uint8_t minute, uint8_t second);
+// Standard format functions without class and overhead
+String formatDate(fmtDate fmttype, uint16_t year, uint8_t month, uint8_t day);
+String formatTime(fmtTime fmttype, uint8_t hour, uint8_t minute, uint8_t second);
 String formatLatitude(double lat);
 String formatLongitude(double lon);
 

@@ -208,7 +208,7 @@ class PageDescription{
 
 class PageStruct{
     public:
-        Page *page=NULL;
+        Page *page = nullptr;
         PageData parameters;
-        PageDescription *description=NULL;
+        PageDescription *description = nullptr;
 };
