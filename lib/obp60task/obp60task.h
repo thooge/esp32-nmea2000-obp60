@@ -41,5 +41,10 @@
     #ifdef BOARD_OBP40S3
     DECLARE_CAPABILITY(obp40,true)
     #endif
-    DECLARE_STRING_CAPABILITY(HELP_URL, "https://obp60-v2-docu.readthedocs.io/de/latest/"); // Link to help pages
+    #ifdef BOARD_OBP60S3
+    DECLARE_STRING_CAPABILITY(HELP_URL, "https://obp60-v2-docu.readthedocs.io/en/latest/"); // Link to help pages
+    #endif
+    #ifdef BOARD_OBP40S3
+    DECLARE_STRING_CAPABILITY(HELP_URL, "https://obp40-v1-docu.readthedocs.io/en/latest/"); // Link to help pages
+    #endif
 #endif
