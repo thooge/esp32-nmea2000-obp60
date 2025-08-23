@@ -4,23 +4,33 @@
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
 
+#include <vector>
+#include <algorithm> // for vector sorting
+
 /*
  * SkyView / Satellites
  */
 
 class PageSkyView : public Page
 {
+private:
+    GwBoatData *bd;
+
 public:
     PageSkyView(CommonData &common) : Page(common)
     {
-        logger->logDebug(GwLog::LOG, "Instantiate PageSkyView");
+        // task name access is for example purpose only
+        TaskHandle_t currentTaskHandle = xTaskGetCurrentTaskHandle();
+        const char* taskName = pcTaskGetName(currentTaskHandle);
+        logger->logDebug(GwLog::LOG, "Instantiate PageSkyView in task '%s'", taskName);
     }
 
-    int handleKey(int key){
-        // Code for keylock
-        if(key == 11){
+    int handleKey(int key) {
+        // return 0 to mark the key handled completely
+        // return the key to allow further action
+        if (key == 11) {
             commonData->keylock = !commonData->keylock;
-            return 0;                   // Commit the key
+            return 0;
         }
         return key;
     }
@@ -33,12 +43,25 @@ public:
             setFlashLED(false);
         }
 #endif
+        bd = pageData.api->getBoatData();
     };
+
+    // Comparator function to sort by SNR
+    static bool compareBySNR(const GwSatInfo& a, const GwSatInfo& b) {
+       return a.SNR > b.SNR; // Sort in descending order
+    }
 
     int displayPage(PageData &pageData) {
 
-        // Logging boat values
-        logger->logDebug(GwLog::LOG, "Drawing at PageSkyView");
+        std::vector<GwSatInfo> sats;
+        int nSat = bd->SatInfo->getNumSats();
+
+        logger->logDebug(GwLog::LOG, "Drawing at PageSkyView, %d satellites", nSat);
+
+        for (int i = 0; i < nSat; i++) {
+            sats.push_back(*bd->SatInfo->getAt(i));
+        }
+        std::sort(sats.begin(), sats.end(), compareBySNR);
 
         // Draw page
         //***********************************************************
@@ -48,6 +71,7 @@ public:
 
         // current position
         epd->setFont(&Ubuntu_Bold8pt8b);
+
 
         GwApi::BoatValue *bv_lat = pageData.values[0];
         String sv_lat = commonData->fmt->formatValue(bv_lat, *commonData).svalue;
@@ -108,21 +132,37 @@ public:
         epd->setCursor(c.x - r + 2 , c.y + h / 2);
         epd->print("W");
 
-        // satellites
+        epd->setFont(&Ubuntu_Bold8pt8b);
 
+        // show satellites in "map"
+        for (int i = 0; i < nSat; i++) {
+            float arad = sats[i].Azimut * M_PI / 180.0;
+            float erad = sats[i].Elevation * M_PI / 180.0;
+            uint16_t x = c.x + sin(arad) * erad * r;
+            uint16_t y = c.y + cos(arad) * erad * r;
+            epd->drawRect(x-4, y-4, 8, 8, commonData->fgcolor);
+        }
 
         // Signal / Noise bars
-        epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(325, 34);
         epd->print("SNR");
         epd->drawRect(270, 20, 125, 257, commonData->fgcolor);
-        for (int i = 0; i < 12; i++) {
+        int maxsat = std::min(nSat, 12);
+        for (int i = 0; i < maxsat; i++) {
             uint16_t y = 29 + (i + 1) * 20;
             epd->setCursor(276, y);
             char buffer[3];
-            snprintf(buffer, 3, "%02d", i+1);
+            snprintf(buffer, 3, "%02d", static_cast<int>(sats[i].PRN));
             epd->print(String(buffer));
             epd->drawRect(305, y-12, 85, 14, commonData->fgcolor);
+            epd->setCursor(315, y);
+            // TODO SNR as number or as bar via mode key?
+            if (sats[i].SNR <= 100) {
+                // epd->print(sats[i].SNR);
+                epd->fillRect(307, y-10, int(81 * sats[i].SNR / 100.0), 10, commonData->fgcolor);
+            } else {
+                epd->print("n/a");
+            }
         }
 
         return PAGE_UPDATE;

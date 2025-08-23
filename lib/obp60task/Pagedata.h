@@ -128,6 +128,7 @@ typedef struct{
 //a base class that all pages must inherit from
 class Page{
 protected:
+    // TODO Future: GwApi *api;
     CommonData *commonData;
     GwConfigHandler *config;
     GwLog *logger;

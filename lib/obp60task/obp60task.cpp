@@ -120,13 +120,13 @@ void OBP60Init(GwApi *api){
 }
 
 typedef struct {
-        int page0=0;
-        QueueHandle_t queue;
-        GwLog* logger = NULL;
+    int page0 = 0;
+    QueueHandle_t queue;
+    GwLog* logger = nullptr;
 //        GwApi* api = NULL;
-        uint sensitivity = 100;
-        bool use_syspage = true;
-    } MyData;
+    uint sensitivity = 100;
+    bool use_syspage = true;
+} MyData;
 
 // Keyboard Task
 void keyboardTask(void *param){
@@ -675,6 +675,7 @@ void OBP60Task(GwApi *api){
        pages[i].page=description->creator(commonData);
        pages[i].parameters.pageName=pageType;
        pages[i].parameters.pageNumber = i + 1;
+       pages[i].parameters.api = api;
        LOG_DEBUG(GwLog::DEBUG,"found page %s for number %d",pageType.c_str(),i);
        //fill in all the user defined parameters
        for (int uid=0;uid<description->userParam;uid++){
