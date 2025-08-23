@@ -1521,9 +1521,6 @@
         "condition": [
             {
                 "page1type": "SixValues"
-            },
-            {
-                "page1type": "WindRoseFlex"
             }
         ]
     },
@@ -1540,9 +1537,6 @@
         "condition": [
             {
                 "page1type": "SixValues"
-            },
-            {
-                "page1type": "WindRoseFlex"
             }
         ]
     },
@@ -1799,9 +1793,6 @@
         "condition": [
             {
                 "page2type": "SixValues"
-            },
-            {
-                "page2type": "WindRoseFlex"
             }
         ]
     },
@@ -1818,9 +1809,6 @@
         "condition": [
             {
                 "page2type": "SixValues"
-            },
-            {
-                "page2type": "WindRoseFlex"
             }
         ]
     },
@@ -2074,9 +2062,6 @@
         "condition": [
             {
                 "page3type": "SixValues"
-            },
-            {
-                "page3type": "WindRoseFlex"
             }
         ]
     },
@@ -2093,9 +2078,6 @@
         "condition": [
             {
                 "page3type": "SixValues"
-            },
-            {
-                "page3type": "WindRoseFlex"
             }
         ]
     },
@@ -2346,9 +2328,6 @@
         "condition": [
             {
                 "page4type": "SixValues"
-            },
-            {
-                "page4type": "WindRoseFlex"
             }
         ]
     },
@@ -2365,9 +2344,6 @@
         "condition": [
             {
                 "page4type": "SixValues"
-            },
-            {
-                "page4type": "WindRoseFlex"
             }
         ]
     },
@@ -2615,9 +2591,6 @@
         "condition": [
             {
                 "page5type": "SixValues"
-            },
-            {
-                "page5type": "WindRoseFlex"
             }
         ]
     },
@@ -2634,9 +2607,6 @@
         "condition": [
             {
                 "page5type": "SixValues"
-            },
-            {
-                "page5type": "WindRoseFlex"
             }
         ]
     },
@@ -2881,9 +2851,6 @@
         "condition": [
             {
                 "page6type": "SixValues"
-            },
-            {
-                "page6type": "WindRoseFlex"
             }
         ]
     },
@@ -2900,9 +2867,6 @@
         "condition": [
             {
                 "page6type": "SixValues"
-            },
-            {
-                "page6type": "WindRoseFlex"
             }
         ]
     },
@@ -3144,9 +3108,6 @@
         "condition": [
             {
                 "page7type": "SixValues"
-            },
-            {
-                "page7type": "WindRoseFlex"
             }
         ]
     },
@@ -3163,9 +3124,6 @@
         "condition": [
             {
                 "page7type": "SixValues"
-            },
-            {
-                "page7type": "WindRoseFlex"
             }
         ]
     },
@@ -3404,9 +3362,6 @@
         "condition": [
             {
                 "page8type": "SixValues"
-            },
-            {
-                "page8type": "WindRoseFlex"
             }
         ]
     },
@@ -3423,9 +3378,6 @@
         "condition": [
             {
                 "page8type": "SixValues"
-            },
-            {
-                "page8type": "WindRoseFlex"
             }
         ]
     },
@@ -3661,9 +3613,6 @@
         "condition": [
             {
                 "page9type": "SixValues"
-            },
-            {
-                "page9type": "WindRoseFlex"
             }
         ]
     },
@@ -3680,9 +3629,6 @@
         "condition": [
             {
                 "page9type": "SixValues"
-            },
-            {
-                "page9type": "WindRoseFlex"
             }
         ]
     },
@@ -3915,9 +3861,6 @@
         "condition": [
             {
                 "page10type": "SixValues"
-            },
-            {
-                "page10type": "WindRoseFlex"
             }
         ]
     },
@@ -3934,9 +3877,6 @@
         "condition": [
             {
                 "page10type": "SixValues"
-            },
-            {
-                "page10type": "WindRoseFlex"
             }
         ]
     },
@@ -3987,4 +3927,3 @@
         ]
     }
 ]
-

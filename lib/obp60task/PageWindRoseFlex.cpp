@@ -7,15 +7,33 @@
 class PageWindRoseFlex : public Page
 {
 int16_t lp = 80;                    // Pointer length
+char source = 'A';		    // data source (A)pparent | (T)rue
+String 	ssource="App.";		    // String for Data Source 
 
 public:
     PageWindRoseFlex(CommonData &common){
         commonData = &common;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageWindRoseFlex");
     }
+    virtual void setupKeys(){
+        Page::setupKeys();
+        commonData->keydata[1].label = "SRC";
+    }
 
     // Key functions
     virtual int handleKey(int key){
+	if(key == 2){ 
+	 // Code for set source 
+	    if(source == 'A'){ 
+		    source = 'T'; 
+		    ssource = "True"; // String to display
+	    } else { 
+		    source = 'A'; 
+		    ssource = "App."; // String to display
+	    } 
+	   } 
+	return key;               // Commit the key
+
         // Code for keylock
         if(key == 11){
             commonData->keylock = !commonData->keylock;
@@ -48,42 +66,57 @@ public:
         String flashLED = config->getString(config->flashLED);
         String backlightMode = config->getString(config->backlight);
 
-        // Get boat values #1
-        GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
-        String name1 = xdrDelete(bvalue1->getName());   // Value name
+	GwApi::BoatValue *bvalue1; // Value 1 for angle
+        GwApi::BoatValue *bvalue2; // Value 2 for speed
+
+	// Get boat value for wind angle (AWA/TWA), shown by pointer
+        if (source == 'A') {
+            bvalue1 = pageData.values[4];
+        } else {
+            bvalue1 = pageData.values[6];
+        }
+        String name1 = bvalue1->getName().c_str();      // Value name
         name1 = name1.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue1, logger); // Check if boat data value is to be calibrated
         double value1 = bvalue1->value;                 // Value as double in SI unit
         bool valid1 = bvalue1->valid;                   // Valid information
-        value1 = formatValue(bvalue1, *commonData).value;// Format only nesaccery for simulation data for pointer
         String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
-        if(valid1 == true){
+	if(valid1 == true){
             svalue1old = svalue1;   	                // Save old value
             unit1old = unit1;                           // Save old unit
         }
 
-        // Get boat values #2
-        GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list
-        String name2 = xdrDelete(bvalue2->getName());   // Value name
+	// Get boat value for wind speed (AWS/TWS), shown in top left corner
+        if (source == 'A') {
+            bvalue2 =pageData.values[5];
+        } else {
+            bvalue2 = pageData.values[7];
+        }
+        String name2 = bvalue2->getName().c_str();      // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue2, logger); // Check if boat data value is to be calibrated
         double value2 = bvalue2->value;                 // Value as double in SI unit
         bool valid2 = bvalue2->valid;                   // Valid information
+        if (simulation) {
+            value2 = 0.62731; // some random value
+        }
         String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
-        if(valid2 == true){
+	if(valid2 == true){
             svalue2old = svalue2;   	                // Save old value
             unit2old = unit2;                           // Save old unit
         }
 
-        // Get boat values #3
-        GwApi::BoatValue *bvalue3 = pageData.values[2]; // Third element in list
+
+
+        // Get boat value for bottom left  corner
+        GwApi::BoatValue *bvalue3 = pageData.values[0]; 
         String name3 = xdrDelete(bvalue3->getName());   // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue3, logger); // Check if boat data value is to be calibrated
         double value3 = bvalue3->value;                 // Value as double in SI unit
-        bool valid3 = bvalue3->valid;                   // Valid information
+        bool valid3 = bvalue3->valid;                   // Valid information 
         String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit3 = formatValue(bvalue3, *commonData).unit;        // Unit of value
         if(valid3 == true){
@@ -91,13 +124,13 @@ public:
             unit3old = unit3;                           // Save old unit
         }
 
-        // Get boat values #4
-        GwApi::BoatValue *bvalue4 = pageData.values[3]; // Fourth element in list
-        String name4 = xdrDelete(bvalue4->getName());   // Value name
+        // Get boat value  for top right corner
+        GwApi::BoatValue *bvalue4 = pageData.values[1]; 
+        String name4 = xdrDelete(bvalue4->getName());      // Value name
         name4 = name4.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue4, logger); // Check if boat data value is to be calibrated
         double value4 = bvalue4->value;                 // Value as double in SI unit
-        bool valid4 = bvalue4->valid;                   // Valid information
+        bool valid4 = bvalue4->valid;                   // Valid information 
         String svalue4 = formatValue(bvalue4, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit4 = formatValue(bvalue4, *commonData).unit;        // Unit of value
         if(valid4 == true){
@@ -105,13 +138,13 @@ public:
             unit4old = unit4;                           // Save old unit
         }
 
-        // Get boat values #5
-        GwApi::BoatValue *bvalue5 = pageData.values[4]; // Fifth element in list
-        String name5 = xdrDelete(bvalue5->getName());   // Value name
+        // Get boat value bottom right corner
+        GwApi::BoatValue *bvalue5 = pageData.values[2]; 
+        String name5 = xdrDelete(bvalue5->getName());      // Value name
         name5 = name5.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue5, logger); // Check if boat data value is to be calibrated
         double value5 = bvalue5->value;                 // Value as double in SI unit
-        bool valid5 = bvalue5->valid;                   // Valid information
+        bool valid5 = bvalue5->valid;                   // Valid information 
         String svalue5 = formatValue(bvalue5, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit5 = formatValue(bvalue5, *commonData).unit;        // Unit of value
         if(valid5 == true){
@@ -119,19 +152,20 @@ public:
             unit5old = unit5;                           // Save old unit
         }
 
-        // Get boat values #5
-        GwApi::BoatValue *bvalue6 = pageData.values[5]; // Sixth element in list
-        String name6 = xdrDelete(bvalue6->getName());   // Value name
+        // Get boat value for center
+        GwApi::BoatValue *bvalue6 = pageData.values[3]; 
+        String name6 = xdrDelete(bvalue6->getName());      // Value name
         name6 = name6.substring(0, 6);                  // String length limit for value name
         calibrationData.calibrateInstance(bvalue6, logger); // Check if boat data value is to be calibrated
         double value6 = bvalue6->value;                 // Value as double in SI unit
-        bool valid6 = bvalue6->valid;                   // Valid information
+        bool valid6 = bvalue6->valid;                   // Valid information 
         String svalue6 = formatValue(bvalue6, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit6 = formatValue(bvalue6, *commonData).unit;        // Unit of value
         if(valid6 == true){
             svalue6old = svalue6;   	                // Save old value
             unit6old = unit6;                           // Save old unit
         }
+
 
         // Optical warning by limit violation (unused)
         if(String(flashLED) == "Limit Violation"){
@@ -151,7 +185,7 @@ public:
 
         getdisplay().setTextColor(commonData->fgcolor);
 
-        // Show value 2 at position of value 1 (top left)
+        // Show AWS or TWS top left
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
         getdisplay().setCursor(10, 65);
         getdisplay().print(svalue2);                     // Value
@@ -171,7 +205,7 @@ public:
         // Horizintal separator left
         getdisplay().fillRect(0, 149, 60, 3, commonData->fgcolor);
 
-        // Show value 3 at bottom left
+        // Show value 3 (=first user-configured parameter) at bottom left
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
         getdisplay().setCursor(10, 270);
         getdisplay().print(svalue3);                     // Value
@@ -188,11 +222,10 @@ public:
             getdisplay().print(unit3old);                // Unit
         }
 
-        // Show value 4 at top right
+        // Show value 4 (=second user-configured parameter) at top right
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
         getdisplay().setCursor(295, 65);
         if(valid3 == true){
-           // getdisplay().print(abs(value3 * 180 / M_PI), 0); // Value
             getdisplay().print(svalue4);     // Value
         }
         else{
@@ -214,7 +247,7 @@ public:
         // Horizintal separator right
         getdisplay().fillRect(340, 149, 80, 3, commonData->fgcolor);
 
-        // Show value 5 at bottom right
+        // Show value 5 (=third user-configured parameter) at bottom right
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
         getdisplay().setCursor(295, 270);
         getdisplay().print(svalue5);                     // Value
@@ -329,26 +362,49 @@ public:
 
 //*******************************************************************************************
 
-        // Show value6, so that it does not collide with the wind pointer
-        getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
-        if (cos(value1) > 0){
-            getdisplay().setCursor(160, 200);
-            getdisplay().print(svalue6);                     // Value
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(190, 215);
-        } else{
-            getdisplay().setCursor(160, 130);
-            getdisplay().print(svalue6);                     // Value
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(190, 90);
-        }
-        getdisplay().print(" ");
-        if(holdvalues == false){
-            getdisplay().print(unit6);                   // Unit
-        }
-        else{
-            getdisplay().print(unit6old);                // Unit
-        }
+	// Show value6 (=fourth user-configured parameter) and ssource, so that they do not collide with the wind pointer
+if ( cos(value1) > 0){ 
+    getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
+    getdisplay().setCursor(160, 200);
+    getdisplay().print(svalue6);                     // Value
+    getdisplay().setFont(&Ubuntu_Bold8pt8b);
+    getdisplay().setCursor(190, 215);
+    getdisplay().print(" ");
+    if(holdvalues == false){
+        getdisplay().print(unit6);                   // Unit
+    }
+    else{  
+        getdisplay().print(unit6old);                // Unit
+    }
+    if (sin(value1)>0){
+	    getdisplay().setCursor(160, 130);
+    }
+    else{
+	    getdisplay().setCursor(220, 130);
+    }
+    getdisplay().print(ssource);		// true or app.
+}
+else{ 
+    getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
+    getdisplay().setCursor(160, 130);
+    getdisplay().print(svalue6);                     // Value
+    getdisplay().setFont(&Ubuntu_Bold8pt8b);
+    getdisplay().setCursor(190, 90);
+    getdisplay().print(" ");
+    if(holdvalues == false){
+        getdisplay().print(unit6);                   // Unit
+    }
+    else{  
+        getdisplay().print(unit6old);                // Unit
+    }
+    if (sin(value1)>0){
+	    getdisplay().setCursor(160, 130);
+    }
+    else{
+	    getdisplay().setCursor(220, 130);
+    }
+    getdisplay().print(ssource);		//true or app. 
+}
 
         return PAGE_UPDATE;
     };
@@ -361,13 +417,14 @@ static Page *createPage(CommonData &common){
  * with the code below we make this page known to the PageTask
  * we give it a type (name) that can be selected in the config
  * we define which function is to be called
- * and we provide the number of user parameters we expect (0 here)
+ * and we provide the number of user parameters we expect (4 here)
  * and will will provide the names of the fixed values we need
  */
 PageDescription registerPageWindRoseFlex(
     "WindRoseFlex", // Page name
     createPage,     // Action
-    6,              // Number of bus values depends on selection in Web configuration; was zero
+    4,              // Number of bus values depends on selection in Web configuration
+    {"AWA", "AWS", "TWA", "TWS"},    // fixed  values we need in the page. They are inserted AFTER the web-configured values.	
     true            // Show display header on/off
 );
 
