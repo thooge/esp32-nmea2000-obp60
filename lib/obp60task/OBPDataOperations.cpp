@@ -16,7 +16,7 @@ void HstryBuf::init(BoatValueList* boatValues, GwLog *log) {
     twsHstryMin = hstryMinVal;
     awdHstryMin = hstryMinVal;
     awsHstryMin = hstryMinVal;
-    const double DBL_MIN = std::numeric_limits<double>::lowest();
+    const double DBL_MAX = std::numeric_limits<double>::max();
 
     // Initialize history buffers with meta data
     hstryBufList.twdHstry->setMetaData("TWD", "formatCourse", hstryUpdFreq, hstryMinVal, twdHstryMax);
@@ -33,7 +33,7 @@ void HstryBuf::init(BoatValueList* boatValues, GwLog *log) {
 
     if (!awdBVal->valid) { // AWD usually does not exist
         awdBVal->setFormat(hstryBufList.awdHstry->getFormat());
-        awdBVal->value = DBL_MIN;
+        awdBVal->value = DBL_MAX;
     }
 
     // collect boat values for true wind calculation
@@ -221,15 +221,14 @@ double WindUtils::calcHDT(const double* hdmVal, const double* varVal, const doub
 {
     double hdt;
     double minSogVal = 0.1; // SOG below this value (m/s) is assumed to be  data noise from GPS sensor
-    static const double DBL_MIN = std::numeric_limits<double>::lowest();
 
-    if (*hdmVal != DBL_MIN) {
-        hdt = *hdmVal + (*varVal != DBL_MIN ? *varVal : 0.0); // Use corrected HDM if HDT is not available (or just HDM if VAR is not available)
+    if (*hdmVal != DBL_MAX) {
+        hdt = *hdmVal + (*varVal != DBL_MAX ? *varVal : 0.0); // Use corrected HDM if HDT is not available (or just HDM if VAR is not available)
         hdt = to2PI(hdt);
-    } else if (*cogVal != DBL_MIN && *sogVal >= minSogVal) {
+    } else if (*cogVal != DBL_MAX && *sogVal >= minSogVal) {
         hdt = *cogVal; // Use COG as fallback if HDT and HDM are not available, and SOG is not data noise
     } else {
-        hdt = DBL_MIN; // Cannot calculate HDT without valid HDM or HDM+VAR or COG
+        hdt = DBL_MAX; // Cannot calculate HDT without valid HDM or HDM+VAR or COG
     }
 
     return hdt;
@@ -242,24 +241,23 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
     double stw, hdt, ctw;
     double twd, tws, twa;
     double minSogVal = 0.1; // SOG below this value (m/s) is assumed to be  data noise from GPS sensor
-    static const double DBL_MIN = std::numeric_limits<double>::lowest();
 
-    if (*hdtVal != DBL_MIN) {
+    if (*hdtVal != DBL_MAX) {
         hdt = *hdtVal; // Use HDT if available
     } else {
         hdt = calcHDT(hdmVal, varVal, cogVal, sogVal);
     }
 
-    if (*cogVal != DBL_MIN && *sogVal >= minSogVal) { // if SOG is data noise, we don't trust COG
+    if (*cogVal != DBL_MAX && *sogVal >= minSogVal) { // if SOG is data noise, we don't trust COG
 
         ctw = *cogVal; // Use COG for CTW if available
     } else {
         ctw = hdt; // 2nd approximation for CTW; hdt must exist if we reach this part of the code
     }
 
-    if (*stwVal != DBL_MIN) {
+    if (*stwVal != DBL_MAX) {
         stw = *stwVal; // Use STW if available
-    } else if (*sogVal != DBL_MIN) {
+    } else if (*sogVal != DBL_MAX) {
         stw = *sogVal;
     } else {
         // If STW and SOG are not available, we cannot calculate true wind
@@ -267,7 +265,7 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
     }
     // Serial.println("\ncalcTrueWind: HDT: " + String(hdt) + ", CTW: " + String(ctw) + ", STW: " + String(stw));
 
-    if ((*awaVal == DBL_MIN) || (*awsVal == DBL_MIN)) {
+    if ((*awaVal == DBL_MAX) || (*awsVal == DBL_MAX)) {
         // Cannot calculate true wind without valid AWA, AWS; other checks are done earlier
         return false;
     } else {
@@ -288,16 +286,15 @@ bool WindUtils::addTrueWind(GwApi* api, BoatValueList* boatValues, GwLog* log) {
     double awaVal, awsVal, cogVal, stwVal, sogVal, hdtVal, hdmVal, varVal;
     double twd, tws, twa;
     bool isCalculated = false;
-    const double DBL_MIN = std::numeric_limits<double>::lowest();
 
-    awaVal = awaBVal->valid ? awaBVal->value : DBL_MIN;
-    awsVal = awsBVal->valid ? awsBVal->value : DBL_MIN;
-    cogVal = cogBVal->valid ? cogBVal->value : DBL_MIN;
-    stwVal = stwBVal->valid ? stwBVal->value : DBL_MIN;
-    sogVal = sogBVal->valid ? sogBVal->value : DBL_MIN;
-    hdtVal = hdtBVal->valid ? hdtBVal->value : DBL_MIN;
-    hdmVal = hdmBVal->valid ? hdmBVal->value : DBL_MIN;
-    varVal = varBVal->valid ? varBVal->value : DBL_MIN;
+    awaVal = awaBVal->valid ? awaBVal->value : DBL_MAX;
+    awsVal = awsBVal->valid ? awsBVal->value : DBL_MAX;
+    cogVal = cogBVal->valid ? cogBVal->value : DBL_MAX;
+    stwVal = stwBVal->valid ? stwBVal->value : DBL_MAX;
+    sogVal = sogBVal->valid ? sogBVal->value : DBL_MAX;
+    hdtVal = hdtBVal->valid ? hdtBVal->value : DBL_MAX;
+    hdmVal = hdmBVal->valid ? hdmBVal->value : DBL_MAX;
+    varVal = varBVal->valid ? varBVal->value : DBL_MAX;
     LOG_DEBUG(GwLog::DEBUG,"obp60task addTrueWind: AWA %.1f, AWS %.1f, COG %.1f, STW %.1f, SOG %.2f, HDT %.1f, HDM %.1f, VAR %.1f", awaBVal->value * RAD_TO_DEG, awsBVal->value * 3.6 / 1.852,
             cogBVal->value * RAD_TO_DEG, stwBVal->value * 3.6 / 1.852, sogBVal->value * 3.6 / 1.852, hdtBVal->value * RAD_TO_DEG, hdmBVal->value * RAD_TO_DEG, varBVal->value * RAD_TO_DEG);
 

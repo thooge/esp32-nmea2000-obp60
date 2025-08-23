@@ -16,16 +16,16 @@ private:
     size_t last; // Points to the last (newest) valid element
     size_t count; // Number of valid elements currently in buffer
     bool is_Full; // Indicates that all buffer elements are used and ringing is in use
-    T MIN_VAL; // lowest possible value of buffer
-    T MAX_VAL; // highest possible value of buffer of type <T>
+    T MIN_VAL; // lowest possible value of buffer of type <T>
+    T MAX_VAL; // highest possible value of buffer of type <T> -> indicates invalid value in buffer
     mutable SemaphoreHandle_t bufLocker;
 
     // metadata for buffer
     String dataName; // Name of boat data in buffer
     String dataFmt; // Format of boat data in buffer
     int updFreq; // Update frequency in milliseconds
-    T smallest; // Value range of buffer: smallest value
-    T largest; // Value range of buffer: biggest value
+    T smallest; // Value range of buffer: smallest value; needs to be => MIN_VAL
+    T largest; // Value range of buffer: biggest value; needs to be < MAX_VAL, since MAX_VAL indicates invalid entries
 
     void initCommon();
 
@@ -55,8 +55,8 @@ public:
     size_t getLastIdx() const; // Get the index of newest value in buffer
     bool isEmpty() const; // Check if buffer is empty
     bool isFull() const; // Check if buffer is full
-    T getMinVal() const; // Get lowest possible value for buffer; used for initialized buffer data
-    T getMaxVal() const; // Get highest possible value for buffer
+    T getMinVal() const; // Get lowest possible value for buffer
+    T getMaxVal() const; // Get highest possible value for buffer; used for unset/invalid buffer data
     void clear(); // Clear buffer
     void resize(size_t size); // Delete buffer and set new size
     T operator[](size_t index) const; // Operator[] for convenient access (same as get())

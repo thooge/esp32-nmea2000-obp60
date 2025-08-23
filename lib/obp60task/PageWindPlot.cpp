@@ -12,7 +12,7 @@ static const double radToDeg = 180.0 / M_PI; // Conversion factor from radians t
 // Get maximum difference of last <amount> of TWD ringbuffer values to center chart; returns "0" if data is not valid
 int getCntr(const RingBuffer<int16_t>& windDirHstry, size_t amount)
 {
-    int minVal = windDirHstry.getMinVal();
+    const int MAX_VAL = windDirHstry.getMaxVal();
     size_t count = windDirHstry.getCurrentSize();
 
     if (windDirHstry.isEmpty() || amount <= 0) {
@@ -25,7 +25,7 @@ int getCntr(const RingBuffer<int16_t>& windDirHstry, size_t amount)
     int wndCenter = 0;
 
     midWndDir = windDirHstry.getMid(amount);
-    if (midWndDir != INT16_MIN) {
+    if (midWndDir != MAX_VAL) {
         midWndDir = midWndDir / 1000.0 * radToDeg;
         wndCenter = int((midWndDir + (midWndDir >= 0 ? 5 : -5)) / 10) * 10; // Set new center value; round to nearest 10 degree value
         minWndDir = windDirHstry.getMin(amount) / 1000.0 * radToDeg;
@@ -42,10 +42,11 @@ int getCntr(const RingBuffer<int16_t>& windDirHstry, size_t amount)
 int getRng(const RingBuffer<int16_t>& windDirHstry, int center, size_t amount)
 {
     int minVal = windDirHstry.getMinVal();
+    const int MAX_VAL = windDirHstry.getMaxVal();
     size_t count = windDirHstry.getCurrentSize();
 
     if (windDirHstry.isEmpty() || amount <= 0) {
-        return minVal;
+        return MAX_VAL;
     }
     if (amount > count)
         amount = count;
@@ -57,8 +58,8 @@ int getRng(const RingBuffer<int16_t>& windDirHstry, int center, size_t amount)
     for (size_t i = 0; i < amount; i++) {
         value = windDirHstry.get(count - 1 - i);
 
-        if (value == minVal) {
-            continue;
+        if (value == MAX_VAL) {
+            continue;  // ignore invalid values
         }
 
         value = value / 1000.0 * radToDeg;
@@ -70,7 +71,7 @@ int getRng(const RingBuffer<int16_t>& windDirHstry, int center, size_t amount)
         maxRng = 180;
     }
 
-    return maxRng;
+    return (maxRng != minVal ? maxRng : MAX_VAL);
 }
 
 // ****************************************************************
@@ -104,7 +105,7 @@ public:
     virtual void setupKeys()
     {
         Page::setupKeys();
-        //        commonData->keydata[0].label = "MODE";
+        // commonData->keydata[0].label = "MODE";
 #if defined BOARD_OBP60S3
         commonData->keydata[1].label = "SRC";
         commonData->keydata[4].label = "INTV";
@@ -184,6 +185,7 @@ public:
         static RingBuffer<uint16_t>* wsHstry; // Wind speed data buffer
         static String wdName, wdFormat; // Wind direction name and format
         static String wsName, wsFormat; // Wind speed name and format
+        static int16_t wdMAX_VAL; // Max. value of wd history buffer, indicating invalid values
         float wsValue; // Wind speed value in chart area
         String wsUnit; // Wind speed unit in chart area
         static GwApi::BoatValue* wsBVal = new GwApi::BoatValue("TWS"); // temp BoatValue for wind speed unit identification; required by OBP60Formater
@@ -240,7 +242,7 @@ public:
             oldDataIntv = 0;
             wsValue = 0;
             numAddedBufVals, currIdx, lastIdx = 0;
-            wndCenter = INT_MIN;
+            wndCenter = INT_MAX;
             midWndDir = 0;
             diffRng = dfltRng;
             chrtRng = dfltRng;
@@ -270,6 +272,7 @@ public:
             }
             wdHstry->getMetaData(wdName, wdFormat);
             wsHstry->getMetaData(wsName, wsFormat);
+            wdMAX_VAL = wdHstry->getMaxVal();
             bufSize = wdHstry->getCapacity();
             wsBVal->setFormat(wsHstry->getFormat());
             lastAddedIdx = wdHstry->getLastIdx();
@@ -300,14 +303,14 @@ public:
             showTruW ? "True" : "App");
 
         // Set wndCenter from 1st real buffer value
-        if (wndCenter == INT_MIN || (wndCenter == 0 && count == 1)) {
+        if (wndCenter == INT_MAX || (wndCenter == 0 && count == 1)) {
             wndCenter = getCntr(*wdHstry, numWndVals);
-            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Range Init: count: %d, xWD: %.1f, wndCenter: %d, diffRng: %d, chrtRng: %d, Min: %.0f, Max: %.0f", count, wdHstry->getLast() / 10000.0 * radToDeg,
-                wndCenter, diffRng, chrtRng, wdHstry->getMin(numWndVals) / 10000.0 * radToDeg, wdHstry->getMax(numWndVals) / 10000.0 * radToDeg);
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Range Init: count: %d, xWD: %.1f, wndCenter: %d, diffRng: %d, chrtRng: %d, Min: %.0f, Max: %.0f", count, wdHstry->getLast() / 1000.0 * radToDeg,
+                wndCenter, diffRng, chrtRng, wdHstry->getMin(numWndVals) / 1000.0 * radToDeg, wdHstry->getMax(numWndVals) / 1000.0 * radToDeg);
         } else {
             // check and adjust range between left, center, and right chart limit
             diffRng = getRng(*wdHstry, wndCenter, numWndVals);
-            diffRng = (diffRng == INT16_MIN ? 0 : diffRng);
+            diffRng = (diffRng == wdMAX_VAL ? 0 : diffRng);
             if (diffRng > chrtRng) {
                 chrtRng = int((diffRng + (diffRng >= 0 ? 9 : -1)) / 10) * 10; // Round up to next 10 degree value
             } else if (diffRng + 10 < chrtRng) { // Reduce chart range for higher resolution if possible
@@ -355,11 +358,11 @@ public:
         getdisplay().drawCircle(width - 5, yOffset - 17, 2, commonData->fgcolor); // <degree> symbol
         getdisplay().drawCircle(width - 5, yOffset - 17, 3, commonData->fgcolor); // <degree> symbol
 
-        if (wdHstry->getMax() == wdHstry->getMinVal()) {
-            // only <INT16_MIN> values in buffer -> no valid wind data available
+        if (wdHstry->getMax() == wdMAX_VAL) {
+            // only <MAX_VAL> values in buffer -> no valid wind data available
             wndDataValid = false;
         } else if (!BDataValid[0] && !useSimuData) {
-            // currently no valid TWD data available and no simulation mode
+            // currently no valid xWD data available and no simulation mode
             numNoData++;
             wndDataValid = true;
             if (numNoData > 3) {
@@ -375,8 +378,8 @@ public:
         if (wndDataValid) {
             for (int i = 0; i < (numWndVals / dataIntv); i++) {
                 chrtVal = static_cast<int>(wdHstry->get(bufStart + (i * dataIntv))); // show the latest wind values in buffer; keep 1st value constant in a rolling buffer
-                if (chrtVal == INT16_MIN) {
-                    chrtPrevVal = INT16_MIN;
+                if (chrtVal == wdMAX_VAL) {
+                    chrtPrevVal = wdMAX_VAL;
                 } else {
                     chrtVal = static_cast<int>((chrtVal / 1000.0 * radToDeg) + 0.5); // Convert to degrees and round
                     x = ((chrtVal - wndLeft + 360) % 360) * chrtScl;
@@ -385,7 +388,7 @@ public:
                     if (i >= (numWndVals / dataIntv) - 1) // log chart data of 1 line (adjust for test purposes)
                         LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Chart: i: %d, chrtVal: %d, bufStart: %d, count: %d, linesToShow: %d", i, chrtVal, bufStart, count, (numWndVals / dataIntv));
 
-                    if ((i == 0) || (chrtPrevVal == INT16_MIN)) {
+                    if ((i == 0) || (chrtPrevVal == wdMAX_VAL)) {
                         // just a dot for 1st chart point or after some invalid values
                         prevX = x;
                         prevY = y;
@@ -517,7 +520,6 @@ PageDescription registerPageWindPlot(
     "WindPlot", // Page name
     createPage, // Action
     0, // Number of bus values depends on selection in Web configuration
-//    { "TWD", "TWS", "AWD", "AWS" }, // Bus values we need in the page
     { "TWD", "AWD" }, // Bus values we need in the page
     true // Show display header on/off
 );

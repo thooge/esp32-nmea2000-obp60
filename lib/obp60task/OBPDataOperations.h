@@ -54,6 +54,7 @@ class WindUtils {
 private:
     GwApi::BoatValue *twdBVal, *twsBVal, *twaBVal;
     GwApi::BoatValue *awaBVal, *awsBVal, *cogBVal, *stwBVal, *sogBVal, *hdtBVal, *hdmBVal, *varBVal;
+    static constexpr double DBL_MAX = std::numeric_limits<double>::max();
 
 public:
     WindUtils(BoatValueList* boatValues){
