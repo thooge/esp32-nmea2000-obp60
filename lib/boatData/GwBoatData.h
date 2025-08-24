@@ -196,6 +196,55 @@ public:
 
 };
 
+class GwAisTarget {
+public:
+    uint32_t mmsi;
+    char callsign[8];
+    char name[21];
+    uint8_t vesseltype;
+    double lat;
+    double lon;
+    float length;
+    float beam;
+    float sog;
+    float cog;
+    unsigned long validTill;
+};
+
+class GwAisTargetList {
+public:
+    static const GwBoatItemBase::TOType toType=GwBoatItemBase::TOType::ais;
+    std::vector<GwAisTarget> targets;
+    void houseKeeping(unsigned long ts=0);
+    void update(GwAisTarget target, unsigned long validTill);
+    int getNumTargets() const {
+        return targets.size();
+    }
+    GwAisTarget *getAt(int idx){
+        if (idx >= 0 && idx < targets.size()) return &targets.at(idx);
+        return NULL;
+    }
+    operator double(){ return getNumTargets();}
+};
+
+class GwBoatDataAisList : public GwBoatItem<GwAisTargetList> {
+public:
+    GwBoatDataAisList(String name, String formatInfo, GwBoatItemBase::TOType toType, GwBoatItemMap *map = NULL);
+    bool update(GwAisTarget target, int source);
+    virtual void toJsonDoc(GwJsonDocument *doc, unsigned long minTime);
+    GwAisTarget *getAt(int idx) {
+        if (! isValid()) return NULL;
+        return data.getAt(idx);
+    }
+    int getNumTargets(){
+        if (! isValid()) return 0;
+        return data.getNumTargets();
+    }
+    virtual double getDoubleValue(){
+        return (double)(data.getNumTargets());
+    }
+};
+
 class GwBoatItemNameProvider
 {
 public:
@@ -256,6 +305,7 @@ class GwBoatData{
     GWBOATDATA(double,WPLon,formatLongitude) // waypoint longitude
     GWBOATDATA(String,WPName,formatName) // waypoint name
     GWSPECBOATDATA(GwBoatDataSatList,SatInfo,GwSatInfoList::toType,formatFixed0);
+    GWSPECBOATDATA(GwBoatDataAisList,AisTarget,GwAisTargetList::toType,formatFixed0);
     public:
         GwBoatData(GwLog *logger, GwConfigHandler *cfg);
         ~GwBoatData();

@@ -12,6 +12,7 @@ public:
     static int getType(const double &x) { return GWTYPE_DOUBLE; }
     static int getType(const String &x) { return GWTYPE_STRING; }
     static int getType(const GwSatInfoList &x) { return GWTYPE_USER + 1; }
+    static int getType(const GwAisTargetList &x) { return GWTYPE_USER + 1; }
 };
 
 bool GwBoatItemBase::isValid(unsigned long now) const
@@ -289,6 +290,7 @@ template class GwBoatItem<uint32_t>;
 template class GwBoatItem<uint16_t>;
 template class GwBoatItem<int16_t>;
 template class GwBoatItem<String>;
+
 void GwSatInfoList::houseKeeping(unsigned long ts)
 {
     if (ts == 0)
@@ -302,6 +304,7 @@ void GwSatInfoList::houseKeeping(unsigned long ts)
                    }),
                sats.end());
 }
+
 void GwSatInfoList::update(GwSatInfo entry, unsigned long validTill)
 {
     entry.validTill = validTill;
@@ -342,6 +345,63 @@ void GwBoatDataSatList::toJsonDoc(GwJsonDocument *doc, unsigned long minTime)
 {
     data.houseKeeping();
     GwBoatItem<GwSatInfoList>::toJsonDoc(doc, minTime);
+}
+
+void GwAisTargetList::houseKeeping(unsigned long ts)
+{
+    if (ts == 0) {
+        ts = millis();
+    }
+    targets.erase(
+        std::remove_if(
+            targets.begin(),
+            targets.end(),
+            [ts, this](const GwAisTarget &target) {
+                return target.validTill < ts;
+            }
+        ),
+        targets.end()
+    );
+}
+
+void GwAisTargetList::update(GwAisTarget target, unsigned long validTill)
+{
+    target.validTill = validTill;
+    for (auto it = targets.begin(); it != targets.end(); it++) {
+        if (it->mmsi == target.mmsi) {
+            *it = target;
+            houseKeeping();
+            return;
+        }
+    }
+    houseKeeping();
+    targets.push_back(target);
+}
+
+GwBoatDataAisList::GwBoatDataAisList(String name, String formatInfo, GwBoatItemBase::TOType toType, GwBoatItemMap *map) : GwBoatItem<GwAisTargetList>(name, formatInfo, toType, map) {}
+
+bool GwBoatDataAisList::update(GwAisTarget target, int source)
+{
+    unsigned long now = millis();
+    if (isValid(now))
+    {
+        //priority handling
+        //sources with lower ids will win
+        //and we will not overwrite their value
+        if (lastUpdateSource < source)
+        {
+            return false;
+        }
+    }
+    lastUpdateSource = source;
+    uls(now);
+    data.update(target, now+invalidTime);
+    return true;
+}
+void GwBoatDataAisList::toJsonDoc(GwJsonDocument *doc, unsigned long minTime)
+{
+    data.houseKeeping();
+    GwBoatItem<GwAisTargetList>::toJsonDoc(doc, minTime);
 }
 
 GwBoatData::GwBoatData(GwLog *logger, GwConfigHandler *cfg)
@@ -511,6 +571,11 @@ double mtr2nm(double m)
 bool convertToJson(const GwSatInfoList &si, JsonVariant &variant)
 {
     return variant.set(si.getNumSats());
+}
+
+bool convertToJson(const GwAisTargetList &si, JsonVariant &variant)
+{
+    return variant.set(si.getNumTargets());
 }
 
 #ifdef _UNDEF
