@@ -1,9 +1,9 @@
-#ifndef _OBP60FUNCTIONS_H
-#define _OBP60FUNCTIONS_H
-
+// SPDX-License-Identifier: GPL-2.0-or-later
+#if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 #include <Arduino.h>
 #include "OBP60Hardware.h"
-  
+#include "OBPKeyboardTask.h"
+
 // Global vars
 
 // Touch keypad over ESP32 touch sensor inputs  
@@ -58,10 +58,10 @@ void initKeys(CommonData &commonData) {
     commonData.keydata[5].h = height;
 }
 
-  #ifdef HARDWARE_V21
-  // Keypad functions for original OBP60 hardware
-  int readKeypad(GwLog* logger, uint thSensitivity, bool use_syspage) {
-    
+#ifdef HARDWARE_V21
+// Keypad functions for original OBP60 hardware
+int readKeypad(GwLog* logger, uint thSensitivity, bool use_syspage) {
+
     // Touch sensor values
     // 35000 - Not touched
     // 50000 - Light toched with fingertip
@@ -233,35 +233,35 @@ void initKeys(CommonData &commonData) {
     keycodeold2 = keycode2;
 
     return keystatus;
-  }
-  #endif
+}
+#endif
 
-  #ifdef BOARD_OBP40S3
-  int readSensorpads(){
-      // Read key code
-      if(digitalRead(UP) == LOW){
+#ifdef BOARD_OBP40S3
+int readSensorpads(){
+    // Read key code
+    if (digitalRead(UP) == LOW) {
         keycode = 10; // Left swipe
-      }
-      else if(digitalRead(DOWN) == LOW){
-        keycode = 9;  // Right swipe
-      }
-      else if(digitalRead(CONF) == LOW){
-        keycode = 3;  // Key 3
-      }
-      else if(digitalRead(MENUE) == LOW){
-        keycode = 1;  // Key 1
-      }
-      else if(digitalRead(EXIT) == LOW){
-        keycode = 2;  // Key 2
-      }
-      else{
-        keycode = 0;  // No key activ
-      }
-      return keycode;
     }
+    else if (digitalRead(DOWN) == LOW) {
+        keycode = 9;  // Right swipe
+    }
+    else if (digitalRead(CONF) == LOW) {
+        keycode = 3;  // Key 3
+    }
+    else if (digitalRead(MENUE) == LOW) {
+        keycode = 1;  // Key 1
+    }
+    else if (digitalRead(EXIT) == LOW) {
+        keycode = 2;  // Key 2
+    }
+    else {
+        keycode = 0;  // No key activ
+    }
+    return keycode;
+}
 
-  // Keypad functions for OBP60 clone (thSensitivity is inactiv)
-  int readKeypad(GwLog* logger, uint thSensitivity, bool use_syspage) {
+// Keypad functions for OBP60 clone (thSensitivity is inactiv)
+int readKeypad(GwLog* logger, uint thSensitivity, bool use_syspage) {
     pinMode(UP, INPUT);
     pinMode(DOWN, INPUT);
     pinMode(CONF, INPUT);
@@ -273,31 +273,64 @@ void initKeys(CommonData &commonData) {
 
     // Detect key
     if (keycode > 0 ){
-      if(keycode != keycodeold){
-        starttime = millis();   // Start key pressed
-        keycodeold = keycode;
-      }
-      // If key pressed longer than 100ms
-      if(millis() > starttime + 100 && keycode == keycodeold) {
-        if (use_syspage and keycode == 3) {
-            keystatus = 12;
-        } else {
-            keystatus = keycode;
+        if(keycode != keycodeold){
+            starttime = millis();   // Start key pressed
+            keycodeold = keycode;
         }
-        // Copy keycode
-        keycodeold = keycode;
-        while(readSensorpads() > 0){} // Wait for pad release
-        delay(keydelay);
-      }
+        // If key pressed longer than 100ms
+        if(millis() > starttime + 100 && keycode == keycodeold) {
+            if (use_syspage and keycode == 3) {
+                keystatus = 12;
+            } else {
+                keystatus = keycode;
+            }
+            // Copy keycode
+            keycodeold = keycode;
+            // 100% Task-CPU RLY?
+            while(readSensorpads() > 0){} // Wait for pad release
+            delay(keydelay);
+        }
     }
-    else{
-      keycode = 0;
-      keycodeold = 0;
-      keystatus = 0;
+    else {
+        keycode = 0;
+        keycodeold = 0;
+        keystatus = 0;
     }
 
     return keystatus;
-  }
-  #endif
+}
+#endif
+
+void keyboardTask(void *param) {
+
+   // params needed: 
+   //   queue
+   //   logger
+   //   sensitivity
+   //   use_syspage  for deep sleep activation
+
+    KbTaskData *data = (KbTaskData *)param;
+
+    int keycode = 0;
+    data->logger->logDebug(GwLog::LOG, "Start keyboard task");
+
+    while (true) {
+        keycode = readKeypad(data->logger, data->sensitivity, data->use_syspage);
+        //send a key event
+        if (keycode != 0) {
+            xQueueSend(data->queue, &keycode, 0);
+            data->logger->logDebug(GwLog::LOG,"kbtask: send keycode: %d", keycode);
+        }
+        delay(20);      // 50Hz update rate (20ms)
+    }
+    vTaskDelete(NULL);
+}
+
+void createKeyboardTask(KbTaskData *param) {
+    TaskHandle_t xHandle = NULL;
+    if (xTaskCreate(keyboardTask, "keyboard", configMINIMAL_STACK_SIZE + 1024, param, configMAX_PRIORITIES-1, &xHandle) != pdPASS) {
+        param->logger->logDebug(GwLog::ERROR, "Failed to create keyboard task!");
+    };
+}
 
 #endif

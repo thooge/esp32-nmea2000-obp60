@@ -13,10 +13,12 @@
 #include <NMEA0183Messages.h>
 #include <GxEPD2_BW.h>                  // GxEPD2 lib for b/w E-Ink displays
 #include "OBP60Extensions.h"            // Functions lib for extension board
-#include "OBP60Keypad.h"                // Functions for keypad
+#include "OBPKeyboardTask.h"            // Functions lib for keyboard handling
 #include "BoatDataCalibration.h"        // Functions lib for data instance calibration
 #include "OBPRingBuffer.h"              // Functions lib with ring buffer for history storage of some boat data
 #include "OBPDataOperations.h"          // Functions lib for data operations such as true wind calculation
+#include "OBP60QRWiFi.h"                // Functions lib for WiFi QR code
+#include "OBPSensorTask.h"              // Functions lib for sensor data
 
 #ifdef BOARD_OBP40S3
 #include "driver/rtc_io.h"              // Needs for weakup from deep sleep
@@ -26,8 +28,6 @@
 // Pictures
 #include "images/OBP_400x300.xbm"       // OBP Logo
 #include "images/unknown.xbm"           // unknown page indicator
-#include "OBP60QRWiFi.h"                // Functions lib for WiFi QR code
-#include "OBPSensorTask.h"              // Functions lib for sensor data
 
 // Global vars
 bool initComplete = false;      // Initialization complete
@@ -117,35 +117,6 @@ void OBP60Init(GwApi *api){
     setBuzzerPower(uint(config->getConfigItem(config->buzzerPower,true)->asInt()));
     buzzer(TONE4, 500);
 
-}
-
-typedef struct {
-    int page0 = 0;
-    QueueHandle_t queue;
-    GwLog* logger = nullptr;
-//        GwApi* api = NULL;
-    uint sensitivity = 100;
-    bool use_syspage = true;
-} MyData;
-
-// Keyboard Task
-void keyboardTask(void *param){
-    MyData *data=(MyData *)param;
-
-    int keycode = 0;
-    data->logger->logDebug(GwLog::LOG,"Start keyboard task");
-
-    // Loop for keyboard task
-    while (true){
-        keycode = readKeypad(data->logger, data->sensitivity, data->use_syspage);
-        //send a key event
-        if(keycode != 0){
-            xQueueSend(data->queue, &keycode, 0);
-            data->logger->logDebug(GwLog::LOG,"Send keycode: %d", keycode);
-        }
-        delay(20);      // 50Hz update rate (20ms)
-    }
-    vTaskDelete(NULL);
 }
 
 class BoatValueList{
@@ -718,18 +689,18 @@ void OBP60Task(GwApi *api){
         doImageRequest(api, &pageNumber, pages, request);
     });
 
-    //now we have prepared the page data
-    //we start a separate task that will fetch our keys...
-    MyData allParameters;
-    allParameters.logger=api->getLogger();
-    allParameters.page0=3;
-    allParameters.queue=xQueueCreate(10,sizeof(int));
-    allParameters.sensitivity= api->getConfig()->getInt(GwConfigDefinitions::tSensitivity);
+    // now we have prepared the page data
+    // we start a separate task that will fetch our keys...
+    KbTaskData kbparams;
+    kbparams.logger = api->getLogger();
+    kbparams.queue = xQueueCreate(10, sizeof(int));
+    kbparams.sensitivity = api->getConfig()->getInt(GwConfigDefinitions::tSensitivity);
 #ifdef BOARD_OBP40S3
-    allParameters.use_syspage = syspage_enabled;
+    kbparams.use_syspage = syspage_enabled;
 #endif
-    xTaskCreate(keyboardTask,"keyboard",2000,&allParameters,configMAX_PRIORITIES-1,NULL);
-    SharedData *shared=new SharedData(api);
+    createKeyboardTask(&kbparams);
+    // we start a separate task to collect sensor data
+    SharedData *shared = new SharedData(api);
     createSensorTask(shared);
 
     // Task Loop
@@ -836,7 +807,7 @@ void OBP60Task(GwApi *api){
          
             // Check the keyboard message
             int keyboardMessage=0;
-            while (xQueueReceive(allParameters.queue,&keyboardMessage,0)){
+            while (xQueueReceive(kbparams.queue,&keyboardMessage, 0)) {
                 LOG_DEBUG(GwLog::LOG,"new key from keyboard %d",keyboardMessage);
                 keypressed = true;
 

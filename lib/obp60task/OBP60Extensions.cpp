@@ -81,7 +81,7 @@ void hardwareInit(GwApi *api)
 
     Wire.begin();
     // Init PCF8574 digital outputs
-    Wire.setClock(I2C_SPEED);       // Set I2C clock on 10 kHz
+    Wire.setClock(I2C_SPEED);       // Set I2C clock as defined
     if(pcf8574_Out.begin()){        // Initialize PCF8574
         pcf8574_Out.write8(255);    // Clear all outputs
     }
