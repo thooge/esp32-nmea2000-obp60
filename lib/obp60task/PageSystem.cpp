@@ -8,7 +8,7 @@
  *   1. Hard and software information
  *   2. System settings
  *   3. System configuration: running and NVRAM
- *   4. NMEA2000 device list
+ *   4. NMEA2000 device list if NMEA2000 enabled
  *   5. SD Card information if available
  *
  * TODO
@@ -43,6 +43,8 @@
 #define DISPLAYINFO STRINGIZE(EPDTYPE)
 #define GXEPD2INFO STRINGIZE(GXEPD2VERS)
 
+#define N2K_INACTIVE_AGE 30000
+
 class PageSystem : public Page
 {
 private:
@@ -68,6 +70,10 @@ private:
     double homelon;
 
     Nmea2kTwai *NMEA2000;
+    unsigned long n2kRxOld = 0; // to detect bus activity
+    unsigned long n2kTxOld = 0;
+    long n2k_ts = 0;            // timestamp of last activity
+    bool n2k_active = false;
 
     char mode = 'N'; // (N)ormal, (S)ettings, (C)onfiguration, (D)evice list, c(A)rd
     int8_t editmode = -1; // marker for menu/edit/set function
@@ -233,7 +239,7 @@ private:
         epd->print(String(Heap_free));
 
         // RAM free for task
-        int RAM_free = uxTaskGetStackHighWaterMark(NULL);
+        UBaseType_t RAM_free = uxTaskGetStackHighWaterMark(NULL);
         epd->setCursor(202, y0 + 32);
         epd->print("Task free:");
         epd->setCursor(300, y0 + 32);
@@ -390,7 +396,6 @@ private:
 
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(x0, y0);
-        epd->print("Work in progress...");
 #ifdef BOARD_OBP60S3
             // This mode should not be callable by devices without card hardware
             // In case of accidential reaching this, display a friendly message
@@ -402,32 +407,39 @@ private:
         magic.dat
         version.dat
         readme.txt
-        IMAGES/
+        BAK/
         CHARTS/
-        LOGS/
         DATA/
+        IMAGES/
+        LOGS/
         */
 
-        // Simple test for one file in root
-        epd->setCursor(x0, y0 + 32);
-        String file_test = MOUNT_POINT "/IMG/icon-settings2.pbm";
-        logger->logDebug(GwLog::LOG, "Testfile: %s", file_test.c_str());
+        // Simple test for magic file in root
+        epd->setCursor(x0, y0 + 16);
+        const char* file_magic = MOUNT_POINT "/magic.dat";
+        logger->logDebug(GwLog::LOG, "Test magicfile: %s", file_magic);
         struct stat st;
-        if (stat(file_test.c_str(), &st) == 0) {
-            epd->printf("File %s exists", file_test.c_str());
+        if (stat(file_magic, &st) == 0) {
+            epd->printf("Magicfile %s exists", file_magic);
         } else {
-            epd->printf("File %s not found", file_test.c_str());
+            epd->printf("Magicfile %s not found", file_magic);
         }
 
         // Root directory check
         DIR* dir = opendir(MOUNT_POINT);
+        int dy = 0;
         if (dir != NULL) {
             logger->logDebug(GwLog::LOG, "Root directory: %s", MOUNT_POINT);
             struct dirent* entry;
-            while ((entry = readdir(dir)) != NULL) {
+            while (((entry = readdir(dir)) != NULL) and (dy < 140)) {
+                epd->setCursor(x0, y0 + 64 + dy);
+                epd->print(entry->d_name);
+                // type 1 is file, type 2 is dir
+                if (entry->d_type == 2) {
+                    epd->print("/");
+                }
+                dy += 20;
                 logger->logDebug(GwLog::LOG, "    %s type %d", entry->d_name, entry->d_type);
-                // type 1 is file
-                // type 2 is dir
             }
             closedir(dir);
         } else {
@@ -436,7 +448,7 @@ private:
 
         // try to load example pbm file 
         // TODO create PBM load function in imglib
-        String filepath = MOUNT_POINT "/IMG/icon-settings2.pbm";
+        String filepath = MOUNT_POINT "/IMAGES/icon-settings2.pbm";
         const char* file_img = filepath.c_str();
         FILE* fh = fopen(file_img, "r");
         if (fh != NULL) {
@@ -494,8 +506,12 @@ private:
 #endif
     }
 
-    void displayModeDevicelist() {
+    void displayModeDevicelist(bool bus_active) {
         // NMEA2000 device list
+
+        // TODO Check if NMEA2000 enabled globally
+        //            if disabled this page should not be shown
+
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(8, 48);
         epd->print("NMEA2000 device list");
@@ -507,6 +523,11 @@ private:
         epd->setCursor(20, 100);
         epd->print("TxD: ");
         epd->print(String(commonData->status.n2kTx));
+
+        // show bus activity
+        epd->setCursor(20, 120);
+        epd->print("Bus: ");
+        epd->print(bus_active ? "active" : "inactive");
 
         epd->setCursor(20, 140);
         epd->printf("N2k source address: %d", NMEA2000->GetN2kSource());
@@ -685,7 +706,15 @@ public:
                 displayModeSDCard();
                 break;
             case 'D':
-                displayModeDevicelist();
+                // check bus status
+                if (commonData->status.n2kRx != n2kRxOld || commonData->status.n2kTx != n2kTxOld) {
+                    n2kRxOld = commonData->status.n2kRx;
+                    n2kTxOld = commonData->status.n2kTx;
+                    n2k_ts = millis();
+                } else {
+                    n2k_active = (millis() - n2k_ts <= N2K_INACTIVE_AGE);
+                }
+                displayModeDevicelist(n2k_active);
                 break;
         }
 

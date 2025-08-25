@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 #include <Adafruit_Sensor.h>            // Adafruit Lib for sensors
 #include <Adafruit_BME280.h>            // Adafruit Lib for BME280
@@ -568,6 +569,11 @@ void sensorTask(void *param){
         // Send data from environment sensor all 2s
         if(millis() > starttime6 + 2000){
             starttime6 = millis();
+
+            // DEBUG
+            UBaseType_t stackfree = uxTaskGetStackHighWaterMark(NULL);
+            api->getLogger()->logDebug(GwLog::LOG, "obpSensortask Stack=%d", stackfree);
+
             unsigned char TempSource = 2;       // Inside temperature
             unsigned char PressureSource = 0;   // Atmospheric pressure
             unsigned char HumiditySource = 0;   // Inside humidity
@@ -785,8 +791,12 @@ void sensorTask(void *param){
     vTaskDelete(NULL);
 }
 
-
-void createSensorTask(SharedData *shared){
-    xTaskCreate(sensorTask,"readSensors",10000,shared,3,NULL);
+void createSensorTask(SharedData *shared) {
+    TaskHandle_t xHandle = NULL;
+    GwLog *logger = shared->api->getLogger();
+    esp_err_t err = xTaskCreate(sensorTask, "readSensors", configMINIMAL_STACK_SIZE + 2048, shared, 3, &xHandle);
+    if ( err != pdPASS) {
+        logger->logDebug(GwLog::ERROR, "Failed to create sensor task! (err=%d)", err);
+    };
 }
 #endif

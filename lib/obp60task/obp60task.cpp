@@ -20,6 +20,8 @@
 #include "OBP60QRWiFi.h"                // Functions lib for WiFi QR code
 #include "OBPSensorTask.h"              // Functions lib for sensor data
 
+#include "freertos/task.h" // WIP possible unused 
+
 #ifdef BOARD_OBP40S3
 #include "driver/rtc_io.h"              // Needs for weakup from deep sleep
 #include <SPI.h>
@@ -118,6 +120,27 @@ void OBP60Init(GwApi *api){
     buzzer(TONE4, 500);
 
 }
+
+/* ux-functions not working WTF?
+bool listTasks(GwLog *logger) {
+    UBaseType_t taskCount = uxTaskGetNumberOfTasks();
+    TaskStatus_t *taskStatusArray;
+
+    taskStatusArray = (TaskStatus_t *)pvPortMalloc(taskCount * sizeof(TaskStatus_t));
+    if (taskStatusArray != NULL) {
+        taskCount = uxTaskGetSystemState(taskStatusArray, taskCount, NULL);
+        for (UBaseType_t i = 0; i < taskCount; i++) {
+            logger->logDebug(GwLog::LOG, "Task Name: %s (Stack=%d)", taskStatusArray[i].pcTaskName,
+                taskStatusArray[i].usStackHighWaterMark);
+            // more fields in task status
+            // xHandle, uxCurrentPriority, uxBasePriority, usStackHighWaterMark
+        }
+        vPortFree(taskStatusArray);
+        return true;
+    }
+    logger->logDebug(GwLog::ERROR, "Failed to allocate memory for task list");
+    return false;
+} */
 
 class BoatValueList{
     public:
@@ -755,6 +778,8 @@ void OBP60Task(GwApi *api){
     long starttime5 = millis();     // Calculate sunrise and sunset all 1s
 
     pages[pageNumber].page->setupKeys(); // Initialize keys for first page
+
+    // listTasks(logger);
 
     // Main loop runs with 100ms
     //####################################################################################

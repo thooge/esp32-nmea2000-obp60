@@ -331,7 +331,8 @@ public:
 //*******************************************************************************************
 
         // Show value6 (=fourth user-configured parameter) and ssource, so that they do not collide with the wind pointer
-    if (cos(value1) > 0) { 
+    if (cos(value1) > 0) {
+        // pointer points upwards 
         epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
         epd->setCursor(160, 200);
         epd->print(svalue6);                     // Value
@@ -346,7 +347,8 @@ public:
         }
         epd->print(ssource); // true or app.
     }
-    else { 
+    else {
+        // pointer points downwards
         epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
         epd->setCursor(160, 130);
         epd->print(svalue6);
@@ -355,11 +357,11 @@ public:
         epd->print(" ");
         epd->print(holdvalues ? unit6old : unit6);
         if (sin(value1) > 0) {
-            epd->setCursor(160, 130);
+            epd->setCursor(160, 200);
         } else {
-            epd->setCursor(220, 130);
+            epd->setCursor(220, 200);
         }
-        epd->print(ssource);		//true or app. 
+        epd->print(ssource); //true or app. 
     }
 
         return PAGE_UPDATE;
