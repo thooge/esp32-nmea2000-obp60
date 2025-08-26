@@ -56,9 +56,11 @@ public:
      }
      uint16_t add() {
          // returns new head value pointer
+         return 0;
      }
      uint8_t* get() {
          // returns complete buffer in order new to old
+         return 0;
      }
      uint8_t getvalue(uint16_t dt) {
          // Return a single value delta seconds ago
@@ -66,6 +68,7 @@ public:
          return 0;
      }
      uint8_t getvalue3() {
+         return 0;
      }
      bool clear() {
          // clears buffer and permanent storage

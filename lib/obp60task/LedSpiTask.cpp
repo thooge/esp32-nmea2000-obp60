@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 #include <FreeRTOS.h>
 #include "LedSpiTask.h"
 #include "GwHardware.h"
@@ -251,6 +252,11 @@ void handleSpiLeds(void *param){
     vTaskDelete(NULL);
 }
 
-void createSpiLedTask(LedTaskData *param){
-    xTaskCreate(handleSpiLeds,"handleLeds",4000,param,3,NULL);
+void createSpiLedTask(LedTaskData *param) {
+    TaskHandle_t xHandle = NULL;
+    GwLog *logger = shared->api->getLogger();
+    esp_err_t err = xTaskCreate(handleSpiLeds, "handleLeds", configMINIMAL_STACK_SIZE + 2048, param, 3, &xHandle);
+    if (err != pdPASS) {
+        logger->logDebug(GwLog::ERROR, "Failed to create spiled task! (err=%d)", err);
+    };
 }

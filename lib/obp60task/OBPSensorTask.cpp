@@ -794,7 +794,7 @@ void sensorTask(void *param){
 void createSensorTask(SharedData *shared) {
     TaskHandle_t xHandle = NULL;
     GwLog *logger = shared->api->getLogger();
-    esp_err_t err = xTaskCreate(sensorTask, "readSensors", configMINIMAL_STACK_SIZE + 2048, shared, 3, &xHandle);
+    esp_err_t err = xTaskCreate(sensorTask, "readSensors", configMINIMAL_STACK_SIZE + 8192, shared, 3, &xHandle);
     if ( err != pdPASS) {
         logger->logDebug(GwLog::ERROR, "Failed to create sensor task! (err=%d)", err);
     };

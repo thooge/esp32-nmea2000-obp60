@@ -205,6 +205,11 @@ def generateCfg(inFile,outFile,impl):
                 secret="false";
                 if item.get('type') == 'password':
                     secret="true"
+                """
+                PSRAM Allocator TODO Tests
+                new (heap_caps_malloc(sizeof(GwConfigInterface), MALLOC_CAP_SPIRAM))
+                """
+                #data+="     new (heap_caps_malloc(sizeof(GwConfigInterface), MALLOC_CAP_SPIRAM)) GwConfigInterface(%s,\"%s\",%s);\n"%(name,item.get('default'),secret)
                 data+="     new GwConfigInterface(%s,\"%s\",%s);\n"%(name,item.get('default'),secret)
             data+='}\n'  
     writeFileIfChanged(outFile,data)    
@@ -505,6 +510,8 @@ def prebuild(env):
     env.Append(CPPDEFINES=[('GWDEVVERSION',version)])
 
 def cleangenerated(source, target, env):
+    # TODO source / target order?
+    print("CLEAN: {} - {}".format(source, target))
     od=outPath()
     if os.path.isdir(od):
         print("#cleaning up %s"%od)
@@ -513,7 +520,6 @@ def cleangenerated(source, target, env):
                 continue
             fn=os.path.join(od,f)
             os.unlink(f)
-
 
 print("#prescript...")
 prebuild(env)
