@@ -922,7 +922,7 @@ void doImageRequest(GwApi *api, int *pageno, const PageStruct pages[MAX_PAGE_NUM
         createPBM(fb, &imageBuffer, GxEPD_WIDTH, GxEPD_HEIGHT);
     }
 
-    AsyncWebServerResponse *response = request->beginResponse_P(200, mimetype, (const uint8_t*)imageBuffer.data(), imageBuffer.size());
+    AsyncWebServerResponse *response = request->beginResponse(200, mimetype, (const uint8_t*)imageBuffer.data(), imageBuffer.size());
     response->addHeader("Content-Disposition", "inline; filename=" + filename);
     request->send(response);
 

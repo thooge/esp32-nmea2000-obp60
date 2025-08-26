@@ -79,7 +79,7 @@ GwUpdate::GwUpdate(GwLog *log, GwWebServer *webserver, PasswordChecker ckr)
                     }
                     if (!param->hasError())
                     {
-                        AsyncWebParameter *hash=request->getParam("_hash");
+                        const AsyncWebParameter *hash=request->getParam("_hash");
                         if (! hash){
                             hash=request->getParam("_hash",true);
                         }

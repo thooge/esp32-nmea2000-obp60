@@ -2,6 +2,8 @@
 #ifndef _OBP60FORMATTER_H
 #define _OBP60FORMATTER_H
 
+#include "GwApi.h"
+#include "Pagedata.h"
 #include <unordered_map>
 
 /*

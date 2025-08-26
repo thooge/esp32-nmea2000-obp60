@@ -2,6 +2,7 @@
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 #include <Arduino.h>
 #include "OBP60Hardware.h"
+#include "OBP60Extensions.h" // for buzzer
 #include "OBPKeyboardTask.h"
 
 // Global vars
@@ -60,7 +61,7 @@ void initKeys(CommonData &commonData) {
 
 #ifdef HARDWARE_V21
 // Keypad functions for original OBP60 hardware
-int readKeypad(GwLog* logger, uint thSensitivity, bool use_syspage) {
+int readKeypad(GwLog* logger, uint thSensitivity) {
 
     // Touch sensor values
     // 35000 - Not touched
@@ -315,7 +316,11 @@ void keyboardTask(void *param) {
     data->logger->logDebug(GwLog::LOG, "Start keyboard task");
 
     while (true) {
+#ifdef BOARD_OBP40S3
         keycode = readKeypad(data->logger, data->sensitivity, data->use_syspage);
+#else
+        keycode = readKeypad(data->logger, data->sensitivity);
+#endif
         //send a key event
         if (keycode != 0) {
             xQueueSend(data->queue, &keycode, 0);

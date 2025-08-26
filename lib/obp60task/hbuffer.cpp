@@ -83,5 +83,6 @@ public:
     ~History() {
     }
     void *addSeries() {
+        return nullptr;
     }
 };

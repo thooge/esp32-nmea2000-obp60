@@ -27,7 +27,7 @@ void sendEmbeddedFile(String name,String contentType,AsyncWebServerRequest *requ
     std::map<String,EmbeddedFile*>::iterator it=embeddedFiles.find(name);
     if (it != embeddedFiles.end()){
       EmbeddedFile* found=it->second;
-      AsyncWebServerResponse *response=request->beginResponse_P(200,contentType,found->start,found->len);
+      AsyncWebServerResponse *response=request->beginResponse(200, contentType, found->start, found->len);
       response->addHeader(F("Content-Encoding"), F("gzip"));
       request->send(response);
     }

@@ -254,7 +254,7 @@ void handleSpiLeds(void *param){
 
 void createSpiLedTask(LedTaskData *param) {
     TaskHandle_t xHandle = NULL;
-    GwLog *logger = shared->api->getLogger();
+    GwLog *logger = param->api->getLogger();
     esp_err_t err = xTaskCreate(handleSpiLeds, "handleLeds", configMINIMAL_STACK_SIZE + 2048, param, 3, &xHandle);
     if (err != pdPASS) {
         logger->logDebug(GwLog::ERROR, "Failed to create spiled task! (err=%d)", err);
