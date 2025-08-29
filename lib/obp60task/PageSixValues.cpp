@@ -3,7 +3,10 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+
+#ifdef ENABLE_CALIBRATION
 #include "BoatDataCalibration.h"
+#endif
 
 const int SixValues_x1 = 5;
 const int SixValues_DeltaX = 200;
@@ -65,7 +68,9 @@ public:
             bvalue = pageData.values[i];
             DataName[i] = xdrDelete(bvalue->getName());
             DataName[i] = DataName[i].substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
             calibrationData.calibrateInstance(bvalue, logger);          // Check if boat data value is to be calibrated
+#endif
             DataValue[i] = bvalue->value;                 // Value as double in SI unit
             DataValid[i] = bvalue->valid;
             DataText[i] = commonData->fmt->formatValue(bvalue, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places

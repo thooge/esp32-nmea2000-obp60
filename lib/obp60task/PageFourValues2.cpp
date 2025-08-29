@@ -54,7 +54,9 @@ public:
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
         String name1 = xdrDelete(bvalue1->getName());   // Value name
         name1 = name1.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue1, logger); // Check if boat data value is to be calibrated
+#endif
         double value1 = bvalue1->value;                 // Value as double in SI unit
         bool valid1 = bvalue1->valid;                   // Valid information 
         String svalue1 = commonData->fmt->formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -64,7 +66,9 @@ public:
         GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list (only one value by PageOneValue)
         String name2 = xdrDelete(bvalue2->getName());   // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue2, logger); // Check if boat data value is to be calibrated
+#endif
         double value2 = bvalue2->value;                 // Value as double in SI unit
         bool valid2 = bvalue2->valid;                   // Valid information 
         String svalue2 = commonData->fmt->formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -74,7 +78,9 @@ public:
         GwApi::BoatValue *bvalue3 = pageData.values[2]; // Second element in list (only one value by PageOneValue)
         String name3 = xdrDelete(bvalue3->getName());   // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue3, logger); // Check if boat data value is to be calibrated
+#endif
         double value3 = bvalue3->value;                 // Value as double in SI unit
         bool valid3 = bvalue3->valid;                   // Valid information 
         String svalue3 = commonData->fmt->formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -84,7 +90,9 @@ public:
         GwApi::BoatValue *bvalue4 = pageData.values[3]; // Second element in list (only one value by PageOneValue)
         String name4 = xdrDelete(bvalue4->getName());   // Value name
         name4 = name4.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue4, logger); // Check if boat data value is to be calibrated
+#endif
         double value4 = bvalue4->value;                 // Value as double in SI unit
         bool valid4 = bvalue4->valid;                   // Valid information 
         String svalue4 = commonData->fmt->formatValue(bvalue4, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places

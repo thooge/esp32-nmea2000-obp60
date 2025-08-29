@@ -346,10 +346,13 @@ void setBuzzerPower(uint power){
     buzzerpower = power;
 }
 
-// Delete xdr prefix from string
-String xdrDelete(String input){
-    if(input.substring(0,3) == "xdr"){
+// Delete xdr prefix from string and optional limit length
+String xdrDelete(String input, uint8_t maxlen) {
+    if (input.substring(0, 3) == "xdr") {
         input = input.substring(3, input.length());
+    }
+    if (maxlen > 0) {
+        return input.substring(0, maxlen);
     }
     return input;
 }

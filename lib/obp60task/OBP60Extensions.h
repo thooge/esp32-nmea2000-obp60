@@ -102,7 +102,7 @@ void setBlinkingLED(bool on);                   // Set blinking flash LED active
 void buzzer(uint frequency, uint duration);     // Buzzer function
 void setBuzzerPower(uint power);                // Set buzzer power
 
-String xdrDelete(String input);                 // Delete xdr prefix from string
+String xdrDelete(String input, uint8_t maxlen = 0); // Delete xdr prefix from string and optional limit length
 
 void drawTextCenter(int16_t cx, int16_t cy, String text);
 void drawTextRalign(int16_t x, int16_t y, String text);

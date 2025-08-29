@@ -3,7 +3,10 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+
+#ifdef ENABLE_CALIBRATION
 #include "BoatDataCalibration.h"
+#endif
 
 class PageWindRose : public Page
 {
@@ -42,7 +45,14 @@ public:
 
     int displayPage(PageData &pageData) {
 
-        static String svalue1old = "";
+        // storage for hold valued
+        static FormattedData bvf_awa_old;
+        static FormattedData bvf_aws_old;
+        static FormattedData bvf_twd_old;
+        static FormattedData bvf_tws_old;
+        static FormattedData bvf_dbt_old;
+        static FormattedData bvf_stw_old;
+        /* static String svalue1old = "";
         static String unit1old = "";
         static String svalue2old = "";
         static String unit2old = "";
@@ -53,116 +63,102 @@ public:
         static String svalue5old = "";
         static String unit5old = "";
         static String svalue6old = "";
-        static String unit6old = "";
+        static String unit6old = ""; */
 
         // Get boat value for AWA
-        GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
-        String name1 = xdrDelete(bvalue1->getName());   // Value name
-        name1 = name1.substring(0, 6);                  // String length limit for value name
-        calibrationData.calibrateInstance(bvalue1, logger); // Check if boat data value is to be calibrated
-        double value1 = bvalue1->value;                 // Value as double in SI unit
-        bool valid1 = bvalue1->valid;                   // Valid information
-        value1 = commonData->fmt->formatValue(bvalue1, *commonData).value;// Format only nesaccery for simulation data for pointer
-        String svalue1 = commonData->fmt->formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit1 = commonData->fmt->formatValue(bvalue1, *commonData).unit;        // Unit of value
-        if(valid1 == true){
-            svalue1old = svalue1;   	                // Save old value
-            unit1old = unit1;                           // Save old unit
+        GwApi::BoatValue *bv_awa = pageData.values[0];     // First element in list
+        String name_awa = xdrDelete(bv_awa->getName(), 6); // get name without prefix and limit length
+#ifdef ENABLE_CALIBRATION
+        calibrationData.calibrateInstance(bv_awa, logger); // Check if boat data value is to be calibrated
+#endif
+        FormattedData bvf_awa = commonData->fmt->formatValue(bv_awa, *commonData);
+        if (bv_awa->valid) { // Save formatted data for hold feature
+            bvf_awa_old = bvf_awa;
         }
 
         // Get boat value for AWS
-        GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list
-        String name2 = xdrDelete(bvalue2->getName());   // Value name
-        name2 = name2.substring(0, 6);                  // String length limit for value name
-        calibrationData.calibrateInstance(bvalue2, logger); // Check if boat data value is to be calibrated
-        double value2 = bvalue2->value;                 // Value as double in SI unit
-        bool valid2 = bvalue2->valid;                   // Valid information 
-        String svalue2 = commonData->fmt->formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit2 = commonData->fmt->formatValue(bvalue2, *commonData).unit;        // Unit of value
-        if(valid2 == true){
-            svalue2old = svalue2;   	                // Save old value
-            unit2old = unit2;                           // Save old unit
+        GwApi::BoatValue *bv_aws = pageData.values[1]; // Second element in list
+        String name_aws = xdrDelete(bv_aws->getName(), 6); // get name without prefix and limit length
+#ifdef ENABLE_CALIBRATION
+        calibrationData.calibrateInstance(bv_aws, logger); // Check if boat data value is to be calibrated
+#endif
+        FormattedData bvf_aws = commonData->fmt->formatValue(bv_aws, *commonData);
+        if (bv_aws->valid) { // Save formatted data for hold feature
+            bvf_aws_old = bvf_aws;
         }
 
         // Get boat value for TWD
-        GwApi::BoatValue *bvalue3 = pageData.values[2]; // Third element in list
-        String name3 = xdrDelete(bvalue3->getName());   // Value name
-        name3 = name3.substring(0, 6);                  // String length limit for value name
-        calibrationData.calibrateInstance(bvalue3, logger); // Check if boat data value is to be calibrated
-        double value3 = bvalue3->value;                 // Value as double in SI unit
-        bool valid3 = bvalue3->valid;                   // Valid information 
-        String svalue3 = commonData->fmt->formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit3 = commonData->fmt->formatValue(bvalue3, *commonData).unit;        // Unit of value
-        if(valid3 == true){
-            svalue3old = svalue3;   	                // Save old value
-            unit3old = unit3;                           // Save old unit
+        GwApi::BoatValue *bv_twd = pageData.values[2];  // Third element in list
+        String name_twd = xdrDelete(bv_twd->getName(), 6); // get name without prefix and limit length
+#ifdef ENABLE_CALIBRATION
+        calibrationData.calibrateInstance(bv_twd, logger); // Check if boat data value is to be calibrated
+#endif
+        FormattedData bvf_twd = commonData->fmt->formatValue(bv_twd, *commonData);
+        if (bv_twd->valid) { // Save formatted data for hold feature
+            bvf_twd_old = bvf_twd;
         }
 
         // Get boat value for TWS
-        GwApi::BoatValue *bvalue4 = pageData.values[3]; // Fourth element in list
-        String name4 = xdrDelete(bvalue4->getName());   // Value name
-        name4 = name4.substring(0, 6);                  // String length limit for value name
-        calibrationData.calibrateInstance(bvalue4, logger); // Check if boat data value is to be calibrated
-        double value4 = bvalue4->value;                 // Value as double in SI unit
-        bool valid4 = bvalue4->valid;                   // Valid information 
-        String svalue4 = commonData->fmt->formatValue(bvalue4, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit4 = commonData->fmt->formatValue(bvalue4, *commonData).unit;        // Unit of value
-        if(valid4 == true){
-            svalue4old = svalue4;   	                // Save old value
-            unit4old = unit4;                           // Save old unit
+        GwApi::BoatValue *bv_tws = pageData.values[3];      // Fourth element in list
+        String name_tws = xdrDelete(bv_tws->getName(), 6);  // get name without prefix and limit length
+#ifdef ENABLE_CALIBRATION
+        calibrationData.calibrateInstance(bv_tws, logger); // Check if boat data value is to be calibrated
+#endif
+        FormattedData bvf_tws = commonData->fmt->formatValue(bv_tws, *commonData);
+        if (bv_tws->valid) { // Save formatted data for hold feature
+            bvf_tws_old = bvf_tws;
         }
 
         // Get boat value for DBT
-        GwApi::BoatValue *bvalue5 = pageData.values[4]; // Fifth element in list
-        String name5 = xdrDelete(bvalue5->getName());   // Value name
-        name5 = name5.substring(0, 6);                  // String length limit for value name
-        calibrationData.calibrateInstance(bvalue5, logger); // Check if boat data value is to be calibrated
-        double value5 = bvalue5->value;                 // Value as double in SI unit
-        bool valid5 = bvalue5->valid;                   // Valid information 
-        String svalue5 = commonData->fmt->formatValue(bvalue5, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit5 = commonData->fmt->formatValue(bvalue5, *commonData).unit;        // Unit of value
-        if(valid5 == true){
-            svalue5old = svalue5;   	                // Save old value
-            unit5old = unit5;                           // Save old unit
+        GwApi::BoatValue *bv_dbt = pageData.values[4];      // Fifth element in list
+        String name_dbt = xdrDelete(bv_dbt->getName(), 6);  // get name without prefix and limit length
+#ifdef ENABLE_CALIBRATION
+        calibrationData.calibrateInstance(bv_dbt, logger); // Check if boat data value is to be calibrated
+#endif
+        FormattedData bvf_dbt = commonData->fmt->formatValue(bv_dbt, *commonData);
+        if (bv_dbt->valid) { // Save formatted data for hold feature
+            bvf_dbt_old = bvf_dbt;
         }
 
         // Get boat value for STW
-        GwApi::BoatValue *bvalue6 = pageData.values[5]; // Sixth element in list
-        String name6 = xdrDelete(bvalue6->getName());   // Value name
-        name6 = name6.substring(0, 6);                  // String length limit for value name
-        calibrationData.calibrateInstance(bvalue6, logger); // Check if boat data value is to be calibrated
-        double value6 = bvalue6->value;                 // Value as double in SI unit
-        bool valid6 = bvalue6->valid;                   // Valid information 
-        String svalue6 = commonData->fmt->formatValue(bvalue6, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
-        String unit6 = commonData->fmt->formatValue(bvalue6, *commonData).unit;        // Unit of value
-        if(valid6 == true){
-            svalue6old = svalue6;   	                // Save old value
-            unit6old = unit6;                           // Save old unit
+        GwApi::BoatValue *bv_stw = pageData.values[5];      // Sixth element in list
+        String name_stw = xdrDelete(bv_stw->getName(), 6);  // get name without prefix and limit length
+#ifdef ENABLE_CALIBRATION
+        calibrationData.calibrateInstance(bv_stw, logger); // Check if boat data value is to be calibrated
+#endif
+        FormattedData bvf_stw = commonData->fmt->formatValue(bv_stw, *commonData);
+        if (bv_stw->valid) { // Save formatted data for hold feature
+            bvf_stw_old = bvf_stw;
         }
 
-        // Logging boat values
-        if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
-        logger->logDebug(GwLog::LOG, "Drawing at PageWindRose, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, name4.c_str(), value4, name5.c_str(), value5, name6.c_str(), value6);
+        // Log boat values
+        logger->logDebug(GwLog::LOG, "Drawing at PageWindRose, %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f,  %s:%f",
+            name_awa.c_str(), bv_awa->value,
+            name_aws.c_str(), bv_aws->value,
+            name_twd.c_str(), bv_twd->value,
+            name_tws.c_str(), bv_tws->value,
+            name_dbt.c_str(), bv_dbt->value,
+            name_stw.c_str(), bv_stw->value);
 
         // Draw page
-        //***********************************************************
+        // *********************************************************************
 
         // Set display in partial refresh mode
-        epd->setPartialWindow(0, 0, epd->width(), epd->height()); // Set partial update
+        epd->setPartialWindow(0, 0, epd->width(), epd->height());
 
         epd->setTextColor(commonData->fgcolor);
 
         // Show values AWA
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(10, 65);
-        epd->print(svalue1);                     // Value
+        epd->print(holdvalues ? bvf_awa_old.value : bvf_awa.value);
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(10, 95);
-        epd->print(name1);                       // Name
+        epd->print(name_awa);
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(10, 115);
         epd->print(" ");
-        epd->print(holdvalues ? unit1old : unit1);
+        epd->print(holdvalues ? bvf_awa_old.unit : bvf_awa.unit);
 
         // Horizintal separator left
         epd->fillRect(0, 149, 60, 3, commonData->fgcolor);
@@ -170,31 +166,32 @@ public:
         // Show values AWS
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(10, 270);
-        epd->print(svalue2);                     // Value
+        epd->print(holdvalues ? bvf_aws_old.value : bvf_aws.value);
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(10, 220);
-        epd->print(name2);                       // Name
+        epd->print(name_aws);
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(10, 190);
         epd->print(" ");
-        epd->print(holdvalues ? unit2old : unit2);
+        epd->print(holdvalues ? bvf_aws_old.unit : bvf_aws.unit);
 
-        // Show values TWD
+        // Show value TWD
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(295, 65);
-        if (valid3 == true) {
-            epd->print(abs(value3 * 180 / PI), 0);   // Value
+        // TODO WTF? Der Formatter sollte das korrekt machen
+        if (bv_twd->valid) {
+            epd->print(abs(bv_twd->value * 180 / PI), 0);   // Value
         }
         else {
             epd->print(commonData->fmt->placeholder);
         }
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(335, 95);
-        epd->print(name3);                       // Name
+        epd->print(name_twd);                       // Name
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(335, 115);
         epd->print(" ");
-        epd->print(holdvalues ? unit3old : unit3);
+        epd->print(holdvalues ? bvf_twd_old.unit : bvf_twd.unit);
 
         // Horizintal separator right
         epd->fillRect(340, 149, 80, 3, commonData->fgcolor);
@@ -202,16 +199,16 @@ public:
         // Show values TWS
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(295, 270);
-        epd->print(svalue4);                     // Value
+        epd->print(name_tws);
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(335, 220);
-        epd->print(name4);                       // Name
+        epd->print(holdvalues ? bvf_tws_old.value : bvf_tws.value);
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(335, 190);
         epd->print(" ");
-        epd->print(holdvalues ? unit4old : unit4);
+        epd->print(holdvalues ? bvf_tws_old.unit : bvf_tws.unit);
 
-//*******************************************************************************************
+        // *********************************************************************
         
         // Draw wind rose
         int rInstrument = 110;     // Radius of grafic instrument
@@ -279,9 +276,9 @@ public:
 
         // Draw wind pointer
         float startwidth = 8;       // Start width of pointer
-        if(valid2 == true || holdvalues == true || simulation == true){
-            float sinx=sin(value1);     // Wind direction
-            float cosx=cos(value1);
+        if (bv_aws->valid|| holdvalues || simulation) {
+            float sinx = sin(bv_awa->value);     // Wind direction
+            float cosx = cos(bv_awa->value);
             // Normal pointer
             // Pointer as triangle with center base 2*width
             float xx1 = -startwidth;
@@ -307,25 +304,25 @@ public:
         epd->fillCircle(200, 150, startwidth + 6, commonData->bgcolor);
         epd->fillCircle(200, 150, startwidth + 4, commonData->fgcolor);
 
-//*******************************************************************************************
+        // *********************************************************************
 
         // Show values DBT
         epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
         epd->setCursor(160, 200);
-        epd->print(svalue5);                     // Value
+        epd->print(holdvalues ? bvf_dbt_old.value : bvf_dbt.value);
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(190, 215);
         epd->print(" ");
-        epd->print(holdvalues ? unit5old : unit5);
+        epd->print(holdvalues ? bvf_dbt_old.unit : bvf_dbt.unit);
 
         // Show values STW
         epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
         epd->setCursor(160, 130);
-        epd->print(svalue6);                     // Value
+        epd->print(holdvalues ? bvf_stw_old.value : bvf_stw.value);
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(190, 90);
         epd->print(" ");
-        epd->print(holdvalues ? unit6old : unit6);
+        epd->print(holdvalues ? bvf_stw_old.unit : bvf_stw.unit);
 
         return PAGE_UPDATE;
     };

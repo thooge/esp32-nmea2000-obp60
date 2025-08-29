@@ -383,6 +383,7 @@ bool addTrueWind(GwApi* api, BoatValueList* boatValues) {
     return isCalculated;
 }
 
+
 // Init history buffers for selected boat data
 void initHstryBuf(GwApi* api, BoatValueList* boatValues, tBoatHstryData hstryBufList) {
 
@@ -700,11 +701,11 @@ void OBP60Task(GwApi *api){
     calibrationData.readConfig(config, logger);
 
     // Check user setting for true wind calculation
-    bool calcTrueWnds = api->getConfig()->getBool(api->getConfig()->calcTrueWnds, false);
+    //bool calcTrueWnds = api->getConfig()->getBool(api->getConfig()->calcTrueWnds, false);
     bool simulation = api->getConfig()->getBool(api->getConfig()->useSimuData, false);
 
     // Initialize history buffer for certain boat data
-    initHstryBuf(api, &boatValues, hstryBufList);
+    //initHstryBuf(api, &boatValues, hstryBufList);
 
     // Display screenshot handler for HTTP request
     // http://192.168.15.1/api/user/OBP60Task/screenshot
@@ -1017,11 +1018,11 @@ void OBP60Task(GwApi *api){
                 api->getBoatDataValues(boatValues.numValues,boatValues.allBoatValues);
                 api->getStatus(commonData.status);
 
-                if (calcTrueWnds) {
+                /*if (calcTrueWnds) {
                     addTrueWind(api, &boatValues);
-                }
+                }*/
                 // Handle history buffers for TWD, TWS for wind plot page and other usage
-                handleHstryBuf(api, &boatValues, hstryBufList, simulation);
+                //handleHstryBuf(api, &boatValues, hstryBufList, simulation);
 
                 // Clear display
                 // epd->fillRect(0, 0, epd->width(), epd->height(), commonData.bgcolor);

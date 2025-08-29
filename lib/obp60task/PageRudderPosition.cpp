@@ -3,7 +3,10 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+
+#ifdef ENABLE_CALIBRATION
 #include "BoatDataCalibration.h"
+#endif
 
 class PageRudderPosition : public Page
 {
@@ -49,7 +52,9 @@ public:
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list
         String name1 = bvalue1->getName().c_str();      // Value name
         name1 = name1.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue1, logger); // Check if boat data value is to be calibrated
+#endif
         value1 = bvalue1->value;                        // Raw value without unit convertion
         bool valid1 = bvalue1->valid;                   // Valid information 
         String svalue1 = commonData->fmt->formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -67,8 +72,7 @@ public:
             }
         }
 
-        // Logging boat values
-        if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
+        // Log boat values
         logger->logDebug(GwLog::LOG, "Drawing at PageRudderPosition, %s:%f", name1.c_str(), value1);
 
         // Draw page

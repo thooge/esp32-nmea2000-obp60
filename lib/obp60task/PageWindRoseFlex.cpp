@@ -3,7 +3,10 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+
+#ifdef ENABLE_CALIBRATION
 #include "BoatDataCalibration.h"
+#endif
 
 class PageWindRoseFlex : public Page
 {
@@ -73,7 +76,9 @@ public:
         }
         String name1 = bvalue1->getName().c_str();      // Value name
         name1 = name1.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue1, logger); // Check if boat data value is to be calibrated
+#endif
         double value1 = bvalue1->value;                 // Value as double in SI unit
         bool valid1 = bvalue1->valid;                   // Valid information
         String svalue1 = commonData->fmt->formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -91,7 +96,9 @@ public:
         }
         String name2 = bvalue2->getName().c_str();      // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue2, logger); // Check if boat data value is to be calibrated
+#endif
         double value2 = bvalue2->value;                 // Value as double in SI unit
         bool valid2 = bvalue2->valid;                   // Valid information
         if (simulation) {
@@ -108,7 +115,9 @@ public:
         GwApi::BoatValue *bvalue3 = pageData.values[0];
         String name3 = xdrDelete(bvalue3->getName());   // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue3, logger); // Check if boat data value is to be calibrated
+#endif
         double value3 = bvalue3->value;                 // Value as double in SI unit
         bool valid3 = bvalue3->valid;                   // Valid information
         String svalue3 = commonData->fmt->formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -122,7 +131,9 @@ public:
         GwApi::BoatValue *bvalue4 = pageData.values[1];
         String name4 = xdrDelete(bvalue4->getName());   // Value name
         name4 = name4.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue4, logger); // Check if boat data value is to be calibrated
+#endif
         double value4 = bvalue4->value;                 // Value as double in SI unit
         bool valid4 = bvalue4->valid;                   // Valid information
         String svalue4 = commonData->fmt->formatValue(bvalue4, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -136,7 +147,9 @@ public:
         GwApi::BoatValue *bvalue5 = pageData.values[2];
         String name5 = xdrDelete(bvalue5->getName());   // Value name
         name5 = name5.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue5, logger); // Check if boat data value is to be calibrated
+#endif
         double value5 = bvalue5->value;                 // Value as double in SI unit
         bool valid5 = bvalue5->valid;                   // Valid information
         String svalue5 = commonData->fmt->formatValue(bvalue5, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -150,7 +163,9 @@ public:
         GwApi::BoatValue *bvalue6 = pageData.values[3];
         String name6 = xdrDelete(bvalue6->getName());   // Value name
         name6 = name6.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue6, logger); // Check if boat data value is to be calibrated
+#endif
         double value6 = bvalue6->value;                 // Value as double in SI unit
         bool valid6 = bvalue6->valid;                   // Valid information
         String svalue6 = commonData->fmt->formatValue(bvalue6, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places

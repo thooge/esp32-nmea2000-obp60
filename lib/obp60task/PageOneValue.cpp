@@ -3,7 +3,10 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+
+#ifdef ENABLE_CALIBRATION
 #include "BoatDataCalibration.h"
+#endif
 
 class PageOneValue : public Page
 {
@@ -49,7 +52,9 @@ public:
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
         String name1 = xdrDelete(bvalue1->getName());   // Value name
         name1 = name1.substring(0, 6);                  // String length limit for value name
+#ifdef ENABLE_CALIBRATION
         calibrationData.calibrateInstance(bvalue1, logger); // Check if boat data value is to be calibrated
+#endif
         double value1 = bvalue1->value;                 // Value as double in SI unit
         bool valid1 = bvalue1->valid;                   // Valid information
         String svalue1 = commonData->fmt->formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
