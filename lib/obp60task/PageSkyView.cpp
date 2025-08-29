@@ -126,17 +126,17 @@ public:
 
         // show satellites in "map"
         for (int i = 0; i < nSat; i++) {
-            float arad = sats[i].Azimut * M_PI / 180.0;
+            float arad = (sats[i].Azimut * M_PI / 180.0) + M_PI;
             float erad = sats[i].Elevation * M_PI / 180.0;
-            uint16_t x = c.x + sin(arad) * erad * r;
-            uint16_t y = c.y + cos(arad) * erad * r;
-            getdisplay().drawRect(x-4, y-4, 8, 8, commonData->fgcolor);
+            uint16_t x = c.x + sin(arad) * erad * r1;
+            uint16_t y = c.y + cos(arad) * erad * r1;
+            getdisplay().fillRect(x-4, y-4, 8, 8, commonData->fgcolor);
         }
 
         // Signal / Noise bars
         getdisplay().setCursor(325, 34);
         getdisplay().print("SNR");
-        getdisplay().drawRect(270, 20, 125, 257, commonData->fgcolor);
+//        getdisplay().drawRect(270, 20, 125, 257, commonData->fgcolor);
         int maxsat = std::min(nSat, 12);
         for (int i = 0; i < maxsat; i++) {
             uint16_t y = 29 + (i + 1) * 20;
@@ -154,6 +154,26 @@ public:
                 getdisplay().print("n/a");
             }
         }
+
+        // Show SatInfo and HDOP
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+
+        getdisplay().setCursor(220, 34);
+        getdisplay().print("Sat:");
+
+        GwApi::BoatValue *bv_satinfo = pageData.values[0]; // SatInfo
+        String sval_satinfo = formatValue(bv_satinfo, *commonData).svalue;
+        getdisplay().setCursor(220, 49);
+        getdisplay().print(sval_satinfo);
+        
+        getdisplay().setCursor(220, 254);
+        getdisplay().print("HDOP:");
+
+        GwApi::BoatValue *bv_hdop = pageData.values[1]; // HDOP
+        String sval_hdop = formatValue(bv_hdop, *commonData).svalue;
+        sval_hdop = sval_hdop + "m";
+        getdisplay().setCursor(220, 269);
+        getdisplay().print(sval_hdop);
 
         return PAGE_UPDATE;
     };
@@ -174,6 +194,7 @@ PageDescription registerPageSkyView(
     "SkyView",              // Page name
     createPage,             // Action
     0,                      // Number of bus values depends on selection in Web configuration
+    {"SatInfo", "HDOP"},    // Bus values we need in the page
     true                    // Show display header on/off
 );
 
