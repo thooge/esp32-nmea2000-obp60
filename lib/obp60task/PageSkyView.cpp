@@ -80,12 +80,16 @@ public:
 
         // sky view
         Point c = {130, 148};
-        uint16_t r = 125;
+        uint16_t r = 120;
         uint16_t r1 = r / 2;
-
+/*
         getdisplay().fillCircle(c.x, c.y, r, commonData->bgcolor);
         getdisplay().drawCircle(c.x, c.y, r + 1, commonData->fgcolor);
         getdisplay().drawCircle(c.x, c.y, r + 2, commonData->fgcolor);
+*/
+        getdisplay().fillCircle(c.x, c.y, r + 2, commonData->fgcolor);
+        getdisplay().fillCircle(c.x, c.y, r - 1, commonData->bgcolor);
+
         getdisplay().drawCircle(c.x, c.y, r1, commonData->fgcolor);
 
         // separation lines
@@ -107,19 +111,19 @@ public:
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
 
 		getdisplay().getTextBounds("N", 0, 150, &x1, &y1, &w, &h);
-        getdisplay().setCursor(c.x - w / 2, c.y - r + h + 2);
+        getdisplay().setCursor(c.x - w / 2, c.y - r + h + 3);
         getdisplay().print("N");
 
 		getdisplay().getTextBounds("S", 0, 150, &x1, &y1, &w, &h);
-        getdisplay().setCursor(c.x - w / 2, c.y + r - 2);
+        getdisplay().setCursor(c.x - w / 2, c.y + r - 3);
         getdisplay().print("S");
 
 		getdisplay().getTextBounds("E", 0, 150, &x1, &y1, &w, &h);
-        getdisplay().setCursor(c.x + r - w - 2, c.y + h / 2);
+        getdisplay().setCursor(c.x + r - w - 3, c.y + h / 2);
         getdisplay().print("E");
         
 		getdisplay().getTextBounds("W", 0, 150, &x1, &y1, &w, &h);
-        getdisplay().setCursor(c.x - r + 2 , c.y + h / 2);
+        getdisplay().setCursor(c.x - r + 3 , c.y + h / 2);
         getdisplay().print("W");
 
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
