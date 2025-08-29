@@ -82,14 +82,9 @@ public:
         Point c = {130, 148};
         uint16_t r = 120;
         uint16_t r1 = r / 2;
-/*
-        getdisplay().fillCircle(c.x, c.y, r, commonData->bgcolor);
-        getdisplay().drawCircle(c.x, c.y, r + 1, commonData->fgcolor);
-        getdisplay().drawCircle(c.x, c.y, r + 2, commonData->fgcolor);
-*/
+
         getdisplay().fillCircle(c.x, c.y, r + 2, commonData->fgcolor);
         getdisplay().fillCircle(c.x, c.y, r - 1, commonData->bgcolor);
-
         getdisplay().drawCircle(c.x, c.y, r1, commonData->fgcolor);
 
         // separation lines
