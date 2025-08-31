@@ -132,18 +132,23 @@ public:
         epd->setCursor(c.x - r + 2 , c.y + h / 2);
         epd->print("W");
 
-        epd->setFont(&Ubuntu_Bold8pt8b);
-
         // show satellites in "map"
+        epd->setFont(&Atari6px);
         for (int i = 0; i < nSat; i++) {
             float arad = sats[i].Azimut * M_PI / 180.0;
             float erad = sats[i].Elevation * M_PI / 180.0;
             uint16_t x = c.x + sin(arad) * erad * r;
             uint16_t y = c.y + cos(arad) * erad * r;
             epd->drawRect(x-4, y-4, 8, 8, commonData->fgcolor);
+            // Add Sat number
+            epd->setCursor(x+5, y);
+            char buffer[3];
+            snprintf(buffer, 3, "%02d", static_cast<int>(sats[i].PRN));
+            epd->print(String(buffer));
         }
 
         // Signal / Noise bars
+        epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(325, 34);
         epd->print("SNR");
         epd->drawRect(270, 20, 125, 257, commonData->fgcolor);

@@ -25,6 +25,7 @@
 #include "fonts/Ubuntu_Bold20pt8b.h"
 #include "fonts/Ubuntu_Bold32pt8b.h"
 #include "fonts/Atari16px8b.h" // Key label font
+#include "fonts/Atari6px8b.h"  // Very small (6x6) font
 
 // E-Ink Display
 #define GxEPD_WIDTH 400     // Display width
@@ -212,8 +213,8 @@ void deepSleep(CommonData &common){
     setFlashLED(false);                     // Flash LED Off
     buzzer(TONE4, 20);                      // Buzzer tone 4kHz 20ms
     // Shutdown EInk display
-    epd->setFullWindow();               // Set full Refresh
-    epd->fillScreen(common.bgcolor);    // Clear screen
+    epd->setFullWindow();                   // Set full Refresh
+    epd->fillScreen(common.bgcolor);        // Clear screen
     epd->setTextColor(common.fgcolor);
     epd->setFont(&Ubuntu_Bold20pt8b);
     epd->setCursor(85, 150);
@@ -221,8 +222,8 @@ void deepSleep(CommonData &common){
     epd->setFont(&Ubuntu_Bold8pt8b);
     epd->setCursor(65, 175);
     epd->print("To wake up press key and wait 5s");
-    epd->nextPage();                // Update display contents
-    epd->powerOff();                // Display power off
+    epd->nextPage();                        // Update display contents
+    epd->powerOff();                        // Display power off
     setPortPin(OBP_POWER_50, false);        // Power off ePaper display
     // Stop system
     esp_deep_sleep_start();                 // Deep Sleep with weakup via touch pin

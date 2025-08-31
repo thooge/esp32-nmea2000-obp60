@@ -101,7 +101,7 @@ void CalibrationDataList::readConfig(GwConfigHandler* config, GwLog* logger)
         calibMap[instance].slope = slope;
         calibMap[instance].smooth = smooth;
         calibMap[instance].isCalibrated = false;
-        logger->logDebug(GwLog::LOG, "stored calibration data: %s, offset: %f, slope: %f, smoothing: %f", instance.c_str(),
+        logger->logDebug(GwLog::LOG, "calibration data: %s, offset: %f, slope: %f, smoothing: %f", instance.c_str(),
             calibMap[instance].offset, calibMap[instance].slope, calibMap[instance].smooth);
     }
     logger->logDebug(GwLog::LOG, "all calibration data read");
@@ -117,7 +117,7 @@ void CalibrationDataList::calibrateInstance(GwApi::BoatValue* boatDataValue, GwL
     std::string format = "";
 
     if (calibMap.find(instance) == calibMap.end()) {
-        logger->logDebug(GwLog::DEBUG, "BoatDataCalibration: %s not found in calibration data list", instance.c_str());
+        logger->logDebug(GwLog::DEBUG, "BoatDataCalibration: %s not in calibration list", instance.c_str());
         return;
     } else if (!boatDataValue->valid) { // no valid boat data value, so we don't want to apply calibration data
         calibMap[instance].isCalibrated = false;

@@ -55,6 +55,7 @@ extern const GFXfont Ubuntu_Bold16pt8b;
 extern const GFXfont Ubuntu_Bold20pt8b;
 extern const GFXfont Ubuntu_Bold32pt8b;
 extern const GFXfont Atari16px;
+extern const GFXfont Atari6px;
 
 // Global functions
 #ifdef DISPLAY_GDEW042T2

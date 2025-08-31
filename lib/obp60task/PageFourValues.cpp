@@ -309,8 +309,6 @@ public:
 
 };
 
-
-
 static Page *createPage(CommonData &common){
     return new PageFourValues(common);
 }/**

@@ -52,18 +52,6 @@ public:
         static FormattedData bvf_tws_old;
         static FormattedData bvf_dbt_old;
         static FormattedData bvf_stw_old;
-        /* static String svalue1old = "";
-        static String unit1old = "";
-        static String svalue2old = "";
-        static String unit2old = "";
-        static String svalue3old = "";
-        static String unit3old = "";
-        static String svalue4old = "";
-        static String unit4old = "";
-        static String svalue5old = "";
-        static String unit5old = "";
-        static String svalue6old = "";
-        static String unit6old = ""; */
 
         // Get boat value for AWA
         GwApi::BoatValue *bv_awa = pageData.values[0];     // First element in list
@@ -247,7 +235,7 @@ public:
             epd->getTextBounds(ii, int(x), int(y), &x1, &y1, &w, &h); // Calc width of new string
             epd->setCursor(x-w/2, y+h/2);
             if (i % 30 == 0) {
-                epd->setFont(&Ubuntu_Bold8pt8b);
+                epd->setFont(&Ubuntu_Bold8pt8b); // TODO move out of loop
                 epd->print(ii);
             }
 
@@ -276,7 +264,7 @@ public:
 
         // Draw wind pointer
         float startwidth = 8;       // Start width of pointer
-        if (bv_aws->valid|| holdvalues || simulation) {
+        if (bv_aws->valid || holdvalues || simulation) {
             float sinx = sin(bv_awa->value);     // Wind direction
             float cosx = cos(bv_awa->value);
             // Normal pointer
@@ -306,7 +294,7 @@ public:
 
         // *********************************************************************
 
-        // Show values DBT
+        // Show value DBT
         epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
         epd->setCursor(160, 200);
         epd->print(holdvalues ? bvf_dbt_old.value : bvf_dbt.value);
@@ -315,7 +303,7 @@ public:
         epd->print(" ");
         epd->print(holdvalues ? bvf_dbt_old.unit : bvf_dbt.unit);
 
-        // Show values STW
+        // Show value STW
         epd->setFont(&DSEG7Classic_BoldItalic16pt7b);
         epd->setCursor(160, 130);
         epd->print(holdvalues ? bvf_stw_old.value : bvf_stw.value);
@@ -326,6 +314,11 @@ public:
 
         return PAGE_UPDATE;
     };
+
+    void leavePage(PageData &pageData) {
+        logger->logDebug(GwLog::LOG, "Leaving PageWindRose");
+    }
+
 };
 
 static Page *createPage(CommonData &common){
