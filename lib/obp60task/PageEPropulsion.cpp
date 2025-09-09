@@ -7,6 +7,14 @@
 /*
   Electric propulsion
 
+  - Current, voltage, power 
+  - 12, 24, 48 etc. Voltage
+  - rpm
+  - throttle position
+  - controller state
+  - error codes
+  - temperature engine, controller, batteries
+
 */
 
 class PageEPropulsion : public Page

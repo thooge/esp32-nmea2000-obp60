@@ -13,6 +13,9 @@
 
   Feature possibilities
     - switch between North up / Heading up
+    - filter
+    - zoom
+    - special vessel symbols
 
 */
 

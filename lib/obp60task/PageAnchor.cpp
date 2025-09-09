@@ -39,6 +39,10 @@
    Drop / raise function in device OBP40 has to be done inside 
    config mode because of limited number of buttons.
 
+   Save position in FRAM
+   Alarm: gps fix lost
+   switch unit feet/meter
+
 */
 
 #define anchor_width 16
