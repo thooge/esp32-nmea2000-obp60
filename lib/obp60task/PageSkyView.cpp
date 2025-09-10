@@ -169,8 +169,10 @@ public:
         getdisplay().print("HDOP:");
 
         GwApi::BoatValue *bv_hdop = pageData.values[1]; // HDOP
-        String sval_hdop = formatValue(bv_hdop, *commonData).svalue;
-        sval_hdop = sval_hdop + "m";
+        double hdop = formatValue(bv_hdop, *commonData).value * 4; // 4 is factor for UERE (translation in meter)
+        char sval_hdop[20];
+        dtostrf(hdop, 0, 1, sval_hdop);  // Only one prefix
+        strcat(sval_hdop, "m");
         getdisplay().setCursor(220, 269);
         getdisplay().print(sval_hdop);
 
