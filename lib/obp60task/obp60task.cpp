@@ -431,7 +431,7 @@ void OBP60Task(GwApi *api){
     int lastPage=pageNumber;
 
     BoatValueList boatValues; //all the boat values for the api query
-    HstryBuf hstryBufList(960);  // Create ring buffers for history storage of some boat data
+    HstryBuf hstryBufList(1920);  // Create ring buffers for history storage of some boat data (1920 seconds = 32 minutes)
     WindUtils trueWind(&boatValues);  // Create helper object for true wind calculation
     //commonData.distanceformat=config->getString(xxx);
     //add all necessary data to common data
@@ -710,8 +710,8 @@ void OBP60Task(GwApi *api){
                 }
             }
             
-            // Full display update afer a new selected page and 4s wait time
-            if(millis() > starttime4 + 4000 && delayedDisplayUpdate == true){
+            // Full display update afer a new selected page and 8s wait time
+            if(millis() > starttime4 + 8000 && delayedDisplayUpdate == true){
                 starttime1 = millis();
                 starttime2 = millis();
                 getdisplay().setFullWindow();    // Set full update
