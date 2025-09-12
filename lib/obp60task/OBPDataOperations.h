@@ -1,3 +1,4 @@
+// Function lib for history buffer handling, true wind calculation, and other operations on boat data
 #pragma once
 #include <N2kMessages.h>
 #include "OBPRingBuffer.h"
