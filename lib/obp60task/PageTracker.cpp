@@ -6,6 +6,20 @@
     - standalone with SD card backend
     - standalone with server backend
     - Regatta Hero integration
+
+  In start phase big timer.
+  Eventually after start other display because timer not needed any 
+  more. Race timer smaller on top right corner. Reserved space for
+  message area. 
+
+    4 Positions for flags
+    +-----+-----+
+    |  1  |  2  |
+    +-----+-----+
+    |  3  |  4  |
+    +-----+-----+
+
+
 */
 
 #include "Pagedata.h"
@@ -25,6 +39,7 @@
 #include "images/orange.xbm"
 #include "images/papa.xbm"
 #include "images/repeat_one.xbm"
+#include "images/sierra.xbm"
 #include "images/start.xbm"
 #include "images/uniform.xbm"
 #include "images/xray.xbm"
@@ -36,25 +51,33 @@ class PageTracker : public Page
 private:
     char mode = 'N'; // (N)ormal, (C)onfig
     bool simulation = false;
-    String trackerType;
     String flashLED;
+
+    String trackerType;
+    String trackerOrganisation;
+    String trackerTeam;
+    String sailClub;
+    String boatName;
+    String boatClass;
+    String boatSailNumber;
+    float boatHandicap;
 
     void displayModeNormal(PageData &pageData) {
 
         // TBD Boatvalues: ...
 
         // Title
-        getdisplay().setTextColor(commonData->fgcolor);
+/*        getdisplay().setTextColor(commonData->fgcolor);
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(8, 48);
-        getdisplay().print("Tracker");
+        getdisplay().print("Tracker"); */
 
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(8, 64);
+        getdisplay().setCursor(8, 42);
         if (trackerType == "NONE") {
-            getdisplay().printf("Disabled. Use Web-GUI to enable.");
+            getdisplay().print("Disabled!");
         } else {
-            getdisplay().printf("Type: %s", trackerType);
+            getdisplay().print(trackerType);
         }
 
         // Timer
@@ -77,25 +100,64 @@ private:
 
         getdisplay().setTextColor(commonData->fgcolor);
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(8, 48);
+        getdisplay().setCursor(8, 42);
         getdisplay().print("Tracker configuration");
 
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
         // TODO
 
-        uint16_t y = 64;
-        getdisplay().setCursor(8, y);
+        // Boat data
+        uint16_t y = 80;
+        uint16_t x = 16;
+        uint16_t x1 = 100;
+        getdisplay().setFont(&Ubuntu_Bold10pt8b);
+        getdisplay().setCursor(8, 64);
+        getdisplay().print("Boat data");
+        
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        getdisplay().setCursor(x, y);
         getdisplay().print("Boat name");
-        getdisplay().setCursor(8, y+20);
+        getdisplay().setCursor(x1, y);
+        getdisplay().print(boatName);
+
+        getdisplay().setCursor(x, y+20);
         getdisplay().print("Boat class");
-        getdisplay().setCursor(8, y+40);
+        getdisplay().setCursor(x1, y+20);
+        getdisplay().print(boatClass);
+
+        getdisplay().setCursor(x, y+40);
         getdisplay().print("Handicap");
-        getdisplay().setCursor(8, y+60);
+        getdisplay().setCursor(x1, y+40);
+        getdisplay().print(boatHandicap, 1);
+
+        getdisplay().setCursor(x, y+60);
+        getdisplay().print("Sail club");
+        getdisplay().setCursor(x1, y+60);
+        getdisplay().print(sailClub);
+
+        // Tracker data
+        y = 80;
+        x = 208;
+        getdisplay().setFont(&Ubuntu_Bold10pt8b);
+        getdisplay().setCursor(x, 64);
+        getdisplay().print("Tracker info");
+
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        getdisplay().setCursor(x, y);
+        if (trackerType == "NONE") {
+            getdisplay().print("Disabled");
+        } else {
+            getdisplay().printf("Type: %s", trackerType);
+        }
+        getdisplay().setCursor(x, y + 20);
         getdisplay().print("Team");
+        getdisplay().setCursor(x, y + 40);
+        getdisplay().print("Tracker organisation");
 
-
-        y = 64;
-        getdisplay().setCursor(208, y);
+        // Ragatta selection
+        y = 200;
+        getdisplay().setFont(&Ubuntu_Bold10pt8b);
+        getdisplay().setCursor(x, y);
         getdisplay().print("Regattas");
 
         // A) Regatta Hero:
@@ -119,7 +181,17 @@ public:
         common.logger->logDebug(GwLog::LOG, "Instantiate PageTracker");
         flashLED = common.config->getString(common.config->flashLED);
         simulation = common.config->getBool(common.config->useSimuData);
+
         trackerType = common.config->getString(common.config->trackerType);
+        trackerOrganisation = common.config->getString(common.config->trackerOrg);
+        trackerTeam = common.config->getString(common.config->trackerTeam);
+
+        boatName = common.config->getString(common.config->boatName);
+        boatClass = common.config->getString(common.config->boatClass);
+        boatSailNumber = common.config->getString(common.config->boatSailnumber);
+        sailClub = common.config->getString(common.config->sailClub);
+        boatHandicap = common.config->getString(common.config->boatHandicap).toFloat();
+
     }
 
     void setupKeys(){

@@ -62,20 +62,6 @@
         }
     },
     {
-        "name": "draft",
-        "label": "Boat Draft [m]",
-        "type": "number",
-        "default": "0.00",
-        "check": "checkMinMax",
-        "min": 0.00,
-        "max": 50.00,
-        "description": "The draft of the boat [0...50m]",
-        "category": "OBP40 Settings",
-        "capabilities": {
-            "obp40": "true"
-        }
-    },
-    {
         "name": "fuelTank",
         "label": "Fuel Tank [l]",
         "type": "number",
@@ -1349,6 +1335,111 @@
         "category": "OBP40 Settings",
         "capabilities": {
             "obp40":"true"
+        }
+    },
+    {
+        "name": "trackerOrg",
+        "label": "Tracker: Organisation",
+        "type": "string",
+        "default": "",
+        "description": "Regatta organisation for regatta login (gotten from race officer)",
+        "category": "OBP40 Settings",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "trackerPasscode",
+        "label": "Tracker: Passcode",
+        "type": "password",
+        "default": "123456",
+        "description": "Passcode for regatta login (gotten from race officer)",
+        "category": "OBP40 Settings",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "trackerTeam",
+        "label": "Tracker: Team",
+        "type": "string",
+        "default": "OBP",
+        "description": "Your regatta team you belong to",
+        "category": "OBP40 Settings",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "boatName",
+        "label": "Boat Name",
+        "type": "string",
+        "default": "OBP",
+        "description": "The name of your boat. E.g. to be displayed in regatta",
+        "category": "OBP40 Boatdata",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "sailClub",
+        "label": "Sail Club",
+        "type": "string",
+        "default": "",
+        "description": "The short name of sail club. E.g. to be displayed in regatta",
+        "category": "OBP40 Boatdata",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "boatClass",
+        "label": "Boat class",
+        "type": "string",
+        "default": "OBP",
+        "description": "Class name of your boat if available or 'One off'",
+        "category": "OBP40 Boatdata",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "boatSailnumber",
+        "label": "Sail number",
+        "type": "string",
+        "default": "",
+        "description": "Identification number on sail",
+        "category": "OBP40 Boatdata",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "boatHandicap",
+        "label": "Handicap value",
+        "type": "number",
+        "default": "100",
+        "check": "checkMinMax",
+        "min": 0.00,
+        "max": 9999.00,
+        "description": " The handicap value of your boat. E.g. yardstick value",
+        "category": "OBP40 Boatdata",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "draft",
+        "label": "Boat Draft [m]",
+        "type": "number",
+        "default": "0.00",
+        "check": "checkMinMax",
+        "min": 0.00,
+        "max": 50.00,
+        "description": "The draft of the boat [0...50m]",
+        "category": "OBP40 Boatdata",
+        "capabilities": {
+            "obp40": "true"
         }
     },
     {
