@@ -27,6 +27,7 @@
 #include "images/unknown.xbm"           // unknown page indicator
 #include "OBP60QRWiFi.h"                // Functions lib for WiFi QR code
 #include "OBPSensorTask.h"              // Functions lib for sensor data
+#include "OBPTrackerTask.h"             // Functions lib for tracker data
 
 // Global vars
 bool initComplete = false;      // Initialization complete
@@ -260,6 +261,8 @@ void registerAllPages(PageList &list){
     list.add(&registerPageFluid);
     extern PageDescription registerPageSkyView;
     list.add(&registerPageSkyView);
+    extern PageDescription registerPageTracker;
+    list.add(&registerPageTracker);
 }
 
 // Undervoltage detection for shutdown display
@@ -365,6 +368,7 @@ void OBP60Task(GwApi *api){
     bool refreshmode = api->getConfig()->getConfigItem(api->getConfig()->refresh,true)->asBoolean();
     String fastrefresh = api->getConfig()->getConfigItem(api->getConfig()->fastRefresh,true)->asString();
     uint fullrefreshtime = uint(api->getConfig()->getConfigItem(api->getConfig()->fullRefreshTime,true)->asInt());
+    bool tracker_enabled = api->getConfig()->getConfigItem(api->getConfig()->trackerType,true)->asString() != "NONE";
     #ifdef BOARD_OBP40S3
     bool syspage_enabled = config->getBool(config->systemPage);
     #endif
@@ -510,6 +514,16 @@ void OBP60Task(GwApi *api){
     xTaskCreate(keyboardTask,"keyboard",2000,&allParameters,configMAX_PRIORITIES-1,NULL);
     SharedData *shared=new SharedData(api);
     createSensorTask(shared);
+
+    // Tracker task
+    if (tracker_enabled) {
+        TrackerData trackerData;
+        trackerData.api = api;
+        trackerData.logger = logger;
+        createTrackerTask(&trackerData);
+    } else {
+        LOG_DEBUG(GwLog::LOG, "Tracker not enabled. No task created.");
+    }
 
     // Task Loop
     //####################################################################################
