@@ -98,67 +98,85 @@ private:
 
     void displayModeConfig() {
 
+        uint16_t x0 = 8;  // left label column
+        uint16_t x1 = 112; // data starts here
+        uint16_t y0 = 48;
+
         getdisplay().setTextColor(commonData->fgcolor);
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(8, 42);
+        getdisplay().setCursor(x0, 48);
         getdisplay().print("Tracker configuration");
 
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        // TODO
 
-        // Boat data
-        uint16_t y = 80;
-        uint16_t x = 16;
-        uint16_t x1 = 100;
+        // Boat data left column
         getdisplay().setFont(&Ubuntu_Bold10pt8b);
-        getdisplay().setCursor(8, 64);
+        getdisplay().setCursor(x0, 75);
         getdisplay().print("Boat data");
-        
+
+        y0 = 96;
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(x, y);
+        getdisplay().setCursor(x0, y0);
         getdisplay().print("Boat name");
-        getdisplay().setCursor(x1, y);
+        getdisplay().setCursor(x1, y0);
         getdisplay().print(boatName);
 
-        getdisplay().setCursor(x, y+20);
+        getdisplay().setCursor(x0, y0 + 16);
         getdisplay().print("Boat class");
-        getdisplay().setCursor(x1, y+20);
+        getdisplay().setCursor(x1, y0 + 16);
         getdisplay().print(boatClass);
 
-        getdisplay().setCursor(x, y+40);
+        getdisplay().setCursor(x0, y0 + 32);
         getdisplay().print("Handicap");
-        getdisplay().setCursor(x1, y+40);
+        getdisplay().setCursor(x1, y0 + 32);
         getdisplay().print(boatHandicap, 1);
 
-        getdisplay().setCursor(x, y+60);
+        getdisplay().setCursor(x0, y0 + 48);
         getdisplay().print("Sail club");
-        getdisplay().setCursor(x1, y+60);
+        getdisplay().setCursor(x1, y0 + 48);
         getdisplay().print(sailClub);
 
-        // Tracker data
-        y = 80;
-        x = 208;
+        getdisplay().setCursor(x0, y0 + 64);
+        getdisplay().print("Sail number");
+        getdisplay().setCursor(x1, y0 + 64);
+        getdisplay().print(boatSailNumber);
+
+        // Tracker data, right column
+        x0 = 208;
+        x1 = 304;
         getdisplay().setFont(&Ubuntu_Bold10pt8b);
-        getdisplay().setCursor(x, 64);
+        getdisplay().setCursor(x0, 75);
         getdisplay().print("Tracker info");
 
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(x, y);
+
+        getdisplay().setCursor(x0, y0);
+        getdisplay().print("Status");
+        getdisplay().setCursor(x1, y0);
         if (trackerType == "NONE") {
             getdisplay().print("Disabled");
         } else {
             getdisplay().printf("Type: %s", trackerType);
         }
-        getdisplay().setCursor(x, y + 20);
+
+        getdisplay().setCursor(x0, y0 + 16);
+        getdisplay().print("Org.");
+        getdisplay().setCursor(x1, y0 + 16);
+        getdisplay().print(trackerOrganisation);
+
+        getdisplay().setCursor(x0, y0 + 32);
         getdisplay().print("Team");
-        getdisplay().setCursor(x, y + 40);
-        getdisplay().print("Tracker organisation");
+        getdisplay().setCursor(x1, y0 + 32);
+        getdisplay().print(trackerTeam);
+
 
         // Ragatta selection
-        y = 200;
+        y0 = 180;
         getdisplay().setFont(&Ubuntu_Bold10pt8b);
-        getdisplay().setCursor(x, y);
+        getdisplay().setCursor(x0, y0);
         getdisplay().print("Regattas");
+
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
 
         // A) Regatta Hero:
         // Server Hostname, IP, Port
