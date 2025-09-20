@@ -120,7 +120,7 @@ public:
         String name3 = xdrDelete(bvalue3->getName());   // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
         if (name3.length()>3){
-            name3font=Ubuntu_Bold10pt8b;
+            name3font=Ubuntu_Bold8pt8b;
         }
         else{
             name3font=Ubuntu_Bold12pt8b;
@@ -140,7 +140,7 @@ public:
         String name4 = xdrDelete(bvalue4->getName());      // Value name
         name4 = name4.substring(0, 6);                  // String length limit for value name
         if (name4.length()>3){
-            name4font=Ubuntu_Bold10pt8b;
+            name4font=Ubuntu_Bold8pt8b;
         }
         else{
             name4font=Ubuntu_Bold12pt8b;
@@ -160,7 +160,7 @@ public:
         String name5 = xdrDelete(bvalue5->getName());      // Value name
         name5 = name5.substring(0, 6);                  // String length limit for value name
         if (name5.length()>3){
-            name5font=Ubuntu_Bold10pt8b;
+            name5font=Ubuntu_Bold8pt8b;
         }
         else{
             name5font=Ubuntu_Bold12pt8b;
