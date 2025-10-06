@@ -121,18 +121,20 @@ public:
         getdisplay().setCursor(c.x - r + 3 , c.y + h / 2);
         getdisplay().print("W");
 
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-
         // show satellites in "map"
+        getdisplay().setFont(&IBM8x8px);
         for (int i = 0; i < nSat; i++) {
             float arad = (sats[i].Azimut * M_PI / 180.0) + M_PI;
             float erad = sats[i].Elevation * M_PI / 180.0;
             uint16_t x = c.x + sin(arad) * erad * r1;
             uint16_t y = c.y + cos(arad) * erad * r1;
             getdisplay().fillRect(x-4, y-4, 8, 8, commonData->fgcolor);
+            getdisplay().setCursor(x-7, y+12);
+            getdisplay().printf("%02d", static_cast<int>(sats[i].PRN));
         }
 
         // Signal / Noise bars
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(325, 34);
         getdisplay().print("SNR");
 //        getdisplay().drawRect(270, 20, 125, 257, commonData->fgcolor);
