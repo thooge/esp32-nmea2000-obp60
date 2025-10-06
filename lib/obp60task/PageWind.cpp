@@ -247,8 +247,8 @@ public:
         if(key == 1){               // Mode switch
             if(mode == 'N'){
                 mode = 'L';
-            } else if (mode == 'L') {
-                mode = 'X';
+        //    } else if (mode == 'L') {
+        //        mode = 'X';
             } else {
                 mode = 'N';
             }
