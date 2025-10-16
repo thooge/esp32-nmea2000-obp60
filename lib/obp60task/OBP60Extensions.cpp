@@ -24,6 +24,7 @@
 #include "fonts/Ubuntu_Bold20pt8b.h"
 #include "fonts/Ubuntu_Bold32pt8b.h"
 #include "fonts/Atari16px8b.h" // Key label font
+#include "fonts/IBM8x8px.h"
 
 // E-Ink Display
 #define GxEPD_WIDTH 400     // Display width

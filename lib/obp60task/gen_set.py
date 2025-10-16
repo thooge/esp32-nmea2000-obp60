@@ -20,7 +20,7 @@ import getopt
 import re
 import json
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 def detect_pages(filename):
     # returns a dictionary with page name and the number of gui fields
@@ -87,6 +87,11 @@ def create_json(device, no_of_pages, pagedata):
     output = []
 
     for page_no in range(1, no_of_pages + 1):
+
+        category = f"{device.upper()} Page {page_no}"
+        capabilities = {device.lower(): "true"}
+        visiblepages = [str(vp) for vp in range(page_no, no_of_pages + 1)]
+
         page_data = {
             "name": f"page{page_no}type",
             "label": "Type",
@@ -94,9 +99,11 @@ def create_json(device, no_of_pages, pagedata):
             "default": get_default_page(page_no),
             "description": f"Type of page for page {page_no}",
             "list": pages,
-            "category": f"{device.upper()} Page {page_no}",
+            "category": category,
             "capabilities": {device.lower(): "true"},
-            "condition": [{"visiblePages": vp} for vp in range(page_no, no_of_pages + 1)],
+            "condition": {
+                "visiblePages": visiblepages
+            },
             #"fields": [],
         }
         output.append(page_data)
@@ -108,38 +115,58 @@ def create_json(device, no_of_pages, pagedata):
                 "type": "boatData",
                 "default": "",
                 "description": "The display for field {}".format(number_to_text(field_no)),
-                "category": f"{device.upper()} Page {page_no}",
-                "capabilities": {device.lower(): "true"},
-                "condition": [
-                    {f"page{page_no}type": page}
-                    for page in pages
-                    if pagedata[page] >= field_no
-                ],
+                "category": category,
+                "capabilities": capabilities,
+                "condition": { 
+                    f"page{page_no}type": [ p for p in pages if pagedata[p] >= field_no ]
+                    ,"visiblePages": visiblepages
+                }
             }
             output.append(field_data)
 
-        fluid_data ={
+        fluid_data = {
             "name": f"page{page_no}fluid",
             "label": "Fluid type",
             "type": "list",
             "default": "0",
             "list": [
-            {"l":"Fuel (0)","v":"0"},
-            {"l":"Water (1)","v":"1"},
-            {"l":"Gray Water (2)","v":"2"},
-            {"l":"Live Well (3)","v":"3"},
-            {"l":"Oil (4)","v":"4"},
-            {"l":"Black Water (5)","v":"5"},
-            {"l":"Fuel Gasoline (6)","v":"6"}
+                {"l":"Fuel (0)","v":"0"},
+                {"l":"Water (1)","v":"1"},
+                {"l":"Gray Water (2)","v":"2"},
+                {"l":"Live Well (3)","v":"3"},
+                {"l":"Oil (4)","v":"4"},
+                {"l":"Black Water (5)","v":"5"},
+                {"l":"Fuel Gasoline (6)","v":"6"}
             ],
             "description": "Fluid type in tank",
-            "category": f"{device.upper()} Page {page_no}",
-            "capabilities": {
-                device.lower(): "true"
-            },
-            "condition":[{f"page{page_no}type":"Fluid"}]
+            "category": category,
+            "capabilities": capabilities,
+            "condition": {
+                f"page{page_no}type": "Fluid",
+                "visiblePages": visiblepages
             }
+        }
         output.append(fluid_data)
+
+        if device.upper() == 'OBP40':
+            windsource = {
+                "name": f"page{page_no}wndsrc",
+                "label": "Wind source",
+                "type": "list",
+                "default": "True wind",
+                "description": f"Wind source for page {page_no}: [true|apparent]",
+                "list": [
+                    "True wind",
+                    "Apparant wind"
+                ],
+                "category": category,
+                "capabilities": capabilities,
+                "condition": {
+                    f"page{page_no}type": "WindPlot",
+                    "visiblePages": visiblepages
+                }
+            }
+            output.append(windsource)
 
     return json.dumps(output, indent=4)
 

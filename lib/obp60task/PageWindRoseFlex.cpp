@@ -58,6 +58,11 @@ public:
         static String unit5old = "";
         static String svalue6old = "";
         static String unit6old = "";
+        static GFXfont name3font;
+        static GFXfont name4font;
+        static GFXfont name5font;
+        static GFXfont name6font;
+
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
@@ -114,6 +119,12 @@ public:
         GwApi::BoatValue *bvalue3 = pageData.values[0]; 
         String name3 = xdrDelete(bvalue3->getName());   // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
+        if (name3.length()>3){
+            name3font=Ubuntu_Bold8pt8b;
+        }
+        else{
+            name3font=Ubuntu_Bold12pt8b;
+        }
         calibrationData.calibrateInstance(bvalue3, logger); // Check if boat data value is to be calibrated
         double value3 = bvalue3->value;                 // Value as double in SI unit
         bool valid3 = bvalue3->valid;                   // Valid information 
@@ -128,6 +139,12 @@ public:
         GwApi::BoatValue *bvalue4 = pageData.values[1]; 
         String name4 = xdrDelete(bvalue4->getName());      // Value name
         name4 = name4.substring(0, 6);                  // String length limit for value name
+        if (name4.length()>3){
+            name4font=Ubuntu_Bold8pt8b;
+        }
+        else{
+            name4font=Ubuntu_Bold12pt8b;
+        }
         calibrationData.calibrateInstance(bvalue4, logger); // Check if boat data value is to be calibrated
         double value4 = bvalue4->value;                 // Value as double in SI unit
         bool valid4 = bvalue4->valid;                   // Valid information 
@@ -142,6 +159,12 @@ public:
         GwApi::BoatValue *bvalue5 = pageData.values[2]; 
         String name5 = xdrDelete(bvalue5->getName());      // Value name
         name5 = name5.substring(0, 6);                  // String length limit for value name
+        if (name5.length()>3){
+            name5font=Ubuntu_Bold8pt8b;
+        }
+        else{
+            name5font=Ubuntu_Bold12pt8b;
+        }
         calibrationData.calibrateInstance(bvalue5, logger); // Check if boat data value is to be calibrated
         double value5 = bvalue5->value;                 // Value as double in SI unit
         bool valid5 = bvalue5->valid;                   // Valid information 
@@ -152,10 +175,16 @@ public:
             unit5old = unit5;                           // Save old unit
         }
 
-        // Get boat value for center
+        // Get boat value for center (name is not displayed)
         GwApi::BoatValue *bvalue6 = pageData.values[3]; 
         String name6 = xdrDelete(bvalue6->getName());      // Value name
         name6 = name6.substring(0, 6);                  // String length limit for value name
+        if (name6.length()>3){
+            name6font=Ubuntu_Bold8pt8b;
+        }
+        else{
+            name6font=Ubuntu_Bold8pt8b;
+        }
         calibrationData.calibrateInstance(bvalue6, logger); // Check if boat data value is to be calibrated
         double value6 = bvalue6->value;                 // Value as double in SI unit
         bool valid6 = bvalue6->valid;                   // Valid information 
@@ -209,7 +238,7 @@ public:
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
         getdisplay().setCursor(10, 270);
         getdisplay().print(svalue3);                     // Value
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
+        getdisplay().setFont(&name3font);
         getdisplay().setCursor(10, 220);
         getdisplay().print(name3);                       // Name
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
@@ -224,18 +253,13 @@ public:
 
         // Show value 4 (=second user-configured parameter) at top right
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
-        getdisplay().setCursor(295, 65);
-        if(valid3 == true){
-            getdisplay().print(svalue4);     // Value
-        }
-        else{
-            getdisplay().print("---");                   // Value
-        }
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(335, 95);
+        getdisplay().setCursor(295, 65); 
+        getdisplay().print(svalue4);     // Value
+        getdisplay().setFont(&name4font);
+        getdisplay().setCursor(325, 95);
         getdisplay().print(name4);                       // Name
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(335, 115);
+        getdisplay().setCursor(325, 115);
         getdisplay().print(" ");
         if(holdvalues == false){
             getdisplay().print(unit4);                   // Unit
@@ -251,11 +275,11 @@ public:
         getdisplay().setFont(&DSEG7Classic_BoldItalic20pt7b);
         getdisplay().setCursor(295, 270);
         getdisplay().print(svalue5);                     // Value
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(335, 220);
+        getdisplay().setFont(&name5font);
+        getdisplay().setCursor(325, 220);
         getdisplay().print(name5);                       // Name
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(335, 190);
+        getdisplay().setCursor(325, 190);
         getdisplay().print(" ");
         if(holdvalues == false){
             getdisplay().print(unit5);                   // Unit
