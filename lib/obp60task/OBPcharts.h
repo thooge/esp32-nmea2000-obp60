@@ -1,103 +1,62 @@
 // Function lib for display of boat data in various chart formats
 #pragma once
-#include "OBP60Extensions.h"
+#include <stdint.h>
+#include <Arduino.h>
 #include "Pagedata.h"
-// #include "OBPDataOperations.h"
-// #include "OBPRingBuffer.h"
 
-struct Point {
+struct Pos {
     int x;
     int y;
 };
+template <typename T> class RingBuffer;
+class GwLog;
 
+template <typename T>
 class Chart {
 protected:
-    RingBuffer<uint16_t>* dataBuf; // Buffer to display
-    GwApi::BoatValue* bValue; // Present value to display additionally to chart
-    int8_t chrtDir; // Chart direction: [0] = vertical, [1] = horizontal
-    int8_t chrtSze; // Chart size: [0] = full size, [1] = half size left/top, [2] half size right/bottom
-    int8_t chrtIntv; // Chart time interval: [4] 4 min., [8] 8 min., [12] 12 min., [16] 16 min., [32] 32 min.
+    CommonData *commonData;
+    GwLog *logger;
+
+    RingBuffer<T> &dataBuf; // Buffer to display
+    int8_t chrtDir; // Chart timeline direction: [0] = horizontal, [1] = vertical
+    int8_t chrtSz; // Chart size: [0] = full size, [1] = half size left/top, [2] half size right/bottom
     int dfltRng; // Default range of chart, e.g. 30 = [0..30]
+    uint16_t fgColor; // color code for any screen writing
+    uint16_t bgColor; // color code for screen background
+    bool useSimuData; // flag to indicate if simulation data is active
 
     int top = 48; // display top header lines
     int bottom = 22; // display bottom lines
-    int gap = 4; // gap between 2 charts; actual gap is 2x <gap>
-    int cWidth;
-    int cHeight;
-    Point cStart; // start point for chart area
-    int cLines; // number of chart lines
-    int xCenter; // x center point of chart
+    int gap = 20; // gap between 2 charts; actual gap is 2x <gap>
+    int xOffset = 33; // offset for horizontal axis (time/value), because of space for left vertical axis labeling
+    int yOffset = 10; // offset for vertical axis (time/value), because of space for top horizontal axis labeling
+    int dWidth; // Display width
+    int dHeight; // Display height
+    int timAxis, valAxis; // size of time and value chart axis
+    Pos cStart; // start point of chart area
+    int chrtRng; // Range of buffer values from min to max value
 
-    String dbName, dbFormat;
-    int16_t dbMAX_VAL;
-    size_t bufSize;
-    GwApi::BoatValue* bValue;
+    String dbName, dbFormat; // Name and format of data buffer
+    int16_t dbMAX_VAL; // Highest possible value of buffer of type <T> -> indicates invalid value in buffer
+    size_t bufSize; // History buffer size: 1.920 values for 32 min. history chart
+    int intvBufSize; // Buffer size used for currently selected time interval
+    int count; // current size of buffer
+    int numBufVals; // number of wind values available for current interval selection
+    int bufStart; // 1st data value in buffer to show
+    int numAddedBufVals; // Number of values added to buffer since last display
+    size_t currIdx; // Current index in TWD history buffer
+    size_t lastIdx; // Last index of TWD history buffer
+    size_t lastAddedIdx = 0; // Last index of TWD history buffer when new data was added
+    int oldChrtIntv = 0; // remember recent user selection of data interval
+
+    void calcChrtRng();
+    void drawChrtValAxis();
 
 public:
-    Chart(RingBuffer<uint16_t>* dataBuf, GwApi::BoatValue* bValue, int8_t chrtDir, int8_t chrtSz, int8_t chrtIntv, int dfltRng, GwLog* logger)
-        : dataBuf(dataBuf)
-        , bValue(bValue)
-        , chrtDir(chrtDir)
-        , chrtSze(chrtSze)
-        , chrtIntv(chrtIntv)
-        , dfltRng(dfltRng)
-    {
-        cWidth = getdisplay().width();
-        cHeight = getdisplay().height();
-        cHeight = cHeight - top - bottom;
-        if (chrtDir == 0) {
-            // vertical chart
-            switch (chrtSze) {
-            case 0:
-                // default is already set
-                break;
-            case 1:
-                cWidth = cWidth;
-                cHeight = cHeight / 2 - gap;
-                cStart = { 30, cHeight + top };
-                break;
-            case 2:
-                cWidth = cWidth;
-                cHeight = cHeight / 2 - gap;
-                cStart = { cWidth + gap, top };
-                break;
-            default:
-                LOG_DEBUG(GwLog::DEBUG, "displayChart: wrong parameter");
-                return;
-            }
-        } else if (chrtDir == 1) {
-            // horizontal chart
-            switch (chrtSze) {
-            case 0:
-                cStart = { 0, cHeight - bottom };
-                break;
-            case 1:
-                cWidth = cWidth / 2 - gap;
-                cHeight = cHeight;
-                cStart = { 0, cHeight - bottom };
-                break;
-            case 2:
-                cWidth = cWidth / 2 - gap;
-                cHeight = cHeight;
-                cStart = { cWidth + gap, cHeight - bottom };
-                break;
-            default:
-                LOG_DEBUG(GwLog::DEBUG, "displayChart: wrong parameter");
-                return;
-            }
-        } else {
-            LOG_DEBUG(GwLog::DEBUG, "displayChart: wrong parameter");
-            return;
-        }
-        xCenter = cWidth / 2;
-        cLines = cHeight - 22;
+    Chart(RingBuffer<T>& dataBuf, int8_t chrtDir, int8_t chrtSz, int dfltRng, CommonData& common, bool useSimuData);
+    ~Chart();
+    void drawChrtTimeAxis(int8_t chrtIntv);
+    void drawChrt(int8_t chrtIntv, GwApi::BoatValue currValue);
+    void prntCurrValue(GwApi::BoatValue* currValue, Pos chrtPos);
 
-        dataBuf->getMetaData(dbName, dbFormat);
-        dbMAX_VAL = dataBuf->getMaxVal();
-        bufSize = dataBuf->getCapacity();
-        bValue->setFormat(dataBuf->getFormat());
-    };
-    void drawChrtHdr();
-    void drawChrtGrd(const int chrtRng);
-    bool drawChrt(int8_t chrtIntv, int dfltRng);
 };
