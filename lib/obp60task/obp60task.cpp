@@ -264,6 +264,8 @@ void registerAllPages(PageList &list){
     list.add(&registerPageDigitalOut);
     extern PageDescription registerPageAutopilot;
     list.add(&registerPageAutopilot);
+    extern PageDescription registerPageAnchor;
+    list.add(&registerPageAnchor);
 }
 
 // Undervoltage detection for shutdown display
