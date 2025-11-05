@@ -68,7 +68,7 @@ private:
     uint8_t alarm_range;
 
     uint8_t chain_length;
-    uint8_t chain;
+    uint8_t chain = 0;
 
     bool anchor_set = false;
     double anchor_lat;
@@ -100,7 +100,22 @@ private:
         commonData->logger->logDebug(GwLog::DEBUG, "Drawing at PageAnchor; DBS=%f, HDT=%f, AWS=%f", bv_dbs->value, bv_hdt->value, bv_aws->value);
 
         // Draw canvas with background map
+        // rhumb(map_lat, map_lon, bv_lat->value, bv_lon->value)
+        int posdiff = 0;
         if (map_valid) {
+            if (bv_lat->valid and bv_lon->valid) {
+                // calculate movement since last map refresh
+                posdiff = rhumb(map_lat, map_lon, bv_lat->value, bv_lon->value);
+                if (posdiff > 25) {
+                    map_lat = bv_lat->value;
+                    map_lon = bv_lon->value;
+                    getBackgroundMap(map_lat, map_lon, zoom);
+                    if (map_valid) {
+                        // prepare visible space for anchor-symbol or boat
+                        canvas->fillCircle(132, 130, 12, commonData->fgcolor);
+                    }
+                }
+            }
             getdisplay().drawBitmap(68, 20, canvas->getBuffer(), map_width, map_height, commonData->fgcolor);
         }
 
@@ -123,9 +138,16 @@ private:
         //rotatePoints und dann Linien zeichnen
         // TODO rotate boat according to current heading
         if (bv_hdt->valid) {
+            if (map_valid) {
+                Point b1 = rotatePoint(c, {b.x, b.y - 8}, RadToDeg(bv_hdt->value));
+                getdisplay().fillCircle(b1.x, b1.y, 10, commonData->bgcolor);
+            }
             drawPoly(rotatePoints(c, pts_boat, RadToDeg(bv_hdt->value)), commonData->fgcolor);
         } else {
             // no heading available draw north oriented
+            if (map_valid) {
+                getdisplay().fillCircle(b.x, b.y - 8, 10, commonData->bgcolor);
+            }
             drawPoly(pts_boat, commonData->fgcolor);
         }
 
@@ -161,9 +183,9 @@ private:
         // Corner values
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(8, 54);
-        getdisplay().print("Ready");         // Anchor state
+        getdisplay().print(anchor_set ? "Dropped" : "Ready"); // Anchor state
         getdisplay().setCursor(8, 72);
-        getdisplay().print("Alarm: ");       // Alarm state
+        getdisplay().print("Alarm: "); // Alarm state
         getdisplay().print(alarm_enabled ? "on" : "off");
 
         getdisplay().setCursor(8, 120);
@@ -175,7 +197,7 @@ private:
         getdisplay().print("diff");
         getdisplay().setCursor(8, 176);
         if (map_valid and bv_lat->valid and bv_lon->valid) {
-            getdisplay().print(String(rhumb(map_lat, map_lon, bv_lat->value, bv_lon->value)));
+            getdisplay().print(String(posdiff));
         } else {
             getdisplay().print("n/a");
         }
@@ -216,7 +238,7 @@ private:
         getdisplay().drawLine(c.x + r - 4, c.y, c.x + r - 10, c.y - 4, commonData->fgcolor);
         getdisplay().drawLine(c.x + r - 4, c.y, c.x + r - 10, c.y + 4, commonData->fgcolor);
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        drawTextCenter(c.x + r / 2, c.y + 8, String(scale) + "m");
+        drawTextCenter(c.x + r / 2, c.y + 8, String(scale, 0) + "m");
 
         // draw anchor symbol (as bitmap)
         getdisplay().drawXBitmap(c.x - anchor_width / 2, c.y - anchor_height / 2,
@@ -259,6 +281,7 @@ public:
 #endif
     }
 
+    // TODO OBP40 / OBP60 different handling
     int handleKey(int key) {
         if (key == 1) { // Switch between normal and config mode
             if (mode == 'N') {
@@ -266,8 +289,18 @@ public:
                 commonData->keydata[1].label = "EDIT";
             } else {
                 mode = 'N';
-                commonData->keydata[1].label = "ALARM";
+#ifdef BOARD_OBP40S3
+                commonData->keydata[1].label = anchor_set ? "RAISE": "DROP";
+#endif
+#ifdef BOARD_OBP60S3
+                commonData->keydata[4].label = anchor_set ? "RAISE": "DROP";
+#endif
             }
+            return 0;
+        }
+        if (key == 2) {
+            anchor_set = !anchor_set;
+            commonData->keydata[1].label = anchor_set ? "RAISE": "DROP";
             return 0;
         }
         // Code for keylock
@@ -301,9 +334,11 @@ public:
         HTTPClient http;
         String url = "http://" + server_name + "/" + tile_path;
         String parameter = "?lat=" + String(lat, 6) + "&lon=" + String(lon, 6)+ "&zoom=" + String(zoom)
-                         + "&w=" + String(map_width) + "&h=" + String(map_height);
+                         + "&width=" + String(map_width) + "&height=" + String(map_height);
         commonData->logger->logDebug(GwLog::LOG, "HTTP query: %s", String(url + parameter).c_str());
         http.begin(url + parameter);
+        // http.SetAcceptEncoding("gzip");
+        // TODO miniz.c from ROM
         int httpCode = http.GET();
         if (httpCode > 0) {
             if (httpCode == HTTP_CODE_OK) {
@@ -342,6 +377,7 @@ public:
         } else {
             commonData->logger->logDebug(GwLog::ERROR, "HTTP error #%d", httpCode);
         }
+        http.end();
         return valid;
     }
 
@@ -359,6 +395,11 @@ public:
         map_lat = bv_lat->value; // save for later comparison
         map_lon = bv_lon->value;
         map_valid = getBackgroundMap(map_lat, map_lon, zoom);
+
+        if (map_valid) {
+            // prepare visible space for anchor-symbol or boat
+            canvas->fillCircle(132, 130, 10, commonData->fgcolor);
+        }
     };
 
     int displayPage(PageData &pageData) {
