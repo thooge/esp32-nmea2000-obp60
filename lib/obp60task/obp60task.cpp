@@ -806,7 +806,7 @@ void OBP60Task(GwApi *api){
                 if (calcTrueWnds) {
                     trueWind.addTrueWind(api, &boatValues, logger);
                 }
-                // Handle history buffers for TWD, TWS for wind plot page and other usage
+                // Handle history buffers for certain boat data for windplot page and other usage
                  hstryBufList.handleHstryBuf(useSimuData);
 
                 // Clear display

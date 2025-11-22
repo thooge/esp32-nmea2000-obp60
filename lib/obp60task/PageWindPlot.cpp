@@ -184,22 +184,24 @@ public:
         GwConfigHandler* config = commonData->config;
         GwLog* logger = commonData->logger;
 
-        static RingBuffer<int16_t>* wdHstry; // Wind direction data buffer
+        static RingBuffer<uint16_t>* wdHstry; // Wind direction data buffer
         static RingBuffer<uint16_t>* wsHstry; // Wind speed data buffer
         static String wdName, wdFormat; // Wind direction name and format
         static String wsName, wsFormat; // Wind speed name and format
         static int16_t wdMAX_VAL; // Max. value of wd history buffer, indicating invalid values
-        static std::unique_ptr<Chart<uint16_t>> twsFlChart; // chart object for wind speed chart
-        static std::unique_ptr<Chart<int16_t>> twdHfChart; // chart object for wind direction chart
-        static std::unique_ptr<Chart<uint16_t>> twsHfChart; // chart object for wind speed chart
-        float wsValue; // Wind speed value in chart area
-        String wsUnit; // Wind speed unit in chart area
+        static std::unique_ptr<Chart<uint16_t>> twdFlChart; // chart object for wind direction chart, full size
+        static std::unique_ptr<Chart<uint16_t>> twsFlChart; // chart object for wind speed chart, full size
+        static std::unique_ptr<Chart<uint16_t>> twdHfChart; // chart object for wind direction chart, half size
+        static std::unique_ptr<Chart<uint16_t>> twsHfChart; // chart object for wind speed chart, half size
+//        float wsValue; // Wind speed value in chart area
+//        String wsUnit; // Wind speed unit in chart area
+        static GwApi::BoatValue* wdBVal = new GwApi::BoatValue("TWD"); // temp BoatValue for wind direction unit identification; required by OBP60Formater
         static GwApi::BoatValue* wsBVal = new GwApi::BoatValue("TWS"); // temp BoatValue for wind speed unit identification; required by OBP60Formater
 
-        // current boat data values; TWD/AWD only for validation test
-        const int numBoatData = 2;
-        GwApi::BoatValue* bvalue;
-        bool BDataValid[numBoatData];
+        // current boat data values
+        const int numBoatData = 4;
+        GwApi::BoatValue* bvalue[numBoatData];
+        // bool BDataValid[numBoatData];
 
         static bool isInitialized = false; // Flag to indicate that page is initialized
         static bool wndDataValid = false; // Flag to indicate if wind data is valid
@@ -224,7 +226,10 @@ public:
         static int wndCenter; // chart wind center value position
         static int wndLeft; // chart wind left value position
         static int wndRight; // chart wind right value position
-        static int chrtRng; // Range of wind values from mid wind value to min/max wind value in degrees
+        static int chrtRng; // Range of wind values from min to max wind value in degrees
+        double dfltRngWd; // default range for course chart from min to max value in degrees
+        double dfltRngWs; // defautl range for wind speed chart from min to max value in m/s
+
         int diffRng; // Difference between mid and current wind value
         static const int dfltRng = 60; // Default range for chart
         int midWndDir; // New value for wndCenter after chart start / shift
@@ -246,7 +251,7 @@ public:
             numNoData = 0;
             bufStart = 0;
             oldDataIntv = 0;
-            wsValue = 0;
+            // wsValue = 0;
             numAddedBufVals, currIdx, lastIdx = 0;
             wndCenter = INT_MAX;
             midWndDir = 0;
@@ -256,10 +261,10 @@ public:
             isInitialized = true; // Set flag to indicate that page is now initialized
         }
 
-        // read boat data values; TWD/AWS only for validation test
+        // read boat data values
         for (int i = 0; i < numBoatData; i++) {
-            bvalue = pageData.values[i];
-            BDataValid[i] = bvalue->valid;
+            bvalue[i] = pageData.values[i];
+            // BDataValid[i] = bvalue->valid;
         }
 
         // Optical warning by limit violation (unused)
@@ -280,13 +285,17 @@ public:
             wsHstry->getMetaData(wsName, wsFormat);
             wdMAX_VAL = wdHstry->getMaxVal();
             bufSize = wdHstry->getCapacity();
-            wsBVal->setFormat(wsHstry->getFormat());
+            wdBVal->setFormat(wdFormat);
+            wsBVal->setFormat(wsFormat);
             lastAddedIdx = wdHstry->getLastIdx();
 
-            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot twsChart: *wsHstry: %p", wsHstry);
-            twsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*wsHstry, 0, 0, 15, *commonData, useSimuData));
-            twdHfChart = std::unique_ptr<Chart<int16_t>>(new Chart<int16_t>(*wdHstry, 1, 1, 15, *commonData, useSimuData));
-            twsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*wsHstry, 1, 2, 15, *commonData, useSimuData));
+            dfltRngWd = 60.0 * DEG_TO_RAD; // default range for course chart: 60°
+            dfltRngWs = 7.5; // default range for wind speed chart: 7.5 m/s
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: *wdHstry: %p, *wsHstry: %p", wdHstry, wsHstry);
+            twdFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*wdHstry, 1, 0, dfltRngWd, *commonData, useSimuData));
+            twsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*wsHstry, 0, 0, dfltRngWs, *commonData, useSimuData));
+            twdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*wdHstry, 1, 1, dfltRngWd, *commonData, useSimuData));
+            twsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*wsHstry, 1, 2, dfltRngWs, *commonData, useSimuData));
 
             oldShowTruW = showTruW;
         }
@@ -295,7 +304,7 @@ public:
         getdisplay().setPartialWindow(0, 0, width, height); // Set partial update
         getdisplay().setTextColor(commonData->fgcolor);
 
-        if (chrtMode == 'D') {
+/*        if (chrtMode == 'D') {
             // Identify buffer size and buffer start position for chart
             count = wdHstry->getCurrentSize();
             currIdx = wdHstry->getLastIdx();
@@ -478,7 +487,7 @@ public:
                                 } else {
                                     getdisplay().printf("%4.1f", wsValue); // Value, round to 1 decimal
                                 }
-                            } */
+                            } */ /*
                 getdisplay().setFont(&Ubuntu_Bold12pt8b);
                 getdisplay().setCursor(xPosTws + 82, yPosTws - 14);
                 getdisplay().print(wsName); // Name
@@ -512,19 +521,30 @@ public:
                 }
                 getdisplay().printf("%3d", chrtLbl); // Wind value label
             }
+*/
+        if (chrtMode == 'D') {
+            wdBVal->value = wdHstry->getLast();
+            wdBVal->valid = wdBVal->value != wdHstry->getMaxVal();
+//            twdFlChart->showChrt(dataIntv, *wdBVal);
+            twdFlChart->showChrt(dataIntv, *bvalue[0]);
+
         } else if (chrtMode == 'S') {
-//            wsValue = wsHstry->getLast();
-            twsFlChart->drawChrtTimeAxis(dataIntv);
-            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot chart: wsBVal.name: %s, format: %s, wsBVal.value: %.1f, address: %p", wsBVal->getName(), wsBVal->getFormat(), wsBVal->value, wsBVal);
-            twsFlChart->drawChrt(dataIntv, *wsBVal);
+            wsBVal->value = wsHstry->getLast();
+            wsBVal->valid = wsBVal->value != wsHstry->getMaxVal();
+//            twsFlChart->showChrt(dataIntv, *wsBVal);
+            twsFlChart->showChrt(dataIntv, *bvalue[1]);
 
         } else if (chrtMode == 'B') {
-//            wsValue = wsHstry->getLast();
-            twdHfChart->drawChrtTimeAxis(dataIntv);
-            twsHfChart->drawChrtTimeAxis(dataIntv);
-            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot chart: wsBVal.name: %s, format: %s, wsBVal.value: %.1f, address: %p", wsBVal->getName(), wsBVal->getFormat(), wsBVal->value, wsBVal);
-            twdHfChart->drawChrt(dataIntv, *wsBVal);
-            twsHfChart->drawChrt(dataIntv, *wsBVal);
+            wdBVal->value = wdHstry->getLast();
+            wdBVal->valid = wdBVal->value != wdHstry->getMaxVal();
+            wsBVal->value = wsHstry->getLast();
+            wsBVal->valid = wsBVal->value != wsHstry->getMaxVal();
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot showChrt: wsBVal.name: %s, format: %s, wsBVal.value: %.1f, valid: %d, address: %p", wsBVal->getName(), wsBVal->getFormat(), wsBVal->value, 
+                                    wsBVal->valid, wsBVal);
+//            twdHfChart->showChrt(dataIntv, *wdBVal);
+//            twsHfChart->showChrt(dataIntv, *wsBVal);
+            twdHfChart->showChrt(dataIntv, *bvalue[0]);
+            twsHfChart->showChrt(dataIntv, *bvalue[1]);
         }
 
         LOG_DEBUG(GwLog::DEBUG, "PageWindPlot time: %ld", millis() - timer);
@@ -546,7 +566,7 @@ PageDescription registerPageWindPlot(
     "WindPlot", // Page name
     createPage, // Action
     0, // Number of bus values depends on selection in Web configuration
-    { "TWD", "AWD" }, // Bus values we need in the page
+    { "TWD", "TWS", "AWD", "AWS" }, // Bus values we need in the page
     true // Show display header on/off
 );
 

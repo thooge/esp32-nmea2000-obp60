@@ -1,15 +1,19 @@
 #include "OBPDataOperations.h"
+#include "BoatDataCalibration.h"        // Functions lib for data instance calibration
+#include <math.h>
 
 // --- Class HstryBuf ---------------
+
 // Init history buffers for selected boat data
 void HstryBuf::init(BoatValueList* boatValues, GwLog *log) {
 
     logger = log;
 
     int hstryUpdFreq = 1000; // Update frequency for history buffers in ms
-    int hstryMinVal = 0; // Minimum value for these history buffers
-    twdHstryMax = 6283; // Max value for wind direction (TWD, AWD) in rad [0...2*PI], shifted by 1000 for 3 decimals
-    twsHstryMax = 65000; // Max value for wind speed (TWS, AWS) in m/s [0..65], shifted by 1000 for 3 decimals
+    int mltplr = 1000; // Multiplier which transforms original <double> value into buffer type format
+    double hstryMinVal = 0; // Minimum value for these history buffers
+    twdHstryMax = 2 * M_PI; // Max value for wind direction (TWD, AWD) in rad [0...2*PI]
+    twsHstryMax = 65; // Max value for wind speed (TWS, AWS) in m/s [0..65] (limit due to type capacity of buffer - shifted by <mltplr>)
     awdHstryMax = twdHstryMax;
     awsHstryMax = twsHstryMax;
     twdHstryMin = hstryMinVal;
@@ -19,10 +23,12 @@ void HstryBuf::init(BoatValueList* boatValues, GwLog *log) {
     const double DBL_MAX = std::numeric_limits<double>::max();
 
     // Initialize history buffers with meta data
-    hstryBufList.twdHstry->setMetaData("TWD", "formatCourse", hstryUpdFreq, hstryMinVal, twdHstryMax);
-    hstryBufList.twsHstry->setMetaData("TWS", "formatKnots", hstryUpdFreq, hstryMinVal, twsHstryMax);
-    hstryBufList.awdHstry->setMetaData("AWD", "formatCourse", hstryUpdFreq, hstryMinVal, twdHstryMax);
-    hstryBufList.awsHstry->setMetaData("AWS", "formatKnots", hstryUpdFreq, hstryMinVal, twsHstryMax);
+    mltplr = 10000; // Store 4 decimals for course data
+    hstryBufList.twdHstry->setMetaData("TWD", "formatCourse", hstryUpdFreq, mltplr, hstryMinVal, twdHstryMax);
+    hstryBufList.awdHstry->setMetaData("AWD", "formatCourse", hstryUpdFreq, mltplr, hstryMinVal, twdHstryMax);
+    mltplr = 1000; // Store 3 decimals for windspeed data
+    hstryBufList.twsHstry->setMetaData("TWS", "formatKnots", hstryUpdFreq, mltplr, hstryMinVal, twsHstryMax);
+    hstryBufList.awsHstry->setMetaData("AWS", "formatKnots", hstryUpdFreq, mltplr, hstryMinVal, twsHstryMax);
 
     // create boat values for history data types, if they don't exist yet
     twdBVal = boatValues->findValueOrCreate(hstryBufList.twdHstry->getName());
@@ -49,30 +55,32 @@ void HstryBuf::init(BoatValueList* boatValues, GwLog *log) {
 //void HstryBuf::handleHstryBuf(GwApi* api, BoatValueList* boatValues, bool useSimuData) {
 void HstryBuf::handleHstryBuf(bool useSimuData) {
 
-    static int16_t twd = 20; //initial value only relevant if we use simulation data
-    static uint16_t tws = 20; //initial value only relevant if we use simulation data
-    static double awd, aws, hdt = 20; //initial value only relevant if we use simulation data
+    static double twd, tws, awd, aws, hdt = 20; //initial value only relevant if we use simulation data
     GwApi::BoatValue *calBVal; // temp variable just for data calibration -> we don't want to calibrate the original data here
 
     LOG_DEBUG(GwLog::DEBUG,"obp60task handleHstryBuf: TWD_isValid? %d, twdBVal: %.1f, twaBVal: %.1f, twsBVal: %.1f", twdBVal->valid, twdBVal->value * RAD_TO_DEG,
         twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852);
 
     if (twdBVal->valid) {
+//    if (!useSimuData) {
         calBVal = new GwApi::BoatValue("TWD"); // temporary solution for calibration of history buffer values
         calBVal->setFormat(twdBVal->getFormat());
         calBVal->value = twdBVal->value;
         calBVal->valid = twdBVal->valid;
         calibrationData.calibrateInstance(calBVal, logger); // Check if boat data value is to be calibrated
-        twd = static_cast<int16_t>(std::round(calBVal->value * 1000.0));
+        twd = calBVal->value;
         if (twd >= twdHstryMin && twd <= twdHstryMax) {
             hstryBufList.twdHstry->add(twd);
+            LOG_DEBUG(GwLog::DEBUG,"obp60task handleHstryBuf: calBVal.value %.2f, twd: %.2f, twdHstryMin: %.1f, twdHstryMax: %.2f", calBVal->value, twd, twdHstryMin, twdHstryMax);
         }
         delete calBVal;
         calBVal = nullptr;
     } else if (useSimuData) {
+//    } else {
         twd += random(-20, 20);
-        twd = WindUtils::to360(twd);
-        hstryBufList.twdHstry->add(static_cast<int16_t>(DegToRad(twd) * 1000.0));
+        twd += static_cast<double>(random(-349, 349) / 1000.0); // add up to +/- 20 degree in RAD
+        twd = WindUtils::to2PI(twd);
+        hstryBufList.twdHstry->add(twd);
     }
 
     if (twsBVal->valid) {
@@ -81,15 +89,16 @@ void HstryBuf::handleHstryBuf(bool useSimuData) {
         calBVal->value = twsBVal->value;
         calBVal->valid = twsBVal->valid;
         calibrationData.calibrateInstance(calBVal, logger); // Check if boat data value is to be calibrated
-        tws = static_cast<uint16_t>(std::round(calBVal->value * 1000));
+        tws = calBVal->value;
         if (tws >= twsHstryMin && tws <= twsHstryMax) {
             hstryBufList.twsHstry->add(tws);
         }
         delete calBVal;
         calBVal = nullptr;
     } else if (useSimuData) {
-        tws += random(-5000, 5000); // TWS value in m/s; expands to 3 decimals
-        tws = constrain(tws, 0, 25000); // Limit TWS to [0..25] m/s
+        // tws += random(-5000, 5000); // TWS value in m/s; expands to 3 decimals
+        tws += static_cast<double>(random(-5000, 5000) / 1000.0); // add up to +/- 5 m/s TWS speed
+        tws = constrain(tws, 0, 40); // Limit TWS to [0..40] m/s
         hstryBufList.twsHstry->add(tws);
     }
 
@@ -109,16 +118,16 @@ void HstryBuf::handleHstryBuf(bool useSimuData) {
         calibrationData.calibrateInstance(calBVal, logger); // Check if boat data value is to be calibrated
         awdBVal->value = calBVal->value;
         awdBVal->valid = true;
-        awd = std::round(calBVal->value * 1000.0);
+        awd = calBVal->value;
         if (awd >= awdHstryMin && awd <= awdHstryMax) {
-            hstryBufList.awdHstry->add(static_cast<int16_t>(awd));
+            hstryBufList.awdHstry->add(awd);
         }
         delete calBVal;
         calBVal = nullptr;
     } else if (useSimuData) {
-        awd += random(-20, 20);
-        awd = WindUtils::to360(awd);
-        hstryBufList.awdHstry->add(static_cast<int16_t>(DegToRad(awd) * 1000.0));
+        awd += static_cast<double>(random(-349, 349) / 1000.0); // add up to +/- 20 degree in RAD
+        awd = WindUtils::to2PI(awd);
+        hstryBufList.awdHstry->add(awd);
     }
     
     if (awsBVal->valid) {
@@ -127,26 +136,28 @@ void HstryBuf::handleHstryBuf(bool useSimuData) {
         calBVal->value = awsBVal->value;
         calBVal->valid = awsBVal->valid;
         calibrationData.calibrateInstance(calBVal, logger); // Check if boat data value is to be calibrated
-        aws = std::round(calBVal->value * 1000);
+        aws = calBVal->value;
         if (aws >= awsHstryMin && aws <= awsHstryMax) {
-            hstryBufList.awsHstry->add(static_cast<uint16_t>(aws));
+            hstryBufList.awsHstry->add(aws);
         }
         delete calBVal;
         calBVal = nullptr;
     } else if (useSimuData) {
-        aws += random(-5000, 5000); // TWS value in m/s; expands to 1 decimal
-        aws = constrain(aws, 0, 25000); // Limit TWS to [0..25] m/s
+        aws += static_cast<double>(random(-5000, 5000) / 1000.0); // add up to +/- 5 m/s TWS speed
+        aws = constrain(aws, 0, 40); // Limit TWS to [0..40] m/s
         hstryBufList.awsHstry->add(aws);
     }
+    LOG_DEBUG(GwLog::DEBUG,"obp60task handleHstryBuf-End: Buffer twdHstry: %.3f, twsHstry: %.3f, awdHstry: %.3f, awsHstry: %.3f", hstryBufList.twdHstry->getLast(), hstryBufList.twsHstry->getLast(),
+        hstryBufList.awdHstry->getLast(),hstryBufList.awsHstry->getLast());
 }
 // --- Class HstryBuf ---------------
 
 // --- Class WindUtils --------------
 double WindUtils::to2PI(double a)
 {
-    a = fmod(a, 2 * M_PI);
+    a = fmod(a, M_TWOPI);
     if (a < 0.0) {
-        a += 2 * M_PI;
+        a += M_TWOPI;
     }
     return a;
 }
@@ -162,18 +173,18 @@ double WindUtils::toPI(double a)
 
 double WindUtils::to360(double a)
 {
-    a = fmod(a, 360);
+    a = fmod(a, 360.0);
     if (a < 0.0) {
-        a += 360;
+        a += 360.0;
     }
     return a;
 }
 
 double WindUtils::to180(double a)
 {
-    a += 180;
+    a += 180.0;
     a = to360(a);
-    a -= 180;
+    a -= 180.0;
 
     return a;
 }
@@ -263,7 +274,7 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
         // If STW and SOG are not available, we cannot calculate true wind
         return false;
     }
-    // Serial.println("\ncalcTrueWind: HDT: " + String(hdt) + ", CTW: " + String(ctw) + ", STW: " + String(stw));
+//    Serial.println("\ncalcTrueWind: HDT: " + String(hdt) + ", CTW: " + String(ctw) + ", STW: " + String(stw));
 
     if ((*awaVal == DBL_MAX) || (*awsVal == DBL_MAX)) {
         // Cannot calculate true wind without valid AWA, AWS; other checks are done earlier
