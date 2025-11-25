@@ -2,6 +2,16 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+#include "NetworkClient.h"      // Network connection
+#include "ImageDecoder.h"       // Image decoder for navigation map
+
+#include "Logo_OBP_400x300_sw.h"
+
+// Limits
+#define JSON_BUFFER 30000   // Max buffer size for JSON content (30 kB picture + values)
+
+NetworkClient net(JSON_BUFFER);
+ImageDecoder decoder;
 
 class PageNavigation : public Page
 {
@@ -87,35 +97,80 @@ public:
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
         LOG_DEBUG(GwLog::LOG,"Drawing at PageNavigation, %s: %f, %s: %f, %s: %f, %s: %f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, name4.c_str(), value4);
 
+        // Load navigation map
+        //***********************************************************
+        // Rotate the picture in 1° steps
+        int angle = 25;
+
+        // Server settings 
+        String server = "norbert-walter.dnshome.de";
+        int port = 80;
+
+        // URL to OBP Maps Converter
+        // For more details see: https://github.com/norbert-walter/maps-converter
+        String url = String("http://") + server + ":" + port +  // OBP Server
+                    String("/get_image_json?") +               // Service: Output B&W picture as JSON (Base64 + gzip)
+                    "zoom=15" +        // Zoom level: 15
+                    "&lat=53.9028" +   // Latitude
+                    "&lon=11.4441" +   // Longitude
+                    "&mrot=" + angle + // Rotation angle navigation map
+                    "&mtype=9" +       // Free Nautical Charts with depth
+                    "&dtype=1" +       // Dithering type: Threshold dithering
+                    "&width=400" +     // With navigation map
+                    "&height=250" +    // Height navigation map
+                    "&cutout=0" +      // No picture cutouts
+                    "&tab=0" +         // No tab size
+                    "&border=2" +      // Border line size: 2 pixel
+                    "&symbol=2" +      // Symbol: Triangle
+                    "&srot=" + angle + // Symbol rotation angle
+                    "&ssize=15" +      // Symbole size: 15 pixel
+                    "&grid=1"          // Show grid: On
+                    ;         
+        
+        // Set display in partial refresh mode
+        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        getdisplay().setTextColor(commonData->fgcolor);
+
+        // If a network connection to URL
+        if (net.fetchAndDecompressJson(url)) {        // Connect to URL, read gzip answare and deflate JSON content  
+
+            auto& json = net.json();                  // Parse JSON content
+            int numPix = json["number_pixels"] | 0;   // Read number of picture pixels
+            String b64 = json["picture_base64"] | ""; // Read the Base64 bit steram content (picture)
+            static uint8_t imageData[400 * 300];      // Set picture buffer
+            size_t decodedSize = 0;                   // Reset decoded size of Basse64 bit stream content
+/*
+            decoder.decodeBase64(b64, imageData, sizeof(imageData), decodedSize); // Decode Base64 bit stream content
+            getdisplay().drawBitmap(0, 25, imageData, getdisplay().width(), getdisplay().height(), GxEPD_BLACK); // Show picture with Y offset 25 pixel
+*/
+            getdisplay().drawBitmap(0, 0, gImage_Logo_OBP_400x300_sw, getdisplay().width(), getdisplay().height(), GxEPD_BLACK); // Show picture with Y offset 25 pixel
+        }      
+        
         // Draw page
         //***********************************************************
 
-        // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
-
-        getdisplay().setTextColor(commonData->fgcolor);
 
         // ############### Draw Navigation Map ################
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
 
         getdisplay().setCursor(20, 60);
         getdisplay().print(name1);
-        getdisplay().setCursor(120, 60);
+        getdisplay().setCursor(80, 60);
         getdisplay().print(svalue1);
 
         getdisplay().setCursor(20, 80);
         getdisplay().print(name2);
-        getdisplay().setCursor(120, 80);
+        getdisplay().setCursor(80, 80);
         getdisplay().print(svalue2);
 
         getdisplay().setCursor(20, 100);
         getdisplay().print(name3);
-        getdisplay().setCursor(120, 100);
+        getdisplay().setCursor(80, 100);
         getdisplay().print(svalue3);
 
         getdisplay().setCursor(20, 120);
         getdisplay().print(name4);
-        getdisplay().setCursor(120, 120);
+        getdisplay().setCursor(80, 120);
         getdisplay().print(svalue4);
 
         return PAGE_UPDATE;
