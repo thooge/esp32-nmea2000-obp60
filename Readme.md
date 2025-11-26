@@ -174,6 +174,10 @@ For details refer to the [example description](lib/exampletask/Readme.md).
 
 Changelog
 ---------
+[20251126](../../releases/tag/20251126)
+* fix a bug in the Actisense reader that could lead to an endless loop (making the device completely non responsive)
+* upgrade to 4.24.1 of the NMEA2000 library (2025/11/01) - refer to the [changes](https://github.com/ttlappalainen/NMEA2000/blob/master/Documents/src/changes.md) - Especially UTF8 support
+*********
 [20251007](../../releases/tag/20251007)
 *********
 * add AIS Aton translations (PGN 129041 <-> Ais class 21)
