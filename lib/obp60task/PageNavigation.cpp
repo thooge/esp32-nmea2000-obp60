@@ -14,6 +14,10 @@ ImageDecoder decoder;           // Define image decoder
 
 class PageNavigation : public Page
 {
+// Values for buttons
+int zoom = 15;           // Zoom level 1...17
+bool showValues = false; // Show values COG, SOG, DBT in navigation map
+
 public:
     PageNavigation(CommonData &common){
         commonData = &common;
@@ -26,6 +30,26 @@ public:
             commonData->keylock = !commonData->keylock;
             return 0;                   // Commit the key
         }
+        // Cood for zoom -
+        if(key == 1){
+            zoom --;                    // Zoom -
+            if(zoom <7){
+                zoom = 7;
+            }
+            return 0;                   // Commit the key
+        }
+        // Cood for zoom -
+        if(key == 2){
+            zoom ++;                    // Zoom +
+            if(zoom >17){
+                zoom = 17;
+            }
+            return 0;                   // Commit the key
+        }
+        if(key == 5){
+            showValues = !showValues;   // Toggle show values
+            return 0;                   // Commit the key
+        }
         return key;
     }
 
@@ -34,14 +58,27 @@ public:
         GwLog *logger = commonData->logger;
 
         // Old values for hold function
+        static double value1old = 0;
         static String svalue1old = "";
         static String unit1old = "";
+        static double value2old = 0;
         static String svalue2old = "";
         static String unit2old = "";
+        static double value3old = 0;
         static String svalue3old = "";
         static String unit3old = "";
+        static double value4old = 0;
         static String svalue4old = "";
         static String unit4old = "";
+        static double value5old = 0;
+        static String svalue5old = "";
+        static String unit5old = "";
+
+        static double latitude = 0;
+        static double longitude = 0;
+        static double courseOverGround = 0;
+        static double speedOverGround = 0;
+        static double depthBelowTransducer = 0;
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
@@ -50,7 +87,7 @@ public:
         String flashLED = config->getString(config->flashLED);
         String backlightMode = config->getString(config->backlight);
         
-        // Get boat values #1
+        // Get boat values #1 Latitude
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
         String name1 = xdrDelete(bvalue1->getName());   // Value name
         name1 = name1.substring(0, 6);                  // String length limit for value name
@@ -59,7 +96,7 @@ public:
         String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
 
-        // Get boat values #2
+        // Get boat values #2 Longitude
         GwApi::BoatValue *bvalue2 = pageData.values[1]; // Second element in list (only one value by PageOneValue)
         String name2 = xdrDelete(bvalue2->getName());   // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
@@ -68,7 +105,7 @@ public:
         String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
 
-        // Get boat values #3
+        // Get boat values #3 COG
         GwApi::BoatValue *bvalue3 = pageData.values[2]; // Second element in list (only one value by PageOneValue)
         String name3 = xdrDelete(bvalue3->getName());   // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
@@ -77,7 +114,7 @@ public:
         String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit3 = formatValue(bvalue3, *commonData).unit;        // Unit of value
 
-        // Get boat values #4
+        // Get boat values #4 SOG
         GwApi::BoatValue *bvalue4 = pageData.values[3]; // Second element in list (only one value by PageOneValue)
         String name4 = xdrDelete(bvalue4->getName());   // Value name
         name4 = name4.substring(0, 6);                  // String length limit for value name
@@ -85,6 +122,15 @@ public:
         bool valid4 = bvalue4->valid;                   // Valid information 
         String svalue4 = formatValue(bvalue4, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit4 = formatValue(bvalue4, *commonData).unit;        // Unit of value
+
+        // Get boat values #5 DBT
+        GwApi::BoatValue *bvalue5 = pageData.values[4]; // Second element in list (only one value by PageOneValue)
+        String name5 = xdrDelete(bvalue5->getName());   // Value name
+        name5 = name5.substring(0, 6);                  // String length limit for value name
+        double value5 = bvalue5->value;                 // Value as double in SI unit
+        bool valid5 = bvalue5->valid;                   // Valid information 
+        String svalue5 = formatValue(bvalue5, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit5 = formatValue(bvalue5, *commonData).unit;        // Unit of value
 
         // Optical warning by limit violation (unused)
         if(String(flashLED) == "Limit Violation"){
@@ -98,8 +144,46 @@ public:
 
         // Load navigation map
         //***********************************************************
-        // Rotate the picture in 1° steps
-        int angle = 25;
+        // Latitude
+        if(valid1){
+            latitude = value1;
+            value3old = value1;
+        }
+        else{
+            latitude = value1old;
+        }
+        // Longitude
+        if(valid2){
+            longitude = value2;
+            value2old = value2;
+        }
+        else{
+            longitude = value2old;
+        }
+        // COG value (Course Over Ground)
+        if(valid3){
+            courseOverGround = value3;
+            value3old = value3;
+        }
+        else{
+            courseOverGround = value3old;
+        }
+        // SOG value (Speed Over Ground)
+        if(valid4){
+            speedOverGround = value4;
+            value4old = value4;
+        }
+        else{
+            speedOverGround = value4old;
+        }
+        // DBT value (Depth Below Transducer)
+        if(valid5){
+            depthBelowTransducer = value5;
+            value5old = value5;
+        }
+        else{
+            depthBelowTransducer = value5old;
+        }
 
         // Server settings 
         String server = "norbert-walter.dnshome.de";
@@ -109,28 +193,33 @@ public:
         // For more details see: https://github.com/norbert-walter/maps-converter
         String url = String("http://") + server + ":" + port +  // OBP Server
                     String("/get_image_json?") +               // Service: Output B&W picture as JSON (Base64 + gzip)
-                    "zoom=15" +        // Zoom level: 15
-                    "&lat=53.9028" +   // Latitude
-                    "&lon=11.4441" +   // Longitude
-                    "&mrot=" + angle + // Rotation angle navigation map
-                    "&mtype=9" +       // Free Nautical Charts with depth
-                    "&dtype=1" +       // Dithering type: Threshold dithering
+                    "zoom=" + zoom +       // Zoom level: 15
+                    "&lat=" + latitude +   // Latitude
+                    "&lon=" + longitude +  // Longitude
+                    "&mrot=" + int(courseOverGround) + // Rotation angle navigation map
+                    "&mtype=5" +       // Open Topo Map
+                    "&dtype=4" +       // Dithering type: Atkinson dithering
                     "&width=400" +     // With navigation map
                     "&height=250" +    // Height navigation map
                     "&cutout=0" +      // No picture cutouts
                     "&tab=0" +         // No tab size
                     "&border=2" +      // Border line size: 2 pixel
                     "&symbol=2" +      // Symbol: Triangle
-                    "&srot=" + angle + // Symbol rotation angle
+                    "&srot=" + int(courseOverGround) + // Symbol rotation angle
                     "&ssize=15" +      // Symbole size: 15 pixel
-                    "&grid=1"          // Show grid: On
+                    "&grid=0"          // Show grid: On
                     ;         
+        
+        // Draw page
+        //***********************************************************
+
+        // ############### Draw Navigation Map ################
         
         // Set display in partial refresh mode
         getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
         getdisplay().setTextColor(commonData->fgcolor);
 
-        // If a network connection to URL
+        // If a network connection to URL then load the navigation map
         if (net.fetchAndDecompressJson(url)) {
 
             auto& json = net.json();                // Extract JSON content
@@ -143,7 +232,7 @@ public:
             // Copy Base64 content in PSRAM
             char* b64 = (char*) heap_caps_malloc(b64len + 1, MALLOC_CAP_SPIRAM);    // Allcate PSRAM for Base64 content
             if (!b64) {
-                Serial.println("ERROR: PSRAM alloc base64 failed");
+                LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: PSRAM alloc base64 failed");
                 return PAGE_UPDATE;
             }
             memcpy(b64, b64src, b64len + 1);    // Copy Base64 content in PSRAM
@@ -153,7 +242,7 @@ public:
             size_t imgSize = numPix;    // Calculate image size
             uint8_t* imageData = (uint8_t*) heap_caps_malloc(imgSize, MALLOC_CAP_SPIRAM);   // Allocate PSRAM for image
             if (!imageData) {
-                Serial.println("ERROR: PSRAM alloc image buffer failed");
+                LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: PPSRAM alloc image buffer failed");
                 free(b64);
                 return PAGE_UPDATE;
             }
@@ -169,34 +258,42 @@ public:
             free(b64);
             free(imageData);
         }
-  
-        
-        // Draw page
-        //***********************************************************
 
 
-        // ############### Draw Navigation Map ################
+        // ############### Draw Values ################
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
 
-        getdisplay().setCursor(20, 60);
-        getdisplay().print(name1);
-        getdisplay().setCursor(80, 60);
-        getdisplay().print(svalue1);
+        // Show zoom level
+        getdisplay().fillRect(355, 25 , 45, 25, commonData->fgcolor);   // Black rect
+        getdisplay().fillRect(357, 27 , 41, 21, commonData->bgcolor);   // White rect
+        getdisplay().setCursor(364, 45);
+        getdisplay().print(zoom);
 
-        getdisplay().setCursor(20, 80);
-        getdisplay().print(name2);
-        getdisplay().setCursor(80, 80);
-        getdisplay().print(svalue2);
+        if(showValues == true){
+            // Frame
+            getdisplay().fillRect(0, 25 , 130, 70, commonData->fgcolor);   // Black rect
+            getdisplay().fillRect(2, 27 , 126, 66, commonData->bgcolor);   // White rect
+            // COG
+            getdisplay().setCursor(10, 45);
+            getdisplay().print(name3);
+            getdisplay().setCursor(70, 45);
+            getdisplay().print(svalue3);
+            // SOG
+            getdisplay().setCursor(10, 65);
+            getdisplay().print(name4);
+            getdisplay().setCursor(70, 65);
+            getdisplay().print(svalue4);
+            // DBT
+            getdisplay().setCursor(10, 85);
+            getdisplay().print(name5);
+            getdisplay().setCursor(70, 85);
+            getdisplay().print(svalue5);
+        }
 
-        getdisplay().setCursor(20, 100);
-        getdisplay().print(name3);
-        getdisplay().setCursor(80, 100);
-        getdisplay().print(svalue3);
-
-        getdisplay().setCursor(20, 120);
-        getdisplay().print(name4);
-        getdisplay().setCursor(80, 120);
-        getdisplay().print(svalue4);
+        // Set botton labels
+        commonData->keydata[0].label = "ZOOM -";
+        commonData->keydata[1].label = "ZOOM +";
+        commonData->keydata[4].label = "VALUES";
 
         return PAGE_UPDATE;
     };
@@ -215,7 +312,7 @@ PageDescription registerPageNavigation(
     "Navigation",       // Page name
     createPage,         // Action
     0,                  // Number of bus values depends on selection in Web configuration
-    {"LAT","LON","HDT","SOG"},  // Bus values we need in the page
+    {"LAT","LON","COG","SOG","DBT"},  // Bus values we need in the page
     true                // Show display header on/off
 );
 
