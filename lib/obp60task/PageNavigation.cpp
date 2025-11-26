@@ -194,10 +194,10 @@ public:
         String url = String("http://") + server + ":" + port +  // OBP Server
                     String("/get_image_json?") +               // Service: Output B&W picture as JSON (Base64 + gzip)
                     "zoom=" + zoom +       // Zoom level: 15
-                    "&lat=" + latitude +   // Latitude
-                    "&lon=" + longitude +  // Longitude
+                    "&lat=" + String(latitude, 6) +   // Latitude
+                    "&lon=" + String(longitude, 6) +  // Longitude
                     "&mrot=" + int(courseOverGround) + // Rotation angle navigation map
-                    "&mtype=5" +       // Open Topo Map
+                    "&mtype=1" +       // Open Street Map
                     "&dtype=4" +       // Dithering type: Atkinson dithering
                     "&width=400" +     // With navigation map
                     "&height=250" +    // Height navigation map
