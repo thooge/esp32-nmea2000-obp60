@@ -7,11 +7,10 @@
 
 #include "Logo_OBP_400x300_sw.h"
 
-// Limits
-#define JSON_BUFFER 30000   // Max buffer size for JSON content (30 kB picture + values)
-
-NetworkClient net(JSON_BUFFER);
-ImageDecoder decoder;
+// Defines for reading of navigation map 
+#define JSON_BUFFER 30000       // Max buffer size for JSON content (30 kB picture + values)
+NetworkClient net(JSON_BUFFER); // Define network client
+ImageDecoder decoder;           // Define image decoder        
 
 class PageNavigation : public Page
 {
@@ -132,19 +131,45 @@ public:
         getdisplay().setTextColor(commonData->fgcolor);
 
         // If a network connection to URL
-        if (net.fetchAndDecompressJson(url)) {        // Connect to URL, read gzip answare and deflate JSON content  
+        if (net.fetchAndDecompressJson(url)) {
 
-            auto& json = net.json();                  // Parse JSON content
-            int numPix = json["number_pixels"] | 0;   // Read number of picture pixels
-            String b64 = json["picture_base64"] | ""; // Read the Base64 bit steram content (picture)
-            static uint8_t imageData[400 * 300];      // Set picture buffer
-            size_t decodedSize = 0;                   // Reset decoded size of Basse64 bit stream content
-/*
-            decoder.decodeBase64(b64, imageData, sizeof(imageData), decodedSize); // Decode Base64 bit stream content
-            getdisplay().drawBitmap(0, 25, imageData, getdisplay().width(), getdisplay().height(), GxEPD_BLACK); // Show picture with Y offset 25 pixel
-*/
-            getdisplay().drawBitmap(0, 0, gImage_Logo_OBP_400x300_sw, getdisplay().width(), getdisplay().height(), GxEPD_BLACK); // Show picture with Y offset 25 pixel
-        }      
+            auto& json = net.json();                // Extract JSON content
+            int numPix = json["number_pixels"] | 0; // Read number of pixels
+            int imgWidth = json["width"] | 0;       // Read width of image
+            int imgHeight = json["height"] | 0;     // Read height og image
+
+            const char* b64src = json["picture_base64"].as<const char*>();  // Read picture as Base64 content
+            size_t b64len = strlen(b64src);                                 // Calculate length of Base64 content
+            // Copy Base64 content in PSRAM
+            char* b64 = (char*) heap_caps_malloc(b64len + 1, MALLOC_CAP_SPIRAM);    // Allcate PSRAM for Base64 content
+            if (!b64) {
+                Serial.println("ERROR: PSRAM alloc base64 failed");
+                return PAGE_UPDATE;
+            }
+            memcpy(b64, b64src, b64len + 1);    // Copy Base64 content in PSRAM
+
+            // Set image buffer in PSRAM
+            //size_t imgSize = getdisplay().width() * getdisplay().height();                  // Calculate image size
+            size_t imgSize = numPix;    // Calculate image size
+            uint8_t* imageData = (uint8_t*) heap_caps_malloc(imgSize, MALLOC_CAP_SPIRAM);   // Allocate PSRAM for image
+            if (!imageData) {
+                Serial.println("ERROR: PSRAM alloc image buffer failed");
+                free(b64);
+                return PAGE_UPDATE;
+            }
+
+            // Decode Base64 content to image
+            size_t decodedSize = 0;
+            decoder.decodeBase64(b64, imageData, imgSize, decodedSize);
+
+            // Show image (navigation map)
+            getdisplay().drawBitmap(0, 25, imageData, imgWidth, imgHeight, commonData->fgcolor);
+
+            // Clean PSRAM
+            free(b64);
+            free(imageData);
+        }
+  
         
         // Draw page
         //***********************************************************
