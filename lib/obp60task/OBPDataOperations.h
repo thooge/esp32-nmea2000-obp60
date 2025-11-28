@@ -1,6 +1,5 @@
 // Function lib for history buffer handling, true wind calculation, and other operations on boat data
 #pragma once
-#include <N2kMessages.h>
 #include "OBPRingBuffer.h"
 #include "obp60task.h"
 
@@ -17,8 +16,8 @@ private:
 
     RingBuffer<uint16_t> twdHstry; // Circular buffer to store true wind direction values
     RingBuffer<uint16_t> twsHstry; // Circular buffer to store true wind speed values (TWS)
-    RingBuffer<uint16_t> awdHstry; // Circular buffer to store apparant wind direction values
-    RingBuffer<uint16_t> awsHstry; // Circular buffer to store apparant xwind speed values (AWS)
+    RingBuffer<uint16_t> awdHstry; // Circular buffer to store apparent wind direction values
+    RingBuffer<uint16_t> awsHstry; // Circular buffer to store apparent xwind speed values (AWS)
     double twdHstryMin; // Min value for wind direction (TWD) in history buffer
     double twdHstryMax; // Max value for wind direction (TWD) in history buffer
     double twsHstryMin;

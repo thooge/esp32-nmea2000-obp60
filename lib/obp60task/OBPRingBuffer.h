@@ -1,7 +1,8 @@
 #pragma once
-//#include "FreeRTOS.h"
+#include "FreeRTOS.h"
 #include "GwSynchronized.h"
 #include <vector>
+#include <WString.h>
 
 template <typename T>
 struct PSRAMAllocator {

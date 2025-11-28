@@ -1,4 +1,4 @@
-// Function lib for display of boat data in various chart formats
+// Function lib for display of boat data in various graphical chart formats
 #pragma once
 #include "Pagedata.h"
 

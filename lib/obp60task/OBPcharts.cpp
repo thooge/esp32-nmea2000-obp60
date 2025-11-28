@@ -17,7 +17,7 @@ Chart<T>::Chart(RingBuffer<T>& dataBuf, int8_t chrtDir, int8_t chrtSz, double df
     fgColor = commonData->fgcolor;
     bgColor = commonData->bgcolor;
 
-    LOG_DEBUG(GwLog::DEBUG, "Chart Init: dataBuf: %p", (void*)&dataBuf);
+    // LOG_DEBUG(GwLog::DEBUG, "Chart Init: Chart::dataBuf: %p, passed dataBuf: %p", (void*)&this->dataBuf, (void*)&dataBuf);
     dWidth = getdisplay().width();
     dHeight = getdisplay().height();
 
@@ -104,8 +104,8 @@ Chart<T>::~Chart()
 template <typename T>
 void Chart<T>::showChrt(int8_t chrtIntv, GwApi::BoatValue currValue)
 {
-    drawChrtTimeAxis(chrtIntv);
     drawChrt(chrtIntv, currValue);
+    drawChrtTimeAxis(chrtIntv);
     drawChrtValAxis();
 }
 
@@ -185,8 +185,8 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
                     }
                 }
 
-                if (i >= (numBufVals / chrtIntv) - 4) // log chart data of 1 line (adjust for test purposes)
-                    LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Chart: i: %d, chrtVal: %.4f, {x,y} {%d,%d}", i, chrtVal, x, y);
+                // if (i >= (numBufVals / chrtIntv) - 4) // log chart data of 1 line (adjust for test purposes)
+                //    LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Chart: i: %d, chrtVal: %.4f, {x,y} {%d,%d}", i, chrtVal, x, y);
 
                 if ((i == 0) || (chrtPrevVal == dbMAX_VAL)) {
                     // just a dot for 1st chart point or after some invalid values
@@ -194,7 +194,6 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
                     prevY = y;
 
                 } else if (chrtDataFmt != 0) { // cross borders check for degree values; shift values to [-PI..0..PI]; when crossing borders, range is 2x PI degrees
-
                     // Normalize both values relative to chrtMin (shift range to start at 0)
                     double normCurr = WindUtils::to2PI(chrtVal - chrtMin);
                     double normPrev = WindUtils::to2PI(chrtPrevVal - chrtMin);
@@ -202,7 +201,7 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
                     bool crossedBorders = std::abs(normCurr - normPrev) > (chrtRng / 2.0);
 
                     if (crossedBorders) { // If current value crosses chart borders compared to previous value, split line
-                        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Chart: crossedBorders: %d, chrtVal: %.2f, chrtPrevVal: %.2f", crossedBorders, chrtVal, chrtPrevVal);
+                        // LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Chart: crossedBorders: %d, chrtVal: %.2f, chrtPrevVal: %.2f", crossedBorders, chrtVal, chrtPrevVal);
                         bool wrappingFromHighToLow = normCurr < normPrev; // Determine which edge we're crossing
                         int xSplit = wrappingFromHighToLow ? (cStart.x + valAxis) : cStart.x;
                         getdisplay().drawLine(prevX, prevY, xSplit, y, fgColor);
@@ -215,11 +214,9 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
                 if (chrtDir == 0 || x == prevX) { // vertical line
                     getdisplay().drawLine(prevX, prevY, x, y, fgColor);
                     getdisplay().drawLine(prevX - 1, prevY, x - 1, y, fgColor);
-//                    getdisplay().drawLine(prevX + 1, prevY, x - 1, y, fgColor);
                 } else if (chrtDir == 1 || x != prevX) { // line with some horizontal trend -> normal state
                     getdisplay().drawLine(prevX, prevY, x, y, fgColor);
                     getdisplay().drawLine(prevX, prevY - 1, x, y - 1, fgColor);
-//                    getdisplay().drawLine(prevX, prevY + 1, x, y - 1, fgColor);
                 }
                 chrtPrevVal = chrtVal;
                 prevX = x;
@@ -480,15 +477,15 @@ void Chart<T>::drawChrtValAxis()
         intv = static_cast<int>(round(cchrtRng / slots));
         i = intv;
 
-        getdisplay().setFont(&Ubuntu_Bold10pt8b);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
 
         for (int j = 60; j < valAxis - 30; j += 60) {
             LOG_DEBUG(GwLog::DEBUG, "ChartValAxis: chrtRng: %.2f, cchrtRng: %.2f, intv: %d, slots: %.1f, valAxis: %d, i: %d, j: %d", chrtRng, cchrtRng, intv, slots, valAxis, i, j);
             getdisplay().drawLine(cStart.x, cStart.y + j, cStart.x + timAxis, cStart.y + j, fgColor);
 
-            getdisplay().fillRect(cStart.x, cStart.y + j - 9, cStart.x + 32, 18, bgColor); // Clear small area to remove potential chart lines
+            getdisplay().fillRect(cStart.x, cStart.y + j - 11, cStart.x + 39, 21, bgColor); // Clear small area to remove potential chart lines
             String sVal = String(i);
-            getdisplay().setCursor((3 - sVal.length()) * 8, cStart.y + j + 6); // value right-formated
+            getdisplay().setCursor((3 - sVal.length()) * 10, cStart.y + j + 7); // value right-formated
             getdisplay().printf("%s", sVal); // Range value
 
             i += intv;
@@ -498,9 +495,14 @@ void Chart<T>::drawChrtValAxis()
         drawTextRalign(cStart.x + timAxis, cStart.y - 3, dbName); // buffer data name
 
     } else { // chrtDir == 1; vertical chart
-        getdisplay().setFont(&Ubuntu_Bold10pt8b);
-
+        if (chrtSz == 0) { // full size chart -> use larger font
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
+            drawTextCenter(cStart.x + (valAxis / 4) + 25, cStart.y - 10, dbName); // buffer data name
+        } else {
+            getdisplay().setFont(&Ubuntu_Bold10pt8b);
+        }
         getdisplay().fillRect(cStart.x, top, valAxis, 2, fgColor); // top chart line
+
         getdisplay().setCursor(cStart.x, cStart.y - 2);
         tmpBVal->value = chrtMin;
         cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
@@ -515,16 +517,16 @@ void Chart<T>::drawChrtValAxis()
         tmpBVal->value = chrtMax;
         cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
         snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
-        drawTextRalign(cStart.x + valAxis - 1, cStart.y - 2, sVal); // Range high end
+        drawTextRalign(cStart.x + valAxis - 2, cStart.y - 2, sVal); // Range high end
 
         for (int j = 0; j <= valAxis + 2; j += ((valAxis + 2) / 2)) {
             getdisplay().drawLine(cStart.x + j, cStart.y, cStart.x + j, cStart.y + timAxis, fgColor);
         }
 
-        if (chrtSz == 0) {
-            getdisplay().setFont(&Ubuntu_Bold12pt8b);
-            drawTextCenter(cStart.x + (valAxis / 4) + 5, cStart.y - 11, dbName); // buffer data name
-        }
+//        if (chrtSz == 0) {
+//            getdisplay().setFont(&Ubuntu_Bold12pt8b);
+//            drawTextCenter(cStart.x + (valAxis / 4) + 15, cStart.y - 11, dbName); // buffer data name
+//        }
         LOG_DEBUG(GwLog::DEBUG, "ChartGrd: chrtRng: %.2f, intv: %d, slots: %.1f, valAxis: %d, i: %d", chrtRng, intv, slots, valAxis, i);
     }
 }
@@ -547,7 +549,7 @@ void Chart<T>::prntCurrValue(GwApi::BoatValue& currValue, const Pos chrtPos)
     LOG_DEBUG(GwLog::DEBUG, "Chart CurrValue: dbValue: %.2f, sdbValue: %s, fmrtDbValue: %.2f, dbFormat: %s, dbUnit: %s, Valid: %d, Name: %s, Address: %p", currValue.value, sdbValue,
         testdbValue, currValue.getFormat(), dbUnit, currValue.valid, currValue.getName(), currValue);
 
-    getdisplay().fillRect(xPosVal, yPosVal - 34, 121, 40, bgColor); // Clear area for TWS value
+    getdisplay().fillRect(xPosVal, yPosVal - 34, 122, 40, bgColor); // Clear area for TWS value
     getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
     getdisplay().setCursor(xPosVal + 1, yPosVal);
     if (useSimuData) {

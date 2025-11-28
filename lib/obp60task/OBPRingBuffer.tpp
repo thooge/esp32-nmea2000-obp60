@@ -1,6 +1,7 @@
 #include "OBPRingBuffer.h"
 #include <algorithm>
 #include <limits>
+#include <cmath>
 
 template <typename T>
 void RingBuffer<T>::initCommon()
