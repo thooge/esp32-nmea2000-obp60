@@ -107,6 +107,15 @@ void Chart<T>::showChrt(int8_t chrtIntv, GwApi::BoatValue currValue)
     drawChrt(chrtIntv, currValue);
     drawChrtTimeAxis(chrtIntv);
     drawChrtValAxis();
+
+    if (bufDataValid) {
+        // uses BoatValue temp variable <currValue> to format latest buffer value
+        // doesn't work unfortunately when 'simulation data' is active, because OBP60Formatter generates own simulation value in that case
+        currValue.value = dataBuf.getLast();
+        currValue.valid = currValue.value != dbMAX_VAL;
+        Chart<T>::prntCurrValue(currValue);
+        LOG_DEBUG(GwLog::DEBUG, "Chart drawChrt: currValue-value: %.1f, Valid: %d, Name: %s, Address: %p", currValue.value, currValue.valid, currValue.getName(), (void*)&currValue);
+    }
 }
 
 // draw chart
@@ -116,7 +125,7 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
     double chrtVal; // Current data value
     double chrtScl; // Scale for data values in pixels per value
     static double chrtPrevVal; // Last data value in chart area
-    bool bufDataValid = false; // Flag to indicate if buffer data is valid
+    // bool bufDataValid = false; // Flag to indicate if buffer data is valid
     static int numNoData; // Counter for multiple invalid data values in a row
 
     int x, y; // x and y coordinates for drawing
@@ -247,13 +256,6 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
                 break;
             }
         }
-
-        // uses BoatValue temp variable <currValue> to format latest buffer value
-        // doesn't work unfortunately when 'simulation data' is active, because OBP60Formatter generates own simulation value in that case
-        currValue.value = dataBuf.getLast();
-        currValue.valid = currValue.value != dbMAX_VAL;
-        Chart<T>::prntCurrValue(currValue);
-        LOG_DEBUG(GwLog::DEBUG, "Chart drawChrt: currValue-value: %.1f, Valid: %d, Name: %s, Address: %p", currValue.value, currValue.valid, currValue.getName(), (void*)&currValue);
 
     } else {
         // No valid data available
@@ -527,6 +529,7 @@ void Chart<T>::drawChrtValAxis()
             getdisplay().fillRect(cStart.x, cStart.y + valAxis - 16, 42, 16, bgColor); // Clear small area to remove potential chart lines
             getdisplay().setCursor(cStart.x + ((3 - sLen) * 10), cStart.y + valAxis - 1);
             getdisplay().printf("%s", sVal); // Range high end
+            getdisplay().drawLine(cStart.x + 43, cStart.y + valAxis, cStart.x + timAxis, cStart.y + valAxis, fgColor);
         }
 
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
@@ -582,8 +585,8 @@ void Chart<T>::prntCurrValue(GwApi::BoatValue& currValue)
     // LOG_DEBUG(GwLog::DEBUG, "Chart CurrValue: dbValue: %.2f, sdbValue: %s, fmrtDbValue: %.2f, dbFormat: %s, dbUnit: %s, Valid: %d, Name: %s, Address: %p", currValue.value, sdbValue,
     //    testdbValue, currValue.getFormat(), dbUnit, currValue.valid, currValue.getName(), currValue);
 
-    getdisplay().fillRect(xPosVal - 1, yPosVal - 34, 125, 42, bgColor); // Clear area for TWS value
-    getdisplay().drawRect(xPosVal, yPosVal - 33, 123, 40, fgColor); // Draw box for TWS value
+    getdisplay().fillRect(xPosVal - 1, yPosVal - 34, 125, 41, bgColor); // Clear area for TWS value
+    getdisplay().drawRect(xPosVal, yPosVal - 33, 123, 39, fgColor); // Draw box for TWS value
     getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
     getdisplay().setCursor(xPosVal + 1, yPosVal);
     if (useSimuData) {

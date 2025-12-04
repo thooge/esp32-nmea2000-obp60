@@ -25,7 +25,7 @@ protected:
 
     int top = 48; // display top header lines
     int bottom = 22; // display bottom lines
-    int hGap = 10; // gap between 2 horizontal charts; actual gap is 2x <gap>
+    int hGap = 11; // gap between 2 horizontal charts; actual gap is 2x <gap>
     int vGap = 20; // gap between 2 vertical charts; actual gap is 2x <gap>
     int xOffset = 33; // offset for horizontal axis (time/value), because of space for left vertical axis labeling
     int yOffset = 10; // offset for vertical axis (time/value), because of space for top horizontal axis labeling
@@ -52,6 +52,7 @@ protected:
     size_t currIdx; // Current index in TWD history buffer
     size_t lastIdx; // Last index of TWD history buffer
     size_t lastAddedIdx = 0; // Last index of TWD history buffer when new data was added
+    bool bufDataValid = false; // Flag to indicate if buffer data is valid
     int oldChrtIntv = 0; // remember recent user selection of data interval
 
     void drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue); // Draw chart line
