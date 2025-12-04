@@ -25,7 +25,8 @@ protected:
 
     int top = 48; // display top header lines
     int bottom = 22; // display bottom lines
-    int gap = 20; // gap between 2 charts; actual gap is 2x <gap>
+    int hGap = 10; // gap between 2 horizontal charts; actual gap is 2x <gap>
+    int vGap = 20; // gap between 2 vertical charts; actual gap is 2x <gap>
     int xOffset = 33; // offset for horizontal axis (time/value), because of space for left vertical axis labeling
     int yOffset = 10; // offset for vertical axis (time/value), because of space for top horizontal axis labeling
     int dWidth; // Display width
@@ -58,8 +59,7 @@ protected:
     void calcChrtBorders(double& rngMid, double& rngMin, double& rngMax, double& rng); // Calculate chart points for value axis and return range between <min> and <max>
     void drawChrtTimeAxis(int8_t chrtIntv); // Draw time axis of chart, value and lines
     void drawChrtValAxis(); // Draw value axis of chart, value and lines
-    void prntCurrValue(GwApi::BoatValue& currValue, Pos chrtPos); // Add current boat data value to chart 
-    void getAngleMinMax(const std::vector<double>& angles, double& rngMin, double& rngMax); // Identify Min and Max for course data with smallest gap
+    void prntCurrValue(GwApi::BoatValue& currValue); // Add current boat data value to chart 
 
 public:
     Chart(RingBuffer<T>& dataBuf, int8_t chrtDir, int8_t chrtSz, double dfltRng, CommonData& common, bool useSimuData); // Chart object of data chart

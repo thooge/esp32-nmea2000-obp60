@@ -306,8 +306,6 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
         }
         else{
             speed = std::round(speed * 100) / 100;    // in rare cases, speed could be 9.9999 kn instead of 10.0 kn
-            LOG_DEBUG(GwLog::DEBUG,"OBPFormatter-formatValue: value->value: %.3f speed: %.15f speed<10: %d", value->value, speed, speed < 10.0);
-
             if (speed < 10.0){
                 snprintf(buffer, bsize, fmt_dec_1, speed);
             }

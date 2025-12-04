@@ -173,6 +173,8 @@ public:
                 twsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 0, 0, dfltRngWs, *commonData, useSimuData));
                 twdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 1, 1, dfltRngWd, *commonData, useSimuData));
                 twsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 1, 2, dfltRngWs, *commonData, useSimuData));
+                // twdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 0, 1, dfltRngWd, *commonData, useSimuData));
+                // twsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 0, 2, dfltRngWs, *commonData, useSimuData));
                 // LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: twdHstry: %p, twsHstry: %p", (void*)twdHstry, (void*)twsHstry);
             }
 
