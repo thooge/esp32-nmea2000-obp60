@@ -15,7 +15,8 @@ ImageDecoder decoder;           // Define image decoder
 class PageNavigation : public Page
 {
 // Values for buttons
-int zoom = 15;           // Zoom level 1...17
+bool firstRun = true;    // Detect the first page run
+int zoom = 15;           // Default zoom level
 bool showValues = false; // Show values COG, SOG, DBT in navigation map
 
 public:
@@ -57,6 +58,31 @@ public:
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
 
+        // Get config data
+        String mapsource = config->getString(config->mapsource);
+        String ipAddress = config->getString(config->ipAddress);
+        int localPort = config->getInt(config->localPort);
+        String mapType = config->getString(config->maptype);
+        int zoomLevel = config->getInt(config->zoomlevel);
+        bool grid = config->getBool(config->grid);
+        String orientation = config->getString(config->orientation);
+        int refreshDistance = config->getInt(config->refreshDistance);
+
+        if(firstRun == true){
+            zoom = zoomLevel; // Over write zoom level with setup value
+            firstRun = false; // Restet variable
+        }
+
+        // Local variables
+        String server = "norbert-walter.dnshome.de";
+        int port = 80;
+        int mType = 1;
+        int dType = 1;
+        int mapRot = 0;
+        int symbolRot = 0;
+        int mapGrid = 0;
+
+        
         // Old values for hold function
         static double value1old = 0;
         static String svalue1old = "";
@@ -185,29 +211,91 @@ public:
             depthBelowTransducer = value5old;
         }
 
-        // Server settings 
-        String server = "norbert-walter.dnshome.de";
-        int port = 80;
+        // Prepare config values for URL
+        //*************************************************
+
+        // Server settings
+        if(mapsource == "OBP Service"){
+            server = "norbert-walter.dnshome.de";
+            port = 80;
+        }
+        else if(mapsource == "Local Service"){
+            server = String(ipAddress);
+            port = localPort;
+        }
+        else{
+            server = "norbert-walter.dnshome.de";
+            port = 80;
+        }
+
+        // Type of navigation map
+        if(mapType == "Open Street Map"){
+            mType = 1;
+            dType = 1;
+        }
+        else if(mapType == "Google Street"){
+            mType = 3;
+            dType = 2;
+        }
+        else if(mapType == "Open Topo Map"){
+            mType = 5;
+            dType = 2;
+        }
+        else if(mapType == "Stadimaps Toner"){
+            mType = 7;
+            dType = 1;
+        }
+        else if(mapType == "Free Nautical Chart"){
+            mType = 9;
+            dType = 1;
+        }
+        else{
+            mType = 1;
+            dType = 1;
+        }
+
+        // Map grid on/off
+        if(grid == true){
+            mapGrid = 1;
+        }
+        else{
+            mapGrid = 0;
+        }
+
+        // Map orientation
+        if(orientation == "North Direction"){
+            mapRot = 0;
+            symbolRot = courseOverGround;mapGrid = 0;
+        }
+        else if(orientation == "Travel Direction"){
+            mapRot = courseOverGround;
+            symbolRot = courseOverGround;
+        }
+        else{
+            mapRot = 0;
+            symbolRot = courseOverGround;
+        }
+
 
         // URL to OBP Maps Converter
         // For more details see: https://github.com/norbert-walter/maps-converter
         String url = String("http://") + server + ":" + port +  // OBP Server
                     String("/get_image_json?") +               // Service: Output B&W picture as JSON (Base64 + gzip)
-                    "zoom=" + zoom +       // Zoom level: 15
+                    "zoom=" + zoom +   // Default zoom level: 15
                     "&lat=" + String(latitude, 6) +   // Latitude
                     "&lon=" + String(longitude, 6) +  // Longitude
-                    "&mrot=" + int(courseOverGround) + // Rotation angle navigation map in degree
-                    "&mtype=1" +       // Open Street Map
-                    "&dtype=4" +       // Dithering type: Atkinson dithering
+                    "&mrot=" + mapRot + // Rotation angle navigation map in degree
+                    "&mtype=" + mType + // Default Map: Open Street Map
+                    "&dtype=" + dType + // Dithering type: Atkinson dithering
                     "&width=400" +     // With navigation map
                     "&height=250" +    // Height navigation map
                     "&cutout=0" +      // No picture cutouts
                     "&tab=0" +         // No tab size
                     "&border=2" +      // Border line size: 2 pixel
                     "&symbol=2" +      // Symbol: Triangle
-                    "&srot=" + int(courseOverGround) + // Symbol rotation angle
+                    "&srot=" + symbolRot + // Symbol rotation angle
                     "&ssize=15" +      // Symbole size: 15 pixel
-                    "&grid=0"          // Show grid: On
+                    "&grid=" + mapGrid // Show grid: On
                     ;         
         
         // Draw page
@@ -238,9 +326,9 @@ public:
             memcpy(b64, b64src, b64len + 1);    // Copy Base64 content in PSRAM
 
             // Set image buffer in PSRAM
-            //size_t imgSize = getdisplay().width() * getdisplay().height();                  // Calculate image size
+            //size_t imgSize = getdisplay().width() * getdisplay().height();
             size_t imgSize = numPix;    // Calculate image size
-            uint8_t* imageData = (uint8_t*) heap_caps_malloc(imgSize, MALLOC_CAP_SPIRAM);   // Allocate PSRAM for image
+            uint8_t* imageData = (uint8_t*) heap_caps_malloc(imgSize, MALLOC_CAP_SPIRAM);           // Allocate PSRAM for image
             if (!imageData) {
                 LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: PPSRAM alloc image buffer failed");
                 free(b64);
@@ -271,8 +359,8 @@ public:
 
         if(showValues == true){
             // Frame
-            getdisplay().fillRect(0, 25 , 130, 70, commonData->fgcolor);   // Black rect
-            getdisplay().fillRect(2, 27 , 126, 66, commonData->bgcolor);   // White rect
+            getdisplay().fillRect(0, 25 , 130, 65, commonData->fgcolor);   // Black rect
+            getdisplay().fillRect(2, 27 , 126, 61, commonData->bgcolor);   // White rect
             // COG
             getdisplay().setCursor(10, 45);
             getdisplay().print(name3);
