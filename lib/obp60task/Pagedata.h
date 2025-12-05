@@ -195,9 +195,10 @@ String formatLongitude(double lon);
 
 // Structure for formatted boat values
 typedef struct{
-  double value;
-  String svalue;
-  String unit;
+  double value; // SI value of boat data value
+  double cvalue; // value converted to target unit
+  String svalue; // value converted to target unit and formatted
+  String unit; // target value unit
 } FormattedData;
 
 // Formatter for boat values

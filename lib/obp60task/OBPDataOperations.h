@@ -1,14 +1,12 @@
+// Function lib for history buffer handling, true wind calculation, and other operations on boat data
 #pragma once
-#include <N2kMessages.h>
 #include "OBPRingBuffer.h"
-#include "BoatDataCalibration.h"        // Functions lib for data instance calibration
 #include "obp60task.h"
-#include <math.h>
 
 typedef struct {
-    RingBuffer<int16_t>* twdHstry;
+    RingBuffer<uint16_t>* twdHstry;
     RingBuffer<uint16_t>* twsHstry;
-    RingBuffer<int16_t>* awdHstry;
+    RingBuffer<uint16_t>* awdHstry;
     RingBuffer<uint16_t>* awsHstry;
 } tBoatHstryData; // Holds pointers to all history buffers for boat data
 
@@ -16,18 +14,18 @@ class HstryBuf {
 private:
     GwLog *logger;
 
-    RingBuffer<int16_t> twdHstry; // Circular buffer to store true wind direction values
+    RingBuffer<uint16_t> twdHstry; // Circular buffer to store true wind direction values
     RingBuffer<uint16_t> twsHstry; // Circular buffer to store true wind speed values (TWS)
-    RingBuffer<int16_t> awdHstry; // Circular buffer to store apparant wind direction values
-    RingBuffer<uint16_t> awsHstry; // Circular buffer to store apparant xwind speed values (AWS)
-    int16_t twdHstryMin; // Min value for wind direction (TWD) in history buffer
-    int16_t twdHstryMax; // Max value for wind direction (TWD) in history buffer
-    uint16_t twsHstryMin;
-    uint16_t twsHstryMax;
-    int16_t awdHstryMin;
-    int16_t awdHstryMax;
-    uint16_t awsHstryMin;
-    uint16_t awsHstryMax;
+    RingBuffer<uint16_t> awdHstry; // Circular buffer to store apparent wind direction values
+    RingBuffer<uint16_t> awsHstry; // Circular buffer to store apparent xwind speed values (AWS)
+    double twdHstryMin; // Min value for wind direction (TWD) in history buffer
+    double twdHstryMax; // Max value for wind direction (TWD) in history buffer
+    double twsHstryMin;
+    double twsHstryMax;
+    double awdHstryMin;
+    double awdHstryMax;
+    double awsHstryMin;
+    double awsHstryMax;
 
     // boat values for buffers and for true wind calculation
     GwApi::BoatValue *twdBVal, *twsBVal, *twaBVal, *awdBVal, *awsBVal;
@@ -71,6 +69,7 @@ public:
         hdmBVal = boatValues->findValueOrCreate("HDM");
         varBVal = boatValues->findValueOrCreate("VAR");
     };
+
     static double to2PI(double a);
     static double toPI(double a);
     static double to360(double a);

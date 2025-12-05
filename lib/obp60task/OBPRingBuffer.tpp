@@ -1,14 +1,21 @@
 #include "OBPRingBuffer.h"
+#include <algorithm>
+#include <limits>
+#include <cmath>
 
 template <typename T>
-void RingBuffer<T>::initCommon() {
+void RingBuffer<T>::initCommon()
+{
     MIN_VAL = std::numeric_limits<T>::lowest();
     MAX_VAL = std::numeric_limits<T>::max();
+    dblMIN_VAL = static_cast<double>(MIN_VAL);
+    dblMAX_VAL = static_cast<double>(MAX_VAL);
     dataName = "";
     dataFmt = "";
     updFreq = -1;
-    smallest = MIN_VAL;
-    largest = MAX_VAL;
+    mltplr = 1;
+    smallest = dblMIN_VAL;
+    largest = dblMAX_VAL;
     bufLocker = xSemaphoreCreateMutex();
 }
 
@@ -42,19 +49,20 @@ RingBuffer<T>::RingBuffer(size_t size)
 
 // Specify meta data of buffer content
 template <typename T>
-void RingBuffer<T>::setMetaData(String name, String format, int updateFrequency, T minValue, T maxValue)
+void RingBuffer<T>::setMetaData(String name, String format, int updateFrequency, double multiplier, double minValue, double maxValue)
 {
     GWSYNCHRONIZED(&bufLocker);
     dataName = name;
     dataFmt = format;
     updFreq = updateFrequency;
-    smallest = std::max(MIN_VAL, minValue);
-    largest = std::min(MAX_VAL, maxValue);
+    mltplr = multiplier;
+    smallest = std::max(dblMIN_VAL, minValue);
+    largest = std::min(dblMAX_VAL, maxValue);
 }
 
 // Get meta data of buffer content
 template <typename T>
-bool RingBuffer<T>::getMetaData(String& name, String& format, int& updateFrequency, T& minValue, T& maxValue)
+bool RingBuffer<T>::getMetaData(String& name, String& format, int& updateFrequency, double& multiplier, double& minValue, double& maxValue)
 {
     if (dataName == "" || dataFmt == "" || updFreq == -1) {
         return false; // Meta data not set
@@ -64,6 +72,7 @@ bool RingBuffer<T>::getMetaData(String& name, String& format, int& updateFrequen
     name = dataName;
     format = dataFmt;
     updateFrequency = updFreq;
+    multiplier = mltplr;
     minValue = smallest;
     maxValue = largest;
     return true;
@@ -99,13 +108,13 @@ String RingBuffer<T>::getFormat() const
 
 // Add a new value to buffer
 template <typename T>
-void RingBuffer<T>::add(const T& value)
+void RingBuffer<T>::add(const double& value)
 {
     GWSYNCHRONIZED(&bufLocker);
     if (value < smallest || value > largest) {
         buffer[head] = MAX_VAL; // Store MAX_VAL if value is out of range
     } else {
-        buffer[head] = value;
+        buffer[head] = static_cast<T>(std::round(value * mltplr));
     }
     last = head;
 
@@ -117,63 +126,63 @@ void RingBuffer<T>::add(const T& value)
             is_Full = true;
         }
     }
-
+    // Serial.printf("Ringbuffer: value %.3f, multiplier: %.1f, buffer: %d\n", value, mltplr, buffer[head]);
     head = (head + 1) % capacity;
 }
 
 // Get value at specific position (0-based index from oldest to newest)
 template <typename T>
-T RingBuffer<T>::get(size_t index) const
+double RingBuffer<T>::get(size_t index) const
 {
     GWSYNCHRONIZED(&bufLocker);
     if (isEmpty() || index < 0 || index >= count) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
 
     size_t realIndex = (first + index) % capacity;
-    return buffer[realIndex];
+    return static_cast<double>(buffer[realIndex] / mltplr);
 }
 
 // Operator[] for convenient access (same as get())
 template <typename T>
-T RingBuffer<T>::operator[](size_t index) const
+double RingBuffer<T>::operator[](size_t index) const
 {
     return get(index);
 }
 
 // Get the first (oldest) value in the buffer
 template <typename T>
-T RingBuffer<T>::getFirst() const
+double RingBuffer<T>::getFirst() const
 {
     if (isEmpty()) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
     return get(0);
 }
 
 // Get the last (newest) value in the buffer
 template <typename T>
-T RingBuffer<T>::getLast() const
+double RingBuffer<T>::getLast() const
 {
     if (isEmpty()) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
     return get(count - 1);
 }
 
 // Get the lowest value in the buffer
 template <typename T>
-T RingBuffer<T>::getMin() const
+double RingBuffer<T>::getMin() const
 {
     if (isEmpty()) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
 
-    T minVal = MAX_VAL;
-    T value;
+    double minVal = dblMAX_VAL;
+    double value;
     for (size_t i = 0; i < count; i++) {
         value = get(i);
-        if (value < minVal && value != MAX_VAL) {
+        if (value < minVal && value != dblMAX_VAL) {
             minVal = value;
         }
     }
@@ -182,19 +191,19 @@ T RingBuffer<T>::getMin() const
 
 // Get minimum value of the last <amount> values of buffer
 template <typename T>
-T RingBuffer<T>::getMin(size_t amount) const
+double RingBuffer<T>::getMin(size_t amount) const
 {
     if (isEmpty() || amount <= 0) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
     if (amount > count)
         amount = count;
 
-    T minVal = MAX_VAL;
-    T value;
+    double minVal = dblMAX_VAL;
+    double value;
     for (size_t i = 0; i < amount; i++) {
         value = get(count - 1 - i);
-        if (value < minVal && value != MAX_VAL) {
+        if (value < minVal && value != dblMAX_VAL) {
             minVal = value;
         }
     }
@@ -203,75 +212,81 @@ T RingBuffer<T>::getMin(size_t amount) const
 
 // Get the highest value in the buffer
 template <typename T>
-T RingBuffer<T>::getMax() const
+double RingBuffer<T>::getMax() const
 {
     if (isEmpty()) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
 
-    T maxVal = MIN_VAL;
-    T value;
+    double maxVal = dblMIN_VAL;
+    double value;
     for (size_t i = 0; i < count; i++) {
         value = get(i);
-        if (value > maxVal && value != MAX_VAL) {
+        if (value > maxVal && value != dblMAX_VAL) {
             maxVal = value;
         }
+    }
+    if (maxVal == dblMIN_VAL) { // no change of initial value -> buffer has only invalid values (MAX_VAL)
+        maxVal = dblMAX_VAL;
     }
     return maxVal;
 }
 
 // Get maximum value of the last <amount> values of buffer
 template <typename T>
-T RingBuffer<T>::getMax(size_t amount) const
+double RingBuffer<T>::getMax(size_t amount) const
 {
     if (isEmpty() || amount <= 0) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
     if (amount > count)
         amount = count;
 
-    T maxVal = MIN_VAL;
-    T value;
+    double maxVal = dblMIN_VAL;
+    double value;
     for (size_t i = 0; i < amount; i++) {
         value = get(count - 1 - i);
-        if (value > maxVal && value != MAX_VAL) {
+        if (value > maxVal && value != dblMAX_VAL) {
             maxVal = value;
         }
+    }
+    if (maxVal == dblMIN_VAL) { // no change of initial value -> buffer has only invalid values (MAX_VAL)
+        maxVal = dblMAX_VAL;
     }
     return maxVal;
 }
 
 // Get mid value between <min> and <max> value in the buffer
 template <typename T>
-T RingBuffer<T>::getMid() const
+double RingBuffer<T>::getMid() const
 {
     if (isEmpty()) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
 
-    return (getMin() + getMax()) / static_cast<T>(2);
+    return (getMin() + getMax()) / 2;
 }
 
 // Get mid value between <min> and <max> value of the last <amount> values of buffer
 template <typename T>
-T RingBuffer<T>::getMid(size_t amount) const
+double RingBuffer<T>::getMid(size_t amount) const
 {
     if (isEmpty() || amount <= 0) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
 
     if (amount > count)
         amount = count;
 
-    return (getMin(amount) + getMax(amount)) / static_cast<T>(2);
+    return (getMin(amount) + getMax(amount)) / 2;
 }
 
 // Get the median value in the buffer
 template <typename T>
-T RingBuffer<T>::getMedian() const
+double RingBuffer<T>::getMedian() const
 {
     if (isEmpty()) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
 
     // Create a temporary vector with current valid elements
@@ -287,20 +302,20 @@ T RingBuffer<T>::getMedian() const
 
     if (count % 2 == 1) {
         // Odd number of elements
-        return temp[count / 2];
+        return static_cast<double>(temp[count / 2]);
     } else {
         // Even number of elements - return average of middle two
         // Note: For integer types, this truncates. For floating point, it's exact.
-        return (temp[count / 2 - 1] + temp[count / 2]) / 2;
+        return static_cast<double>((temp[count / 2 - 1] + temp[count / 2]) / 2);
     }
 }
 
 // Get the median value of the last <amount> values of buffer
 template <typename T>
-T RingBuffer<T>::getMedian(size_t amount) const
+double RingBuffer<T>::getMedian(size_t amount) const
 {
     if (isEmpty() || amount <= 0) {
-        return MAX_VAL;
+        return dblMAX_VAL;
     }
     if (amount > count)
         amount = count;
@@ -310,7 +325,7 @@ T RingBuffer<T>::getMedian(size_t amount) const
     temp.reserve(amount);
 
     for (size_t i = 0; i < amount; i++) {
-        temp.push_back(get(i));
+        temp.push_back(get(count - 1 - i));
     }
 
     // Sort to find median
@@ -318,11 +333,11 @@ T RingBuffer<T>::getMedian(size_t amount) const
 
     if (amount % 2 == 1) {
         // Odd number of elements
-        return temp[amount / 2];
+        return static_cast<double>(temp[amount / 2]);
     } else {
         // Even number of elements - return average of middle two
         // Note: For integer types, this truncates. For floating point, it's exact.
-        return (temp[amount / 2 - 1] + temp[amount / 2]) / 2;
+        return static_cast<double>((temp[amount / 2 - 1] + temp[amount / 2]) / 2);
     }
 }
 
@@ -370,16 +385,16 @@ bool RingBuffer<T>::isFull() const
 
 // Get lowest possible value for buffer
 template <typename T>
-T RingBuffer<T>::getMinVal() const
+double RingBuffer<T>::getMinVal() const
 {
-    return MIN_VAL;
+    return dblMIN_VAL;
 }
 
 // Get highest possible value for buffer; used for unset/invalid buffer data
 template <typename T>
-T RingBuffer<T>::getMaxVal() const
+double RingBuffer<T>::getMaxVal() const
 {
-    return MAX_VAL;
+    return dblMAX_VAL;
 }
 
 // Clear buffer
@@ -411,15 +426,36 @@ void RingBuffer<T>::resize(size_t newSize)
     buffer.resize(newSize, MAX_VAL);
 }
 
-// Get all current values as a vector
+// Get all current values in native buffer format as a vector
 template <typename T>
-std::vector<T> RingBuffer<T>::getAllValues() const
+std::vector<double> RingBuffer<T>::getAllValues() const
 {
-    std::vector<T> result;
+    std::vector<double> result;
     result.reserve(count);
 
     for (size_t i = 0; i < count; i++) {
         result.push_back(get(i));
+    }
+
+    return result;
+}
+
+// Get last <amount> values in native buffer format as a vector
+template <typename T>
+std::vector<double> RingBuffer<T>::getAllValues(size_t amount) const
+{
+    std::vector<double> result;
+
+    if (isEmpty() || amount <= 0) {
+        return result;
+    }
+    if (amount > count)
+        amount = count;
+
+    result.reserve(amount);
+
+    for (size_t i = 0; i < amount; i++) {
+        result.push_back(get(count - 1 - i));
     }
 
     return result;

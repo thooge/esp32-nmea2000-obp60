@@ -224,7 +224,7 @@
         "label": "Calculate True Wind",
         "type": "boolean",
         "default": "false",
-        "description": "If not available, calculate true wind data from appearant wind and other boat data",
+        "description": "If not available, calculate true wind data from apparent wind and other boat data",
         "category": "OBP40 Settings",
         "capabilities": {
             "obp40": "true"
@@ -1654,7 +1654,7 @@
         "description": "Wind source for page 1: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "apparent wind"
         ],
         "category": "OBP40 Page 1",
         "capabilities": {
@@ -1975,7 +1975,7 @@
         "description": "Wind source for page 2: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "apparent wind"
         ],
         "category": "OBP40 Page 2",
         "capabilities": {
@@ -2287,7 +2287,7 @@
         "description": "Wind source for page 3: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "apparent wind"
         ],
         "category": "OBP40 Page 3",
         "capabilities": {
@@ -2590,7 +2590,7 @@
         "description": "Wind source for page 4: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "apparent wind"
         ],
         "category": "OBP40 Page 4",
         "capabilities": {
@@ -2884,7 +2884,7 @@
         "description": "Wind source for page 5: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "apparent wind"
         ],
         "category": "OBP40 Page 5",
         "capabilities": {
@@ -3169,7 +3169,7 @@
         "description": "Wind source for page 6: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "apparent wind"
         ],
         "category": "OBP40 Page 6",
         "capabilities": {
@@ -3445,7 +3445,7 @@
         "description": "Wind source for page 7: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "apparent wind"
         ],
         "category": "OBP40 Page 7",
         "capabilities": {
@@ -3712,7 +3712,7 @@
         "description": "Wind source for page 8: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "apparent wind"
         ],
         "category": "OBP40 Page 8",
         "capabilities": {
@@ -3970,7 +3970,7 @@
         "description": "Wind source for page 9: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "apparent wind"
         ],
         "category": "OBP40 Page 9",
         "capabilities": {
@@ -4219,7 +4219,7 @@
         "description": "Wind source for page 10: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "apparent wind"
         ],
         "category": "OBP40 Page 10",
         "capabilities": {

@@ -157,7 +157,7 @@ def create_json(device, no_of_pages, pagedata):
                 "description": f"Wind source for page {page_no}: [true|apparent]",
                 "list": [
                     "True wind",
-                    "Apparant wind"
+                    "Apparent wind"
                 ],
                 "category": category,
                 "capabilities": capabilities,
