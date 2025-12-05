@@ -48,23 +48,33 @@ int NetworkClient::skipGzipHeader(const uint8_t* data, size_t len) {
 // HTTP GET + GZIP Decompression (reading in chunks)
 bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& outLen) {
 
-    const size_t capacity = READLIMIT;   // limit (can be adjusted in NetworkClient.h)
+    const size_t capacity = READLIMIT;   // Read limit for data (can be adjusted in NetworkClient.h)
     uint8_t* buffer = (uint8_t*)malloc(capacity);
 
     if (!buffer) {
-        if (DEBUG) {Serial.println("Malloc failed (buffer)");}
+        if (DEBUG) {Serial.println("Malloc failed (buffer");}
         return false;
     }
 
     HTTPClient http;
+
+    // Timeouts to prevent hanging connections
+    http.setConnectTimeout(CONNECTIONTIMEOUT);  // Connect timeout in ms (can be adjusted in NetworkClient.h)
+    http.setTimeout(TCPREADTIMEOUT);            // Read timeout in ms (can be adjusted in NetworkClient.h)
+
     http.begin(url);
     http.addHeader("Accept-Encoding", "gzip");
 
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
         Serial.printf("HTTP ERROR: %d\n", code);
-        free(buffer);
+
+        // Hard reset HTTP + socket
+        WiFiClient* tmp = http.getStreamPtr();
+        if (tmp) tmp->stop();   // Force close TCP socket
         http.end();
+
+        free(buffer);
         return false;
     }
 
@@ -72,7 +82,7 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
 
     size_t len = 0;
     uint32_t lastData = millis();
-    const uint32_t READ_TIMEOUT = NETWORKTIMEOUT;   // Network timeout for reading data (can be adjusted in NetworkClient.h)
+    const uint32_t READ_TIMEOUT = READDATATIMEOUT;   // Timeout for reading data (can be adjusted in NetworkClient.h)
 
     bool complete = false;
 
@@ -121,6 +131,9 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
 
         free(test);
     }
+
+    // --- Added: Force-close connection in all cases to avoid stuck TCP sockets ---
+    if (stream) stream->stop();
 
     http.end();
     free(buffer);

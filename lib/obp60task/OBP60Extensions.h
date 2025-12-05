@@ -30,6 +30,8 @@
 #define FRAM_BAROGRAPH_START 0x0400
 #define FRAM_BAROGRAPH_END 0x13FF
 
+#define PI 3.1415926535897932384626433832795
+
 extern Adafruit_FRAM_I2C fram;
 extern bool hasFRAM;
 extern bool hasSDCard;

@@ -3,9 +3,11 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 
-#define DEBUG false         // Debug flag for NetworkClient for more live information
-#define READLIMIT 200000    // HTTP read limit in byte for gzip content (can be adjusted)
-#define NETWORKTIMEOUT 8000 // 8s Network timeout
+#define DEBUG false             // Debug flag for NetworkClient for more live information
+#define READLIMIT 200000        // HTTP read limit in byte for gzip content (can be adjusted)
+#define CONNECTIONTIMEOUT 3000  // Timeout in ms for HTTP connection 
+#define TCPREADTIMEOUT 2000     // Timeout in ms for read HTTP client stack
+#define READDATATIMEOUT 2000    // Timeout in ms for read data
 
 class NetworkClient {
 public:

@@ -64,7 +64,7 @@ public:
         static double value2old = 0;
         static String svalue2old = "";
         static String unit2old = "";
-        static double value3old = 0;
+        static double value3old = 0;    // Deg
         static String svalue3old = "";
         static String unit3old = "";
         static double value4old = 0;
@@ -162,8 +162,8 @@ public:
         }
         // COG value (Course Over Ground)
         if(valid3){
-            courseOverGround = value3;
-            value3old = value3;
+            courseOverGround = (value3 * 360) / (2 * PI);
+            value3old = courseOverGround;
         }
         else{
             courseOverGround = value3old;
@@ -196,7 +196,7 @@ public:
                     "zoom=" + zoom +       // Zoom level: 15
                     "&lat=" + String(latitude, 6) +   // Latitude
                     "&lon=" + String(longitude, 6) +  // Longitude
-                    "&mrot=" + int(courseOverGround) + // Rotation angle navigation map
+                    "&mrot=" + int(courseOverGround) + // Rotation angle navigation map in degree
                     "&mtype=1" +       // Open Street Map
                     "&dtype=4" +       // Dithering type: Atkinson dithering
                     "&width=400" +     // With navigation map
