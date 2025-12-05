@@ -59,6 +59,11 @@ public:
         GwLog *logger = commonData->logger;
 
         // Get config data
+        String lengthformat = config->getString(config->lengthFormat);
+        // bool simulation = config->getBool(config->useSimuData);
+        bool holdvalues = config->getBool(config->holdvalues);
+        String flashLED = config->getString(config->flashLED);
+        String backlightMode = config->getString(config->backlight);
         String mapsource = config->getString(config->mapsource);
         String ipAddress = config->getString(config->ipAddress);
         int localPort = config->getInt(config->localPort);
@@ -106,13 +111,6 @@ public:
         static double speedOverGround = 0;
         static double depthBelowTransducer = 0;
 
-        // Get config data
-        String lengthformat = config->getString(config->lengthFormat);
-        // bool simulation = config->getBool(config->useSimuData);
-        bool holdvalues = config->getBool(config->holdvalues);
-        String flashLED = config->getString(config->flashLED);
-        String backlightMode = config->getString(config->backlight);
-        
         // Get boat values #1 Latitude
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
         String name1 = xdrDelete(bvalue1->getName());   // Value name
@@ -168,8 +166,9 @@ public:
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
         LOG_DEBUG(GwLog::LOG,"Drawing at PageNavigation, %s: %f, %s: %f, %s: %f, %s: %f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, name4.c_str(), value4);
 
-        // Load navigation map
+        // Set variables
         //***********************************************************
+
         // Latitude
         if(valid1){
             latitude = value1;
@@ -212,7 +211,7 @@ public:
         }
 
         // Prepare config values for URL
-        //*************************************************
+        //***********************************************************
 
         // Server settings
         if(mapsource == "OBP Service"){
@@ -230,8 +229,8 @@ public:
 
         // Type of navigation map
         if(mapType == "Open Street Map"){
-            mType = 1;
-            dType = 1;
+            mType = 1;  // Map type
+            dType = 1;  // Dithering type
         }
         else if(mapType == "Google Street"){
             mType = 3;
@@ -265,7 +264,7 @@ public:
         // Map orientation
         if(orientation == "North Direction"){
             mapRot = 0;
-            symbolRot = courseOverGround;mapGrid = 0;
+            symbolRot = courseOverGround;
         }
         else if(orientation == "Travel Direction"){
             mapRot = courseOverGround;
@@ -276,6 +275,8 @@ public:
             symbolRot = courseOverGround;
         }
 
+        // Load navigation map
+        //***********************************************************
 
         // URL to OBP Maps Converter
         // For more details see: https://github.com/norbert-walter/maps-converter
