@@ -104,10 +104,14 @@ public:
         static double value5old = 0;
         static String svalue5old = "";
         static String unit5old = "";
+        static double value6old = 0;
+        static String svalue6old = "";
+        static String unit6old = "";
 
         static double latitude = 0;
         static double longitude = 0;
         static double trueHeading = 0;
+        static double magneticHeading = 0;
         static double speedOverGround = 0;
         static double depthBelowTransducer = 0;
 
@@ -138,7 +142,7 @@ public:
         String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit3 = formatValue(bvalue3, *commonData).unit;        // Unit of value
 
-        // Get boat values #4 SOG
+        // Get boat values #4 HDM
         GwApi::BoatValue *bvalue4 = pageData.values[3]; // Second element in list (only one value by PageOneValue)
         String name4 = xdrDelete(bvalue4->getName());   // Value name
         name4 = name4.substring(0, 6);                  // String length limit for value name
@@ -147,7 +151,7 @@ public:
         String svalue4 = formatValue(bvalue4, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit4 = formatValue(bvalue4, *commonData).unit;        // Unit of value
 
-        // Get boat values #5 DBT
+        // Get boat values #5 SOG
         GwApi::BoatValue *bvalue5 = pageData.values[4]; // Second element in list (only one value by PageOneValue)
         String name5 = xdrDelete(bvalue5->getName());   // Value name
         name5 = name5.substring(0, 6);                  // String length limit for value name
@@ -155,6 +159,15 @@ public:
         bool valid5 = bvalue5->valid;                   // Valid information 
         String svalue5 = formatValue(bvalue5, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit5 = formatValue(bvalue5, *commonData).unit;        // Unit of value
+
+        // Get boat values #6 DBT
+        GwApi::BoatValue *bvalue6 = pageData.values[5]; // Second element in list (only one value by PageOneValue)
+        String name6 = xdrDelete(bvalue6->getName());   // Value name
+        name6 = name6.substring(0, 6);                  // String length limit for value name
+        double value6 = bvalue6->value;                 // Value as double in SI unit
+        bool valid6 = bvalue6->valid;                   // Valid information 
+        String svalue6 = formatValue(bvalue6, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit6 = formatValue(bvalue6, *commonData).unit;        // Unit of value
 
         // Optical warning by limit violation (unused)
         if(String(flashLED) == "Limit Violation"){
@@ -164,7 +177,7 @@ public:
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK; // WTF why this statement?
-        LOG_DEBUG(GwLog::LOG,"Drawing at PageNavigation, %s: %f, %s: %f, %s: %f, %s: %f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, name4.c_str(), value4);
+        LOG_DEBUG(GwLog::LOG,"Drawing at PageNavigation, %s: %f, %s: %f, %s: %f, %s: %f, %s: %f, %s: %f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3, name4.c_str(), value4, name5.c_str(), value5, name6.c_str(), value6);
 
         // Set variables
         //***********************************************************
@@ -185,7 +198,7 @@ public:
         else{
             longitude = value2old;
         }
-        // HDT value (Course Over Ground)
+        // HDT value (True Heading, GPS)
         if(valid3){
             trueHeading = (value3 * 360) / (2 * PI);
             value3old = trueHeading;
@@ -193,21 +206,29 @@ public:
         else{
             trueHeading = value3old;
         }
-        // SOG value (Speed Over Ground)
+        // HDM value (Magnetic Heading)
         if(valid4){
-            speedOverGround = value4;
+            magneticHeading = value4;
             value4old = value4;
         }
         else{
             speedOverGround = value4old;
         }
-        // DBT value (Depth Below Transducer)
+        // SOG value (Speed Over Ground)
         if(valid5){
-            depthBelowTransducer = value5;
+            speedOverGround = value5;
             value5old = value5;
         }
         else{
-            depthBelowTransducer = value5old;
+            speedOverGround = value5old;
+        }
+        // DBT value (Depth Below Transducer)
+        if(valid6){
+            depthBelowTransducer = value6;
+            value6old = value6;
+        }
+        else{
+            depthBelowTransducer = value6old;
         }
 
         // Prepare config values for URL
@@ -264,15 +285,34 @@ public:
         // Map orientation
         if(orientation == "North Direction"){
             mapRot = 0;
-            symbolRot = trueHeading;
+            // If true heading available then use HDT oterwise HDM
+            if(valid3 == true){
+                symbolRot = trueHeading;
+            }
+            else{
+                symbolRot = magneticHeading;
+            }
         }
         else if(orientation == "Travel Direction"){
-            mapRot = trueHeading;
-            symbolRot = trueHeading;
+            // If true heading available then use HDT oterwise HDM
+            if(valid3 == true){
+                mapRot = trueHeading;
+                symbolRot = trueHeading;
+            }
+            else{
+                mapRot = magneticHeading;
+                symbolRot = magneticHeading;
+            }
         }
         else{
             mapRot = 0;
-            symbolRot = trueHeading;
+            // If true heading available then use HDT oterwise HDM
+            if(valid3 == true){
+                symbolRot = trueHeading;
+            }
+            else{
+                symbolRot = magneticHeading;
+            }
         }
 
         // Load navigation map
@@ -357,26 +397,35 @@ public:
         getdisplay().fillRect(357, 27 , 41, 21, commonData->bgcolor);   // White rect
         getdisplay().setCursor(364, 45);
         getdisplay().print(zoom);
-
+        // If true heading available then use HDT oterwise HDM
         if(showValues == true){
             // Frame
             getdisplay().fillRect(0, 25 , 130, 65, commonData->fgcolor);   // Black rect
             getdisplay().fillRect(2, 27 , 126, 61, commonData->bgcolor);   // White rect
-            // HDT
-            getdisplay().setCursor(10, 45);
-            getdisplay().print(name3);
-            getdisplay().setCursor(70, 45);
-            getdisplay().print(svalue3);
+            if(valid3 == true){
+                // HDT
+                getdisplay().setCursor(10, 45);
+                getdisplay().print(name3);
+                getdisplay().setCursor(70, 45);
+                getdisplay().print(svalue3);
+            }
+            else{
+                // HDM
+                getdisplay().setCursor(10, 45);
+                getdisplay().print(name4);
+                getdisplay().setCursor(70, 45);
+                getdisplay().print(svalue4);
+            }
             // SOG
             getdisplay().setCursor(10, 65);
-            getdisplay().print(name4);
+            getdisplay().print(name5);
             getdisplay().setCursor(70, 65);
-            getdisplay().print(svalue4);
+            getdisplay().print(svalue5);
             // DBT
             getdisplay().setCursor(10, 85);
-            getdisplay().print(name5);
+            getdisplay().print(name6);
             getdisplay().setCursor(70, 85);
-            getdisplay().print(svalue5);
+            getdisplay().print(svalue6);
         }
 
         // Set botton labels
@@ -401,7 +450,7 @@ PageDescription registerPageNavigation(
     "Navigation",       // Page name
     createPage,         // Action
     0,                  // Number of bus values depends on selection in Web configuration
-    {"LAT","LON","HDT","SOG","DBT"},  // Bus values we need in the page
+    {"LAT","LON","HDT","HDM","SOG","DBT"},  // Bus values we need in the page
     true                // Show display header on/off
 );
 
