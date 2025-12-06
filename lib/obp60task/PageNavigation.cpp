@@ -208,8 +208,8 @@ public:
         }
         // HDM value (Magnetic Heading)
         if(valid4){
-            magneticHeading = value4;
-            value4old = value4;
+            magneticHeading = (value4 * 360) / (2 * PI);
+            value4old = magneticHeading;
         }
         else{
             speedOverGround = value4old;
