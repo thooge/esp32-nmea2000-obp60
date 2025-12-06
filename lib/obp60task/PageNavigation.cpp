@@ -17,7 +17,7 @@ class PageNavigation : public Page
 // Values for buttons
 bool firstRun = true;    // Detect the first page run
 int zoom = 15;           // Default zoom level
-bool showValues = false; // Show values COG, SOG, DBT in navigation map
+bool showValues = false; // Show values HDT, SOG, DBT in navigation map
 
 public:
     PageNavigation(CommonData &common){
@@ -107,7 +107,7 @@ public:
 
         static double latitude = 0;
         static double longitude = 0;
-        static double courseOverGround = 0;
+        static double trueHeading = 0;
         static double speedOverGround = 0;
         static double depthBelowTransducer = 0;
 
@@ -129,7 +129,7 @@ public:
         String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
 
-        // Get boat values #3 COG
+        // Get boat values #3 HDT
         GwApi::BoatValue *bvalue3 = pageData.values[2]; // Second element in list (only one value by PageOneValue)
         String name3 = xdrDelete(bvalue3->getName());   // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
@@ -185,13 +185,13 @@ public:
         else{
             longitude = value2old;
         }
-        // COG value (Course Over Ground)
+        // HDT value (Course Over Ground)
         if(valid3){
-            courseOverGround = (value3 * 360) / (2 * PI);
-            value3old = courseOverGround;
+            trueHeading = (value3 * 360) / (2 * PI);
+            value3old = trueHeading;
         }
         else{
-            courseOverGround = value3old;
+            trueHeading = value3old;
         }
         // SOG value (Speed Over Ground)
         if(valid4){
@@ -264,15 +264,15 @@ public:
         // Map orientation
         if(orientation == "North Direction"){
             mapRot = 0;
-            symbolRot = courseOverGround;
+            symbolRot = trueHeading;
         }
         else if(orientation == "Travel Direction"){
-            mapRot = courseOverGround;
-            symbolRot = courseOverGround;
+            mapRot = trueHeading;
+            symbolRot = trueHeading;
         }
         else{
             mapRot = 0;
-            symbolRot = courseOverGround;
+            symbolRot = trueHeading;
         }
 
         // Load navigation map
@@ -362,7 +362,7 @@ public:
             // Frame
             getdisplay().fillRect(0, 25 , 130, 65, commonData->fgcolor);   // Black rect
             getdisplay().fillRect(2, 27 , 126, 61, commonData->bgcolor);   // White rect
-            // COG
+            // HDT
             getdisplay().setCursor(10, 45);
             getdisplay().print(name3);
             getdisplay().setCursor(70, 45);
@@ -401,7 +401,7 @@ PageDescription registerPageNavigation(
     "Navigation",       // Page name
     createPage,         // Action
     0,                  // Number of bus values depends on selection in Web configuration
-    {"LAT","LON","COG","SOG","DBT"},  // Bus values we need in the page
+    {"LAT","LON","HDT","SOG","DBT"},  // Bus values we need in the page
     true                // Show display header on/off
 );
 
