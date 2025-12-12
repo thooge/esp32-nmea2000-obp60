@@ -7,6 +7,7 @@
 #include "Graphics.h"
 #include <GxEPD2_BW.h>                  // E-paper lib V2
 #include <Adafruit_FRAM_I2C.h>          // I2C FRAM
+#include <math.h>
 
 #ifdef BOARD_OBP40S3
 #include "esp_vfs_fat.h"
@@ -31,6 +32,7 @@
 #define FRAM_BAROGRAPH_END 0x13FF
 
 #define PI 3.1415926535897932384626433832795
+#define EARTH_RADIUS 6371000.0
 
 extern Adafruit_FRAM_I2C fram;
 extern bool hasFRAM;

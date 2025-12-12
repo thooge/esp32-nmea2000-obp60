@@ -72,10 +72,13 @@ public:
         bool grid = config->getBool(config->grid);
         String orientation = config->getString(config->orientation);
         int refreshDistance = config->getInt(config->refreshDistance);
+        bool showValuesMap = config->getBool(config->showvalues);
+        bool ownHeading = config->getBool(config->ownheading);
 
         if(firstRun == true){
-            zoom = zoomLevel; // Over write zoom level with setup value
-            firstRun = false; // Restet variable
+            zoom = zoomLevel;           // Over write zoom level with setup value
+            showValues = showValuesMap; // Over write showValues with setup value 
+            firstRun = false;           // Restet variable
         }
 
         // Local variables
@@ -109,7 +112,9 @@ public:
         static String unit6old = "";
 
         static double latitude = 0;
+        static double latitudeold = 0;
         static double longitude = 0;
+        static double longitudeold = 0;
         static double trueHeading = 0;
         static double magneticHeading = 0;
         static double speedOverGround = 0;
@@ -185,6 +190,7 @@ public:
         // Latitude
         if(valid1){
             latitude = value1;
+            latitudeold = value1;
             value3old = value1;
         }
         else{
@@ -193,6 +199,7 @@ public:
         // Longitude
         if(valid2){
             longitude = value2;
+            longitudeold = value2;
             value2old = value2;
         }
         else{

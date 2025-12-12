@@ -905,4 +905,30 @@ void doImageRequest(GwApi *api, int *pageno, const PageStruct pages[MAX_PAGE_NUM
     imageBuffer.clear();
 }
 
+
+
+// Calculate the distance between two Geo coordinates
+double distanceBetweenCoordinates(double lat1, double lon1, double lat2, double lon2) {
+    // Grad → Radiant
+    double lat1Rad = lat1 * DEG_TO_RAD;
+    double lon1Rad = lon1 * DEG_TO_RAD;
+    double lat2Rad = lat2 * DEG_TO_RAD;
+    double lon2Rad = lon2 * DEG_TO_RAD;
+
+    // Differenzen
+    double dLat = lat2Rad - lat1Rad;
+    double dLon = lon2Rad - lon1Rad;
+
+    // Haversine-Formel
+    double a = sin(dLat / 2.0) * sin(dLat / 2.0) +
+               cos(lat1Rad) * cos(lat2Rad) *
+               sin(dLon / 2.0) * sin(dLon / 2.0);
+
+    double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+
+    // Abstand in Metern
+    return double(EARTH_RADIUS) * c;
+}
+
+
 #endif
