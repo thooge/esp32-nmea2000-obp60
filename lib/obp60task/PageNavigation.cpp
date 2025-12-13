@@ -19,13 +19,18 @@ bool firstRun = true;    // Detect the first page run
 int zoom = 15;           // Default zoom level
 bool showValues = false; // Show values HDT, SOG, DBT in navigation map
 
-// Init image backup for navigation map
-uint8_t* imageBackupData = (uint8_t*) heap_caps_malloc((GxEPD_WIDTH * GxEPD_HEIGHT), MALLOC_CAP_SPIRAM); // Allocate PSRAM for image backup buffer for navigation map(400 x 300 pix)
+private:
+    uint8_t* imageBackupData = nullptr;
+    int imageBackupWidth = 0;
+    int imageBackupHeight = 0;
+    size_t imageBackupSize = 0;
+    bool hasImageBackup = false;
 
 public:
     PageNavigation(CommonData &common){
         commonData = &common;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageNavigation");
+        imageBackupData = (uint8_t*)heap_caps_malloc((GxEPD_WIDTH * GxEPD_HEIGHT), MALLOC_CAP_SPIRAM);
     }
 
     virtual int handleKey(int key){
@@ -124,9 +129,6 @@ public:
         static double depthBelowTransducer = 0;
         int imgWidth = 0;
         int imgHeight = 0;
-        int imgBackupWidth = 400;
-        int imgBackupHeight = 250;
-        bool hasImageBackup = false;
 
         // Get boat values #1 Latitude
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
@@ -396,11 +398,17 @@ public:
             decoder.decodeBase64(b64, imageData, imgSize, decodedSize);
 
             // Copy actual navigation man to ackup map
-            memcpy(imageBackupData, imageData, imgSize);
+            imageBackupWidth  = imgWidth;
+            imageBackupHeight = imgHeight;
+            imageBackupSize   = imgSize;
+            if (decodedSize > 0) {
+                memcpy(imageBackupData, imageData, decodedSize);
+                imageBackupSize = decodedSize;
+            }
+            hasImageBackup = true;
 
             // Show image (navigation map)
             getdisplay().drawBitmap(0, 25, imageData, imgWidth, imgHeight, commonData->fgcolor);
-            hasImageBackup = true;
 
             // Clean PSRAM
             free(b64);
@@ -410,7 +418,7 @@ public:
         else{
             // Show backup image (backup navigation map)
             if (hasImageBackup) {
-                getdisplay().drawBitmap(0, 25, imageBackupData, imgBackupWidth, imgBackupHeight, commonData->fgcolor);
+                getdisplay().drawBitmap(0, 25, imageBackupData, imageBackupWidth, imageBackupHeight, commonData->fgcolor);
             }    
 
             // Show info: Connection lost
