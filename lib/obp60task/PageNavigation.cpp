@@ -127,6 +127,7 @@ public:
         static double magneticHeading = 0;
         static double speedOverGround = 0;
         static double depthBelowTransducer = 0;
+        static int lostCounter = 0; // Counter for connection lost to the map server (increment by each page refresh)
         int imgWidth = 0;
         int imgHeight = 0;
 
@@ -406,6 +407,7 @@ public:
                 imageBackupSize = decodedSize;
             }
             hasImageBackup = true;
+            lostCounter = 0;
 
             // Show image (navigation map)
             getdisplay().drawBitmap(0, 25, imageData, imgWidth, imgHeight, commonData->fgcolor);
@@ -421,12 +423,17 @@ public:
                 getdisplay().drawBitmap(0, 25, imageBackupData, imageBackupWidth, imageBackupHeight, commonData->fgcolor);
             }    
 
-            // Show info: Connection lost
-            getdisplay().setFont(&Ubuntu_Bold12pt8b);
-            getdisplay().fillRect(200, 250 , 200, 25, commonData->fgcolor); // Black rect
-            getdisplay().fillRect(202, 252 , 196, 21, commonData->bgcolor); // White rect
-            getdisplay().setCursor(205, 270);
-            getdisplay().print("Connection lost");
+            // Show info: Connection lost when 5 page refreshes has a connection lost to the map server
+            // Short connection losts are uncritical
+            if(lostCounter >= 5){
+                getdisplay().setFont(&Ubuntu_Bold12pt8b);
+                getdisplay().fillRect(200, 250 , 200, 25, commonData->fgcolor); // Black rect
+                getdisplay().fillRect(202, 252 , 196, 21, commonData->bgcolor); // White rect
+                getdisplay().setCursor(210, 270);
+                getdisplay().print("Map server lost");
+            }
+
+            lostCounter++; // Increment lost counter
         }
 
 
