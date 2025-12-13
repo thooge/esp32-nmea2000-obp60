@@ -2,51 +2,38 @@
 #pragma once
 #include "OBPRingBuffer.h"
 #include "obp60task.h"
-
-typedef struct {
-    RingBuffer<uint16_t>* twdHstry;
-    RingBuffer<uint16_t>* twsHstry;
-    RingBuffer<uint16_t>* awdHstry;
-    RingBuffer<uint16_t>* awsHstry;
-} tBoatHstryData; // Holds pointers to all history buffers for boat data
+#include <vector>
+#include <memory>
+#include <map>
 
 class HstryBuf {
 private:
     GwLog *logger;
+    RingBuffer<uint16_t> hstry; // Circular buffer to store history values
+    String boatDataName;
+    double hstryMin;
+    double hstryMax;
+    GwApi::BoatValue *boatValue;
 
-    RingBuffer<uint16_t> twdHstry; // Circular buffer to store true wind direction values
-    RingBuffer<uint16_t> twsHstry; // Circular buffer to store true wind speed values (TWS)
-    RingBuffer<uint16_t> awdHstry; // Circular buffer to store apparent wind direction values
-    RingBuffer<uint16_t> awsHstry; // Circular buffer to store apparent xwind speed values (AWS)
-    double twdHstryMin; // Min value for wind direction (TWD) in history buffer
-    double twdHstryMax; // Max value for wind direction (TWD) in history buffer
-    double twsHstryMin;
-    double twsHstryMax;
-    double awdHstryMin;
-    double awdHstryMax;
-    double awsHstryMin;
-    double awsHstryMax;
-
-    // boat values for buffers and for true wind calculation
-    GwApi::BoatValue *twdBVal, *twsBVal, *twaBVal, *awdBVal, *awsBVal;
-    GwApi::BoatValue *awaBVal, *hdtBVal, *hdmBVal, *varBVal, *cogBVal, *sogBVal;
+    friend class HstryManager;
+    void handleHistory(bool useSimuData);
 
 public:
-    tBoatHstryData hstryBufList;
+    HstryBuf(const String& name, int size, GwLog* log, BoatValueList* boatValues);
+    void init(const String& format, int updFreq, int mltplr, double minVal, double maxVal);
+    void add(double value);
+    void handle(bool useSimuData);
+};
 
-    HstryBuf(){
-        hstryBufList = {&twdHstry, &twsHstry, &awdHstry, &awsHstry}; // Generate history buffers of zero size
-    };
-    
-    HstryBuf(int size) {
-        hstryBufList = {&twdHstry, &twsHstry, &awdHstry, &awsHstry}; 
-        hstryBufList.twdHstry->resize(size); // store <size> xWD values for <size>/60 minutes history
-        hstryBufList.twsHstry->resize(size);
-        hstryBufList.awdHstry->resize(size);
-        hstryBufList.awsHstry->resize(size);
-    };
-    void init(BoatValueList* boatValues, GwLog *log);
-    void handleHstryBuf(bool useSimuData);
+class HstryManager {
+private:
+    std::map<String, std::unique_ptr<HstryBuf>> hstryBufs;
+    // boat values for true wind calculation
+    GwApi::BoatValue *awaBVal, *hdtBVal, *hdmBVal, *varBVal, *cogBVal, *sogBVal, *awdBVal;
+public:
+    HstryManager(int size, GwLog* log, BoatValueList* boatValues);
+    void handleHstryBufs(bool useSimuData);
+    RingBuffer<uint16_t>* getBuffer(const String& name);
 };
 
 class WindUtils {

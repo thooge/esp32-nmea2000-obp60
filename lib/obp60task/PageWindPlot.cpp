@@ -2,6 +2,7 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+#include "OBPDataOperations.h"
 #include "OBPcharts.h"
 
 // ****************************************************************
@@ -163,12 +164,9 @@ public:
         if (showTruW != oldShowTruW) {
             if (!twdFlChart) { // Create true wind charts if they don't exist
 
-                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Creating true wind charts");
-                auto* twdHstry = pageData.boatHstry->hstryBufList.twdHstry;
-                auto* twsHstry = pageData.boatHstry->hstryBufList.twsHstry;
-                // LOG_DEBUG(GwLog::DEBUG,"History Buffer addresses PageWindPlot: twdBuf: %p, twsBuf: %p", (void*)pageData.boatHstry->hstryBufList.twdHstry,
-                //     (void*)pageData.boatHstry->hstryBufList.twsHstry);
-
+                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Creating true wind charts");                
+                auto* twdHstry = pageData.hstryManager->getBuffer("TWD");
+                auto* twsHstry = pageData.hstryManager->getBuffer("TWS");
                 twdFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 1, 0, dfltRngWd, *commonData, useSimuData));
                 twsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 0, 0, dfltRngWs, *commonData, useSimuData));
                 twdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 1, 1, dfltRngWd, *commonData, useSimuData));
@@ -180,8 +178,8 @@ public:
 
             if (!awdFlChart) { // Create apparent wind charts if they don't exist
                 LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Creating apparent wind charts");
-                auto* awdHstry = pageData.boatHstry->hstryBufList.awdHstry;
-                auto* awsHstry = pageData.boatHstry->hstryBufList.awsHstry;
+                auto* awdHstry = pageData.hstryManager->getBuffer("AWD");
+                auto* awsHstry = pageData.hstryManager->getBuffer("AWS");
 
                 awdFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awdHstry, 1, 0, dfltRngWd, *commonData, useSimuData));
                 awsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awsHstry, 0, 0, dfltRngWs, *commonData, useSimuData));
@@ -191,15 +189,15 @@ public:
             
             // Switch active charts based on showTruW
             if (showTruW) {
-                wdHstry = pageData.boatHstry->hstryBufList.twdHstry;
-                wsHstry = pageData.boatHstry->hstryBufList.twsHstry;
+                wdHstry = pageData.hstryManager->getBuffer("TWD");
+                wsHstry = pageData.hstryManager->getBuffer("TWS");
                 wdFlChart = twdFlChart.get();
                 wsFlChart = twsFlChart.get();
                 wdHfChart = twdHfChart.get();
                 wsHfChart = twsHfChart.get();
             } else {
-                wdHstry = pageData.boatHstry->hstryBufList.awdHstry;
-                wsHstry = pageData.boatHstry->hstryBufList.awsHstry;
+                wdHstry = pageData.hstryManager->getBuffer("AWD");
+                wsHstry = pageData.hstryManager->getBuffer("AWS");
                 wdFlChart = awdFlChart.get();
                 wsFlChart = awsFlChart.get();
                 wdHfChart = awdHfChart.get();
