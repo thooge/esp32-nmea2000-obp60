@@ -42,6 +42,8 @@
     #define OBP_SPI_DIN 48
     #define SHOW_TIME 6000        // Show time in [ms] for logo and WiFi QR code
     #define FULL_REFRESH_TIME 600 // Refresh cycle time in [s][600...3600] for full display update (very important healcy function)
+    #define GxEPD_WIDTH 400       // Display width
+    #define GxEPD_HEIGHT 300      // Display height
 
     // GPS (NEO-6M, NEO-M8N, ATGM336H)
     #define OBP_GPS_RX 2
@@ -119,6 +121,8 @@
     #define OBP_SPI_DIN 11
     #define SHOW_TIME 6000        // Show time in [ms] for logo and WiFi QR code
     #define FULL_REFRESH_TIME 600 // Refresh cycle time in [s][600...3600] for full display update (very important healcy function)
+    #define GxEPD_WIDTH 400       // Display width
+    #define GxEPD_HEIGHT 300      // Display height
     // SPI SD-Card
     #define SD_SPI_CS GPIO_NUM_10
     #define SD_SPI_MOSI GPIO_NUM_40

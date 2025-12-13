@@ -27,9 +27,7 @@
 #include "fonts/IBM8x8px.h"
 
 // E-Ink Display
-#define GxEPD_WIDTH 400     // Display width
-#define GxEPD_HEIGHT 300    // Display height
-
+// Definition for e-paper width an height refer OBP60Hardware.h
 #ifdef DISPLAY_GDEW042T2
 // Set display type and SPI pins for display
 GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(OBP_SPI_CS, OBP_SPI_DC, OBP_SPI_RST, OBP_SPI_BUSY)); // GDEW042T2 400x300, UC8176 (IL0398)

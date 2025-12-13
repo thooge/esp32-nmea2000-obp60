@@ -19,6 +19,9 @@ bool firstRun = true;    // Detect the first page run
 int zoom = 15;           // Default zoom level
 bool showValues = false; // Show values HDT, SOG, DBT in navigation map
 
+// Init image backup for navigation map
+uint8_t* imageBackupData = (uint8_t*) heap_caps_malloc((GxEPD_WIDTH * GxEPD_HEIGHT), MALLOC_CAP_SPIRAM); // Allocate PSRAM for image backup buffer for navigation map(400 x 300 pix)
+
 public:
     PageNavigation(CommonData &common){
         commonData = &common;
@@ -119,6 +122,11 @@ public:
         static double magneticHeading = 0;
         static double speedOverGround = 0;
         static double depthBelowTransducer = 0;
+        int imgWidth = 0;
+        int imgHeight = 0;
+        int imgBackupWidth = 400;
+        int imgBackupHeight = 250;
+        bool hasImageBackup = false;
 
         // Get boat values #1 Latitude
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
@@ -360,8 +368,8 @@ public:
 
             auto& json = net.json();                // Extract JSON content
             int numPix = json["number_pixels"] | 0; // Read number of pixels
-            int imgWidth = json["width"] | 0;       // Read width of image
-            int imgHeight = json["height"] | 0;     // Read height og image
+            imgWidth = json["width"] | 0;           // Read width of image
+            imgHeight = json["height"] | 0;         // Read height og image
 
             const char* b64src = json["picture_base64"].as<const char*>();  // Read picture as Base64 content
             size_t b64len = strlen(b64src);                                 // Calculate length of Base64 content
@@ -387,12 +395,30 @@ public:
             size_t decodedSize = 0;
             decoder.decodeBase64(b64, imageData, imgSize, decodedSize);
 
+            // Copy actual navigation man to ackup map
+            memcpy(imageBackupData, imageData, imgSize);
+
             // Show image (navigation map)
             getdisplay().drawBitmap(0, 25, imageData, imgWidth, imgHeight, commonData->fgcolor);
+            hasImageBackup = true;
 
             // Clean PSRAM
             free(b64);
             free(imageData);
+        }
+        // If no network connection then use backup navigation map
+        else{
+            // Show backup image (backup navigation map)
+            if (hasImageBackup) {
+                getdisplay().drawBitmap(0, 25, imageBackupData, imgBackupWidth, imgBackupHeight, commonData->fgcolor);
+            }    
+
+            // Show info: Connection lost
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
+            getdisplay().fillRect(200, 250 , 200, 25, commonData->fgcolor); // Black rect
+            getdisplay().fillRect(202, 252 , 196, 21, commonData->bgcolor); // White rect
+            getdisplay().setCursor(205, 270);
+            getdisplay().print("Connection lost");
         }
 
 
