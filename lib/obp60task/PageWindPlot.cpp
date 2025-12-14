@@ -167,12 +167,13 @@ public:
                 LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Creating true wind charts");                
                 auto* twdHstry = pageData.hstryManager->getBuffer("TWD");
                 auto* twsHstry = pageData.hstryManager->getBuffer("TWS");
-                twdFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 1, 0, dfltRngWd, *commonData, useSimuData));
-                twsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 0, 0, dfltRngWs, *commonData, useSimuData));
-                twdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 1, 1, dfltRngWd, *commonData, useSimuData));
-                twsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 1, 2, dfltRngWs, *commonData, useSimuData));
-                // twdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 0, 1, dfltRngWd, *commonData, useSimuData));
-                // twsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 0, 2, dfltRngWs, *commonData, useSimuData));
+
+                twdFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 'V', 0, dfltRngWd, *commonData, useSimuData));
+                twsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 'H', 0, dfltRngWs, *commonData, useSimuData));
+                twdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 'V', 1, dfltRngWd, *commonData, useSimuData));
+                twsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 'V', 2, dfltRngWs, *commonData, useSimuData));
+                // twdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 'H', 1, dfltRngWd, *commonData, useSimuData));
+                // twsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 'H', 2, dfltRngWs, *commonData, useSimuData));
                 // LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: twdHstry: %p, twsHstry: %p", (void*)twdHstry, (void*)twsHstry);
             }
 
@@ -181,10 +182,10 @@ public:
                 auto* awdHstry = pageData.hstryManager->getBuffer("AWD");
                 auto* awsHstry = pageData.hstryManager->getBuffer("AWS");
 
-                awdFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awdHstry, 1, 0, dfltRngWd, *commonData, useSimuData));
-                awsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awsHstry, 0, 0, dfltRngWs, *commonData, useSimuData));
-                awdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awdHstry, 1, 1, dfltRngWd, *commonData, useSimuData));
-                awsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awsHstry, 1, 2, dfltRngWs, *commonData, useSimuData));
+                awdFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awdHstry, 'V', 0, dfltRngWd, *commonData, useSimuData));
+                awsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awsHstry, 'H', 0, dfltRngWs, *commonData, useSimuData));
+                awdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awdHstry, 'V', 1, dfltRngWd, *commonData, useSimuData));
+                awsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awsHstry, 'V', 2, dfltRngWs, *commonData, useSimuData));
             }
             
             // Switch active charts based on showTruW
