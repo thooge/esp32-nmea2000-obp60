@@ -39,7 +39,7 @@ public:
             commonData->keylock = !commonData->keylock;
             return 0;                   // Commit the key
         }
-        // Cood for zoom -
+        // Code for zoom -
         if(key == 1){
             zoom --;                    // Zoom -
             if(zoom <7){
@@ -47,7 +47,7 @@ public:
             }
             return 0;                   // Commit the key
         }
-        // Cood for zoom -
+        // Code for zoom -
         if(key == 2){
             zoom ++;                    // Zoom +
             if(zoom >17){
@@ -68,7 +68,7 @@ public:
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
-        // bool simulation = config->getBool(config->useSimuData);
+        bool simulation = config->getBool(config->useSimuData);
         bool holdvalues = config->getBool(config->holdvalues);
         String flashLED = config->getString(config->flashLED);
         String backlightMode = config->getString(config->backlight);

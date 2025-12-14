@@ -1,0 +1,131 @@
+#if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
+
+#include <PCF8574.h>                  // PCF8574 modules from Horter
+#include "Pagedata.h"
+#include "OBP60Extensions.h"
+
+#include "images/OBP_400x300.xbm"     // OBP Logo
+#ifdef BOARD_OBP60S3
+#include "images/OBP60_400x300.xbm"   // MFD with logo
+#endif
+#ifdef BOARD_OBP40S3
+#include "images/OBP40_400x300.xbm"   // MFD with logo
+#endif
+
+class PageDigitalOut : public Page
+{
+
+// Status values
+bool button1 = false;
+bool button2 = false;
+bool button3 = false;
+bool button4 = false;
+bool button5 = false;
+
+public:
+    PageDigitalOut(CommonData &common){
+        commonData = &common;
+        common.logger->logDebug(GwLog::LOG,"Instantiate PageDigitalOut");
+    }
+
+    virtual int handleKey(int key){
+        // Code for keylock
+        if(key == 11){
+            commonData->keylock = !commonData->keylock;
+            return 0;                       // Commit the key
+        }
+        // Code for button 1 
+        if(key == 1){
+            button1 = !button1;
+            setPCF8574PortPin(0, button1 ? 0 : 1); // Attention! Inverse logic for PCF8574
+            return 0;                       // Commit the key
+        }
+        // Code for button 2
+        if(key == 2){
+            button2 = !button2;
+            setPCF8574PortPin(1, button2 ? 0 : 1); // Attention! Inverse logic for PCF8574
+            return 0;                       // Commit the key
+        }
+        // Code for button 3
+        if(key == 3){
+            button3 = !button3;
+            setPCF8574PortPin(2, button3 ? 0 : 1); // Attention! Inverse logic for PCF8574
+            return 0;                       // Commit the key
+        }
+        // Code for button 4
+        if(key == 4){
+            button4 = !button4;
+            setPCF8574PortPin(3, button4 ? 0 : 1); // Attention! Inverse logic for PCF8574
+            return 0;                       // Commit the key
+        }
+        // Code for button 5
+        if(key == 5){
+            button5 = !button5;
+            setPCF8574PortPin(4, button5 ? 0 : 1); // Attention! Inverse logic for PCF8574
+            return 0;                       // Commit the key
+        }
+        return key;
+    }
+
+    int displayPage(PageData &pageData){
+        GwConfigHandler *config = commonData->config;
+        GwLog *logger = commonData->logger;
+
+        // Get config data
+        String lengthformat = config->getString(config->lengthFormat);
+        bool simulation = config->getBool(config->useSimuData);
+        bool holdvalues = config->getBool(config->holdvalues);
+        String flashLED = config->getString(config->flashLED);
+        String backlightMode = config->getString(config->backlight);
+
+        // Optical warning by limit violation (unused)
+        if(String(flashLED) == "Limit Violation"){
+            setBlinkingLED(false);
+            setFlashLED(false); 
+        }
+
+        // Logging boat values
+        LOG_DEBUG(GwLog::LOG,"Drawing at PageDigitalOut");
+
+        // Draw page
+        //***********************************************************
+
+        // Set display in partial refresh mode
+        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        getdisplay().setTextColor(commonData->fgcolor);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
+        getdisplay().fillRoundRect(200, 250 , 200, 25, 5, commonData->fgcolor); // Black rect
+        getdisplay().fillRoundRect(202, 252 , 196, 21, 5, commonData->bgcolor); // White rect
+        getdisplay().setCursor(210, 270);
+        getdisplay().print("Map server lost");
+
+        // Set botton labels
+        commonData->keydata[0].label = "BTN 1";
+        commonData->keydata[1].label = "BTN 2";
+        commonData->keydata[2].label = "BTN 3";
+        commonData->keydata[3].label = "BTN 4";
+        commonData->keydata[4].label = "BTN 5";
+
+        return PAGE_UPDATE;
+    };
+};
+
+static Page* createPage(CommonData &common){
+    return new PageDigitalOut(common);
+}
+
+/**
+ * with the code below we make this page known to the PageTask
+ * we give it a type (name) that can be selected in the config
+ * we define which function is to be called
+ * and we provide the number of user parameters we expect
+ * this will be number of BoatValue pointers in pageData.values
+ */
+PageDescription registerPageDigitalOut(
+    "DigitalOut",   // Page name
+    createPage,     // Action
+    0,              // Number of bus values depends on selection in Web configuration
+    true            // Show display header on/off
+);
+
+#endif

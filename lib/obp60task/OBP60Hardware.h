@@ -5,7 +5,8 @@
     // Direction pin for RS485 NMEA0183
     #define OBP_DIRECTION_PIN 18
     // I2C
-    #define I2C_SPEED 10000UL       // 10kHz clock speed on I2C bus
+    #define I2C_SPEED 10000UL       // 100kHz clock speed on I2C bus
+    #define I2C_SPEED_LOW 1000UL    // 10kHz clock speed on I2C bus for external bus
     #define OBP_I2C_SDA 47
     #define OBP_I2C_SCL 21
     // DS1388 RTC
@@ -84,7 +85,8 @@
     // Direction pin for RS485 NMEA0183
     #define OBP_DIRECTION_PIN 8
     // I2C
-    #define I2C_SPEED 100000UL       // 100kHz clock speed on I2C bus
+    #define I2C_SPEED 100000UL      // 100kHz clock speed on I2C bus
+    #define I2C_SPEED_LOW 1000UL    // 10kHz clock speed on I2C bus for external bus
     #define OBP_I2C_SDA 21
     #define OBP_I2C_SCL 38
     // DS1388 RTC

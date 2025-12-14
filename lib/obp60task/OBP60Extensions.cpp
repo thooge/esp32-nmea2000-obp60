@@ -1,9 +1,9 @@
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include <Arduino.h>
-#include <PCF8574.h>      // Driver for PCF8574 output modul from Horter
 #include <Wire.h>         // I2C
 #include <RTClib.h>       // Driver for DS1388 RTC
+#include <PCF8574.h>      // PCF8574 modules from Horter
 #include "SunRise.h"      // Lib for sunrise and sunset calculation
 #include "Pagedata.h"
 #include "OBP60Hardware.h"
@@ -88,10 +88,11 @@ void hardwareInit(GwApi *api)
 
     Wire.begin();
     // Init PCF8574 digital outputs
-    Wire.setClock(I2C_SPEED);       // Set I2C clock on 10 kHz
+    Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
     if(pcf8574_Out.begin()){        // Initialize PCF8574
         pcf8574_Out.write8(255);    // Clear all outputs
     }
+    Wire.setClock(I2C_SPEED);       // Set I2C clock on 100 kHz
     fram = Adafruit_FRAM_I2C();
     if (esp_reset_reason() ==  ESP_RST_POWERON) {
         // help initialize FRAM
@@ -191,6 +192,15 @@ void powerInit(String powermode) {
 #endif
     }
 }
+
+void setPCF8574PortPin(uint pin, uint8_t value){
+    Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
+    if(pcf8574_Out.begin()){        // Check available and initialize PCF8574
+        pcf8574_Out.write(pin, value); // Toggle pin
+    }
+    Wire.setClock(I2C_SPEED);       // Set I2C clock on 100 kHz
+}
+
 
 void setPortPin(uint pin, bool value){
     pinMode(pin, OUTPUT);

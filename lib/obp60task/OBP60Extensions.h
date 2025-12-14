@@ -89,8 +89,8 @@ uint8_t getLastPage();
 void hardwareInit(GwApi *api);
 void powerInit(String powermode);
 
+void setPCF8574PortPin(uint pin, uint8_t value);// Set PCF8574 port pin
 void setPortPin(uint pin, bool value);          // Set port pin for extension port
-
 void togglePortPin(uint pin);                   // Toggle extension port pin
 
 Color colorMapping(const String &colorString);          // Color mapping string to CHSV colors
