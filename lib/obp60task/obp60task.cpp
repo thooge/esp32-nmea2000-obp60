@@ -433,8 +433,8 @@ void OBP60Task(GwApi *api){
     int lastPage=pageNumber;
 
     BoatValueList boatValues; //all the boat values for the api query
-    HstryManager hstryManager(1920, logger, &boatValues);  // Create and manage history buffers
-    WindUtils trueWind(&boatValues);  // Create helper object for true wind calculation
+    HstryBuffers hstryBufList(1920, &boatValues, logger);  // Create empty list of boat data history buffers
+    WindUtils trueWind(&boatValues, logger);  // Create helper object for true wind calculation
     //commonData.distanceformat=config->getString(xxx);
     //add all necessary data to common data
 
@@ -477,9 +477,18 @@ void OBP60Task(GwApi *api){
             LOG_DEBUG(GwLog::DEBUG,"added fixed value %s to page %d",value->getName().c_str(),i);
             pages[i].parameters.values.push_back(value); 
        }
-       // Add history manager to page parameters
-       pages[i].parameters.hstryManager = &hstryManager;
+
+       // Read the specified boat data type of relevant pages and create a history buffer for each type
+       if (pages[i].parameters.pageName == "OneValue" || pages[i].parameters.pageName == "TwoValues" || pages[i].parameters.pageName == "WindPlot") {
+           for (auto pVal : pages[i].parameters.values) {
+                hstryBufList.addBuffer(pVal->getName());
+           }
+       }
+       // Add list of history buffers to page parameters
+       pages[i].parameters.hstryBuffers = &hstryBufList;
+
     }
+
     // add out of band system page (always available)
     Page *syspage = allPages.pages[0]->creator(commonData);
 
@@ -487,7 +496,6 @@ void OBP60Task(GwApi *api){
     bool calcTrueWnds = api->getConfig()->getBool(api->getConfig()->calcTrueWnds, false);
     bool useSimuData = api->getConfig()->getBool(api->getConfig()->useSimuData, false);
 
-    // Initialize history buffer for certain boat data
     // Read all calibration data settings from config
     calibrationData.readConfig(config, logger);
 
@@ -804,10 +812,10 @@ void OBP60Task(GwApi *api){
                 api->getStatus(commonData.status);
 
                 if (calcTrueWnds) {
-                    trueWind.addTrueWind(api, &boatValues, logger);
+                    trueWind.addTrueWind();
                 }
                 // Handle history buffers for certain boat data for windplot page and other usage
-                 hstryManager.handleHstryBufs(useSimuData);
+                 hstryBufList.handleHstryBufs(useSimuData);
 
                 // Clear display
                 // getdisplay().fillRect(0, 0, getdisplay().width(), getdisplay().height(), commonData.bgcolor);

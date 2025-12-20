@@ -1,38 +1,34 @@
 #include "OBPDataOperations.h"
 #include "BoatDataCalibration.h"        // Functions lib for data instance calibration
 #include <math.h>
-#include <vector>
-#include <map>
-#include <memory>
 
 // --- Class HstryBuf ---------------
-
-HstryBuf::HstryBuf(const String& name, int size, GwLog* log, BoatValueList* boatValues)
+HstryBuf::HstryBuf(const String& name, int size, BoatValueList* boatValues, GwLog* log)
     : logger(log), boatDataName(name) {
-    hstry.resize(size);
+    hstryBuf.resize(size);
     boatValue = boatValues->findValueOrCreate(name);
 }
 
 void HstryBuf::init(const String& format, int updFreq, int mltplr, double minVal, double maxVal) {
-    hstry.setMetaData(boatDataName, format, updFreq, mltplr, minVal, maxVal);
+    hstryBuf.setMetaData(boatDataName, format, updFreq, mltplr, minVal, maxVal);
     hstryMin = minVal;
     hstryMax = maxVal;
     if (!boatValue->valid) {
         boatValue->setFormat(format);
-        boatValue->value = std::numeric_limits<double>::max();
+        boatValue->value = std::numeric_limits<double>::max(); // mark current value invalid
     }
 }
 
 void HstryBuf::add(double value) {
     if (value >= hstryMin && value <= hstryMax) {
-        hstry.add(value);
+        hstryBuf.add(value);
     }
 }
 
 void HstryBuf::handle(bool useSimuData) {
     GwApi::BoatValue *calBVal;
 
-    if (boatValue->valid) {
+    if (boatValue->valid) { // add calibrated boat value to history buffer
         calBVal = new GwApi::BoatValue(boatDataName.c_str());
         calBVal->setFormat(boatValue->getFormat());
         calBVal->value = boatValue->value;
@@ -41,8 +37,8 @@ void HstryBuf::handle(bool useSimuData) {
         add(calBVal->value);
         delete calBVal;
         calBVal = nullptr;
-    } else if (useSimuData) {
-        double simValue = hstry.getLast();
+    } else if (useSimuData) { // add simulated value to history buffer
+        double simValue = hstryBuf.getLast();
         if (boatDataName == "TWD" || boatDataName == "AWD") {
             simValue += static_cast<double>(random(-349, 349) / 1000.0);
             simValue = WindUtils::to2PI(simValue);
@@ -53,48 +49,53 @@ void HstryBuf::handle(bool useSimuData) {
         add(simValue);
     }
 }
+// --- End Class HstryBuf ---------------
 
-// --- Class HstryManager ---------------
-HstryManager::HstryManager(int size, GwLog* log, BoatValueList* boatValues) {
-    // Create history buffers for each boat data type
-    hstryBufs["TWD"] = std::unique_ptr<HstryBuf>(new HstryBuf("TWD", size, log, boatValues));
-    hstryBufs["TWS"] = std::unique_ptr<HstryBuf>(new HstryBuf("TWS", size, log, boatValues));
-    hstryBufs["AWD"] = std::unique_ptr<HstryBuf>(new HstryBuf("AWD", size, log, boatValues));
-    hstryBufs["AWS"] = std::unique_ptr<HstryBuf>(new HstryBuf("AWS", size, log, boatValues));
-
-    // Initialize metadata for each buffer
-    int hstryUpdFreq = 1000; // Update frequency for history buffers in ms
-    int mltplr = 1000; // Multiplier which transforms original <double> value into buffer type format
-    double hstryMinVal = 0; // Minimum value for these history buffers
-    double courseMax = 2 * M_PI;
-    double speedMax = 65;
-
-    mltplr = 10000; // Store 4 decimals for course data
-    hstryBufs["TWD"]->init("formatCourse", hstryUpdFreq, mltplr, hstryMinVal, courseMax);
-    hstryBufs["AWD"]->init("formatCourse", hstryUpdFreq, mltplr, hstryMinVal, courseMax);
-
-    mltplr = 1000; // Store 3 decimals for windspeed data
-    hstryBufs["TWS"]->init("formatKnots", hstryUpdFreq, mltplr, hstryMinVal, speedMax);
-    hstryBufs["AWS"]->init("formatKnots", hstryUpdFreq, mltplr, hstryMinVal, speedMax);
+// --- Class HstryBuffers ---------------
+HstryBuffers::HstryBuffers(int size, BoatValueList* boatValues, GwLog* log)
+    : size(size), boatValueList(boatValues), logger(log) {
 
     // collect boat values for true wind calculation
-    awaBVal = boatValues->findValueOrCreate("AWA");
-    hdtBVal = boatValues->findValueOrCreate("HDT");
-    hdmBVal = boatValues->findValueOrCreate("HDM");
-    varBVal = boatValues->findValueOrCreate("VAR");
-    cogBVal = boatValues->findValueOrCreate("COG");
-    sogBVal = boatValues->findValueOrCreate("SOG");
-    awdBVal = boatValues->findValueOrCreate("AWD");
+    // should have been already all created at true wind object initialization
+    // potentially to be moved to history buffer handling
+    awaBVal = boatValueList->findValueOrCreate("AWA");
+    hdtBVal = boatValueList->findValueOrCreate("HDT");
+    hdmBVal = boatValueList->findValueOrCreate("HDM");
+    varBVal = boatValueList->findValueOrCreate("VAR");
+    cogBVal = boatValueList->findValueOrCreate("COG");
+    sogBVal = boatValueList->findValueOrCreate("SOG");
+    awdBVal = boatValueList->findValueOrCreate("AWD");
+}
+
+void HstryBuffers::addBuffer(const String& name) {
+    // Create history buffer for boat data type
+
+    if (HstryBuffers::getBuffer(name) != nullptr) { // buffer for this data type already exists
+        return;
+    }
+
+    hstryBuffers[name] = std::unique_ptr<HstryBuf>(new HstryBuf(name, size, boatValueList, logger));
+
+    // Initialize metadata for buffer
+    // String valueFormat = boatValueList->findValueOrCreate(name)->getFormat().c_str(); // Unfortunately, format is not yet available during system initialization
+    String valueFormat = bufferParams[name].format; // Data format of boat data type
+    int hstryUpdFreq = bufferParams[name].hstryUpdFreq; // Update frequency for history buffers in ms
+    int mltplr = bufferParams[name].mltplr; // default multiplier which transforms original <double> value into buffer type format
+    double bufferMinVal = bufferParams[name].bufferMinVal; // Min value for this history buffer
+    double bufferMaxVal = bufferParams[name].bufferMaxVal; // Max value for this history buffer
+
+    hstryBuffers[name]->init(valueFormat, hstryUpdFreq, mltplr, bufferMinVal, bufferMaxVal);
+    LOG_DEBUG(GwLog::DEBUG,"HstryBuffers-new buffer added: name: %s, format: %s, multiplier: %d, min value: %.2f, max value: %.2f", name, valueFormat, mltplr, bufferMinVal, bufferMaxVal);
 }
 
 // Handle history buffers for TWD, TWS, AWD, AWS
-void HstryManager::handleHstryBufs(bool useSimuData) {
+void HstryBuffers::handleHstryBufs(bool useSimuData) {
 
     static double hdt = 20; //initial value only relevant if we use simulation data
     GwApi::BoatValue *calBVal; // temp variable just for data calibration -> we don't want to calibrate the original data here
 
     // Handle all registered history buffers
-    for (auto& pair : hstryBufs) {
+    for (auto& pair : hstryBuffers) {
         auto& buf = pair.second;
         buf->handle(useSimuData);
     }
@@ -118,8 +119,8 @@ void HstryManager::handleHstryBufs(bool useSimuData) {
         awdBVal->value = calBVal->value;
         awdBVal->valid = true;
         // Find the AWD buffer and add the value.
-        auto it = hstryBufs.find("AWD");
-        if (it != hstryBufs.end()) {
+        auto it = hstryBuffers.find("AWD");
+        if (it != hstryBuffers.end()) {
             it->second->add(calBVal->value);
         }
 
@@ -130,14 +131,14 @@ void HstryManager::handleHstryBufs(bool useSimuData) {
     }
 }
 
-RingBuffer<uint16_t>* HstryManager::getBuffer(const String& name) {
-    auto it = hstryBufs.find(name);
-    if (it != hstryBufs.end()) {
-        return &it->second->hstry;
+RingBuffer<uint16_t>* HstryBuffers::getBuffer(const String& name) {
+    auto it = hstryBuffers.find(name);
+    if (it != hstryBuffers.end()) {
+        return &it->second->hstryBuf;
     }
     return nullptr;
 }
-// --- Class HstryBuf ---------------
+// --- End Class HstryBuffers ---------------
 
 // --- Class WindUtils --------------
 double WindUtils::to2PI(double a)
@@ -277,23 +278,24 @@ bool WindUtils::calcTrueWind(const double* awaVal, const double* awsVal,
 }
 
 // Calculate true wind data and add to obp60task boat data list
-bool WindUtils::addTrueWind(GwApi* api, BoatValueList* boatValues, GwLog* log) {
+//bool WindUtils::addTrueWind(GwApi* api, GwLog* log) {
+bool WindUtils::addTrueWind() {
 
-    GwLog* logger = log;
+//    GwLog* logger = log;
 
-    double awaVal, awsVal, cogVal, stwVal, sogVal, hdtVal, hdmVal, varVal;
+//    double awaVal, awsVal, cogVal, stwVal, sogVal, hdtVal, hdmVal, varVal;
     double twd, tws, twa;
     bool isCalculated = false;
 
-    awaVal = awaBVal->valid ? awaBVal->value : DBL_MAX;
-    awsVal = awsBVal->valid ? awsBVal->value : DBL_MAX;
-    cogVal = cogBVal->valid ? cogBVal->value : DBL_MAX;
-    stwVal = stwBVal->valid ? stwBVal->value : DBL_MAX;
-    sogVal = sogBVal->valid ? sogBVal->value : DBL_MAX;
-    hdtVal = hdtBVal->valid ? hdtBVal->value : DBL_MAX;
-    hdmVal = hdmBVal->valid ? hdmBVal->value : DBL_MAX;
-    varVal = varBVal->valid ? varBVal->value : DBL_MAX;
-    LOG_DEBUG(GwLog::DEBUG,"obp60task addTrueWind: AWA %.1f, AWS %.1f, COG %.1f, STW %.1f, SOG %.2f, HDT %.1f, HDM %.1f, VAR %.1f", awaBVal->value * RAD_TO_DEG, awsBVal->value * 3.6 / 1.852,
+    double awaVal = awaBVal->valid ? awaBVal->value : DBL_MAX;
+    double awsVal = awsBVal->valid ? awsBVal->value : DBL_MAX;
+    double cogVal = cogBVal->valid ? cogBVal->value : DBL_MAX;
+    double stwVal = stwBVal->valid ? stwBVal->value : DBL_MAX;
+    double sogVal = sogBVal->valid ? sogBVal->value : DBL_MAX;
+    double hdtVal = hdtBVal->valid ? hdtBVal->value : DBL_MAX;
+    double hdmVal = hdmBVal->valid ? hdmBVal->value : DBL_MAX;
+    double varVal = varBVal->valid ? varBVal->value : DBL_MAX;
+    LOG_DEBUG(GwLog::DEBUG,"WindUtils:addTrueWind: AWA %.1f, AWS %.1f, COG %.1f, STW %.1f, SOG %.2f, HDT %.1f, HDM %.1f, VAR %.1f", awaBVal->value * RAD_TO_DEG, awsBVal->value * 3.6 / 1.852,
             cogBVal->value * RAD_TO_DEG, stwBVal->value * 3.6 / 1.852, sogBVal->value * 3.6 / 1.852, hdtBVal->value * RAD_TO_DEG, hdmBVal->value * RAD_TO_DEG, varBVal->value * RAD_TO_DEG);
 
     isCalculated = calcTrueWind(&awaVal, &awsVal, &cogVal, &stwVal, &sogVal, &hdtVal, &hdmVal, &varVal, &twd, &tws, &twa);
@@ -312,9 +314,9 @@ bool WindUtils::addTrueWind(GwApi* api, BoatValueList* boatValues, GwLog* log) {
             twaBVal->valid = true;
         }
     }
-    LOG_DEBUG(GwLog::DEBUG,"obp60task addTrueWind: isCalculated %d, TWD %.1f, TWA %.1f, TWS %.1f", isCalculated, twdBVal->value * RAD_TO_DEG,
+    LOG_DEBUG(GwLog::DEBUG,"WindUtils:addTrueWind: isCalculated %d, TWD %.1f, TWA %.1f, TWS %.1f", isCalculated, twdBVal->value * RAD_TO_DEG,
         twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852);
 
     return isCalculated;
 }
-// --- Class WindUtils --------------
+// --- End Class WindUtils --------------

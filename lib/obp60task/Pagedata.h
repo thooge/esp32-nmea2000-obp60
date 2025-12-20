@@ -16,7 +16,7 @@ typedef struct{
   uint8_t pageNumber; // page number in sequence of visible pages
   //the values will always contain the user defined values first
   ValueList values;
-  HstryManager* hstryManager;
+  HstryBuffers* hstryBuffers; // list of all boat history buffers
 } PageData;
 
 // Sensor data structure (only for extended sensors, not for NMEA bus sensors)
