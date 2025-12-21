@@ -68,19 +68,20 @@ public:
 
 class WindUtils {
 private:
-    GwApi::BoatValue *twdBVal, *twsBVal, *twaBVal;
-    GwApi::BoatValue *awaBVal, *awsBVal, *cogBVal, *stwBVal, *sogBVal, *hdtBVal, *hdmBVal, *varBVal;
+    GwApi::BoatValue *twaBVal, *twsBVal, *twdBVal;
+    GwApi::BoatValue *awaBVal, *awsBVal, *awdBVal, *cogBVal, *stwBVal, *sogBVal, *hdtBVal, *hdmBVal, *varBVal;
     static constexpr double DBL_MAX = std::numeric_limits<double>::max();
     GwLog* logger;
 
 public:
     WindUtils(BoatValueList* boatValues, GwLog* log)
         : logger(log) {
-        twdBVal = boatValues->findValueOrCreate("TWD");
-        twsBVal = boatValues->findValueOrCreate("TWS");
         twaBVal = boatValues->findValueOrCreate("TWA");
+        twsBVal = boatValues->findValueOrCreate("TWS");
+        twdBVal = boatValues->findValueOrCreate("TWD");
         awaBVal = boatValues->findValueOrCreate("AWA");
         awsBVal = boatValues->findValueOrCreate("AWS");
+        awdBVal = boatValues->findValueOrCreate("AWD");
         cogBVal = boatValues->findValueOrCreate("COG");
         stwBVal = boatValues->findValueOrCreate("STW");
         sogBVal = boatValues->findValueOrCreate("SOG");
@@ -100,11 +101,11 @@ public:
         double* phi, double* r);
     void calcTwdSA(const double* AWA, const double* AWS,
         const double* CTW, const double* STW, const double* HDT,
-        double* TWD, double* TWS, double* TWA);
+        double* TWD, double* TWS, double* TWA, double* AWD);
     static double calcHDT(const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal);
-    bool calcTrueWind(const double* awaVal, const double* awsVal,
+    bool calcWinds(const double* awaVal, const double* awsVal,
         const double* cogVal, const double* stwVal, const double* sogVal, const double* hdtVal,
-        const double* hdmVal, const double* varVal, double* twdVal, double* twsVal, double* twaVal);
-//    bool addTrueWind(GwApi* api, BoatValueList* boatValues, GwLog *log);
-    bool addTrueWind();
+        const double* hdmVal, const double* varVal, double* twdVal, double* twsVal, double* twaVal, double* awdVal);
+    bool calcATWD(const double* waVal, const double* hdtVal, const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal, double* wdVal);
+    bool addWinds();
 };

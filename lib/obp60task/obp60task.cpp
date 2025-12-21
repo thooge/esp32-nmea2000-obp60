@@ -812,7 +812,7 @@ void OBP60Task(GwApi *api){
                 api->getStatus(commonData.status);
 
                 if (calcTrueWnds) {
-                    trueWind.addTrueWind();
+                    trueWind.addWinds();
                 }
                 // Handle history buffers for certain boat data for windplot page and other usage
                  hstryBufList.handleHstryBufs(useSimuData);

@@ -25,6 +25,33 @@ private:
     String flashLED;
     String backlightMode;
 
+#ifdef BOARD_OBP40S3
+    String wndSrc; // Wind source true/apparent wind - preselection for OBP40
+#endif
+
+    // Data buffers pointers (owned by HstryBuffers)
+    RingBuffer<uint16_t>* twdHstry = nullptr;
+    RingBuffer<uint16_t>* twsHstry = nullptr;
+    RingBuffer<uint16_t>* awdHstry = nullptr;
+    RingBuffer<uint16_t>* awsHstry = nullptr;
+
+    // Chart objects
+    std::unique_ptr<Chart<uint16_t>> twdFlChart, awdFlChart; // Chart object for wind direction, full size
+    std::unique_ptr<Chart<uint16_t>> twsFlChart, awsFlChart; // Chart object for wind speed, full size
+    std::unique_ptr<Chart<uint16_t>> twdHfChart, awdHfChart; // Chart object for wind direction, half size
+    std::unique_ptr<Chart<uint16_t>> twsHfChart, awsHfChart; // Chart object for wind speed, half size
+
+    // Active charts and values
+    Chart<uint16_t>* wdFlChart = nullptr;
+    Chart<uint16_t>* wsFlChart = nullptr;
+    Chart<uint16_t>* wdHfChart = nullptr;
+    Chart<uint16_t>* wsHfChart = nullptr;
+    GwApi::BoatValue* wdBVal = nullptr;
+    GwApi::BoatValue* wsBVal = nullptr;
+
+    const double dfltRngWd = 60.0 * DEG_TO_RAD; // default range for course chart from min to max value in RAD
+    const double dfltRngWs = 7.5; // default range for wind speed chart from min to max value in m/s
+
 public:
     PageWindPlot(CommonData& common)
     {
@@ -32,11 +59,16 @@ public:
         logger = commonData->logger;
         LOG_DEBUG(GwLog::LOG, "Instantiate PageWindPlot");
 
+        width = getdisplay().width(); // Screen width
+        height = getdisplay().height(); // Screen height
+
         // Get config data
         useSimuData = common.config->getBool(common.config->useSimuData);
         // holdValues = common.config->getBool(common.config->holdvalues);
         flashLED = common.config->getString(common.config->flashLED);
         backlightMode = common.config->getString(common.config->backlight);
+
+        oldShowTruW = !showTruW; // makes wind source being initialized at initial page call
     }
 
     virtual void setupKeys()
@@ -102,111 +134,70 @@ public:
 
     virtual void displayNew(PageData& pageData)
     {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
 #ifdef BOARD_OBP40S3
-        String wndSrc; // Wind source true/apparent wind - preselection for OBP40
-
         wndSrc = commonData->config->getString("page" + String(pageData.pageNumber) + "wndsrc");
         if (wndSrc == "True wind") {
             showTruW = true;
         } else {
             showTruW = false; // Wind source is apparent wind
         }
-        LOG_DEBUG(GwLog::LOG, "New PageWindPlot; wind source=%s", wndSrc);
+        oldShowTruW = !showTruW; // Force chart update in displayPage
 #endif
-        oldShowTruW = !showTruW; // makes wind source being initialized at initial page call
 
-        width = getdisplay().width(); // Screen width
-        height = getdisplay().height(); // Screen height
+        if (!twdFlChart) { // Create true wind charts if they don't exist
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Creating true wind charts");
+            twdHstry = pageData.hstryBuffers->getBuffer("TWD");
+            twsHstry = pageData.hstryBuffers->getBuffer("TWS");
+
+            twdFlChart.reset(new Chart<uint16_t>(*twdHstry, 'V', 0, dfltRngWd, *commonData, useSimuData));
+            twsFlChart.reset(new Chart<uint16_t>(*twsHstry, 'H', 0, dfltRngWs, *commonData, useSimuData));
+            twdHfChart.reset(new Chart<uint16_t>(*twdHstry, 'V', 1, dfltRngWd, *commonData, useSimuData));
+            twsHfChart.reset(new Chart<uint16_t>(*twsHstry, 'V', 2, dfltRngWs, *commonData, useSimuData));
+        }
+
+        if (!awdFlChart) { // Create apparent wind charts if they don't exist
+            LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Creating apparent wind charts");
+            awdHstry = pageData.hstryBuffers->getBuffer("AWD");
+            awsHstry = pageData.hstryBuffers->getBuffer("AWS");
+
+            awdFlChart.reset(new Chart<uint16_t>(*awdHstry, 'V', 0, dfltRngWd, *commonData, useSimuData));
+            awsFlChart.reset(new Chart<uint16_t>(*awsHstry, 'H', 0, dfltRngWs, *commonData, useSimuData));
+            awdHfChart.reset(new Chart<uint16_t>(*awdHstry, 'V', 1, dfltRngWd, *commonData, useSimuData));
+            awsHfChart.reset(new Chart<uint16_t>(*awsHstry, 'V', 2, dfltRngWs, *commonData, useSimuData));
+        }
     }
 
     int displayPage(PageData& pageData)
     {
-        GwConfigHandler* config = commonData->config;
-
-        static RingBuffer<uint16_t>* wdHstry; // Wind direction data buffer
-        static RingBuffer<uint16_t>* wsHstry; // Wind speed data buffer
-        static RingBuffer<uint16_t>* twdHstry; // Wind direction data buffer for TWD
-        static RingBuffer<uint16_t>* twsHstry; // Wind speed data buffer for TWS
-        static RingBuffer<uint16_t>* awdHstry; // Wind direction data buffer for AWD
-        static RingBuffer<uint16_t>* awsHstry; // Wind speed data buffer for AWS
-
-        // Separate chart objects for true wind and apparent wind
-        static std::unique_ptr<Chart<uint16_t>> twdFlChart, awdFlChart; // chart object for wind direction chart, full size
-        static std::unique_ptr<Chart<uint16_t>> twsFlChart, awsFlChart; // chart object for wind speed chart, full size
-        static std::unique_ptr<Chart<uint16_t>> twdHfChart, awdHfChart; // chart object for wind direction chart, half size
-        static std::unique_ptr<Chart<uint16_t>> twsHfChart, awsHfChart; // chart object for wind speed chart, half size
-        // Pointers to the currently active charts
-        static Chart<uint16_t>* wdFlChart;
-        static Chart<uint16_t>* wsFlChart;
-        static Chart<uint16_t>* wdHfChart;
-        static Chart<uint16_t>* wsHfChart;
-
-        static GwApi::BoatValue* wdBVal; // BoatValue for wind direction
-        static GwApi::BoatValue* wsBVal; // BoatValue for wind speed
-        double dfltRngWd = 60.0 * DEG_TO_RAD; // default range for course chart from min to max value in RAD
-        double dfltRngWs = 7.5; // default range for wind speed chart from min to max value in m/s
-
-        const int numBoatData = 4;
-        GwApi::BoatValue* bvalue[numBoatData]; // current boat data values
-
         LOG_DEBUG(GwLog::LOG, "Display PageWindPlot");
         ulong pageTime = millis();
 
-        // read boat data values
-        for (int i = 0; i < numBoatData; i++) {
-            bvalue[i] = pageData.values[i];
-        }
-
-        // Optical warning by limit violation (unused)
-        if (String(flashLED) == "Limit Violation") {
-            setBlinkingLED(false);
-            setFlashLED(false);
-        }
-
         if (showTruW != oldShowTruW) {
-            if (!twdFlChart) { // Create true wind charts if they don't exist
-                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Creating true wind charts");
-                twdHstry = pageData.hstryBuffers->getBuffer("TWD");
-                twsHstry = pageData.hstryBuffers->getBuffer("TWS");
 
-                twdFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 'V', 0, dfltRngWd, *commonData, useSimuData));
-                twsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 'H', 0, dfltRngWs, *commonData, useSimuData));
-                twdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twdHstry, 'V', 1, dfltRngWd, *commonData, useSimuData));
-                twsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*twsHstry, 'V', 2, dfltRngWs, *commonData, useSimuData));
-            }
-
-            if (!awdFlChart) { // Create apparent wind charts if they don't exist
-                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Creating apparent wind charts");
-                awdHstry = pageData.hstryBuffers->getBuffer("AWD");
-                awsHstry = pageData.hstryBuffers->getBuffer("AWS");
-
-                awdFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awdHstry, 'V', 0, dfltRngWd, *commonData, useSimuData));
-                awsFlChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awsHstry, 'H', 0, dfltRngWs, *commonData, useSimuData));
-                awdHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awdHstry, 'V', 1, dfltRngWd, *commonData, useSimuData));
-                awsHfChart = std::unique_ptr<Chart<uint16_t>>(new Chart<uint16_t>(*awsHstry, 'V', 2, dfltRngWs, *commonData, useSimuData));
-            }
-            
             // Switch active charts based on showTruW
             if (showTruW) {
-                wdHstry = twdHstry;
-                wsHstry = twsHstry;
                 wdFlChart = twdFlChart.get();
                 wsFlChart = twsFlChart.get();
                 wdHfChart = twdHfChart.get();
                 wsHfChart = twsHfChart.get();
-                wdBVal = bvalue[0];
-                wsBVal = bvalue[1];
+                wdBVal = pageData.values[0];
+                wsBVal = pageData.values[1];
             } else {
-                wdHstry = awdHstry;
-                wsHstry = awsHstry;
                 wdFlChart = awdFlChart.get();
                 wsFlChart = awsFlChart.get();
                 wdHfChart = awdHfChart.get();
                 wsHfChart = awsHfChart.get();
-                wdBVal = bvalue[2];
-                wsBVal = bvalue[3];
+                wdBVal = pageData.values[2];
+                wsBVal = pageData.values[3];
             }
-            
+
             oldShowTruW = showTruW;
         }
 
