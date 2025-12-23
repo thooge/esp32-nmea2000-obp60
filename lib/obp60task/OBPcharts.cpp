@@ -4,6 +4,13 @@
 #include "OBPRingBuffer.h"
 
 // --- Class Chart ---------------
+
+// Chart - object holding the actual chart, incl. data buffer and format definition
+// Parameters: <chrtDir> chart timeline direction: 'H' = horizontal, 'V' = vertical;
+//             <chrtSz> chart size: [0] = full size, [1] = half size left/top, [2] half size right/bottom;
+//             <dfltRng> default range of chart, e.g. 30 = [0..30];
+//             <common> common program data; required for logger and color data
+//             <useSimuData> flag to indicate if simulation data is active
 template <typename T>
 Chart<T>::Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dfltRng, CommonData& common, bool useSimuData)
     : dataBuf(dataBuf)
@@ -23,7 +30,7 @@ Chart<T>::Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dflt
 
     if (chrtDir == 'H') {
         // horizontal chart timeline direction
-        timAxis = dWidth;
+        timAxis = dWidth - 1;
         switch (chrtSz) {
         case 0:
             valAxis = dHeight - top - bottom;
@@ -41,12 +48,13 @@ Chart<T>::Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dflt
             LOG_DEBUG(GwLog::ERROR, "displayChart: wrong init parameter");
             return;
         }
+
     } else if (chrtDir == 'V') {
         // vertical chart timeline direction
         timAxis = dHeight - top - bottom;
         switch (chrtSz) {
         case 0:
-            valAxis = dWidth;
+            valAxis = dWidth - 1;
             cStart = { 0, top - 1 };
             break;
         case 1:
@@ -106,21 +114,39 @@ Chart<T>::~Chart()
 }
 
 // Perform all actions to draw chart
-// Parameters are chart time interval, and the current boat data value to be printed
+// Parameters: <chrtIntv> chart time interval, <currValue> current boat data value to be printed, <showCurrValue> current boat data shall be shown yes/no
 template <typename T>
-void Chart<T>::showChrt(int8_t chrtIntv, GwApi::BoatValue currValue)
+void Chart<T>::showChrt(int8_t chrtIntv, GwApi::BoatValue currValue, bool showCurrValue)
 {
     drawChrt(chrtIntv, currValue);
     drawChrtTimeAxis(chrtIntv);
     drawChrtValAxis();
 
     if (bufDataValid) {
-        // uses BoatValue temp variable <currValue> to format latest buffer value
-        // doesn't work unfortunately when 'simulation data' is active, because OBP60Formatter generates own simulation value in that case
-        currValue.value = dataBuf.getLast();
-        currValue.valid = currValue.value != dbMAX_VAL;
-        Chart<T>::prntCurrValue(currValue);
-        LOG_DEBUG(GwLog::DEBUG, "Chart drawChrt: currValue-value: %.1f, Valid: %d, Name: %s, Address: %p", currValue.value, currValue.valid, currValue.getName(), (void*)&currValue);
+        if (showCurrValue) {
+            // uses BoatValue temp variable <currValue> to format latest buffer value
+            // doesn't work unfortunately when 'simulation data' is active, because OBP60Formatter generates own simulation value in that case
+            currValue.value = dataBuf.getLast();
+            currValue.valid = currValue.value != dbMAX_VAL;
+            Chart<T>::prntCurrValue(currValue);
+            LOG_DEBUG(GwLog::DEBUG, "OBPcharts showChrt: currValue-value: %.1f, Valid: %d, Name: %s, Address: %p", currValue.value, currValue.valid, currValue.getName(), (void*)&currValue);
+        }
+
+    } else { // No valid data available -> print message
+        getdisplay().setFont(&Ubuntu_Bold10pt8b);
+
+        int pX, pY;
+        if (chrtDir == 'H') {
+            pX = cStart.x + (timAxis / 2);
+            pY = cStart.y + (valAxis / 2) - 10;
+        } else {
+            pX = cStart.x + (valAxis / 2);
+            pY = cStart.y + (timAxis / 2) - 10;
+        }
+
+        getdisplay().fillRect(pX - 37, pY - 10, 78, 24, bgColor); // Clear area for message
+        drawTextCenter(pX, pY, "No data");
+        LOG_DEBUG(GwLog::LOG, "Page chart: No valid data available");
     }
 }
 
@@ -131,7 +157,6 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
     double chrtVal; // Current data value
     double chrtScl; // Scale for data values in pixels per value
     static double chrtPrevVal; // Last data value in chart area
-    // bool bufDataValid = false; // Flag to indicate if buffer data is valid
     static int numNoData; // Counter for multiple invalid data values in a row
 
     int x, y; // x and y coordinates for drawing
@@ -144,7 +169,6 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
 
     if (chrtIntv != oldChrtIntv || count == 1) {
         // new data interval selected by user; this is only x * 230 values instead of 240 seconds (4 minutes) per interval step
-        // intvBufSize = timAxis * chrtIntv; // obsolete
         numBufVals = min(count, (timAxis - 60) * chrtIntv); // keep free or release 60 values on chart for plotting of new values
         bufStart = max(0, count - numBufVals);
         lastAddedIdx = currIdx;
@@ -186,7 +210,8 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
 
                 if (chrtDir == 'H') { // horizontal chart
                     x = cStart.x + i; // Position in chart area
-                    if (chrtDataFmt == 'S') {
+
+                    if (chrtDataFmt == 'S') { // speed data format -> print low values at bottom
                         //                        y = cStart.y + static_cast<int>(((chrtVal - chrtMin) * chrtScl) + 0.5); // calculate chart point and round
                         y = cStart.y + valAxis - static_cast<int>(((chrtVal - chrtMin) * chrtScl) + 0.5); // calculate chart point and round
                     } else if (chrtDataFmt == 'D') {
@@ -194,8 +219,10 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
                     } else { // degree type value
                         y = cStart.y + static_cast<int>((WindUtils::to2PI(chrtVal - chrtMin) * chrtScl) + 0.5); // calculate chart point and round
                     }
+
                 } else { // vertical chart
                     y = cStart.y + timAxis - i; // Position in chart area
+
                     if (chrtDataFmt == 'S' || chrtDataFmt == 'D') {
                         x = cStart.x + static_cast<int>(((chrtVal - chrtMin) * chrtScl) + 0.5); // calculate chart point and round
                     } else { // degree type value
@@ -266,27 +293,11 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
 
                 if (chrtDataFmt == 'W') { // degree of course or wind
                     recalcRngCntr = true;
-                    LOG_DEBUG(GwLog::DEBUG, "PageWindPlot FreeTop: timAxis: %d, i: %d, bufStart: %d, numBufVals: %d, recalcRngCntr: %d", timAxis, i, bufStart, numBufVals, recalcRngCntr);
+                    LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: chart end: timAxis: %d, i: %d, bufStart: %d, numBufVals: %d, recalcRngCntr: %d", timAxis, i, bufStart, numBufVals, recalcRngCntr);
                 }
                 break;
             }
         }
-    } else {
-        // No valid data available
-        getdisplay().setFont(&Ubuntu_Bold10pt8b);
-
-        int pX, pY;
-        if (chrtDir == 'H') {
-            pX = cStart.x + (timAxis / 2);
-            pY = cStart.y + (valAxis / 2) - 10;
-        } else {
-            pX = cStart.x + (valAxis / 2);
-            pY = cStart.y + (timAxis / 2) - 10;
-        }
-
-        getdisplay().fillRect(pX - 33, pY - 10, 66, 24, bgColor); // Clear area for message
-        drawTextCenter(pX, pY, "No data");
-        LOG_DEBUG(GwLog::LOG, "PageWindPlot: No valid data available");
     }
 }
 
@@ -330,38 +341,8 @@ double Chart<T>::getRng(double center, size_t amount)
 template <typename T>
 void Chart<T>::calcChrtBorders(double& rngMid, double& rngMin, double& rngMax, double& rng)
 {
-    if (chrtDataFmt == 'S' || chrtDataFmt == 'D') {
-        // Chart data is of any type but 'degree'
-
-        double oldRngMin = rngMin;
-        double oldRngMax = rngMax;
-
-        // Chart starts at lowest range value, but at least '0' or includes even negative values
-        double currMinVal = dataBuf.getMin(numBufVals);
-        LOG_DEBUG(GwLog::DEBUG, "calcChrtRange0a: currMinVal: %.1f, currMaxVal: %.1f, rngMin: %.1f, rngMid: %.1f, rngMax: %.1f, rng: %.1f, rngStep: %.1f, oldRngMin: %.1f, oldRngMax: %.1f, dfltRng: %.1f, numBufVals: %d",
-            currMinVal, dataBuf.getMax(numBufVals), rngMin, rngMid, rngMax, rng, rngStep, oldRngMin, oldRngMax, dfltRng, numBufVals);
-
-        if (currMinVal != dbMAX_VAL) { // current min value is valid
-            if (currMinVal > 0 && dbMIN_VAL == 0) { // Chart range starts at least at '0' or includes negative values
-                rngMin = 0;
-            } else if (currMinVal < oldRngMin || (oldRngMin < 0 && (currMinVal > (oldRngMin + rngStep)))) { // decrease rngMin if required or increase if lowest value is higher than old rngMin
-                rngMin = std::floor(currMinVal / rngStep) * rngStep;
-            }
-        } // otherwise keep rngMin unchanged
-
-        double currMaxVal = dataBuf.getMax(numBufVals);
-        if (currMaxVal != dbMAX_VAL) { // current max value is valid
-            if ((currMaxVal > oldRngMax) || (currMaxVal < (oldRngMax - rngStep))) { // increase rngMax if required or decrease if lowest value is lower than old rngMax
-                rngMax = std::ceil(currMaxVal / rngStep) * rngStep;
-                rngMax = std::max(rngMax, rngMin + dfltRng); // keep at least default chart range
-            }
-        } // otherwise keep rngMax unchanged
-
-        rngMid = (rngMin + rngMax) / 2.0;
-        rng = rngMax - rngMin;
-        LOG_DEBUG(GwLog::DEBUG, "calcChrtRange1a: currMinVal: %.1f, currMaxVal: %.1f, rngMin: %.1f, rngMid: %.1f, rngMax: %.1f, rng: %.1f, rngStep: %.1f, oldRngMin: %.1f, oldRngMax: %.1f, dfltRng: %.1f, numBufVals: %d",
-            currMinVal, currMaxVal, rngMin, rngMid, rngMax, rng, rngStep, oldRngMin, oldRngMax, dfltRng, numBufVals);
-    } else {
+    if (chrtDataFmt == 'W' || chrtDataFmt == 'R') {
+        // Chart data is of type 'course', 'wind' or 'rot'
 
         if (chrtDataFmt == 'W') {
             // Chart data is of type 'course' or 'wind'
@@ -416,8 +397,38 @@ void Chart<T>::calcChrtBorders(double& rngMid, double& rngMin, double& rngMax, d
         // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange2: diffRng: %.1f°, halfRng: %.1f°", diffRng * RAD_TO_DEG, halfRng * RAD_TO_DEG);
 
         rng = halfRng * 2.0;
-        LOG_DEBUG(GwLog::DEBUG, "calcChrtRange2b: rngMid: %.1f°, rngMin: %.1f°, rngMax: %.1f°, diffRng: %.1f°, rng: %.1f°, rngStep: %.1f°", rngMid * RAD_TO_DEG, rngMin * RAD_TO_DEG, rngMax * RAD_TO_DEG,
-            diffRng * RAD_TO_DEG, rng * RAD_TO_DEG, rngStep * RAD_TO_DEG);
+        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange2b: rngMid: %.1f°, rngMin: %.1f°, rngMax: %.1f°, diffRng: %.1f°, rng: %.1f°, rngStep: %.1f°", rngMid * RAD_TO_DEG, rngMin * RAD_TO_DEG, rngMax * RAD_TO_DEG,
+        //    diffRng * RAD_TO_DEG, rng * RAD_TO_DEG, rngStep * RAD_TO_DEG);
+
+    } else {
+        double oldRngMin = rngMin;
+        double oldRngMax = rngMax;
+
+        // Chart starts at lowest range value, but at least '0' or includes even negative values
+        double currMinVal = dataBuf.getMin(numBufVals);
+        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange0a: currMinVal: %.1f, currMaxVal: %.1f, rngMin: %.1f, rngMid: %.1f, rngMax: %.1f, rng: %.1f, rngStep: %.1f, oldRngMin: %.1f, oldRngMax: %.1f, dfltRng: %.1f, numBufVals: %d",
+        //     currMinVal, dataBuf.getMax(numBufVals), rngMin, rngMid, rngMax, rng, rngStep, oldRngMin, oldRngMax, dfltRng, numBufVals);
+
+        if (currMinVal != dbMAX_VAL) { // current min value is valid
+            if (currMinVal > 0 && dbMIN_VAL == 0) { // Chart range starts at least at '0' or includes negative values
+                rngMin = 0;
+            } else if (currMinVal < oldRngMin || (oldRngMin < 0 && (currMinVal > (oldRngMin + rngStep)))) { // decrease rngMin if required or increase if lowest value is higher than old rngMin
+                rngMin = std::floor(currMinVal / rngStep) * rngStep;
+            }
+        } // otherwise keep rngMin unchanged
+
+        double currMaxVal = dataBuf.getMax(numBufVals);
+        if (currMaxVal != dbMAX_VAL) { // current max value is valid
+            if ((currMaxVal > oldRngMax) || (currMaxVal < (oldRngMax - rngStep))) { // increase rngMax if required or decrease if lowest value is lower than old rngMax
+                rngMax = std::ceil(currMaxVal / rngStep) * rngStep;
+                rngMax = std::max(rngMax, rngMin + dfltRng); // keep at least default chart range
+            }
+        } // otherwise keep rngMax unchanged
+
+        rngMid = (rngMin + rngMax) / 2.0;
+        rng = rngMax - rngMin;
+        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange1a: currMinVal: %.1f, currMaxVal: %.1f, rngMin: %.1f, rngMid: %.1f, rngMax: %.1f, rng: %.1f, rngStep: %.1f, oldRngMin: %.1f, oldRngMax: %.1f, dfltRng: %.1f, numBufVals: %d",
+        //     currMinVal, currMaxVal, rngMin, rngMid, rngMax, rng, rngStep, oldRngMin, oldRngMax, dfltRng, numBufVals);
     }
 }
 
@@ -425,52 +436,40 @@ void Chart<T>::calcChrtBorders(double& rngMid, double& rngMin, double& rngMax, d
 template <typename T>
 void Chart<T>::drawChrtTimeAxis(int8_t chrtIntv)
 {
-    int timeRng;
     float slots, intv, i;
     char sTime[6];
+    int timeRng = chrtIntv * 4; // chart time interval: [1] 4 min., [2] 8 min., [3] 12 min., [4] 16 min., [8] 32 min.
+
     getdisplay().setFont(&Ubuntu_Bold8pt8b);
     getdisplay().setTextColor(fgColor);
 
     if (chrtDir == 'H') { // horizontal chart
         getdisplay().fillRect(0, cStart.y, dWidth, 2, fgColor);
 
-        timeRng = chrtIntv * 4; // Chart time interval: [1] 4 min., [2] 8 min., [3] 12 min., [4] 16 min., [8] 32 min.
-        slots = timAxis / 80.0; // number of axis labels
-        intv = timeRng / slots; // minutes per chart axis interval
+        slots = 5; // number of axis labels
+        intv = timAxis / (slots - 1); // minutes per chart axis interval (interval is 1 less than slots)
         i = timeRng; // Chart axis label start at -32, -16, -12, ... minutes
 
-        for (int j = 0; j < timAxis - 30; j += 80) { // fill time axis with values but keep area free on right hand side for value label
-            // LOG_DEBUG(GwLog::DEBUG, "ChartTimeAxis: timAxis: %d, {x,y}: {%d,%d}, i: %.1f, j: %d, chrtIntv: %d, intv: %.1f, slots: %.1f", timAxis, cStart.x, cStart.y, i, j, chrtIntv, intv, slots);
-
-            // Format time label based on interval
-            if (chrtIntv < 3) {
-                snprintf(sTime, sizeof(sTime), "-%.1f", i);
-            } else {
-                snprintf(sTime, sizeof(sTime), "-%.0f", std::round(i));
-            }
+        for (float j = 0; j < timAxis - 1; j += intv) { // fill time axis with values but keep area free on right hand side for value label
 
             // draw text with appropriate offset
-            //            int tOffset = (j == 0) ? 13 : (chrtIntv < 3 ? -4 : -4);
             int tOffset = j == 0 ? 13 : -4;
+            snprintf(sTime, sizeof(sTime), "-%.0f", i);
             drawTextCenter(cStart.x + j + tOffset, cStart.y - 8, sTime);
             getdisplay().drawLine(cStart.x + j, cStart.y, cStart.x + j, cStart.y + 5, fgColor); // draw short vertical time mark
 
-            i -= intv;
+            i -= chrtIntv;
         }
 
     } else { // vertical chart
-        timeRng = chrtIntv * 4; // chart time interval: [1] 4 min., [2] 8 min., [3] 12 min., [4] 16 min., [8] 32 min.
-        slots = timAxis / 75.0; // number of axis labels
-        intv = timeRng / slots; // minutes per chart axis interval
-        i = -intv; // chart axis label start at -32, -16, -12, ... minutes
+        slots = 5; // number of axis labels
+        intv = timAxis / (slots - 1); // minutes per chart axis interval (interval is 1 less than slots)
+        i = timeRng; // Chart axis label start at -32, -16, -12, ... minutes
 
-        for (int j = 75; j < (timAxis - 75); j += 75) { // don't print time label at upper and lower end of time axis
-            if (chrtIntv < 3) { // print 1 decimal if time range is single digit (4 or 8 minutes)
-                snprintf(sTime, sizeof(sTime), "%.1f", i);
-            } else {
-                snprintf(sTime, sizeof(sTime), "%.0f", std::floor(i));
-            }
+        for (float j = intv; j < timAxis - 1; j += intv) { // don't print time label at upper and lower end of time axis
 
+            i -= chrtIntv; // we start not at top chart position
+            snprintf(sTime, sizeof(sTime), "-%.0f", i);
             getdisplay().drawLine(cStart.x, cStart.y + j, cStart.x + valAxis, cStart.y + j, fgColor); // Grid line
 
             if (chrtSz == 0) { // full size chart
@@ -480,8 +479,6 @@ void Chart<T>::drawChrtTimeAxis(int8_t chrtIntv)
             } else if (chrtSz == 2) { // half size chart; right side
                 drawTextCenter(dWidth / 2, cStart.y + j, sTime); // time value; print mid screen
             }
-
-            i -= intv;
         }
     }
 }
@@ -509,8 +506,21 @@ void Chart<T>::drawChrtValAxis()
 
         if (chrtSz == 0) { // full size chart -> print multiple value lines
             getdisplay().setFont(&Ubuntu_Bold12pt8b);
-//            for (int j = 60; j < valAxis - 30; j += 60) {
-            for (int j = valAxis - 60; j > 30; j -= 60) {
+
+            int loopStrt, loopEnd, loopStp;
+            if (chrtDataFmt == 'S') {
+                loopStrt = valAxis - 60;
+                loopEnd = 30;
+                loopStp = -60;
+            } else {
+                loopStrt = 60;
+                loopEnd = valAxis - 30;
+                loopStp = 60;
+            }
+            LOG_DEBUG(GwLog::DEBUG, "Chart drawValAxis: chrtDataFmt: %c, loopStrt: %d, loopEnd: %d, loopIntv: %d", chrtDataFmt, loopStrt, loopEnd, loopStp);
+
+            for (int j = loopStrt; (loopStp > 0) ? (j < loopEnd) : (j > loopEnd); j += loopStp) {
+                LOG_DEBUG(GwLog::DEBUG, "Chart drawValAxis2: j: %d, i: %d", j, i);
                 getdisplay().drawLine(cStart.x, cStart.y + j, cStart.x + timAxis, cStart.y + j, fgColor);
 
                 getdisplay().fillRect(cStart.x, cStart.y + j - 11, 42, 21, bgColor); // Clear small area to remove potential chart lines
@@ -523,7 +533,7 @@ void Chart<T>::drawChrtValAxis()
         } else { // half size chart -> print just edge values + middle chart line
             getdisplay().setFont(&Ubuntu_Bold10pt8b);
 
-            tmpBVal->value = chrtMin;
+            tmpBVal->value = (chrtDataFmt == 'D') ? chrtMin : chrtMax;
             cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
             sLen = snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
             getdisplay().fillRect(cStart.x, cStart.y + 2, 42, 16, bgColor); // Clear small area to remove potential chart lines
@@ -538,7 +548,7 @@ void Chart<T>::drawChrtValAxis()
             getdisplay().printf("%s", sVal); // Range mid value
             getdisplay().drawLine(cStart.x + 43, cStart.y + (valAxis / 2), cStart.x + timAxis, cStart.y + (valAxis / 2), fgColor);
 
-            tmpBVal->value = chrtMax;
+            tmpBVal->value = (chrtDataFmt == 'D') ? chrtMax : chrtMin;
             cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
             sLen = snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
             getdisplay().fillRect(cStart.x, cStart.y + valAxis - 16, 42, 16, bgColor); // Clear small area to remove potential chart lines
@@ -586,7 +596,7 @@ template <typename T>
 void Chart<T>::prntCurrValue(GwApi::BoatValue& currValue)
 {
     const int xPosVal = (chrtDir == 'H') ? cStart.x + (timAxis / 2) - 56 : cStart.x + 32;
-    const int yPosVal = (chrtDir == 'H') ? cStart.y + valAxis - 5 : cStart.y + timAxis - 5;
+    const int yPosVal = (chrtDir == 'H') ? cStart.y + valAxis - 7 : cStart.y + timAxis - 7;
 
     FormattedData frmtDbData = formatValue(&currValue, *commonData);
     double testdbValue = frmtDbData.value;
@@ -595,8 +605,8 @@ void Chart<T>::prntCurrValue(GwApi::BoatValue& currValue)
     // LOG_DEBUG(GwLog::DEBUG, "Chart CurrValue: dbValue: %.2f, sdbValue: %s, fmrtDbValue: %.2f, dbFormat: %s, dbUnit: %s, Valid: %d, Name: %s, Address: %p", currValue.value, sdbValue,
     //    testdbValue, currValue.getFormat(), dbUnit, currValue.valid, currValue.getName(), currValue);
 
-    getdisplay().fillRect(xPosVal - 1, yPosVal - 34, 125, 40, bgColor); // Clear area for TWS value
-    getdisplay().drawRect(xPosVal, yPosVal - 33, 123, 39, fgColor); // Draw box for TWS value
+    getdisplay().fillRect(xPosVal - 1, yPosVal - 35, 125, 41, bgColor); // Clear area for TWS value
+    getdisplay().drawRect(xPosVal, yPosVal - 34, 123, 40, fgColor); // Draw box for TWS value
     getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
     getdisplay().setCursor(xPosVal + 1, yPosVal);
     if (useSimuData) {

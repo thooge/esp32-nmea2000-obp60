@@ -6,16 +6,16 @@ struct Pos {
     int x;
     int y;
 };
+
 template <typename T> class RingBuffer;
 class GwLog;
 
-template <typename T>
-class Chart {
+template <typename T> class Chart {
 protected:
-    CommonData *commonData;
-    GwLog *logger;
+    CommonData* commonData;
+    GwLog* logger;
 
-    RingBuffer<T> &dataBuf; // Buffer to display
+    RingBuffer<T>& dataBuf; // Buffer to display
     char chrtDir; // Chart timeline direction: 'H' = horizontal, 'V' = vertical
     int8_t chrtSz; // Chart size: [0] = full size, [1] = half size left/top, [2] half size right/bottom
     double dfltRng; // Default range of chart, e.g. 30 = [0..30]
@@ -23,7 +23,6 @@ protected:
     uint16_t bgColor; // color code for screen background
     bool useSimuData; // flag to indicate if simulation data is active
 
-    // int top = 48; // display top header lines
     int top = 44; // chart gap at top of display (25 lines for standard gap + 19 lines for axis labels)
     int bottom = 25; // chart gap at bottom of display to keep space for status line
     int hGap = 11; // gap between 2 horizontal charts; actual gap is 2x <gap>
@@ -59,11 +58,22 @@ protected:
     void calcChrtBorders(double& rngMid, double& rngMin, double& rngMax, double& rng); // Calculate chart points for value axis and return range between <min> and <max>
     void drawChrtTimeAxis(int8_t chrtIntv); // Draw time axis of chart, value and lines
     void drawChrtValAxis(); // Draw value axis of chart, value and lines
-    void prntCurrValue(GwApi::BoatValue& currValue); // Add current boat data value to chart 
+    void prntCurrValue(GwApi::BoatValue& currValue); // Add current boat data value to chart
 
 public:
+    // Define default chart range for each boat data type
+    static std::map<String, double> dfltChartRng;
+
     Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dfltRng, CommonData& common, bool useSimuData); // Chart object of data chart
     ~Chart();
-    void showChrt(int8_t chrtIntv, GwApi::BoatValue currValue); // Perform all actions to draw chart
+    void showChrt(int8_t chrtIntv, GwApi::BoatValue currValue, bool showCurrValue); // Perform all actions to draw chart
+};
 
+template <typename T>
+std::map<String, double> Chart<T>::dfltChartRng = {
+    { "formatWind", 60.0 * DEG_TO_RAD }, // default course range 60 degrees
+    { "formatCourse", 60.0 * DEG_TO_RAD }, // default course range 60 degrees
+    { "formatKnots", 5.1 }, // default speed range in m/s
+    { "formatDepth", 15 }, // default depth range in m
+    { "kelvinToC", 30 } // default temp range in °C/K
 };

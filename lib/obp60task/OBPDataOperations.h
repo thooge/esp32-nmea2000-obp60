@@ -3,9 +3,6 @@
 #include "OBPRingBuffer.h"
 #include "obp60task.h"
 #include <map>
-#include <memory>
-#include <limits>
-#include <cmath>
 
 class HstryBuf {
 private:
@@ -46,16 +43,18 @@ private:
         {"AWA", {1000, 10000, -M_PI, M_PI, "formatWind"}},
         {"AWD", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
         {"AWS", {1000, 1000, 0.0, 65.0, "formatKnots"}},
-        {"DBS", {1000, 100, 0.0, 650, "formatDepth"}},
-        {"DBT", {1000, 100, 0.0, 650, "formatDepth"}},
-        {"DPT", {1000, 100, 0.0, 650, "formatDepth"}},
-        {"HDT", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
+        {"COG", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
+        {"DBS", {1000, 100, 0.0, 650.0, "formatDepth"}},
+        {"DBT", {1000, 100, 0.0, 650.0, "formatDepth"}},
+        {"DPT", {1000, 100, 0.0, 650.0, "formatDepth"}},
         {"HDM", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
+        {"HDT", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
+        {"ROT", {1000, 10000, -M_PI / 180.0 * 99.0, M_PI / 180.0 * 99.0, "formatRot"}}, // min/max is -/+ 99 degrees for rotational angle
+        {"SOG", {1000, 1000, 0.0, 65.0, "formatKnots"}},
+        {"STW", {1000, 1000, 0.0, 65.0, "formatKnots"}},
         {"TWA", {1000, 10000, -M_PI, M_PI, "formatWind"}},
         {"TWD", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
         {"TWS", {1000, 1000, 0.0, 65.0, "formatKnots"}},
-        {"SOG", {1000, 1000, 0.0, 65.0, "formatKnots"}},
-        {"STW", {1000, 1000, 0.0, 65.0, "formatKnots"}},
         {"WTemp", {1000, 100, 0.0, 650.0, "kelvinToC"}}
     };
 
@@ -106,6 +105,5 @@ public:
     bool calcWinds(const double* awaVal, const double* awsVal,
         const double* cogVal, const double* stwVal, const double* sogVal, const double* hdtVal,
         const double* hdmVal, const double* varVal, double* twdVal, double* twsVal, double* twaVal, double* awdVal);
-    bool calcATWD(const double* waVal, const double* hdtVal, const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal, double* wdVal);
     bool addWinds();
 };

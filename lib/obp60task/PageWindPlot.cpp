@@ -2,7 +2,6 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
-#include "OBPDataOperations.h"
 #include "OBPcharts.h"
 
 // ****************************************************************
@@ -77,9 +76,9 @@ public:
         commonData->keydata[0].label = "MODE";
 #if defined BOARD_OBP60S3
         commonData->keydata[1].label = "SRC";
-        commonData->keydata[4].label = "INTV";
+        commonData->keydata[4].label = "ZOOM";
 #elif defined BOARD_OBP40S3
-        commonData->keydata[1].label = "INTV";
+        commonData->keydata[1].label = "ZOOM";
 #endif
     }
 
@@ -209,14 +208,14 @@ public:
         getdisplay().setTextColor(commonData->fgcolor);
 
         if (chrtMode == 'D') {
-            wdFlChart->showChrt(dataIntv, *wdBVal);
+            wdFlChart->showChrt(dataIntv, *wdBVal, true);
 
         } else if (chrtMode == 'S') {
-            wsFlChart->showChrt(dataIntv, *wsBVal);
+            wsFlChart->showChrt(dataIntv, *wsBVal, true);
 
         } else if (chrtMode == 'B') {
-            wdHfChart->showChrt(dataIntv, *wdBVal);
-            wsHfChart->showChrt(dataIntv, *wsBVal);
+            wdHfChart->showChrt(dataIntv, *wdBVal, true);
+            wsHfChart->showChrt(dataIntv, *wsBVal, true);
         }
 
         LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: page time %ldms", millis() - pageTime);

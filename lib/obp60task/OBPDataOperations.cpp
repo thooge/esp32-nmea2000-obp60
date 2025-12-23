@@ -259,44 +259,6 @@ bool WindUtils::calcWinds(const double* awaVal, const double* awsVal,
     }
 }
 
-/* // we don't need this -> AWD is calculated in calcTwdSA
-// Calc AWD from existing AWA and HDT/HDM
-bool WindUtils::calcATWD(const double* waVal, const double* hdtVal, const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal, double* wdVal)
-{
-    double wd, hdt;
-    GwApi::BoatValue* calBVal; // temp variable just for data calibration
-    bool isCalculated = false;
-
-    if (*waVal == DBL_MAX) {
-        return false;
-    }
-
-    if (*hdtVal != DBL_MAX) {
-        hdt = *hdtVal; // Use HDT if available
-    } else {
-        hdt = calcHDT(hdmVal, varVal, cogVal, sogVal);
-    }
-
-    if (hdt != DBL_MAX) {
-        wd = *waVal + hdt;
-        wd = to2PI(wd);
-        isCalculated = true;
-    }
-
-    // Calibrate AWD/TWD if required
-    calBVal = new GwApi::BoatValue("AWD"); // temporary solution for calibration of history buffer values
-    calBVal->value = wd;
-    calBVal->setFormat(awdBVal->getFormat());
-    calBVal->valid = true;
-    calibrationData.calibrateInstance(calBVal, logger); // Check if boat data value is to be calibrated
-    *wdVal = calBVal->value;
-
-    delete calBVal;
-    calBVal = nullptr;
-
-    return isCalculated;
-} */
-
 // Calculate true wind data and add to obp60task boat data list
 bool WindUtils::addWinds()
 {
