@@ -79,9 +79,13 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
     const char* fmt_dec_10;
     const char* fmt_dec_100;
     if (precision == "1") {
-        fmt_dec_1 = "%3.1f";
-        fmt_dec_10 = "%3.0f";
-        fmt_dec_100 = "%3.0f";
+	//
+	//All values are displayed using a DSEG7* font. In this font, ' ' is a very short space, and '.' takes up no space at all. 
+	//For a space that is as long as a number, '!' is used. For details see  https://www.keshikan.net/fonts-e.html
+	//
+        fmt_dec_1 = "!%1.1f";  //insert a blank digit and then display a two-digit number
+        fmt_dec_10 = "!%2.0f"; //insert a blank digit and then display a two-digit number
+        fmt_dec_100 = "%3.0f"; //dispay a three digit number
     } else {
         fmt_dec_1 = "%3.2f";
         fmt_dec_10 = "%3.1f";
