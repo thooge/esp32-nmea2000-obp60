@@ -4,11 +4,12 @@
 #include <functional>
 #include <vector>
 #include "LedSpiTask.h"
-#include "OBPDataOperations.h"
 
 #define MAX_PAGE_NUMBER 10    // Max number of pages for show data
 
 typedef std::vector<GwApi::BoatValue *> ValueList;
+
+class HstryBuffers;
 
 typedef struct{
   GwApi *api;

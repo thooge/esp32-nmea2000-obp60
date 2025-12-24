@@ -2,6 +2,7 @@
 #pragma once
 #include "OBPRingBuffer.h"
 #include "obp60task.h"
+#include "Pagedata.h"
 #include <map>
 
 class HstryBuf {
@@ -19,7 +20,7 @@ public:
     HstryBuf(const String& name, int size, BoatValueList* boatValues, GwLog* log);
     void init(const String& format, int updFreq, int mltplr, double minVal, double maxVal);
     void add(double value);
-    void handle(bool useSimuData);
+    void handle(bool useSimuData, CommonData& common);
 };
 
 class HstryBuffers {
@@ -61,7 +62,7 @@ private:
 public:
     HstryBuffers(int size, BoatValueList* boatValues, GwLog* log);
     void addBuffer(const String& name);
-    void handleHstryBufs(bool useSimuData);
+    void handleHstryBufs(bool useSimuData, CommonData& common);
     RingBuffer<uint16_t>* getBuffer(const String& name);
 };
 

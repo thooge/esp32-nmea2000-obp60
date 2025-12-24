@@ -1,6 +1,5 @@
 #include "OBPDataOperations.h"
 #include "BoatDataCalibration.h" // Functions lib for data instance calibration
-#include <math.h>
 
 // --- Class HstryBuf ---------------
 HstryBuf::HstryBuf(const String& name, int size, BoatValueList* boatValues, GwLog* log)
@@ -26,34 +25,29 @@ void HstryBuf::add(double value)
 {
     if (value >= hstryMin && value <= hstryMax) {
         hstryBuf.add(value);
+        LOG_DEBUG(GwLog::DEBUG, "HstryBuf::add:  name: %s, value: %.3f", hstryBuf.getName(), value);
     }
 }
 
-void HstryBuf::handle(bool useSimuData)
+void HstryBuf::handle(bool useSimuData, CommonData& common)
 {
-    GwApi::BoatValue* calBVal;
+    //GwApi::BoatValue* tmpBVal;
+    std::unique_ptr<GwApi::BoatValue> tmpBVal; // Temp variable to get formatted and converted data value from OBP60Formatter
+
+    // create temporary boat value for calibration purposes and retrieval of simulation value
+    //tmpBVal = new GwApi::BoatValue(boatDataName.c_str());
+    tmpBVal = std::unique_ptr<GwApi::BoatValue>(new GwApi::BoatValue(boatDataName));
+    tmpBVal->setFormat(boatValue->getFormat());
+    tmpBVal->value = boatValue->value;
+    tmpBVal->valid = boatValue->valid;
 
     if (boatValue->valid) {
         // Calibrate boat value before adding it to history buffer
-        calBVal = new GwApi::BoatValue(boatDataName.c_str());
-        calBVal->setFormat(boatValue->getFormat());
-        calBVal->value = boatValue->value;
-        calBVal->valid = boatValue->valid;
-        calibrationData.calibrateInstance(calBVal, logger);
-        add(calBVal->value);
-    
-        delete calBVal;
-        calBVal = nullptr;
-    
+        calibrationData.calibrateInstance(tmpBVal.get(), logger);
+        add(tmpBVal->value);
+        
     } else if (useSimuData) { // add simulated value to history buffer
-            double simValue = hstryBuf.getLast();
-        if (boatDataName == "TWD" || boatDataName == "AWD") {
-            simValue += static_cast<double>(random(-349, 349) / 1000.0);
-            simValue = WindUtils::to2PI(simValue);
-        } else if (boatDataName == "TWS" || boatDataName == "AWS") {
-            simValue += static_cast<double>(random(-5000, 5000) / 1000.0);
-            simValue = constrain(simValue, 0, 40);
-        }
+        double simValue = formatValue(tmpBVal.get(), common).value; // simulated value is generated at <formatValue>
         add(simValue);
     }
 }
@@ -96,17 +90,17 @@ void HstryBuffers::addBuffer(const String& name)
     double bufferMaxVal = bufferParams[name].bufferMaxVal; // Max value for this history buffer
 
     hstryBuffers[name]->init(valueFormat, hstryUpdFreq, mltplr, bufferMinVal, bufferMaxVal);
-    LOG_DEBUG(GwLog::DEBUG, "HstryBuffers-new buffer added: name: %s, format: %s, multiplier: %d, min value: %.2f, max value: %.2f", name, valueFormat, mltplr, bufferMinVal, bufferMaxVal);
+    LOG_DEBUG(GwLog::DEBUG, "HstryBuffers: new buffer added: name: %s, format: %s, multiplier: %d, min value: %.2f, max value: %.2f", name, valueFormat, mltplr, bufferMinVal, bufferMaxVal);
 }
 
 // Handle history buffers
-void HstryBuffers::handleHstryBufs(bool useSimuData)
+void HstryBuffers::handleHstryBufs(bool useSimuData, CommonData& common)
 {
 
     // Handle all registered history buffers
     for (auto& pair : hstryBuffers) {
         auto& buf = pair.second;
-        buf->handle(useSimuData);
+        buf->handle(useSimuData, common);
     }
 }
 

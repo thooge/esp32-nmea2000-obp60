@@ -192,10 +192,10 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
             rawvalue = value->value;
         }
         else {
-            course = 2.53 + float(random(0, 10) / 100.0);
+            course = M_PI_2 + float(random(-17, 17) / 100.0); // create random course/wind values with 90° +/- 10°
             rawvalue = course;
         }
-        course = course * 57.2958;      // Unit conversion form rad to deg
+        course = course * RAD_TO_DEG;      // Unit conversion form rad to deg
 
         // Format 3 numbers with prefix zero
         snprintf(buffer,bsize,"%03.0f",course);
@@ -210,7 +210,7 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
             rawvalue = value->value;
         }
         else{
-            rawvalue = 4.0 + float(random(0, 40));
+            rawvalue = 4.0 + float(random(-30, 40) / 10.0); // create random speed values from [1..8] m/s
             speed = rawvalue;
         }
         if (String(speedFormat) == "km/h"){
@@ -244,7 +244,7 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
             rawvalue = value->value;
         }
         else {
-            rawvalue = 4.0 + float(random(0, 40));
+            rawvalue = 4.0 + float(random(0, 40) / 10.0); // create random wind speed values from [4..8] m/s
             speed = rawvalue;
         }
         if (String(windspeedFormat) == "km/h"){
@@ -429,7 +429,7 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
             rawvalue = value->value;
         }
         else {
-            rawvalue = 18.0 + float(random(0, 100)) / 10.0;
+            rawvalue = 18.0 + float(random(0, 100)) / 10.0; // create random depth values from [18..28] metres
             depth = rawvalue;
         }
         if(String(lengthFormat) == "ft"){

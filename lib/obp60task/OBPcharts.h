@@ -26,7 +26,7 @@ protected:
     int top = 44; // chart gap at top of display (25 lines for standard gap + 19 lines for axis labels)
     int bottom = 25; // chart gap at bottom of display to keep space for status line
     int hGap = 11; // gap between 2 horizontal charts; actual gap is 2x <gap>
-    int vGap = 20; // gap between 2 vertical charts; actual gap is 2x <gap>
+    int vGap = 17; // gap between 2 vertical charts; actual gap is 2x <gap>
     int dWidth; // Display width
     int dHeight; // Display height
     int timAxis, valAxis; // size of time and value chart axis

@@ -2,6 +2,7 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+#include "OBPDataOperations.h"
 #include "BoatDataCalibration.h"
 #include "OBPcharts.h"
 
@@ -30,8 +31,6 @@ private:
     // Data buffer pointer (owned by HstryBuffers)
     RingBuffer<uint16_t>* dataHstryBuf = nullptr;
     std::unique_ptr<Chart<uint16_t>> dataFlChart, dataHfChart; // Chart object, full and half size
-    // Active chart and value
-    Chart<uint16_t>* dataChart = nullptr;
 
     void showData(GwApi::BoatValue* bValue1, char size)
     {
@@ -70,7 +69,7 @@ private:
         double value1 = bValue1->value; // Value as double in SI unit
         bool valid1 = bValue1->valid; // Valid information
         String sValue1 = formatValue(bValue1, *commonData).svalue; // Formatted value as string including unit conversion and switching decimal places
-        String unit1 = formatValue(bValue1, *commonData).unit; // Unit of value 
+        String unit1 = formatValue(bValue1, *commonData).unit; // Unit of value
 
         // Show name
         getdisplay().setTextColor(commonData->fgcolor);
@@ -81,16 +80,13 @@ private:
         // Show unit
         getdisplay().setFont(unitFnt);
         getdisplay().setCursor(270 + unitXoff, 100 + unitYoff);
-        if (holdValues == false) {
-            //getdisplay().print(unit1); // Unit
-            drawTextRalign(298 + unitXoff, 100 + unitYoff, unit1); // Unit
-
-        } else {
-            // getdisplay().print(unit1Old);
+        if (holdValues) {
             drawTextRalign(298 + unitXoff, 100 + unitYoff, unit1Old);
+        } else {
+            drawTextRalign(298 + unitXoff, 100 + unitYoff, unit1); // Unit
         }
 
-        // Switch font if format for any values
+        // Switch font depending on value format and adjust position
         if (bValue1->getFormat() == "formatLatitude" || bValue1->getFormat() == "formatLongitude") {
             getdisplay().setFont(valueFnt1);
             getdisplay().setCursor(20 + value1Xoff, 180 + value1Yoff);
@@ -103,11 +99,12 @@ private:
         }
 
         // Show bus data
-        if (holdValues == false) {
+        if (!holdValues || useSimuData) {
             getdisplay().print(sValue1); // Real value as formated string
         } else {
             getdisplay().print(sValue1Old); // Old value as formated string
         }
+
         if (valid1 == true) {
             sValue1Old = sValue1; // Save the old value
             unit1Old = unit1; // Save the old unit
@@ -195,17 +192,22 @@ public:
             setFlashLED(false);
         }
 #endif
-        if (!dataFlChart) { // Create chart objects if they don't exist
+        // buffer initialization cannot be performed here, because <displayNew> is not executed at system start for default page
+        /* if (!dataFlChart) { // Create chart objects if they don't exist
             GwApi::BoatValue* bValue1 = pageData.values[0]; // Page boat data element
             String bValName1 = bValue1->getName(); // Value name
             String bValFormat = bValue1->getFormat(); // Value format
 
             dataHstryBuf = pageData.hstryBuffers->getBuffer(bValName1);
 
-            dataFlChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 0, Chart<uint16_t>::dfltChartRng[bValFormat], *commonData, useSimuData));
-            dataHfChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 2, Chart<uint16_t>::dfltChartRng[bValFormat], *commonData, useSimuData));
-            LOG_DEBUG(GwLog::DEBUG, "PageOneValue: Created chart objects for %s", bValName1);
-        }
+            if (dataHstryBuf) {
+                dataFlChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 0, Chart<uint16_t>::dfltChartRng[bValFormat], *commonData, useSimuData));
+                dataHfChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 2, Chart<uint16_t>::dfltChartRng[bValFormat], *commonData, useSimuData));
+                LOG_DEBUG(GwLog::DEBUG, "PageOneValue: Created chart objects for %s", bValName1);
+            } else {
+                LOG_DEBUG(GwLog::DEBUG, "PageOneValue: No chart objects available for %s", bValName1);
+            }
+        } */
     }
 
     int displayPage(PageData& pageData)
@@ -224,10 +226,27 @@ public:
             setFlashLED(false);
         }
 
+        if (!dataFlChart) { // Create chart objects if they don't exist
+            GwApi::BoatValue* bValue1 = pageData.values[0]; // Page boat data element
+            String bValName1 = bValue1->getName(); // Value name
+            String bValFormat = bValue1->getFormat(); // Value format
+
+            dataHstryBuf = pageData.hstryBuffers->getBuffer(bValName1);
+
+            if (dataHstryBuf) {
+                dataFlChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 0, Chart<uint16_t>::dfltChartRng[bValFormat], *commonData, useSimuData));
+                dataHfChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 2, Chart<uint16_t>::dfltChartRng[bValFormat], *commonData, useSimuData));
+                LOG_DEBUG(GwLog::DEBUG, "PageOneValue: Created chart objects for %s", bValName1);
+            } else {
+                LOG_DEBUG(GwLog::DEBUG, "PageOneValue: No chart objects available for %s", bValName1);
+            }
+        }
+
         // Logging boat values
         if (bValue1 == NULL)
             return PAGE_OK; // WTF why this statement?
-        LOG_DEBUG(GwLog::LOG, "Drawing at PageOneValue, %s: %f", bValue1->getName().c_str(), bValue1->value);
+
+        LOG_DEBUG(GwLog::DEBUG, "Drawing at PageOneValue, %s, %.3f", bValue1->getName().c_str(), bValue1->value);
 
         // Draw page
         //***********************************************************
@@ -238,11 +257,15 @@ public:
             showData(bValue1, 'F');
 
         } else if (pageMode == 'C') { // show only data chart
-            dataFlChart->showChrt(dataIntv, *bValue1, true);
+            if (dataFlChart) {
+                dataFlChart->showChrt(dataIntv, *bValue1, true);
+            }
 
         } else if (pageMode == 'B') { // show data value and chart
             showData(bValue1, 'H');
-            dataHfChart->showChrt(dataIntv, *bValue1, false);
+            if (dataHfChart) {
+                dataHfChart->showChrt(dataIntv, *bValue1, false);
+            }
         }
 
         return PAGE_UPDATE;

@@ -1,6 +1,7 @@
 // Function lib for display of boat data in various chart formats
 #include "OBPcharts.h"
 #include "OBP60Extensions.h"
+#include "OBPDataOperations.h"
 #include "OBPRingBuffer.h"
 
 // --- Class Chart ---------------
@@ -183,6 +184,8 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
     }
 
     calcChrtBorders(chrtMid, chrtMin, chrtMax, chrtRng);
+    LOG_DEBUG(GwLog::DEBUG, "calcChrtBorders: min: %.3f, mid: %.3f, max: %.3f, rng: %.3f", chrtMin, chrtMid, chrtMax, chrtRng);
+
     chrtScl = double(valAxis) / chrtRng; // Chart scale: pixels per value step
 
     // Do we have valid buffer data?
@@ -501,6 +504,10 @@ void Chart<T>::drawChrtValAxis()
         slots = valAxis / 60.0; // number of axis labels
         tmpBVal->value = chrtRng;
         cChrtRng = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+        if (useSimuData) {
+            // cannot use <formatValue> in this case, because that would change the range value to some random data
+            cChrtRng = tmpBVal->value; // take SI value in this case -> need to be improved
+        }
         intv = static_cast<int>(round(cChrtRng / slots));
         i = intv;
 
@@ -517,10 +524,8 @@ void Chart<T>::drawChrtValAxis()
                 loopEnd = valAxis - 30;
                 loopStp = 60;
             }
-            LOG_DEBUG(GwLog::DEBUG, "Chart drawValAxis: chrtDataFmt: %c, loopStrt: %d, loopEnd: %d, loopIntv: %d", chrtDataFmt, loopStrt, loopEnd, loopStp);
 
             for (int j = loopStrt; (loopStp > 0) ? (j < loopEnd) : (j > loopEnd); j += loopStp) {
-                LOG_DEBUG(GwLog::DEBUG, "Chart drawValAxis2: j: %d, i: %d", j, i);
                 getdisplay().drawLine(cStart.x, cStart.y + j, cStart.x + timAxis, cStart.y + j, fgColor);
 
                 getdisplay().fillRect(cStart.x, cStart.y + j - 11, 42, 21, bgColor); // Clear small area to remove potential chart lines
@@ -535,6 +540,9 @@ void Chart<T>::drawChrtValAxis()
 
             tmpBVal->value = (chrtDataFmt == 'D') ? chrtMin : chrtMax;
             cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+            if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
+                cVal = tmpBVal->value; // no value conversion here
+            }
             sLen = snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
             getdisplay().fillRect(cStart.x, cStart.y + 2, 42, 16, bgColor); // Clear small area to remove potential chart lines
             getdisplay().setCursor(cStart.x + ((3 - sLen) * 10), cStart.y + 16);
@@ -542,6 +550,9 @@ void Chart<T>::drawChrtValAxis()
 
             tmpBVal->value = chrtMid;
             cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+            if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
+                cVal = tmpBVal->value; // no value conversion here
+            }
             sLen = snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
             getdisplay().fillRect(cStart.x, cStart.y + (valAxis / 2) - 9, 42, 16, bgColor); // Clear small area to remove potential chart lines
             getdisplay().setCursor(cStart.x + ((3 - sLen) * 10), cStart.y + (valAxis / 2) + 5);
@@ -550,6 +561,9 @@ void Chart<T>::drawChrtValAxis()
 
             tmpBVal->value = (chrtDataFmt == 'D') ? chrtMax : chrtMin;
             cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+            if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
+                cVal = tmpBVal->value; // no value conversion here
+            }
             sLen = snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
             getdisplay().fillRect(cStart.x, cStart.y + valAxis - 16, 42, 16, bgColor); // Clear small area to remove potential chart lines
             getdisplay().setCursor(cStart.x + ((3 - sLen) * 10), cStart.y + valAxis - 1);
@@ -571,17 +585,26 @@ void Chart<T>::drawChrtValAxis()
 
         tmpBVal->value = chrtMin;
         cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+        if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
+            cVal = tmpBVal->value; // no value conversion here
+        }
         snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
         getdisplay().setCursor(cStart.x, cStart.y - 2);
         getdisplay().printf("%s", sVal); // Range low end
 
         tmpBVal->value = chrtMid;
         cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+        if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
+            cVal = tmpBVal->value; // no value conversion here
+        }
         snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
         drawTextCenter(cStart.x + (valAxis / 2), cStart.y - 10, sVal); // Range mid end
 
         tmpBVal->value = chrtMax;
         cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+        if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
+            cVal = tmpBVal->value; // no value conversion here
+        }
         snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
         drawTextRalign(cStart.x + valAxis - 2, cStart.y - 2, sVal); // Range high end
 
@@ -599,21 +622,16 @@ void Chart<T>::prntCurrValue(GwApi::BoatValue& currValue)
     const int yPosVal = (chrtDir == 'H') ? cStart.y + valAxis - 7 : cStart.y + timAxis - 7;
 
     FormattedData frmtDbData = formatValue(&currValue, *commonData);
-    double testdbValue = frmtDbData.value;
-    String sdbValue = frmtDbData.svalue; // value (string)
+    String sdbValue = frmtDbData.svalue; // value as formatted string
     String dbUnit = frmtDbData.unit; // Unit of value
-    // LOG_DEBUG(GwLog::DEBUG, "Chart CurrValue: dbValue: %.2f, sdbValue: %s, fmrtDbValue: %.2f, dbFormat: %s, dbUnit: %s, Valid: %d, Name: %s, Address: %p", currValue.value, sdbValue,
-    //    testdbValue, currValue.getFormat(), dbUnit, currValue.valid, currValue.getName(), currValue);
+    // LOG_DEBUG(GwLog::DEBUG, "Chart CurrValue: dbValue: %.2f, sdbValue: %s, dbFormat: %s, dbUnit: %s, Valid: %d, Name: %s, Address: %p", currValue.value, sdbValue,
+    //    currValue.getFormat(), dbUnit, currValue.valid, currValue.getName(), currValue);
 
-    getdisplay().fillRect(xPosVal - 1, yPosVal - 35, 125, 41, bgColor); // Clear area for TWS value
-    getdisplay().drawRect(xPosVal, yPosVal - 34, 123, 40, fgColor); // Draw box for TWS value
+    getdisplay().fillRect(xPosVal - 1, yPosVal - 35, 128, 41, bgColor); // Clear area for TWS value
+    getdisplay().drawRect(xPosVal, yPosVal - 34, 126, 40, fgColor); // Draw box for TWS value
     getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
     getdisplay().setCursor(xPosVal + 1, yPosVal);
-    if (useSimuData) {
-        getdisplay().printf("%2.1f", currValue.value); // Value
-    } else {
-        getdisplay().print(sdbValue); // Value
-    }
+    getdisplay().print(sdbValue); // alue
 
     getdisplay().setFont(&Ubuntu_Bold10pt8b);
     getdisplay().setCursor(xPosVal + 76, yPosVal - 17);

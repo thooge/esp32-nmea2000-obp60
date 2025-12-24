@@ -815,7 +815,7 @@ void OBP60Task(GwApi *api){
                     trueWind.addWinds();
                 }
                 // Handle history buffers for certain boat data for windplot page and other usage
-                 hstryBufList.handleHstryBufs(useSimuData);
+                 hstryBufList.handleHstryBufs(useSimuData, commonData);
 
                 // Clear display
                 // getdisplay().fillRect(0, 0, getdisplay().width(), getdisplay().height(), commonData.bgcolor);
