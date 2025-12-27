@@ -85,7 +85,7 @@ void OBP60Init(GwApi *api){
     // Get CPU speed
     int freq = getCpuFrequencyMhz();
     logger->logDebug(GwLog::LOG,"CPU speed at boot: %i MHz", freq);
-    
+
     // Settings for backlight
     String backlightMode = api->getConfig()->getConfigItem(api->getConfig()->backlight,true)->asString();
     logger->logDebug(GwLog::DEBUG,"Backlight Mode is: %s", backlightMode.c_str());
@@ -223,7 +223,7 @@ void registerAllPages(PageList &list){
     extern PageDescription registerPageWind;
     list.add(&registerPageWind);
     extern PageDescription registerPageWindPlot;
-    list.add(&registerPageWindPlot); 
+    list.add(&registerPageWindPlot);
     extern PageDescription registerPageWindRose;
     list.add(&registerPageWindRose);
     extern PageDescription registerPageWindRoseFlex;
@@ -344,6 +344,8 @@ void OBP60Task(GwApi *api){
 
     tN2kMsg N2kMsg;
 
+    QueueHandle_t keyboardQueue = api->getKbQueue();
+
     LOG_DEBUG(GwLog::LOG,"obp60task started");
     for (auto it=allPages.pages.begin();it != allPages.pages.end();it++){
         LOG_DEBUG(GwLog::LOG,"found registered page %s",(*it)->pageName.c_str());
@@ -402,7 +404,7 @@ void OBP60Task(GwApi *api){
         getdisplay().nextPage();                 // Fast Refresh
         getdisplay().nextPage();                 // Fast Refresh
     }
-    
+
     // Init pages
     int numPages=1;
     PageStruct pages[MAX_PAGE_NUMBER];
@@ -473,7 +475,7 @@ void OBP60Task(GwApi *api){
        for (auto it=description->fixedParam.begin();it != description->fixedParam.end();it++){
             GwApi::BoatValue *value=boatValues.findValueOrCreate(*it);
             LOG_DEBUG(GwLog::DEBUG,"added fixed value %s to page %d",value->getName().c_str(),i);
-            pages[i].parameters.values.push_back(value); 
+            pages[i].parameters.values.push_back(value);
        }
        // Add boat history data to page parameters
        pages[i].parameters.boatHstry = &hstryBufList;
@@ -549,11 +551,11 @@ void OBP60Task(GwApi *api){
     GwApi::BoatValue *hdop = boatValues.findValueOrCreate("HDOP");       // Load GpsHDOP
 
     LOG_DEBUG(GwLog::LOG,"obp60task: start mainloop");
-    
+
     commonData.time = boatValues.findValueOrCreate("GPST");      // Load GpsTime
     commonData.date = boatValues.findValueOrCreate("GPSD");      // Load GpsTime
     bool delayedDisplayUpdate = false;  // If select a new pages then make a delayed full display update
-    bool cpuspeedsetted = false;    // Marker for change CPU speed 
+    bool cpuspeedsetted = false;    // Marker for change CPU speed
     long firststart = millis();     // First start
     long starttime0 = millis();     // Mainloop
     long starttime1 = millis();     // Full display refresh for the first 5 min (more often as normal)
@@ -582,7 +584,7 @@ void OBP60Task(GwApi *api){
             }
         }
 
-        // Set CPU speed after boot after 1min 
+        // Set CPU speed after boot after 1min
         if(millis() > firststart + (1 * 60 * 1000) && cpuspeedsetted == false){
             if(String(cpuspeed) == "80"){
                 setCpuFrequencyMhz(80);
@@ -603,7 +605,7 @@ void OBP60Task(GwApi *api){
             commonData.data=shared->getSensorData();
             commonData.data.actpage = pageNumber + 1;
             commonData.data.maxpage = numPages;
-            
+
             // If GPS fix then LED off (HDOP)
             if(String(gpsFix) == "GPS Fix Lost" && hdop->value <= hdopAccuracy && hdop->valid == true){
                 setFlashLED(false);
@@ -612,9 +614,18 @@ void OBP60Task(GwApi *api){
             if((String(gpsFix) == "GPS Fix Lost" && hdop->value > hdopAccuracy && hdop->valid == true) || (String(gpsFix) == "GPS Fix Lost" && hdop->valid == false)){
                 setFlashLED(true);
             }
-         
+
+            // Keyboard messages from remote
+            uint8_t remotekey = 0;
+            if (xQueueReceive(keyboardQueue, &remotekey, 0) == pdPASS) {
+                LOG_DEBUG(GwLog::LOG, "OBP received remote key: %d", remotekey);
+                // inject into internal keyboard queue
+                 xQueueSend(allParameters.queue, &remotekey, 0);
+            }
+
             // Check the keyboard message
             int keyboardMessage=0;
+
             while (xQueueReceive(allParameters.queue,&keyboardMessage,0)){
                 LOG_DEBUG(GwLog::LOG,"new key from keyboard %d",keyboardMessage);
                 keypressed = true;
@@ -677,13 +688,13 @@ void OBP60Task(GwApi *api){
                         commonData.data.actpage = pageNumber + 1;
                         commonData.data.maxpage = numPages;
                     }
-                  
+
                     // #9 or #10 Refresh display after a new page after 4s waiting time and if refresh is disabled
                     if(refreshmode == true && (keyboardMessage == 9 || keyboardMessage == 10 || keyboardMessage == 4 || keyboardMessage == 3)){
                         starttime4 = millis();
                         starttime2 = millis();      // Reset the timer for full display update
                         delayedDisplayUpdate = true;
-                    }                 
+                    }
                 }
                 LOG_DEBUG(GwLog::LOG,"set pagenumber to %d",pageNumber);
             }
@@ -709,7 +720,7 @@ void OBP60Task(GwApi *api){
                     commonData.sundata = calcSunsetSunriseRTC(&commonData.data.rtcTime, homelat, homelon, tz);
                 }
             }
-            
+
             // Full display update afer a new selected page and 8s wait time
             if(millis() > starttime4 + 8000 && delayedDisplayUpdate == true){
                 starttime1 = millis();
@@ -786,8 +797,8 @@ void OBP60Task(GwApi *api){
 //                    getdisplay().nextPage();                     // Partial update
 //                    getdisplay().nextPage();                     // Partial update
                 }
-            }        
-                
+            }
+
             // Refresh display data, default all 1s
             currentPage = pages[pageNumber].page;
             int pagetime = 1000;

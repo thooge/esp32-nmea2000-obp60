@@ -1572,6 +1572,36 @@ private:
         finalizeXdr();
     }
 
+    void Handle127502(const tN2kMsg &msg){
+        // switch bank control / receive remote key strokes
+        unsigned char instance=-1;
+        tN2kBinaryStatus bankstatus;
+        LOG_DEBUG(GwLog::LOG,"received switch bank control");
+        // check if we are addressed and our configured instance is used
+        if (! ParseN2kPGN127502(msg,instance,bankstatus)) {
+            LOG_DEBUG(GwLog::DEBUG,"unable to parse PGN %d",msg.PGN);
+            return;
+        }
+        if (! (instance == config.swBankInstance)) {
+            LOG_DEBUG(GwLog::DEBUG,"switch bank instance #%d ignored",instance);
+            return;
+        }
+        // TODO (?) multiple keys together
+
+        // only process configured key count (default 6)
+        for (uint8_t i=1; i<=6; i++) {
+            tN2kOnOff keystatus = N2kGetStatusOnBinaryStatus(bankstatus, i);
+            if (keystatus == 1) {
+                // key pressed: send key to queue
+                xQueueSend(keyboardQueue, &i, 0);
+            } else if (keystatus == 2) {
+                // long key pressed: send long key to queue
+                xQueueSend(keyboardQueue, &i, 0);
+            }
+        }
+
+    }
+
     void registerConverters()
     {
       //register all converter functions
@@ -1607,6 +1637,7 @@ private:
       converters.registerConverter(127488UL, &N2kToNMEA0183Functions::Handle127488);
       converters.registerConverter(130316UL, &N2kToNMEA0183Functions::Handle130316);
       converters.registerConverter(127257UL, &N2kToNMEA0183Functions::Handle127257);
+      converters.registerConverter(127502UL, &N2kToNMEA0183Functions::Handle127502);
 #define HANDLE_AIS
 #ifdef HANDLE_AIS
       converters.registerConverter(129038UL, &N2kToNMEA0183Functions::HandleAISClassAPosReport);  // AIS Class A Position Report, Message Type 1
@@ -1620,13 +1651,15 @@ private:
   public:
     N2kToNMEA0183Functions(GwLog *logger, GwBoatData *boatData, 
         SendNMEA0183MessageCallback callback,
-        String talkerId, GwXDRMappings *xdrMappings, const GwConverterConfig &cfg) 
+        String talkerId, GwXDRMappings *xdrMappings, const GwConverterConfig &cfg,
+        QueueHandle_t kbQueue)
     : N2kDataToNMEA0183(logger, boatData, callback,talkerId)
     {
         this->logger = logger;
         this->boatData = boatData;
         this->xdrMappings=xdrMappings;
         this->config=cfg;
+        this->keyboardQueue=kbQueue;
         registerConverters();
     }
     virtual void loop(unsigned long lastExtRmc) override
@@ -1642,8 +1675,8 @@ private:
 
 N2kDataToNMEA0183* N2kDataToNMEA0183::create(GwLog *logger, GwBoatData *boatData, 
     SendNMEA0183MessageCallback callback, String talkerId, GwXDRMappings *xdrMappings,
-    const GwConverterConfig &cfg){
-  LOG_DEBUG(GwLog::LOG,"creating N2kToNMEA0183");    
-  return new N2kToNMEA0183Functions(logger,boatData,callback, talkerId,xdrMappings,cfg);
+    const GwConverterConfig &cfg, QueueHandle_t kbQueue){
+  LOG_DEBUG(GwLog::LOG,"creating N2kToNMEA0183");
+  return new N2kToNMEA0183Functions(logger,boatData,callback, talkerId,xdrMappings,cfg,kbQueue);
 }
 //*****************************************************************************

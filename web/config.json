@@ -89,6 +89,16 @@
         "category":"system"
     },
     {
+        "name": "swBankInstance",
+        "type": "number",
+        "default": 0,
+        "min": 0,
+        "max": 252,
+        "check": "checkMinMax",
+        "description": "the instance of switch bank to receive data for (0..252)",
+        "category": "system"
+    },
+    {
         "name": "talkerId",
         "label": "NMEA0183 ID",
         "type": "list",

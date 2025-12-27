@@ -189,6 +189,10 @@ public:
     {
         return api->getQueue();
     }
+    virtual QueueHandle_t getKbQueue()
+    {
+        return api->getKbQueue();
+    }
     virtual void sendN2kMessage(const tN2kMsg &msg,bool convert)
     {
         GWSYNCHRONIZED(mainLock);

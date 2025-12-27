@@ -158,6 +158,8 @@ GwCounter<unsigned long> countNMEA2KIn("countNMEA2000in");
 GwCounter<unsigned long> countNMEA2KOut("countNMEA2000out");
 GwIntervalRunner timers;
 
+QueueHandle_t keyboardQueue = NULL;
+
 bool checkPass(String hash){
   return config.checkPass(hash);
 }
@@ -268,6 +270,10 @@ public:
   virtual GwRequestQueue *getQueue()
   {
     return &mainQueue;
+  }
+  virtual QueueHandle_t getKbQueue()
+  {
+    return keyboardQueue;
   }
   virtual void sendN2kMessage(const tN2kMsg &msg,bool convert)
   {
@@ -860,6 +866,8 @@ void setup() {
   webserver.begin();
   xdrMappings.begin();
   logger.flush();
+  // remote keyboard support
+  keyboardQueue = xQueueCreate(10, sizeof(uint8_t));
   GwConverterConfig converterConfig;
   converterConfig.init(&config,&logger);
   nmea0183Converter= N2kDataToNMEA0183::create(&logger, &boatData, 
@@ -869,7 +877,8 @@ void setup() {
     , 
     config.getString(config.talkerId,String("GP")),
     &xdrMappings,
-    converterConfig
+    converterConfig,
+    keyboardQueue
     );
 
   toN2KConverter= NMEA0183DataToN2K::create(&logger,&boatData,[](const tN2kMsg &msg, int sourceId)->bool{

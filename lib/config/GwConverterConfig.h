@@ -71,6 +71,7 @@ class GwConverterConfig{
       int rmcInterval=1000;
       int rmcCheckTime=4000;
       int winst312=256;
+      int swBankInstance=0;
       bool unmappedXdr=false;
       unsigned long xdrTimeout=60000;
       std::vector<WindMapping> windMappings;
@@ -97,6 +98,7 @@ class GwConverterConfig{
             windMappings.push_back(mapping);
           }
         }
+        swBankInstance=config->getInt(GwConfigDefinitions::swBankInstance,0);
       }
       const WindMapping findWindMapping(const tN2kWindReference &n2k) const{
         for (const auto & it:windMappings){

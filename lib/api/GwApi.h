@@ -137,6 +137,7 @@ class GwApi{
          * thread safe methods - can directly be called from a user task
          */
         virtual GwRequestQueue *getQueue()=0;
+        virtual QueueHandle_t getKbQueue()=0;
         virtual void sendN2kMessage(const tN2kMsg &msg, bool convert=true)=0;
         /**
          * deprecated - sourceId will be ignored

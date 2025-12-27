@@ -43,6 +43,7 @@ protected:
   GwBoatData *boatData;
   int sourceId=0;
   char talkerId[3];
+  QueueHandle_t keyboardQueue;
   SendNMEA0183MessageCallback sendNMEA0183MessageCallback;
   void SendMessage(const tNMEA0183Msg &NMEA0183Msg);
   N2kDataToNMEA0183(GwLog *logger, GwBoatData *boatData,  
@@ -50,7 +51,8 @@ protected:
 
 public:
   static N2kDataToNMEA0183* create(GwLog *logger, GwBoatData *boatData,  SendNMEA0183MessageCallback callback, 
-    String talkerId, GwXDRMappings *xdrMappings,const GwConverterConfig &cfg);
+    String talkerId, GwXDRMappings *xdrMappings,const GwConverterConfig &cfg,
+    QueueHandle_t kbQueue);
   virtual void HandleMsg(const tN2kMsg &N2kMsg, int sourceId) = 0;
   virtual void loop(unsigned long lastRmc);
   virtual ~N2kDataToNMEA0183(){}
