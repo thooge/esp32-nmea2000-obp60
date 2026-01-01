@@ -22,6 +22,8 @@ protected:
     uint16_t fgColor; // color code for any screen writing
     uint16_t bgColor; // color code for screen background
     bool useSimuData; // flag to indicate if simulation data is active
+    String tempFormat; // user defined format for temperature
+    double zeroValue; // "0" SI value for temperature
 
     int top = 44; // chart gap at top of display (25 lines for standard gap + 19 lines for axis labels)
     int bottom = 25; // chart gap at bottom of display to keep space for status line
@@ -50,30 +52,35 @@ protected:
     size_t currIdx; // Current index in TWD history buffer
     size_t lastIdx; // Last index of TWD history buffer
     size_t lastAddedIdx = 0; // Last index of TWD history buffer when new data was added
+    int numNoData; // Counter for multiple invalid data values in a row
     bool bufDataValid = false; // Flag to indicate if buffer data is valid
     int oldChrtIntv = 0; // remember recent user selection of data interval
 
+    double chrtPrevVal; // Last data value in chart area
+    int x, y; // x and y coordinates for drawing
+    int prevX, prevY; // Last x and y coordinates for drawing
+
     void drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue); // Draw chart line
-    double getRng(double center, size_t amount); // Calculate range between chart center and edges
-    void calcChrtBorders(double& rngMid, double& rngMin, double& rngMax, double& rng); // Calculate chart points for value axis and return range between <min> and <max>
+    void calcChrtBorders(double& rngMin, double& rngMid, double& rngMax, double& rng); // Calculate chart points for value axis and return range between <min> and <max>
     void drawChrtTimeAxis(int8_t chrtIntv); // Draw time axis of chart, value and lines
     void drawChrtValAxis(); // Draw value axis of chart, value and lines
     void prntCurrValue(GwApi::BoatValue& currValue); // Add current boat data value to chart
+    double getAngleRng(double center, size_t amount); // Calculate range between chart center and edges
 
 public:
     // Define default chart range for each boat data type
-    static std::map<String, double> dfltChartRng;
+    static std::map<String, double> dfltChrtRng;
 
     Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dfltRng, CommonData& common, bool useSimuData); // Chart object of data chart
     ~Chart();
-    void showChrt(int8_t chrtIntv, GwApi::BoatValue currValue, bool showCurrValue); // Perform all actions to draw chart
+    void showChrt(GwApi::BoatValue currValue, int8_t chrtIntv, bool showCurrValue); // Perform all actions to draw chart
 };
 
 template <typename T>
-std::map<String, double> Chart<T>::dfltChartRng = {
+std::map<String, double> Chart<T>::dfltChrtRng = {
     { "formatWind", 60.0 * DEG_TO_RAD }, // default course range 60 degrees
     { "formatCourse", 60.0 * DEG_TO_RAD }, // default course range 60 degrees
     { "formatKnots", 5.1 }, // default speed range in m/s
-    { "formatDepth", 15 }, // default depth range in m
-    { "kelvinToC", 30 } // default temp range in °C/K
+    { "formatDepth", 15.0 }, // default depth range in m
+    { "kelvinToC", 30.0 } // default temp range in °C/K
 };

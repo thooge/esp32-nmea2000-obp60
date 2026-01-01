@@ -25,6 +25,17 @@ Chart<T>::Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dflt
     fgColor = commonData->fgcolor;
     bgColor = commonData->bgcolor;
 
+    // we need "0" value for any user defined temperature format
+    tempFormat = commonData->config->getString(commonData->config->tempFormat); // [K|°C|°F]
+    if (tempFormat == "K") {
+        zeroValue = 0.0;
+    } else if (tempFormat == "C") {
+        zeroValue = 273.15;
+    } else if (tempFormat == "F") {
+        zeroValue = 255.37;
+    }
+    // LOG_DEBUG(GwLog::DEBUG, "Chart-init: fgColor: %d, bgColor: %d, tempFormat: %s, zeroValue: %.1f, &commonData: %p", fgColor, bgColor, tempFormat, zeroValue, commonData);
+
     // LOG_DEBUG(GwLog::DEBUG, "Chart Init: Chart::dataBuf: %p, passed dataBuf: %p", (void*)&this->dataBuf, (void*)&dataBuf);
     dWidth = getdisplay().width();
     dHeight = getdisplay().height();
@@ -59,12 +70,10 @@ Chart<T>::Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dflt
             cStart = { 0, top - 1 };
             break;
         case 1:
-            //            valAxis = dWidth / 2 - vGap - 1;
             valAxis = dWidth / 2 - vGap;
             cStart = { 0, top - 1 };
             break;
         case 2:
-            //            valAxis = dWidth / 2 - vGap - 1;
             valAxis = dWidth / 2 - vGap;
             cStart = { dWidth / 2 + vGap - 1, top - 1 };
             break;
@@ -94,19 +103,22 @@ Chart<T>::Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dflt
     } else {
         if (dbFormat == "formatDepth") {
             chrtDataFmt = 'D'; // Chart ist showing data of <depth> format
+        } else if (dbFormat == "kelvinToC") {
+            chrtDataFmt = 'T'; // Chart ist showing data of <temp> format
         } else {
-            chrtDataFmt = 'S'; // Chart is showing any other data format than <degree>
+            chrtDataFmt = 'S'; // Chart is showing any other data format
         }
-        rngStep = 5.0; // +/- 10 for all other values (eg. m/s, m, K, mBar)
+        rngStep = 10.0; // +/- 10 for all other values (eg. m/s, m, K, mBar)
     }
 
-    chrtMin = 0;
-    chrtMax = 0;
+    chrtMin = dbMIN_VAL;
+    chrtMax = dbMAX_VAL;
     chrtMid = dbMAX_VAL;
     chrtRng = dfltRng;
-    recalcRngCntr = true; // initialize <chrtMid> on first screen call
+    recalcRngCntr = true; // initialize <chrtMid> and chart borders on first screen call
 
-    LOG_DEBUG(GwLog::DEBUG, "Chart Init: dWidth: %d, dHeight: %d, timAxis: %d, valAxis: %d, cStart {x,y}: %d, %d, dbname: %s, rngStep: %.4f", dWidth, dHeight, timAxis, valAxis, cStart.x, cStart.y, dbName, rngStep);
+    LOG_DEBUG(GwLog::DEBUG, "Chart Init: dWidth: %d, dHeight: %d, timAxis: %d, valAxis: %d, cStart {x,y}: %d, %d, dbname: %s, rngStep: %.4f, chrtDataFmt: %c",
+        dWidth, dHeight, timAxis, valAxis, cStart.x, cStart.y, dbName, rngStep, chrtDataFmt);
 };
 
 template <typename T>
@@ -117,7 +129,7 @@ Chart<T>::~Chart()
 // Perform all actions to draw chart
 // Parameters: <chrtIntv> chart time interval, <currValue> current boat data value to be printed, <showCurrValue> current boat data shall be shown yes/no
 template <typename T>
-void Chart<T>::showChrt(int8_t chrtIntv, GwApi::BoatValue currValue, bool showCurrValue)
+void Chart<T>::showChrt(GwApi::BoatValue currValue, int8_t chrtIntv, bool showCurrValue)
 {
     drawChrt(chrtIntv, currValue);
     drawChrtTimeAxis(chrtIntv);
@@ -126,11 +138,10 @@ void Chart<T>::showChrt(int8_t chrtIntv, GwApi::BoatValue currValue, bool showCu
     if (bufDataValid) {
         if (showCurrValue) {
             // uses BoatValue temp variable <currValue> to format latest buffer value
-            // doesn't work unfortunately when 'simulation data' is active, because OBP60Formatter generates own simulation value in that case
+            // doesn't work unfortunately when 'simulation data' is active, because OBP60Formatter generates own simulation values in that case
             currValue.value = dataBuf.getLast();
             currValue.valid = currValue.value != dbMAX_VAL;
             Chart<T>::prntCurrValue(currValue);
-            LOG_DEBUG(GwLog::DEBUG, "OBPcharts showChrt: currValue-value: %.1f, Valid: %d, Name: %s, Address: %p", currValue.value, currValue.valid, currValue.getName(), (void*)&currValue);
         }
 
     } else { // No valid data available -> print message
@@ -157,11 +168,8 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
 {
     double chrtVal; // Current data value
     double chrtScl; // Scale for data values in pixels per value
-    static double chrtPrevVal; // Last data value in chart area
-    static int numNoData; // Counter for multiple invalid data values in a row
 
     int x, y; // x and y coordinates for drawing
-    static int prevX, prevY; // Last x and y coordinates for drawing
 
     // Identify buffer size and buffer start position for chart
     count = dataBuf.getCurrentSize();
@@ -183,10 +191,12 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
         }
     }
 
-    calcChrtBorders(chrtMid, chrtMin, chrtMax, chrtRng);
-    LOG_DEBUG(GwLog::DEBUG, "calcChrtBorders: min: %.3f, mid: %.3f, max: %.3f, rng: %.3f", chrtMin, chrtMid, chrtMax, chrtRng);
+    // LOG_DEBUG(GwLog::DEBUG, "PageOneValue:drawChart: min: %.1f, mid: %.1f, max: %.1f, rng: %.1f", chrtMin, chrtMid, chrtMax, chrtRng);
+    calcChrtBorders(chrtMin, chrtMid, chrtMax, chrtRng);
+    LOG_DEBUG(GwLog::DEBUG, "PageOneValue:drawChart2: min: %.1f, mid: %.1f, max: %.1f, rng: %.1f", chrtMin, chrtMid, chrtMax, chrtRng);
 
-    chrtScl = double(valAxis) / chrtRng; // Chart scale: pixels per value step
+    // Chart scale: pixels per value step
+    chrtScl = double(valAxis) / chrtRng;
 
     // Do we have valid buffer data?
     if (dataBuf.getMax() == dbMAX_VAL) { // only <MAX_VAL> values in buffer -> no valid wind data available
@@ -214,8 +224,7 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
                 if (chrtDir == 'H') { // horizontal chart
                     x = cStart.x + i; // Position in chart area
 
-                    if (chrtDataFmt == 'S') { // speed data format -> print low values at bottom
-                        //                        y = cStart.y + static_cast<int>(((chrtVal - chrtMin) * chrtScl) + 0.5); // calculate chart point and round
+                    if (chrtDataFmt == 'S' or chrtDataFmt == 'T') { // speed data format -> print low values at bottom
                         y = cStart.y + valAxis - static_cast<int>(((chrtVal - chrtMin) * chrtScl) + 0.5); // calculate chart point and round
                     } else if (chrtDataFmt == 'D') {
                         y = cStart.y + static_cast<int>(((chrtVal - chrtMin) * chrtScl) + 0.5); // calculate chart point and round
@@ -226,7 +235,7 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
                 } else { // vertical chart
                     y = cStart.y + timAxis - i; // Position in chart area
 
-                    if (chrtDataFmt == 'S' || chrtDataFmt == 'D') {
+                    if (chrtDataFmt == 'S' || chrtDataFmt == 'D' || chrtDataFmt == 'T') {
                         x = cStart.x + static_cast<int>(((chrtVal - chrtMin) * chrtScl) + 0.5); // calculate chart point and round
                     } else { // degree type value
                         x = cStart.x + static_cast<int>((WindUtils::to2PI(chrtVal - chrtMin) * chrtScl) + 0.5); // calculate chart point and round
@@ -234,7 +243,7 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
                 }
 
                 // if (i >= (numBufVals / chrtIntv) - 5) // log chart data of 1 line (adjust for test purposes)
-                //    LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Chart: i: %d, chrtVal: %.4f, {x,y} {%d,%d}", i, chrtVal, x, y);
+                //    LOG_DEBUG(GwLog::DEBUG, "PageWindPlot Chart: i: %d, chrtVal: %.2f, chrtMin: %.2f, {x,y} {%d,%d}", i, chrtVal, chrtMin, x, y);
 
                 if ((i == 0) || (chrtPrevVal == dbMAX_VAL)) {
                     // just a dot for 1st chart point or after some invalid values
@@ -304,45 +313,9 @@ void Chart<T>::drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue)
     }
 }
 
-// Get maximum difference of last <amount> of dataBuf ringbuffer values to center chart
-template <typename T>
-double Chart<T>::getRng(double center, size_t amount)
-{
-    size_t count = dataBuf.getCurrentSize();
-
-    if (dataBuf.isEmpty() || amount <= 0) {
-        return dbMAX_VAL;
-    }
-    if (amount > count)
-        amount = count;
-
-    double value = 0;
-    double range = 0;
-    double maxRng = dbMIN_VAL;
-
-    // Start from the newest value (last) and go backwards x times
-    for (size_t i = 0; i < amount; i++) {
-        value = dataBuf.get(count - 1 - i);
-
-        if (value == dbMAX_VAL) {
-            continue; // ignore invalid values
-        }
-
-        range = abs(fmod((value - center + (M_TWOPI + M_PI)), M_TWOPI) - M_PI);
-        if (range > maxRng)
-            maxRng = range;
-    }
-
-    if (maxRng > M_PI) {
-        maxRng = M_PI;
-    }
-
-    return (maxRng != dbMIN_VAL ? maxRng : dbMAX_VAL); // Return range from <mid> to <max>
-}
-
 // check and adjust chart range and set range borders and range middle
 template <typename T>
-void Chart<T>::calcChrtBorders(double& rngMid, double& rngMin, double& rngMax, double& rng)
+void Chart<T>::calcChrtBorders(double& rngMin, double& rngMid, double& rngMax, double& rng)
 {
     if (chrtDataFmt == 'W' || chrtDataFmt == 'R') {
         // Chart data is of type 'course', 'wind' or 'rot'
@@ -372,7 +345,7 @@ void Chart<T>::calcChrtBorders(double& rngMid, double& rngMin, double& rngMax, d
                     }
                 }
                 recalcRngCntr = false; // Reset flag for <rngMid> determination
-                LOG_DEBUG(GwLog::DEBUG, "calcChrtRange1b: rngMid: %.1f°, rngMin: %.1f°, rngMax: %.1f°, rng: %.1f°, rngStep: %.1f°", rngMid * RAD_TO_DEG, rngMin * RAD_TO_DEG, rngMax * RAD_TO_DEG,
+                LOG_DEBUG(GwLog::DEBUG, "calcChrtRange: rngMid: %.1f°, rngMin: %.1f°, rngMax: %.1f°, rng: %.1f°, rngStep: %.1f°", rngMid * RAD_TO_DEG, rngMin * RAD_TO_DEG, rngMax * RAD_TO_DEG,
                     rng * RAD_TO_DEG, rngStep * RAD_TO_DEG);
             }
 
@@ -383,10 +356,9 @@ void Chart<T>::calcChrtBorders(double& rngMid, double& rngMin, double& rngMax, d
 
         // check and adjust range between left, center, and right chart limit
         double halfRng = rng / 2.0; // we calculate with range between <rngMid> and edges
-        double diffRng = getRng(rngMid, numBufVals);
-        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange2: diffRng: %.1f°, halfRng: %.1f°", diffRng * RAD_TO_DEG, halfRng * RAD_TO_DEG);
+        double diffRng = getAngleRng(rngMid, numBufVals);
         diffRng = (diffRng == dbMAX_VAL ? 0 : std::ceil(diffRng / rngStep) * rngStep);
-        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange2: diffRng: %.1f°, halfRng: %.1f°", diffRng * RAD_TO_DEG, halfRng * RAD_TO_DEG);
+        // LOG_DEBUG(GwLog::DEBUG, "calcChrtBorders: diffRng: %.1f°, halfRng: %.1f°", diffRng * RAD_TO_DEG, halfRng * RAD_TO_DEG);
 
         if (diffRng > halfRng) {
             halfRng = diffRng; // round to next <rngStep> value
@@ -397,41 +369,47 @@ void Chart<T>::calcChrtBorders(double& rngMid, double& rngMin, double& rngMax, d
         rngMin = WindUtils::to2PI(rngMid - halfRng);
         rngMax = (halfRng < M_PI ? rngMid + halfRng : rngMid + halfRng - (M_TWOPI / 360)); // if chart range is 360°, then make <rngMax> 1° smaller than <rngMin>
         rngMax = WindUtils::to2PI(rngMax);
-        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange2: diffRng: %.1f°, halfRng: %.1f°", diffRng * RAD_TO_DEG, halfRng * RAD_TO_DEG);
 
         rng = halfRng * 2.0;
-        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange2b: rngMid: %.1f°, rngMin: %.1f°, rngMax: %.1f°, diffRng: %.1f°, rng: %.1f°, rngStep: %.1f°", rngMid * RAD_TO_DEG, rngMin * RAD_TO_DEG, rngMax * RAD_TO_DEG,
-        //    diffRng * RAD_TO_DEG, rng * RAD_TO_DEG, rngStep * RAD_TO_DEG);
+        LOG_DEBUG(GwLog::DEBUG, "calcChrtBorders: rngMid: %.1f°, rngMin: %.1f°, rngMax: %.1f°, diffRng: %.1f°, rng: %.1f°, rngStep: %.1f°", rngMid * RAD_TO_DEG, rngMin * RAD_TO_DEG, rngMax * RAD_TO_DEG,
+           diffRng * RAD_TO_DEG, rng * RAD_TO_DEG, rngStep * RAD_TO_DEG);
 
-    } else {
+    } else { // chart data is of any other type
+
         double oldRngMin = rngMin;
         double oldRngMax = rngMax;
 
-        // Chart starts at lowest range value, but at least '0' or includes even negative values
+        // calculate low end range value
         double currMinVal = dataBuf.getMin(numBufVals);
-        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange0a: currMinVal: %.1f, currMaxVal: %.1f, rngMin: %.1f, rngMid: %.1f, rngMax: %.1f, rng: %.1f, rngStep: %.1f, oldRngMin: %.1f, oldRngMax: %.1f, dfltRng: %.1f, numBufVals: %d",
-        //     currMinVal, dataBuf.getMax(numBufVals), rngMin, rngMid, rngMax, rng, rngStep, oldRngMin, oldRngMax, dfltRng, numBufVals);
+        LOG_DEBUG(GwLog::DEBUG, "calcChrtBorders: currMinVal: %.1f, currMaxVal: %.1f, rngMin: %.1f, rngMid: %.1f, rngMax: %.1f, rng: %.1f, rngStep: %.1f, zeroValue: %.1f, oldRngMin: %.1f, oldRngMax: %.1f, dfltRng: %.1f, dbMIN_VAL: %.1f",
+            currMinVal, dataBuf.getMax(numBufVals), rngMin, rngMid, rngMax, rng, rngStep, zeroValue, oldRngMin, oldRngMax, dfltRng, dbMIN_VAL);
 
         if (currMinVal != dbMAX_VAL) { // current min value is valid
-            if (currMinVal > 0 && dbMIN_VAL == 0) { // Chart range starts at least at '0' or includes negative values
-                rngMin = 0;
-            } else if (currMinVal < oldRngMin || (oldRngMin < 0 && (currMinVal > (oldRngMin + rngStep)))) { // decrease rngMin if required or increase if lowest value is higher than old rngMin
-                rngMin = std::floor(currMinVal / rngStep) * rngStep;
+
+            if (currMinVal < oldRngMin || (currMinVal > (oldRngMin + rngStep))) { // recalculate rngMin if required or increase if lowest value is higher than old rngMin
+                // rngMin = std::floor(currMinVal / rngStep) * rngStep; // align low range to lowest buffer value and nearest range interval
+                rngMin = currMinVal;
+                LOG_DEBUG(GwLog::DEBUG, "calcChrtBorders2: currMinVal: %.1f, rngMin: %.1f, oldRngMin: %.1f, zeroValue: %.1f", currMinVal, rngMin, oldRngMin, zeroValue);
+            }
+            if (rngMin > zeroValue && dbMIN_VAL <= zeroValue) { // Chart range starts at least at '0' if minimum data value allows it
+                rngMin = zeroValue;
+                LOG_DEBUG(GwLog::DEBUG, "calcChrtBorders3: currMinVal: %.1f, rngMin: %.1f, oldRngMin: %.1f, zeroValue: %.1f", currMinVal, rngMin, oldRngMin, zeroValue);
             }
         } // otherwise keep rngMin unchanged
 
         double currMaxVal = dataBuf.getMax(numBufVals);
         if (currMaxVal != dbMAX_VAL) { // current max value is valid
             if ((currMaxVal > oldRngMax) || (currMaxVal < (oldRngMax - rngStep))) { // increase rngMax if required or decrease if lowest value is lower than old rngMax
-                rngMax = std::ceil(currMaxVal / rngStep) * rngStep;
+                // rngMax = std::ceil(currMaxVal / rngStep) * rngStep;
+                rngMax = currMaxVal;
                 rngMax = std::max(rngMax, rngMin + dfltRng); // keep at least default chart range
             }
         } // otherwise keep rngMax unchanged
 
         rngMid = (rngMin + rngMax) / 2.0;
         rng = rngMax - rngMin;
-        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange1a: currMinVal: %.1f, currMaxVal: %.1f, rngMin: %.1f, rngMid: %.1f, rngMax: %.1f, rng: %.1f, rngStep: %.1f, oldRngMin: %.1f, oldRngMax: %.1f, dfltRng: %.1f, numBufVals: %d",
-        //     currMinVal, currMaxVal, rngMin, rngMid, rngMax, rng, rngStep, oldRngMin, oldRngMax, dfltRng, numBufVals);
+        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange-end: currMinVal: %.1f, currMaxVal: %.1f, rngMin: %.1f, rngMid: %.1f, rngMax: %.1f, rng: %.1f, rngStep: %.1f, oldRngMin: %.1f, oldRngMax: %.1f, dfltRng: %.1f, numBufVals: %d",
+        //      currMinVal, currMaxVal, rngMin, rngMid, rngMax, rng, rngStep, oldRngMin, oldRngMax, dfltRng, numBufVals);
     }
 }
 
@@ -492,30 +470,39 @@ void Chart<T>::drawChrtValAxis()
 {
     double slots;
     int i, intv;
-    double cVal, cChrtRng, crngMin;
+    double cVal, cChrtRng;
     char sVal[6];
     int sLen;
-    std::unique_ptr<GwApi::BoatValue> tmpBVal; // Temp variable to get formatted and converted data value from OBP60Formatter
-    tmpBVal = std::unique_ptr<GwApi::BoatValue>(new GwApi::BoatValue(dataBuf.getName()));
-    tmpBVal->setFormat(dataBuf.getFormat());
-    tmpBVal->valid = true;
 
     if (chrtDir == 'H') {
-        slots = valAxis / 60.0; // number of axis labels
-        tmpBVal->value = chrtRng;
-        cChrtRng = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
-        if (useSimuData) {
-            // cannot use <formatValue> in this case, because that would change the range value to some random data
-            cChrtRng = tmpBVal->value; // take SI value in this case -> need to be improved
-        }
-        intv = static_cast<int>(round(cChrtRng / slots));
-        i = intv;
 
-        if (chrtSz == 0) { // full size chart -> print multiple value lines
+        // adjust value range to user defined data format
+        if (chrtDataFmt == 'T') {
+            if (tempFormat == "F") {
+                cChrtRng = chrtRng * (9 / 5);
+            } else {
+                // data steps for Kelvin and Celsius are identical and '1'
+                cChrtRng = chrtRng;
+            }
+        } else {
+            // any other data format can be converted with standard rules
+            cChrtRng = convertValue(chrtRng, dataBuf.getFormat(), *commonData);
+        }
+        if (useSimuData) {
+            // cannot use <convertValue> in this case, because that would change the range value to some random data
+            cChrtRng = chrtRng; // take SI value in this case -> need to be improved
+        }
+
+        slots = valAxis / 60.0; // number of axis labels
+        intv = static_cast<int>(round(cChrtRng / slots));
+        i = static_cast<int>(convertValue(chrtMin, dataBuf.getFormat(), *commonData) + intv + 0.5); // convert and round lower chart value end
+        LOG_DEBUG(GwLog::DEBUG, "Chart::drawChrtValAxis: chrtRng: %.2f, cChrtRng: %.2f, slots: %.2f, intv: %d, chrtMin: %.2f, chrtMid: %.2f, chrtMax: %.2f", chrtRng, cChrtRng, slots, intv, chrtMin, chrtMid, chrtMax);
+
+        if (chrtSz == 0 && chrtDataFmt != 'W') { // full size chart -> print multiple value lines
             getdisplay().setFont(&Ubuntu_Bold12pt8b);
 
             int loopStrt, loopEnd, loopStp;
-            if (chrtDataFmt == 'S') {
+            if (chrtDataFmt == 'S' || chrtDataFmt == 'T') {
                 loopStrt = valAxis - 60;
                 loopEnd = 30;
                 loopStp = -60;
@@ -535,23 +522,27 @@ void Chart<T>::drawChrtValAxis()
 
                 i += intv;
             }
-        } else { // half size chart -> print just edge values + middle chart line
+
+        } else { // half size chart or degree values -> print just edge values + middle chart line
+            LOG_DEBUG(GwLog::DEBUG, "Chart::drawChrtValAxis: chrtDataFmt: %c, chrtMin: %.2f, chrtMid: %.2f, chrtMax: %.2f", chrtDataFmt, chrtMin, chrtMid, chrtMax);
             getdisplay().setFont(&Ubuntu_Bold10pt8b);
 
-            tmpBVal->value = (chrtDataFmt == 'D') ? chrtMin : chrtMax;
-            cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+            // cVal = (chrtDataFmt == 'D') ? chrtMin : chrtMax;
+            cVal = (chrtDataFmt == 'S' || chrtDataFmt == 'T') ? chrtMax : chrtMin;
+            cVal = convertValue(cVal, dataBuf.getFormat(), *commonData); // value (converted)
             if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
-                cVal = tmpBVal->value; // no value conversion here
+                // cVal = (chrtDataFmt == 'D') ? chrtMin : chrtMax; // no value conversion
+                cVal = (chrtDataFmt == 'S' || chrtDataFmt == 'T') ? chrtMax : chrtMin; // no value conversion
             }
             sLen = snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
             getdisplay().fillRect(cStart.x, cStart.y + 2, 42, 16, bgColor); // Clear small area to remove potential chart lines
             getdisplay().setCursor(cStart.x + ((3 - sLen) * 10), cStart.y + 16);
             getdisplay().printf("%s", sVal); // Range low end
 
-            tmpBVal->value = chrtMid;
-            cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+            cVal = chrtMid;
+            cVal = convertValue(cVal, dataBuf.getFormat(), *commonData); // value (converted)
             if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
-                cVal = tmpBVal->value; // no value conversion here
+                cVal = chrtMid; // no value conversion
             }
             sLen = snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
             getdisplay().fillRect(cStart.x, cStart.y + (valAxis / 2) - 9, 42, 16, bgColor); // Clear small area to remove potential chart lines
@@ -559,10 +550,12 @@ void Chart<T>::drawChrtValAxis()
             getdisplay().printf("%s", sVal); // Range mid value
             getdisplay().drawLine(cStart.x + 43, cStart.y + (valAxis / 2), cStart.x + timAxis, cStart.y + (valAxis / 2), fgColor);
 
-            tmpBVal->value = (chrtDataFmt == 'D') ? chrtMax : chrtMin;
-            cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+            // cVal = (chrtDataFmt == 'D') ? chrtMax : chrtMin;
+            cVal = (chrtDataFmt == 'S' || chrtDataFmt == 'T') ? chrtMin : chrtMax;
+            cVal = convertValue(cVal, dataBuf.getFormat(), *commonData); // value (converted)
             if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
-                cVal = tmpBVal->value; // no value conversion here
+                // cVal = (chrtDataFmt == 'D') ? chrtMax : chrtMin; // no value conversion
+                cVal = (chrtDataFmt == 'S' || chrtDataFmt == 'T') ? chrtMax : chrtMin; // no value conversion
             }
             sLen = snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
             getdisplay().fillRect(cStart.x, cStart.y + valAxis - 16, 42, 16, bgColor); // Clear small area to remove potential chart lines
@@ -572,42 +565,43 @@ void Chart<T>::drawChrtValAxis()
         }
 
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        drawTextRalign(cStart.x + timAxis, cStart.y - 3, dbName); // buffer data name
+        drawTextRalign(cStart.x + timAxis, cStart.y - 3, dbName.substring(0, 4)); // buffer data name (max. size 4 characters)
 
     } else { // vertical chart
         if (chrtSz == 0) { // full size chart -> use larger font
             getdisplay().setFont(&Ubuntu_Bold12pt8b);
-            drawTextCenter(cStart.x + (valAxis / 4) + 25, cStart.y - 10, dbName); // buffer data name
+            drawTextRalign(cStart.x + (valAxis * 0.42), cStart.y - 2, dbName.substring(0, 6)); // buffer data name (max. size 5 characters)
         } else {
             getdisplay().setFont(&Ubuntu_Bold10pt8b);
         }
         getdisplay().fillRect(cStart.x, cStart.y, valAxis, 2, fgColor); // top chart line
 
-        tmpBVal->value = chrtMin;
-        cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+        cVal = chrtMin;
+        cVal = convertValue(cVal, dataBuf.getFormat(), *commonData);
         if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
-            cVal = tmpBVal->value; // no value conversion here
+            cVal = chrtMin; // no value conversion
         }
         snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
         getdisplay().setCursor(cStart.x, cStart.y - 2);
         getdisplay().printf("%s", sVal); // Range low end
 
-        tmpBVal->value = chrtMid;
-        cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+        cVal = chrtMid;
+        cVal = convertValue(cVal, dataBuf.getFormat(), *commonData);
         if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
-            cVal = tmpBVal->value; // no value conversion here
+            cVal = chrtMid; // no value conversion
         }
         snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
-        drawTextCenter(cStart.x + (valAxis / 2), cStart.y - 10, sVal); // Range mid end
+        drawTextCenter(cStart.x + (valAxis / 2), cStart.y - 9, sVal); // Range mid end
 
-        tmpBVal->value = chrtMax;
-        cVal = formatValue(tmpBVal.get(), *commonData).cvalue; // value (converted)
+        cVal = chrtMax;
+        cVal = convertValue(cVal, dataBuf.getFormat(), *commonData);
         if (useSimuData) { // dirty fix for problem that OBP60Formatter can only be used without data simulation -> returns random values in simulation mode
-            cVal = tmpBVal->value; // no value conversion here
+            cVal = chrtMax; // no value conversion
         }
         snprintf(sVal, sizeof(sVal), "%.0f", round(cVal));
         drawTextRalign(cStart.x + valAxis - 2, cStart.y - 2, sVal); // Range high end
 
+        // draw vertical grid lines for each axis label
         for (int j = 0; j <= valAxis; j += (valAxis / 2)) {
             getdisplay().drawLine(cStart.x + j, cStart.y, cStart.x + j, cStart.y + timAxis, fgColor);
         }
@@ -623,23 +617,59 @@ void Chart<T>::prntCurrValue(GwApi::BoatValue& currValue)
 
     FormattedData frmtDbData = formatValue(&currValue, *commonData);
     String sdbValue = frmtDbData.svalue; // value as formatted string
-    String dbUnit = frmtDbData.unit; // Unit of value
+    String dbUnit = frmtDbData.unit; // Unit of value; limit length to 3 characters
     // LOG_DEBUG(GwLog::DEBUG, "Chart CurrValue: dbValue: %.2f, sdbValue: %s, dbFormat: %s, dbUnit: %s, Valid: %d, Name: %s, Address: %p", currValue.value, sdbValue,
-    //    currValue.getFormat(), dbUnit, currValue.valid, currValue.getName(), currValue);
+    //   currValue.getFormat(), dbUnit, currValue.valid, currValue.getName(), currValue);
 
     getdisplay().fillRect(xPosVal - 1, yPosVal - 35, 128, 41, bgColor); // Clear area for TWS value
     getdisplay().drawRect(xPosVal, yPosVal - 34, 126, 40, fgColor); // Draw box for TWS value
     getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
     getdisplay().setCursor(xPosVal + 1, yPosVal);
-    getdisplay().print(sdbValue); // alue
+    getdisplay().print(sdbValue); // value
 
     getdisplay().setFont(&Ubuntu_Bold10pt8b);
     getdisplay().setCursor(xPosVal + 76, yPosVal - 17);
-    getdisplay().print(dbName); // Name
+    getdisplay().print(dbName.substring(0, 3)); // Name, limited to 3 characters
 
     getdisplay().setFont(&Ubuntu_Bold8pt8b);
     getdisplay().setCursor(xPosVal + 76, yPosVal + 0);
     getdisplay().print(dbUnit); // Unit
+}
+
+// Get maximum difference of last <amount> of dataBuf ringbuffer values to center chart; for angle data only
+template <typename T>
+double Chart<T>::getAngleRng(double center, size_t amount)
+{
+    size_t count = dataBuf.getCurrentSize();
+
+    if (dataBuf.isEmpty() || amount <= 0) {
+        return dbMAX_VAL;
+    }
+    if (amount > count)
+        amount = count;
+
+    double value = 0;
+    double range = 0;
+    double maxRng = dbMIN_VAL;
+
+    // Start from the newest value (last) and go backwards x times
+    for (size_t i = 0; i < amount; i++) {
+        value = dataBuf.get(count - 1 - i);
+
+        if (value == dbMAX_VAL) {
+            continue; // ignore invalid values
+        }
+
+        range = abs(fmod((value - center + (M_TWOPI + M_PI)), M_TWOPI) - M_PI);
+        if (range > maxRng)
+            maxRng = range;
+    }
+
+    if (maxRng > M_PI) {
+        maxRng = M_PI;
+    }
+
+    return (maxRng != dbMIN_VAL ? maxRng : dbMAX_VAL); // Return range from <mid> to <max>
 }
 
 // Explicitly instantiate class with required data types to avoid linker errors

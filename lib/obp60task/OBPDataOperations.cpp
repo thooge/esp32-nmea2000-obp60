@@ -31,11 +31,11 @@ void HstryBuf::add(double value)
 
 void HstryBuf::handle(bool useSimuData, CommonData& common)
 {
-    //GwApi::BoatValue* tmpBVal;
+    // GwApi::BoatValue* tmpBVal;
     std::unique_ptr<GwApi::BoatValue> tmpBVal; // Temp variable to get formatted and converted data value from OBP60Formatter
 
     // create temporary boat value for calibration purposes and retrieval of simulation value
-    //tmpBVal = new GwApi::BoatValue(boatDataName.c_str());
+    // tmpBVal = new GwApi::BoatValue(boatDataName.c_str());
     tmpBVal = std::unique_ptr<GwApi::BoatValue>(new GwApi::BoatValue(boatDataName));
     tmpBVal->setFormat(boatValue->getFormat());
     tmpBVal->value = boatValue->value;
@@ -45,7 +45,7 @@ void HstryBuf::handle(bool useSimuData, CommonData& common)
         // Calibrate boat value before adding it to history buffer
         calibrationData.calibrateInstance(tmpBVal.get(), logger);
         add(tmpBVal->value);
-        
+
     } else if (useSimuData) { // add simulated value to history buffer
         double simValue = formatValue(tmpBVal.get(), common).value; // simulated value is generated at <formatValue>
         add(simValue);
@@ -78,6 +78,9 @@ void HstryBuffers::addBuffer(const String& name)
     if (HstryBuffers::getBuffer(name) != nullptr) { // buffer for this data type already exists
         return;
     }
+    if (bufferParams.find(name) == bufferParams.end()) { // requested boat data type is not supported in list of <bufferParams>
+        return;
+    }
 
     hstryBuffers[name] = std::unique_ptr<HstryBuf>(new HstryBuf(name, size, boatValueList, logger));
 
@@ -93,13 +96,11 @@ void HstryBuffers::addBuffer(const String& name)
     LOG_DEBUG(GwLog::DEBUG, "HstryBuffers: new buffer added: name: %s, format: %s, multiplier: %d, min value: %.2f, max value: %.2f", name, valueFormat, mltplr, bufferMinVal, bufferMaxVal);
 }
 
-// Handle history buffers
+// Handle all registered history buffers
 void HstryBuffers::handleHstryBufs(bool useSimuData, CommonData& common)
 {
-
-    // Handle all registered history buffers
-    for (auto& pair : hstryBuffers) {
-        auto& buf = pair.second;
+    for (auto& bufMap : hstryBuffers) {
+        auto& buf = bufMap.second;
         buf->handle(useSimuData, common);
     }
 }
@@ -238,7 +239,6 @@ bool WindUtils::calcWinds(const double* awaVal, const double* awsVal,
     }
     // LOG_DEBUG(GwLog::DEBUG, "WindUtils:calcWinds: HDT: %.1f, CTW %.1f, STW %.1f", hdt, ctw, stw);
 
-
     if ((*awaVal == DBL_MAX) || (*awsVal == DBL_MAX)) {
         // Cannot calculate true wind without valid AWA, AWS; other checks are done earlier
         return false;
@@ -284,7 +284,7 @@ bool WindUtils::addWinds()
             twdBVal->value = twd;
             twdBVal->valid = true;
         }
-    
+
     } else {
         // Calculate true winds and AWD; if true winds exist, use at least AWD calculation
         twCalculated = calcWinds(&awaVal, &awsVal, &cogVal, &stwVal, &sogVal, &hdtVal, &hdmVal, &varVal, &twd, &tws, &twa, &awd);

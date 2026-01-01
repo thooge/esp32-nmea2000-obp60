@@ -22,7 +22,7 @@ private:
     int dataIntv = 1; // Update interval for wind history chart:
                       // (1)|(2)|(3)|(4)|(8) x 240 seconds for 4, 8, 12, 16, 32 min. history chart
     bool useSimuData;
-    //bool holdValues;
+    // bool holdValues;
     String flashLED;
     String backlightMode;
 
@@ -65,7 +65,7 @@ public:
 
         // Get config data
         useSimuData = common.config->getBool(common.config->useSimuData);
-        //holdValues = common.config->getBool(common.config->holdvalues);
+        // holdValues = common.config->getBool(common.config->holdvalues);
         flashLED = common.config->getString(common.config->flashLED);
         backlightMode = common.config->getString(common.config->backlight);
 
@@ -143,6 +143,7 @@ public:
         }
 #endif
 #ifdef BOARD_OBP40S3
+        // we can only initialize user defined wind source here, because "pageData" is not available at object instantiation
         wndSrc = commonData->config->getString("page" + String(pageData.pageNumber) + "wndsrc");
         if (wndSrc == "True wind") {
             showTruW = true;
@@ -151,8 +152,8 @@ public:
         }
         oldShowTruW = !showTruW; // Force chart update in displayPage
 #endif
-        // buffer initialization cannot be performed here, because <displayNew> is not executed at system start for default page
 
+        // buffer initialization cannot be performed here, because <displayNew> is not executed at system start for default page
         /* if (!twdFlChart) { // Create true wind charts if they don't exist
             twdHstry = pageData.hstryBuffers->getBuffer("TWD");
             twsHstry = pageData.hstryBuffers->getBuffer("TWS");
@@ -257,20 +258,20 @@ public:
 
         if (chrtMode == 'D') {
             if (wdFlChart) {
-                wdFlChart->showChrt(dataIntv, *wdBVal, true);
+                wdFlChart->showChrt(*wdBVal, dataIntv, true);
             }
 
         } else if (chrtMode == 'S') {
             if (wsFlChart) {
-                wsFlChart->showChrt(dataIntv, *wsBVal, true);
+                wsFlChart->showChrt(*wsBVal, dataIntv, true);
             }
 
         } else if (chrtMode == 'B') {
             if (wdHfChart) {
-                wdHfChart->showChrt(dataIntv, *wdBVal, true);
+                wdHfChart->showChrt(*wdBVal, dataIntv, true);
             }
             if (wsHfChart) {
-                wsHfChart->showChrt(dataIntv, *wsBVal, true);
+                wsHfChart->showChrt(*wsBVal, dataIntv, true);
             }
         }
 

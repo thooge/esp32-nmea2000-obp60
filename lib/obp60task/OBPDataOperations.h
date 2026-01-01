@@ -39,9 +39,9 @@ private:
         String format;
     };
 
-    // Define buffer parameters for each boat data type
+    // Define buffer parameters for supported boat data type
     std::map<String, HistoryParams> bufferParams = {
-        {"AWA", {1000, 10000, -M_PI, M_PI, "formatWind"}},
+        {"AWA", {1000, 10000, 0.0, M_TWOPI, "formatWind"}},
         {"AWD", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
         {"AWS", {1000, 1000, 0.0, 65.0, "formatKnots"}},
         {"COG", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
@@ -50,13 +50,13 @@ private:
         {"DPT", {1000, 100, 0.0, 650.0, "formatDepth"}},
         {"HDM", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
         {"HDT", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
-        {"ROT", {1000, 10000, -M_PI / 180.0 * 99.0, M_PI / 180.0 * 99.0, "formatRot"}}, // min/max is -/+ 99 degrees for rotational angle
+        {"ROT", {1000, 10000, -M_PI / 180.0 * 99.0, M_PI / 180.0 * 99.0, "formatRot"}}, // min/max is -/+ 99 degrees for "rate of turn"
         {"SOG", {1000, 1000, 0.0, 65.0, "formatKnots"}},
         {"STW", {1000, 1000, 0.0, 65.0, "formatKnots"}},
-        {"TWA", {1000, 10000, -M_PI, M_PI, "formatWind"}},
+        {"TWA", {1000, 10000, 0.0, M_TWOPI, "formatWind"}},
         {"TWD", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
         {"TWS", {1000, 1000, 0.0, 65.0, "formatKnots"}},
-        {"WTemp", {1000, 100, 0.0, 650.0, "kelvinToC"}}
+        {"WTemp", {1000, 100, 233.0, 650.0, "kelvinToC"}} // [-50..376] °C
     };
 
 public:
