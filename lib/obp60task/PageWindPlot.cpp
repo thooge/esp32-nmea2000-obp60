@@ -19,8 +19,8 @@ private:
     bool showTruW = true; // Show true wind or apparent wind in chart area
     bool oldShowTruW = false; // remember recent user selection of wind data type
 
-    int dataIntv = 1; // Update interval for wind history chart:
-                      // (1)|(2)|(3)|(4)|(8) x 240 seconds for 4, 8, 12, 16, 32 min. history chart
+    int8_t dataIntv = 1; // Update interval for wind history chart:
+                         // (1)|(2)|(3)|(4)|(8) x 240 seconds for 4, 8, 12, 16, 32 min. history chart
     bool useSimuData;
     // bool holdValues;
     String flashLED;
@@ -49,9 +49,6 @@ private:
     Chart<uint16_t>* wsHfChart = nullptr;
     GwApi::BoatValue* wdBVal = nullptr;
     GwApi::BoatValue* wsBVal = nullptr;
-
-    const double dfltRngWd = 60.0 * DEG_TO_RAD; // default range for course chart from min to max value in RAD
-    const double dfltRngWs = 7.5; // default range for wind speed chart from min to max value in m/s
 
 public:
     PageWindPlot(CommonData& common)
@@ -198,12 +195,12 @@ public:
             twsHstry = pageData.hstryBuffers->getBuffer("TWS");
 
             if (twdHstry) {
-                twdFlChart.reset(new Chart<uint16_t>(*twdHstry, 'V', 0, dfltRngWd, *commonData, useSimuData));
-                twdHfChart.reset(new Chart<uint16_t>(*twdHstry, 'V', 1, dfltRngWd, *commonData, useSimuData));
+                twdFlChart.reset(new Chart<uint16_t>(*twdHstry, 'V', 0, Chart<uint16_t>::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
+                twdHfChart.reset(new Chart<uint16_t>(*twdHstry, 'V', 1, Chart<uint16_t>::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
             }
             if (twsHstry) {
-                twsFlChart.reset(new Chart<uint16_t>(*twsHstry, 'H', 0, dfltRngWs, *commonData, useSimuData));
-                twsHfChart.reset(new Chart<uint16_t>(*twsHstry, 'V', 2, dfltRngWs, *commonData, useSimuData));
+                twsFlChart.reset(new Chart<uint16_t>(*twsHstry, 'H', 0, Chart<uint16_t>::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
+                twsHfChart.reset(new Chart<uint16_t>(*twsHstry, 'V', 2, Chart<uint16_t>::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
             }
         }
 
@@ -212,12 +209,12 @@ public:
             awsHstry = pageData.hstryBuffers->getBuffer("AWS");
 
             if (awdHstry) {
-                awdFlChart.reset(new Chart<uint16_t>(*awdHstry, 'V', 0, dfltRngWd, *commonData, useSimuData));
-                awdHfChart.reset(new Chart<uint16_t>(*awdHstry, 'V', 1, dfltRngWd, *commonData, useSimuData));
+                awdFlChart.reset(new Chart<uint16_t>(*awdHstry, 'V', 0, Chart<uint16_t>::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
+                awdHfChart.reset(new Chart<uint16_t>(*awdHstry, 'V', 1, Chart<uint16_t>::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
             }
             if (awsHstry) {
-                awsFlChart.reset(new Chart<uint16_t>(*awsHstry, 'H', 0, dfltRngWs, *commonData, useSimuData));
-                awsHfChart.reset(new Chart<uint16_t>(*awsHstry, 'V', 2, dfltRngWs, *commonData, useSimuData));
+                awsFlChart.reset(new Chart<uint16_t>(*awsHstry, 'H', 0, Chart<uint16_t>::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
+                awsHfChart.reset(new Chart<uint16_t>(*awsHstry, 'V', 2, Chart<uint16_t>::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
             }
             if (twdHstry && twsHstry && awdHstry && awsHstry) {
                 LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Created wind charts");

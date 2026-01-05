@@ -15,8 +15,8 @@ private:
 
     bool keylock = false; // Keylock
     char pageMode = 'V'; // Page mode: 'V' for value, 'C' for chart, 'B' for both
-    int dataIntv = 1; // Update interval for wind history chart:
-                      // (1)|(2)|(3)|(4)|(8) x 240 seconds for 4, 8, 12, 16, 32 min. history chart
+    int8_t dataIntv = 1; // Update interval for wind history chart:
+                         // (1)|(2)|(3)|(4)|(8) x 240 seconds for 4, 8, 12, 16, 32 min. history chart
 
     //String lengthformat;
     bool useSimuData;
@@ -209,8 +209,8 @@ public:
             dataHstryBuf = pageData.hstryBuffers->getBuffer(bValName1);
 
             if (dataHstryBuf) {
-                dataFlChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 0, Chart<uint16_t>::dfltChrtRng[bValFormat], *commonData, useSimuData));
-                dataHfChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 2, Chart<uint16_t>::dfltChrtRng[bValFormat], *commonData, useSimuData));
+                dataFlChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 0, Chart<uint16_t>::dfltChrtDta[bValFormat].range, *commonData, useSimuData));
+                dataHfChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 2, Chart<uint16_t>::dfltChrtDta[bValFormat].range, *commonData, useSimuData));
                 LOG_DEBUG(GwLog::DEBUG, "PageOneValue: Created chart objects for %s", bValName1);
             } else {
                 LOG_DEBUG(GwLog::DEBUG, "PageOneValue: No chart objects available for %s", bValName1);
@@ -224,8 +224,6 @@ public:
     {
 
         LOG_DEBUG(GwLog::LOG, "Display PageOneValue");
-        //GwConfigHandler* config = commonData->config;
-        //GwLog* logger = commonData->logger;
 
         // Get boat value for page
         GwApi::BoatValue* bValue1 = pageData.values[0]; // Page boat data element
@@ -236,24 +234,8 @@ public:
             setFlashLED(false);
         }
 
-/*        if (!dataFlChart) { // Create chart objects if they don't exist
-            GwApi::BoatValue* bValue1 = pageData.values[0]; // Page boat data element
-            String bValName1 = bValue1->getName(); // Value name
-            String bValFormat = bValue1->getFormat(); // Value format
-
-            dataHstryBuf = pageData.hstryBuffers->getBuffer(bValName1);
-
-            if (dataHstryBuf) {
-                dataFlChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 0, Chart<uint16_t>::dfltChrtRng[bValFormat], *commonData, useSimuData));
-                dataHfChart.reset(new Chart<uint16_t>(*dataHstryBuf, 'H', 2, Chart<uint16_t>::dfltChrtRng[bValFormat], *commonData, useSimuData));
-                LOG_DEBUG(GwLog::DEBUG, "PageOneValue: Created chart objects for %s", bValName1);
-            } else {
-                LOG_DEBUG(GwLog::DEBUG, "PageOneValue: No chart objects available for %s", bValName1);
-            }
-        } */
-
         if (bValue1 == NULL)
-            return PAGE_OK; // no data, no display of page
+            return PAGE_OK; // no data, no page to display
 
         LOG_DEBUG(GwLog::DEBUG, "PageOneValue: printing %s, %.3f", bValue1->getName().c_str(), bValue1->value);
 

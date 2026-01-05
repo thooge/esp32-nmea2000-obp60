@@ -878,19 +878,26 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
 }
 
 // Helper method for conversion of boat data values from SI to user defined format
-double convertValue(const double &value, const String &format, CommonData &commondata)
+double convertValue(const double &value, const String &name, const String &format, CommonData &commondata)
 {
     std::unique_ptr<GwApi::BoatValue> tmpBValue; // Temp variable to get converted data value from <OBP60Formatter::formatValue>
     double result; // data value converted to user defined target data format
 
-    // prepare dummy BoatValue structure for use in <formatValue>
-    tmpBValue = std::unique_ptr<GwApi::BoatValue>(new GwApi::BoatValue("dummy")); // we don't need boat value name for pure value conversion
+    // prepare temporary BoatValue structure for use in <formatValue>
+    tmpBValue = std::unique_ptr<GwApi::BoatValue>(new GwApi::BoatValue(name)); // we don't need boat value name for pure value conversion
     tmpBValue->setFormat(format);
     tmpBValue->valid = true;
     tmpBValue->value = value;
 
     result = formatValue(tmpBValue.get(), commondata).cvalue; // get value (converted)
+    return result;
+}
 
+double convertValue(const double &value, const String &format, CommonData &commondata)
+{
+    double result; // data value converted to user defined target data format
+
+    result = convertValue(value, "dummy", format, commondata);
     return result;
 }
 

@@ -1,16 +1,24 @@
 // Function lib for display of boat data in various graphical chart formats
 #pragma once
 #include "Pagedata.h"
+#include "OBP60Extensions.h"
 
 struct Pos {
     int x;
     int y;
 };
 
-template <typename T> class RingBuffer;
+struct ChartProps {
+    double range;
+    double step;
+};
+
+template <typename T>
+class RingBuffer;
 class GwLog;
 
-template <typename T> class Chart {
+template <typename T>
+class Chart {
 protected:
     CommonData* commonData;
     GwLog* logger;
@@ -25,14 +33,14 @@ protected:
     String tempFormat; // user defined format for temperature
     double zeroValue; // "0" SI value for temperature
 
+    int dWidth; // Display width
+    int dHeight; // Display height
     int top = 44; // chart gap at top of display (25 lines for standard gap + 19 lines for axis labels)
     int bottom = 25; // chart gap at bottom of display to keep space for status line
     int hGap = 11; // gap between 2 horizontal charts; actual gap is 2x <gap>
     int vGap = 17; // gap between 2 vertical charts; actual gap is 2x <gap>
-    int dWidth; // Display width
-    int dHeight; // Display height
     int timAxis, valAxis; // size of time and value chart axis
-    Pos cStart; // start point of chart area
+    Pos cRoot; // start point of chart area
     double chrtRng; // Range of buffer values from min to max value
     double chrtMin; // Range low end value
     double chrtMax; // Range high end value
@@ -60,27 +68,39 @@ protected:
     int x, y; // x and y coordinates for drawing
     int prevX, prevY; // Last x and y coordinates for drawing
 
-    void drawChrt(int8_t chrtIntv, GwApi::BoatValue& currValue); // Draw chart line
+    static constexpr int8_t MIN_FREE_VALUES = 60;
+    static constexpr int8_t THRESHOLD_NO_DATA = 3;
+    static constexpr int8_t VALAXIS_STEP = 60;
+
+    void drawChrt(int8_t& chrtIntv, GwApi::BoatValue& currValue); // Draw chart line
+    void getBufStartNSize(int8_t& chrtIntv); // Identify buffer size and buffer start position for chart
     void calcChrtBorders(double& rngMin, double& rngMid, double& rngMax, double& rng); // Calculate chart points for value axis and return range between <min> and <max>
-    void drawChrtTimeAxis(int8_t chrtIntv); // Draw time axis of chart, value and lines
+    void drawChrtTimeAxis(int8_t& chrtIntv); // Draw time axis of chart, value and lines
     void drawChrtValAxis(); // Draw value axis of chart, value and lines
     void prntCurrValue(GwApi::BoatValue& currValue); // Add current boat data value to chart
+    void prntNoValidData(); // print message for no valid data available
     double getAngleRng(double center, size_t amount); // Calculate range between chart center and edges
+    void prntHorizThreeValueAxisLabel(const GFXfont* font); // print horizontal axis label with only three values: top, mid, and bottom
+    void prntHorizMultiValueAxisLabel(const GFXfont* font); // print horizontal axis label with multiple axis lines
+    void drawBoldLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2); // Draw chart line with thickness of 2px
+    String convNformatLabel(double label); // Convert and format current axis label to user defined format; helper function for easier handling of OBP60Formatter
+    String formatLabel(const double& label); // Format current axis label for printing w/o data format conversion (has been done earlier)
 
 public:
-    // Define default chart range for each boat data type
-    static std::map<String, double> dfltChrtRng;
+    // Define default chart range and range step for each boat data type
+    static std::map<String, ChartProps> dfltChrtDta;
 
     Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dfltRng, CommonData& common, bool useSimuData); // Chart object of data chart
     ~Chart();
-    void showChrt(GwApi::BoatValue currValue, int8_t chrtIntv, bool showCurrValue); // Perform all actions to draw chart
+    void showChrt(GwApi::BoatValue currValue, int8_t& chrtIntv, bool showCurrValue); // Perform all actions to draw chart
 };
 
 template <typename T>
-std::map<String, double> Chart<T>::dfltChrtRng = {
-    { "formatWind", 60.0 * DEG_TO_RAD }, // default course range 60 degrees
-    { "formatCourse", 60.0 * DEG_TO_RAD }, // default course range 60 degrees
-    { "formatKnots", 5.1 }, // default speed range in m/s
-    { "formatDepth", 15.0 }, // default depth range in m
-    { "kelvinToC", 30.0 } // default temp range in °C/K
+std::map<String, ChartProps> Chart<T>::dfltChrtDta = {
+    { "formatWind", { 60.0 * DEG_TO_RAD, 10.0 * DEG_TO_RAD } }, // default course range 60 degrees
+    { "formatCourse", { 60.0 * DEG_TO_RAD, 10.0 * DEG_TO_RAD } }, // default course range 60 degrees
+    //{ "formatKnots", { 7.71, 2.57 } }, // default speed range in m/s
+    { "formatKnots", { 7.71, 2.56 } }, // default speed range in m/s
+    { "formatDepth", { 15.0, 5.0 } }, // default depth range in m
+    { "kelvinToC", { 30.0, 5.0 } } // default temp range in °C/K
 };
