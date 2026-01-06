@@ -17,15 +17,14 @@ template <typename T>
 class RingBuffer;
 class GwLog;
 
-template <typename T>
 class Chart {
 protected:
     CommonData* commonData;
     GwLog* logger;
 
-    RingBuffer<T>& dataBuf; // Buffer to display
-    char chrtDir; // Chart timeline direction: 'H' = horizontal, 'V' = vertical
-    int8_t chrtSz; // Chart size: [0] = full size, [1] = half size left/top, [2] half size right/bottom
+    RingBuffer<uint16_t>& dataBuf; // Buffer to display
+    //char chrtDir; // Chart timeline direction: 'H' = horizontal, 'V' = vertical
+    //int8_t chrtSz; // Chart size: [0] = full size, [1] = half size left/top, [2] half size right/bottom
     double dfltRng; // Default range of chart, e.g. 30 = [0..30]
     uint16_t fgColor; // color code for any screen writing
     uint16_t bgColor; // color code for screen background
@@ -72,13 +71,14 @@ protected:
     static constexpr int8_t THRESHOLD_NO_DATA = 3;
     static constexpr int8_t VALAXIS_STEP = 60;
 
-    void drawChrt(int8_t& chrtIntv, GwApi::BoatValue& currValue); // Draw chart line
+    bool setChartDimensions(const char direction, const int8_t size); //define dimensions and start points for chart
+    void drawChrt(const char chrtDir, int8_t& chrtIntv, GwApi::BoatValue& currValue); // Draw chart line
     void getBufStartNSize(int8_t& chrtIntv); // Identify buffer size and buffer start position for chart
     void calcChrtBorders(double& rngMin, double& rngMid, double& rngMax, double& rng); // Calculate chart points for value axis and return range between <min> and <max>
-    void drawChrtTimeAxis(int8_t& chrtIntv); // Draw time axis of chart, value and lines
-    void drawChrtValAxis(); // Draw value axis of chart, value and lines
-    void prntCurrValue(GwApi::BoatValue& currValue); // Add current boat data value to chart
-    void prntNoValidData(); // print message for no valid data available
+    void drawChrtTimeAxis(const char chrtDir, const int8_t chrtSz, int8_t& chrtIntv); // Draw time axis of chart, value and lines
+    void drawChrtValAxis(const char chrtDir, const int8_t chrtSz); // Draw value axis of chart, value and lines
+    void prntCurrValue(const char chrtDir, GwApi::BoatValue& currValue); // Add current boat data value to chart
+    void prntNoValidData(const char chrtDir); // print message for no valid data available
     double getAngleRng(double center, size_t amount); // Calculate range between chart center and edges
     void prntHorizThreeValueAxisLabel(const GFXfont* font); // print horizontal axis label with only three values: top, mid, and bottom
     void prntHorizMultiValueAxisLabel(const GFXfont* font); // print horizontal axis label with multiple axis lines
@@ -90,17 +90,9 @@ public:
     // Define default chart range and range step for each boat data type
     static std::map<String, ChartProps> dfltChrtDta;
 
-    Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dfltRng, CommonData& common, bool useSimuData); // Chart object of data chart
+    // Chart(RingBuffer<uint16_t>& dataBuf, char chrtDir, int8_t chrtSz, double dfltRng, CommonData& common, bool useSimuData); // Chart object of data chart
+    Chart(RingBuffer<uint16_t>& dataBuf, double dfltRng, CommonData& common, bool useSimuData); // Chart object of data chart
     ~Chart();
-    void showChrt(GwApi::BoatValue currValue, int8_t& chrtIntv, bool showCurrValue); // Perform all actions to draw chart
-};
-
-template <typename T>
-std::map<String, ChartProps> Chart<T>::dfltChrtDta = {
-    { "formatWind", { 60.0 * DEG_TO_RAD, 10.0 * DEG_TO_RAD } }, // default course range 60 degrees
-    { "formatCourse", { 60.0 * DEG_TO_RAD, 10.0 * DEG_TO_RAD } }, // default course range 60 degrees
-    //{ "formatKnots", { 7.71, 2.57 } }, // default speed range in m/s
-    { "formatKnots", { 7.71, 2.56 } }, // default speed range in m/s
-    { "formatDepth", { 15.0, 5.0 } }, // default depth range in m
-    { "kelvinToC", { 30.0, 5.0 } } // default temp range in °C/K
+    // void showChrt(GwApi::BoatValue currValue, int8_t& chrtIntv, bool showCurrValue); // Perform all actions to draw chart
+    void showChrt(char chrtDir, int8_t chrtSz, int8_t& chrtIntv, bool showCurrValue, GwApi::BoatValue currValue); // Perform all actions to draw chart
 };

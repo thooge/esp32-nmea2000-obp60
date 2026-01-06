@@ -4,6 +4,15 @@
 #include "OBPDataOperations.h"
 #include "OBPRingBuffer.h"
 
+std::map<String, ChartProps> Chart::dfltChrtDta = {
+    { "formatWind", { 60.0 * DEG_TO_RAD, 10.0 * DEG_TO_RAD } }, // default course range 60 degrees
+    { "formatCourse", { 60.0 * DEG_TO_RAD, 10.0 * DEG_TO_RAD } }, // default course range 60 degrees
+    //{ "formatKnots", { 7.71, 2.57 } }, // default speed range in m/s
+    { "formatKnots", { 7.71, 2.56 } }, // default speed range in m/s
+    { "formatDepth", { 15.0, 5.0 } }, // default depth range in m
+    { "kelvinToC", { 30.0, 5.0 } } // default temp range in °C/K
+};
+
 // --- Class Chart ---------------
 
 // Chart - object holding the actual chart, incl. data buffer and format definition
@@ -12,11 +21,11 @@
 //             <dfltRng> default range of chart, e.g. 30 = [0..30];
 //             <common> common program data; required for logger and color data
 //             <useSimuData> flag to indicate if simulation data is active
-template <typename T>
-Chart<T>::Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dfltRng, CommonData& common, bool useSimuData)
+// Chart::Chart(RingBuffer<uint16_t>& dataBuf, char chrtDir, int8_t chrtSz, double dfltRng, CommonData& common, bool useSimuData)
+Chart::Chart(RingBuffer<uint16_t>& dataBuf, double dfltRng, CommonData& common, bool useSimuData)
     : dataBuf(dataBuf)
-    , chrtDir(chrtDir)
-    , chrtSz(chrtSz)
+    //, chrtDir(chrtDir)
+    //, chrtSz(chrtSz)
     , dfltRng(dfltRng)
     , commonData(&common)
     , useSimuData(useSimuData)
@@ -28,51 +37,51 @@ Chart<T>::Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dflt
     dWidth = getdisplay().width();
     dHeight = getdisplay().height();
 
-    if (chrtDir == 'H') {
-        // horizontal chart timeline direction
-        timAxis = dWidth - 1;
-        switch (chrtSz) {
-        case 0:
-            valAxis = dHeight - top - bottom;
-            cRoot = { 0, top - 1 };
-            break;
-        case 1:
-            valAxis = (dHeight - top - bottom) / 2 - hGap;
-            cRoot = { 0, top - 1 };
-            break;
-        case 2:
-            valAxis = (dHeight - top - bottom) / 2 - hGap;
-            cRoot = { 0, top + (valAxis + hGap) + hGap - 1 };
-            break;
-        default:
-            LOG_DEBUG(GwLog::ERROR, "obp60:Chart %s: wrong init parameter", dataBuf.getName());
-            return;
-        }
+    /*    if (chrtDir == 'H') {
+            // horizontal chart timeline direction
+            timAxis = dWidth - 1;
+            switch (chrtSz) {
+            case 0:
+                valAxis = dHeight - top - bottom;
+                cRoot = { 0, top - 1 };
+                break;
+            case 1:
+                valAxis = (dHeight - top - bottom) / 2 - hGap;
+                cRoot = { 0, top - 1 };
+                break;
+            case 2:
+                valAxis = (dHeight - top - bottom) / 2 - hGap;
+                cRoot = { 0, top + (valAxis + hGap) + hGap - 1 };
+                break;
+            default:
+                LOG_DEBUG(GwLog::ERROR, "obp60:Chart %s: wrong init parameter", dataBuf.getName());
+                return;
+            }
 
-    } else if (chrtDir == 'V') {
-        // vertical chart timeline direction
-        timAxis = dHeight - top - bottom;
-        switch (chrtSz) {
-        case 0:
-            valAxis = dWidth - 1;
-            cRoot = { 0, top - 1 };
-            break;
-        case 1:
-            valAxis = dWidth / 2 - vGap;
-            cRoot = { 0, top - 1 };
-            break;
-        case 2:
-            valAxis = dWidth / 2 - vGap;
-            cRoot = { dWidth / 2 + vGap - 1, top - 1 };
-            break;
-        default:
+        } else if (chrtDir == 'V') {
+            // vertical chart timeline direction
+            timAxis = dHeight - top - bottom;
+            switch (chrtSz) {
+            case 0:
+                valAxis = dWidth - 1;
+                cRoot = { 0, top - 1 };
+                break;
+            case 1:
+                valAxis = dWidth / 2 - vGap;
+                cRoot = { 0, top - 1 };
+                break;
+            case 2:
+                valAxis = dWidth / 2 - vGap;
+                cRoot = { dWidth / 2 + vGap - 1, top - 1 };
+                break;
+            default:
+                LOG_DEBUG(GwLog::ERROR, "obp60:Chart %s: wrong init parameter", dataBuf.getName());
+                return;
+            }
+        } else {
             LOG_DEBUG(GwLog::ERROR, "obp60:Chart %s: wrong init parameter", dataBuf.getName());
             return;
-        }
-    } else {
-        LOG_DEBUG(GwLog::ERROR, "obp60:Chart %s: wrong init parameter", dataBuf.getName());
-        return;
-    }
+        } */
 
     dataBuf.getMetaData(dbName, dbFormat);
     dbMIN_VAL = dataBuf.getMinVal();
@@ -116,9 +125,6 @@ Chart<T>::Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dflt
         rngStep = 5.0;
     }
 
-    //chrtMin = dbMIN_VAL;
-    //chrtMax = dbMAX_VAL;
-    //chrtMid = dbMAX_VAL;
     // Initialize chart range values
     chrtMin = zeroValue;
     chrtMax = chrtMin + dfltRng;
@@ -130,35 +136,93 @@ Chart<T>::Chart(RingBuffer<T>& dataBuf, char chrtDir, int8_t chrtSz, double dflt
         dWidth, dHeight, timAxis, valAxis, cRoot.x, cRoot.y, dbName, rngStep, chrtDataFmt);
 };
 
-template <typename T>
-Chart<T>::~Chart()
+Chart::~Chart()
 {
 }
 
 // Perform all actions to draw chart
-// Parameters: <chrtIntv> chart time interval, <currValue> current boat data value to be printed, <showCurrValue> current boat data shall be shown yes/no
-template <typename T>
-void Chart<T>::showChrt(GwApi::BoatValue currValue, int8_t& chrtIntv, const bool showCurrValue)
+// Parameters: <chrtDir>:       chart timeline direction: 'H' = horizontal, 'V' = vertical
+//             <chrtSz>:        chart size: [0] = full size, [1] = half size left/top, [2] half size right/bottom
+//             <chrtIntv>:      chart timeline interval
+//             <showCurrValue>: current boat data shall be shown [true/false]
+//             <currValue>:     current boat data value to be printed
+// void Chart::showChrt(GwApi::BoatValue currValue, int8_t& chrtIntv, const bool showCurrValue)
+void Chart::showChrt(char chrtDir, int8_t chrtSz, int8_t& chrtIntv, bool showCurrValue, GwApi::BoatValue currValue)
 {
-    drawChrt(chrtIntv, currValue);
-    drawChrtTimeAxis(chrtIntv);
-    drawChrtValAxis();
+    // this->chrtDir = chrtDir;
+    //  this->chrtSz = chrtSz;
+
+    if (!setChartDimensions(chrtDir, chrtSz)) {
+        return; // wrong chart dimension parameters
+    }
+
+    drawChrt(chrtDir, chrtIntv, currValue);
+    drawChrtTimeAxis(chrtDir, chrtSz, chrtIntv);
+    drawChrtValAxis(chrtDir, chrtSz);
 
     if (!bufDataValid) { // No valid data available
-        prntNoValidData();
+        prntNoValidData(chrtDir);
         return;
     }
 
-    if (showCurrValue) { // shows latest value from history buffer; usually this should be the most current one
+    if (showCurrValue) { // show latest value from history buffer; usually this should be the most current one
         currValue.value = dataBuf.getLast();
         currValue.valid = currValue.value != dbMAX_VAL;
-        Chart<T>::prntCurrValue(currValue);
+        prntCurrValue(chrtDir, currValue);
     }
 }
 
+// define dimensions and start points for chart
+bool Chart::setChartDimensions(const char direction, const int8_t size)
+{
+    if ((direction != 'H' && direction != 'V') || (size < 0 || size > 2)) {
+        LOG_DEBUG(GwLog::ERROR, "obp60:setChartDimensions %s: wrong parameters", dataBuf.getName());
+        return false;
+    }
+
+    if (direction == 'H') {
+        // horizontal chart timeline direction
+        timAxis = dWidth - 1;
+        switch (size) {
+        case 0:
+            valAxis = dHeight - top - bottom;
+            cRoot = { 0, top - 1 };
+            break;
+        case 1:
+            valAxis = (dHeight - top - bottom) / 2 - hGap;
+            cRoot = { 0, top - 1 };
+            break;
+        case 2:
+            valAxis = (dHeight - top - bottom) / 2 - hGap;
+            cRoot = { 0, top + (valAxis + hGap) + hGap - 1 };
+            break;
+        }
+
+    } else if (direction == 'V') {
+        // vertical chart timeline direction
+        timAxis = dHeight - top - bottom;
+        switch (size) {
+        case 0:
+            valAxis = dWidth - 1;
+            cRoot = { 0, top - 1 };
+            break;
+        case 1:
+            valAxis = dWidth / 2 - vGap;
+            cRoot = { 0, top - 1 };
+            break;
+        case 2:
+            valAxis = dWidth / 2 - vGap;
+            cRoot = { dWidth / 2 + vGap - 1, top - 1 };
+            break;
+        }
+    }
+    LOG_DEBUG(GwLog::ERROR, "obp60:setChartDimensions %s: direction: %c, size: %d, dWidth: %d, dHeight: %d, timAxis: %d, valAxis: %d, cRoot{%d, %d}, top: %d, bottom: %d, hGap: %d, vGap: %d",
+        dataBuf.getName(), direction, size, dWidth, dHeight, timAxis, valAxis, cRoot.x, cRoot.y, top, bottom, hGap, vGap);
+    return true;
+}
+
 // draw chart
-template <typename T>
-void Chart<T>::drawChrt(int8_t& chrtIntv, GwApi::BoatValue& currValue)
+void Chart::drawChrt(const char chrtDir, int8_t& chrtIntv, GwApi::BoatValue& currValue)
 {
     double chrtVal; // Current data value
     double chrtScl; // Scale for data values in pixels per value
@@ -167,9 +231,9 @@ void Chart<T>::drawChrt(int8_t& chrtIntv, GwApi::BoatValue& currValue)
 
     getBufStartNSize(chrtIntv);
 
-    // LOG_DEBUG(GwLog::DEBUG, "PageOneValue:drawChart: min: %.1f, mid: %.1f, max: %.1f, rng: %.1f", chrtMin, chrtMid, chrtMax, chrtRng);
+    // LOG_DEBUG(GwLog::DEBUG, "Chart:drawChart: min: %.1f, mid: %.1f, max: %.1f, rng: %.1f", chrtMin, chrtMid, chrtMax, chrtRng);
     calcChrtBorders(chrtMin, chrtMid, chrtMax, chrtRng);
-    LOG_DEBUG(GwLog::DEBUG, "PageOneValue:drawChart2: min: %.1f, mid: %.1f, max: %.1f, rng: %.1f", chrtMin, chrtMid, chrtMax, chrtRng);
+    LOG_DEBUG(GwLog::DEBUG, "Chart:drawChart2: min: %.1f, mid: %.1f, max: %.1f, rng: %.1f", chrtMin, chrtMid, chrtMax, chrtRng);
 
     // Chart scale: pixels per value step
     chrtScl = double(valAxis) / chrtRng;
@@ -290,8 +354,7 @@ void Chart<T>::drawChrt(int8_t& chrtIntv, GwApi::BoatValue& currValue)
 }
 
 // Identify buffer size and buffer start position for chart
-template <typename T>
-void Chart<T>::getBufStartNSize(int8_t& chrtIntv)
+void Chart::getBufStartNSize(int8_t& chrtIntv)
 {
     count = dataBuf.getCurrentSize();
     currIdx = dataBuf.getLastIdx();
@@ -314,8 +377,7 @@ void Chart<T>::getBufStartNSize(int8_t& chrtIntv)
 }
 
 // check and adjust chart range and set range borders and range middle
-template <typename T>
-void Chart<T>::calcChrtBorders(double& rngMin, double& rngMid, double& rngMax, double& rng)
+void Chart::calcChrtBorders(double& rngMin, double& rngMid, double& rngMax, double& rng)
 {
     if (chrtDataFmt == 'W' || chrtDataFmt == 'R') {
         // Chart data is of type 'course', 'wind' or 'rot'
@@ -413,8 +475,7 @@ void Chart<T>::calcChrtBorders(double& rngMin, double& rngMid, double& rngMax, d
 }
 
 // chart time axis label + lines
-template <typename T>
-void Chart<T>::drawChrtTimeAxis(int8_t& chrtIntv)
+void Chart::drawChrtTimeAxis(const char chrtDir, const int8_t chrtSz, int8_t& chrtIntv)
 {
     float axSlots, intv, i;
     char sTime[6];
@@ -461,8 +522,7 @@ void Chart<T>::drawChrtTimeAxis(int8_t& chrtIntv)
 }
 
 // chart value axis labels + lines
-template <typename T>
-void Chart<T>::drawChrtValAxis()
+void Chart::drawChrtValAxis(const char chrtDir, const int8_t chrtSz)
 {
     double axLabel;
     double cVal;
@@ -538,8 +598,7 @@ void Chart<T>::drawChrtValAxis()
 }
 
 // Print current data value
-template <typename T>
-void Chart<T>::prntCurrValue(GwApi::BoatValue& currValue)
+void Chart::prntCurrValue(const char chrtDir, GwApi::BoatValue& currValue)
 {
     const int xPosVal = (chrtDir == 'H') ? cRoot.x + (timAxis / 2) - 56 : cRoot.x + 32;
     const int yPosVal = (chrtDir == 'H') ? cRoot.y + valAxis - 7 : cRoot.y + timAxis - 7;
@@ -566,8 +625,7 @@ void Chart<T>::prntCurrValue(GwApi::BoatValue& currValue)
 }
 
 // print message for no valid data availabletemplate <typename T>
-template <typename T>
-void Chart<T>::prntNoValidData()
+void Chart::prntNoValidData(const char chrtDir)
 {
     int pX, pY;
 
@@ -588,8 +646,7 @@ void Chart<T>::prntNoValidData()
 }
 
 // Get maximum difference of last <amount> of dataBuf ringbuffer values to center chart; for angle data only
-template <typename T>
-double Chart<T>::getAngleRng(double center, size_t amount)
+double Chart::getAngleRng(double center, size_t amount)
 {
     size_t count = dataBuf.getCurrentSize();
 
@@ -624,8 +681,7 @@ double Chart<T>::getAngleRng(double center, size_t amount)
 }
 
 // print horizontal axis label with only three values: top, mid, and bottom
-template <typename T>
-void Chart<T>::prntHorizThreeValueAxisLabel(const GFXfont* font)
+void Chart::prntHorizThreeValueAxisLabel(const GFXfont* font)
 {
     double axLabel;
     double chrtMin, chrtMid, chrtMax;
@@ -637,7 +693,7 @@ void Chart<T>::prntHorizThreeValueAxisLabel(const GFXfont* font)
         yOffset = 15;
     } else if (font == &Ubuntu_Bold12pt8b) {
         xOffset = 51;
-        yOffset = 17;
+        yOffset = 18;
     }
     getdisplay().setFont(font);
 
@@ -658,8 +714,8 @@ void Chart<T>::prntHorizThreeValueAxisLabel(const GFXfont* font)
     // print mid axis label
     axLabel = chrtMid;
     sVal = formatLabel(axLabel);
-    getdisplay().fillRect(cRoot.x, cRoot.y + (valAxis / 2) - 9, xOffset + 4, 16, bgColor); // Clear small area to remove potential chart lines
-    drawTextRalign(cRoot.x + xOffset, cRoot.y + (valAxis / 2) + 5, sVal); // range value
+    getdisplay().fillRect(cRoot.x, cRoot.y + (valAxis / 2) - 8, xOffset + 4, 16, bgColor); // Clear small area to remove potential chart lines
+    drawTextRalign(cRoot.x + xOffset, cRoot.y + (valAxis / 2) + 6, sVal); // range value
     getdisplay().drawLine(cRoot.x + xOffset + 4, cRoot.y + (valAxis / 2), cRoot.x + timAxis, cRoot.y + (valAxis / 2), fgColor);
 
     // print bottom axis label
@@ -671,8 +727,7 @@ void Chart<T>::prntHorizThreeValueAxisLabel(const GFXfont* font)
 }
 
 // print horizontal axis label with multiple axis lines
-template <typename T>
-void Chart<T>::prntHorizMultiValueAxisLabel(const GFXfont* font)
+void Chart::prntHorizMultiValueAxisLabel(const GFXfont* font)
 {
     double chrtMin, chrtMax, chrtRng;
     double axSlots, axIntv, axLabel;
@@ -724,8 +779,7 @@ void Chart<T>::prntHorizMultiValueAxisLabel(const GFXfont* font)
 }
 
 // Draw chart line with thickness of 2px
-template <typename T>
-void Chart<T>::drawBoldLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
+void Chart::drawBoldLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 {
 
     int16_t dx = std::abs(x2 - x1);
@@ -741,8 +795,7 @@ void Chart<T>::drawBoldLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 }
 
 // Convert and format current axis label to user defined format; helper function for easier handling of OBP60Formatter
-template <typename T>
-String Chart<T>::convNformatLabel(double label)
+String Chart::convNformatLabel(double label)
 {
     GwApi::BoatValue tmpBVal(dbName); // temporary boat value for string formatter
     String sVal;
@@ -759,8 +812,7 @@ String Chart<T>::convNformatLabel(double label)
 }
 
 // Format current axis label for printing w/o data format conversion (has been done earlier)
-template <typename T>
-String Chart<T>::formatLabel(const double& label)
+String Chart::formatLabel(const double& label)
 {
     char sVal[11];
 
@@ -786,7 +838,4 @@ String Chart<T>::formatLabel(const double& label)
 
     return String(sVal);
 }
-
-// Explicitly instantiate class with required data types to avoid linker errors
-template class Chart<uint16_t>;
 // --- Class Chart ---------------

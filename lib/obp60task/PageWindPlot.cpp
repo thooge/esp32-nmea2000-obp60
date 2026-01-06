@@ -11,6 +11,15 @@ class PageWindPlot : public Page {
 private:
     GwLog* logger;
 
+    static constexpr char SHOW_WIND_DIR = 'D';
+    static constexpr char SHOW_WIND_SPEED = 'S';
+    static constexpr char SHOW_BOTH = 'B';
+    static constexpr char HORIZONTAL = 'H';
+    static constexpr char VERTICAL = 'V';
+    static constexpr int8_t FULL_SIZE = 0;
+    static constexpr int8_t HALF_SIZE_TOP = 1;
+    static constexpr int8_t HALF_SIZE_BOTTOM = 2;
+
     int width; // Screen width
     int height; // Screen height
 
@@ -37,16 +46,12 @@ private:
     RingBuffer<uint16_t>* awsHstry = nullptr;
 
     // Chart objects
-    std::unique_ptr<Chart<uint16_t>> twdFlChart, awdFlChart; // Chart object for wind direction, full size
-    std::unique_ptr<Chart<uint16_t>> twsFlChart, awsFlChart; // Chart object for wind speed, full size
-    std::unique_ptr<Chart<uint16_t>> twdHfChart, awdHfChart; // Chart object for wind direction, half size
-    std::unique_ptr<Chart<uint16_t>> twsHfChart, awsHfChart; // Chart object for wind speed, half size
+    std::unique_ptr<Chart> twdChart, awdChart; // Chart object for wind direction, full size
+    std::unique_ptr<Chart> twsChart, awsChart; // Chart object for wind speed, full size
 
     // Active charts and values
-    Chart<uint16_t>* wdFlChart = nullptr;
-    Chart<uint16_t>* wsFlChart = nullptr;
-    Chart<uint16_t>* wdHfChart = nullptr;
-    Chart<uint16_t>* wsHfChart = nullptr;
+    Chart* wdChart = nullptr;
+    Chart* wsChart = nullptr;
     GwApi::BoatValue* wdBVal = nullptr;
     GwApi::BoatValue* wsBVal = nullptr;
 
@@ -86,12 +91,12 @@ public:
     {
         // Set chart mode TWD | TWS
         if (key == 1) {
-            if (chrtMode == 'D') {
-                chrtMode = 'S';
-            } else if (chrtMode == 'S') {
-                chrtMode = 'B';
+            if (chrtMode == SHOW_WIND_DIR) {
+                chrtMode = SHOW_WIND_SPEED;
+            } else if (chrtMode == SHOW_WIND_SPEED) {
+                chrtMode = SHOW_BOTH;
             } else {
-                chrtMode = 'D';
+                chrtMode = SHOW_WIND_DIR;
             }
             return 0; // Commit the key
         }
@@ -150,39 +155,36 @@ public:
         oldShowTruW = !showTruW; // Force chart update in displayPage
 #endif
 
-        // buffer initialization cannot be performed here, because <displayNew> is not executed at system start for default page
-        /* if (!twdFlChart) { // Create true wind charts if they don't exist
+        // With chart object initialization being performed here, PageWindPlot won't properly work as default page,
+        // because <displayNew> is not executed at system start for default page
+        if (!twdChart) { // Create true wind charts if they don't exist
             twdHstry = pageData.hstryBuffers->getBuffer("TWD");
             twsHstry = pageData.hstryBuffers->getBuffer("TWS");
 
             if (twdHstry) {
-                twdFlChart.reset(new Chart<uint16_t>(*twdHstry, 'V', 0, dfltRngWd, *commonData, useSimuData));
-                twdHfChart.reset(new Chart<uint16_t>(*twdHstry, 'V', 1, dfltRngWd, *commonData, useSimuData));
+                twdChart.reset(new Chart(*twdHstry, Chart::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
             }
             if (twsHstry) {
-                twsFlChart.reset(new Chart<uint16_t>(*twsHstry, 'H', 0, dfltRngWs, *commonData, useSimuData));
-                twsHfChart.reset(new Chart<uint16_t>(*twsHstry, 'V', 2, dfltRngWs, *commonData, useSimuData));
+                twsChart.reset(new Chart(*twsHstry, Chart::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
             }
         }
 
-        if (!awdFlChart) { // Create apparent wind charts if they don't exist
+        if (!awdChart) { // Create apparent wind charts if they don't exist
             awdHstry = pageData.hstryBuffers->getBuffer("AWD");
             awsHstry = pageData.hstryBuffers->getBuffer("AWS");
 
             if (awdHstry) {
-                awdFlChart.reset(new Chart<uint16_t>(*awdHstry, 'V', 0, dfltRngWd, *commonData, useSimuData));
-                awdHfChart.reset(new Chart<uint16_t>(*awdHstry, 'V', 1, dfltRngWd, *commonData, useSimuData));
+                awdChart.reset(new Chart(*awdHstry, Chart::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
             }
             if (awsHstry) {
-                awsFlChart.reset(new Chart<uint16_t>(*awsHstry, 'H', 0, dfltRngWs, *commonData, useSimuData));
-                awsHfChart.reset(new Chart<uint16_t>(*awsHstry, 'V', 2, dfltRngWs, *commonData, useSimuData));
+                awsChart.reset(new Chart(*awsHstry, Chart::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
             }
             if (twdHstry && twsHstry && awdHstry && awsHstry) {
                 LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Created wind charts");
             } else {
                 LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Some/all chart objects for wind data missing");
             }
-        } */
+        }
     }
 
     int displayPage(PageData& pageData)
@@ -190,54 +192,46 @@ public:
         LOG_DEBUG(GwLog::LOG, "Display PageWindPlot");
         ulong pageTime = millis();
 
-        if (!twdFlChart) { // Create true wind charts if they don't exist
-            twdHstry = pageData.hstryBuffers->getBuffer("TWD");
-            twsHstry = pageData.hstryBuffers->getBuffer("TWS");
+        /*        if (!twdChart) { // Create true wind charts if they don't exist
+                    twdHstry = pageData.hstryBuffers->getBuffer("TWD");
+                    twsHstry = pageData.hstryBuffers->getBuffer("TWS");
 
-            if (twdHstry) {
-                twdFlChart.reset(new Chart<uint16_t>(*twdHstry, 'V', 0, Chart<uint16_t>::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
-                twdHfChart.reset(new Chart<uint16_t>(*twdHstry, 'V', 1, Chart<uint16_t>::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
-            }
-            if (twsHstry) {
-                twsFlChart.reset(new Chart<uint16_t>(*twsHstry, 'H', 0, Chart<uint16_t>::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
-                twsHfChart.reset(new Chart<uint16_t>(*twsHstry, 'V', 2, Chart<uint16_t>::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
-            }
-        }
+                    if (twdHstry) {
+                        twdChart.reset(new Chart(*twdHstry, Chart::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
+                    }
+                    if (twsHstry) {
+                        twsChart.reset(new Chart(*twsHstry, Chart::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
+                    }
+                }
 
-        if (!awdFlChart) { // Create apparent wind charts if they don't exist
-            awdHstry = pageData.hstryBuffers->getBuffer("AWD");
-            awsHstry = pageData.hstryBuffers->getBuffer("AWS");
+                if (!awdChart) { // Create apparent wind charts if they don't exist
+                    awdHstry = pageData.hstryBuffers->getBuffer("AWD");
+                    awsHstry = pageData.hstryBuffers->getBuffer("AWS");
 
-            if (awdHstry) {
-                awdFlChart.reset(new Chart<uint16_t>(*awdHstry, 'V', 0, Chart<uint16_t>::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
-                awdHfChart.reset(new Chart<uint16_t>(*awdHstry, 'V', 1, Chart<uint16_t>::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
-            }
-            if (awsHstry) {
-                awsFlChart.reset(new Chart<uint16_t>(*awsHstry, 'H', 0, Chart<uint16_t>::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
-                awsHfChart.reset(new Chart<uint16_t>(*awsHstry, 'V', 2, Chart<uint16_t>::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
-            }
-            if (twdHstry && twsHstry && awdHstry && awsHstry) {
-                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Created wind charts");
-            } else {
-                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Some/all chart objects for wind data missing");
-            }
-        }
+                    if (awdHstry) {
+                        awdChart.reset(new Chart(*awdHstry, Chart::dfltChrtDta["formatCourse"].range, *commonData, useSimuData));
+                    }
+                    if (awsHstry) {
+                        awsChart.reset(new Chart(*awsHstry, Chart::dfltChrtDta["formatKnots"].range, *commonData, useSimuData));
+                    }
+                    if (twdHstry && twsHstry && awdHstry && awsHstry) {
+                        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Created wind charts");
+                    } else {
+                        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: Some/all chart objects for wind data missing");
+                    }
+                } */
 
         if (showTruW != oldShowTruW) {
 
             // Switch active charts based on showTruW
             if (showTruW) {
-                wdFlChart = twdFlChart.get();
-                wsFlChart = twsFlChart.get();
-                wdHfChart = twdHfChart.get();
-                wsHfChart = twsHfChart.get();
+                wdChart = twdChart.get();
+                wsChart = twsChart.get();
                 wdBVal = pageData.values[0];
                 wsBVal = pageData.values[1];
             } else {
-                wdFlChart = awdFlChart.get();
-                wsFlChart = awsFlChart.get();
-                wdHfChart = awdHfChart.get();
-                wsHfChart = awsHfChart.get();
+                wdChart = awdChart.get();
+                wsChart = awsChart.get();
                 wdBVal = pageData.values[2];
                 wsBVal = pageData.values[3];
             }
@@ -253,22 +247,22 @@ public:
         getdisplay().setPartialWindow(0, 0, width, height); // Set partial update
         getdisplay().setTextColor(commonData->fgcolor);
 
-        if (chrtMode == 'D') {
-            if (wdFlChart) {
-                wdFlChart->showChrt(*wdBVal, dataIntv, true);
+        if (chrtMode == SHOW_WIND_DIR) {
+            if (wdChart) {
+                wdChart->showChrt(VERTICAL, FULL_SIZE, dataIntv, true, *wdBVal);
             }
 
-        } else if (chrtMode == 'S') {
-            if (wsFlChart) {
-                wsFlChart->showChrt(*wsBVal, dataIntv, true);
+        } else if (chrtMode == SHOW_WIND_SPEED) {
+            if (wsChart) {
+                wsChart->showChrt(HORIZONTAL, FULL_SIZE, dataIntv, true, *wsBVal);
             }
 
-        } else if (chrtMode == 'B') {
-            if (wdHfChart) {
-                wdHfChart->showChrt(*wdBVal, dataIntv, true);
+        } else if (chrtMode == SHOW_BOTH) {
+            if (wdChart) {
+                wdChart->showChrt(VERTICAL, HALF_SIZE_TOP, dataIntv, true, *wdBVal);
             }
-            if (wsHfChart) {
-                wsHfChart->showChrt(*wsBVal, dataIntv, true);
+            if (wsChart) {
+                wsChart->showChrt(VERTICAL, HALF_SIZE_BOTTOM, dataIntv, true, *wsBVal);
             }
         }
 
