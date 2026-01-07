@@ -432,7 +432,7 @@ void OBP60Task(GwApi *api){
 #endif
     LOG_DEBUG(GwLog::LOG,"...done");
 
-    int lastPage=pageNumber;
+    int lastPage=-1; // initialize with an impiossible value, so we can detect wether we are during startup and no page has been displayed yet
 
     BoatValueList boatValues; //all the boat values for the api query
     HstryBuf hstryBufList(1920);  // Create ring buffers for history storage of some boat data (1920 seconds = 32 minutes)
@@ -848,8 +848,10 @@ void OBP60Task(GwApi *api){
                     }
                     else{
                         if (lastPage != pageNumber){
-                            pages[lastPage].page->leavePage(pages[lastPage].parameters); // call page cleanup code
-                            if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember new page for device restart
+			    if (lastPage != -1){ // skip cleanup if we are during startup, and no page has been displayed yet. 
+                                pages[lastPage].page->leavePage(pages[lastPage].parameters); // call page cleanup code
+                                if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember new page for device restart
+			    }
                             currentPage->setupKeys();
                             currentPage->displayNew(pages[pageNumber].parameters);
                             lastPage = pageNumber;
