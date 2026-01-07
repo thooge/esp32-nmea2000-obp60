@@ -19,10 +19,18 @@ bool firstRun = true;    // Detect the first page run
 int zoom = 15;           // Default zoom level
 bool showValues = false; // Show values HDT, SOG, DBT in navigation map
 
+private:
+    uint8_t* imageBackupData = nullptr;
+    int imageBackupWidth = 0;
+    int imageBackupHeight = 0;
+    size_t imageBackupSize = 0;
+    bool hasImageBackup = false;
+
 public:
     PageNavigation(CommonData &common){
         commonData = &common;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageNavigation");
+        imageBackupData = (uint8_t*)heap_caps_malloc((GxEPD_WIDTH * GxEPD_HEIGHT), MALLOC_CAP_SPIRAM);
     }
 
     virtual int handleKey(int key){
@@ -31,7 +39,7 @@ public:
             commonData->keylock = !commonData->keylock;
             return 0;                   // Commit the key
         }
-        // Cood for zoom -
+        // Code for zoom -
         if(key == 1){
             zoom --;                    // Zoom -
             if(zoom <7){
@@ -39,7 +47,7 @@ public:
             }
             return 0;                   // Commit the key
         }
-        // Cood for zoom -
+        // Code for zoom -
         if(key == 2){
             zoom ++;                    // Zoom +
             if(zoom >17){
@@ -60,7 +68,7 @@ public:
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
-        // bool simulation = config->getBool(config->useSimuData);
+        bool simulation = config->getBool(config->useSimuData);
         bool holdvalues = config->getBool(config->holdvalues);
         String flashLED = config->getString(config->flashLED);
         String backlightMode = config->getString(config->backlight);
@@ -72,10 +80,13 @@ public:
         bool grid = config->getBool(config->grid);
         String orientation = config->getString(config->orientation);
         int refreshDistance = config->getInt(config->refreshDistance);
+        bool showValuesMap = config->getBool(config->showvalues);
+        bool ownHeading = config->getBool(config->ownheading);
 
         if(firstRun == true){
-            zoom = zoomLevel; // Over write zoom level with setup value
-            firstRun = false; // Restet variable
+            zoom = zoomLevel;           // Over write zoom level with setup value
+            showValues = showValuesMap; // Over write showValues with setup value 
+            firstRun = false;           // Restet variable
         }
 
         // Local variables
@@ -109,11 +120,16 @@ public:
         static String unit6old = "";
 
         static double latitude = 0;
+        static double latitudeold = 0;
         static double longitude = 0;
+        static double longitudeold = 0;
         static double trueHeading = 0;
         static double magneticHeading = 0;
         static double speedOverGround = 0;
         static double depthBelowTransducer = 0;
+        static int lostCounter = 0; // Counter for connection lost to the map server (increment by each page refresh)
+        int imgWidth = 0;
+        int imgHeight = 0;
 
         // Get boat values #1 Latitude
         GwApi::BoatValue *bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
@@ -185,6 +201,7 @@ public:
         // Latitude
         if(valid1){
             latitude = value1;
+            latitudeold = value1;
             value3old = value1;
         }
         else{
@@ -193,6 +210,7 @@ public:
         // Longitude
         if(valid2){
             longitude = value2;
+            longitudeold = value2;
             value2old = value2;
         }
         else{
@@ -353,8 +371,8 @@ public:
 
             auto& json = net.json();                // Extract JSON content
             int numPix = json["number_pixels"] | 0; // Read number of pixels
-            int imgWidth = json["width"] | 0;       // Read width of image
-            int imgHeight = json["height"] | 0;     // Read height og image
+            imgWidth = json["width"] | 0;           // Read width of image
+            imgHeight = json["height"] | 0;         // Read height og image
 
             const char* b64src = json["picture_base64"].as<const char*>();  // Read picture as Base64 content
             size_t b64len = strlen(b64src);                                 // Calculate length of Base64 content
@@ -380,12 +398,42 @@ public:
             size_t decodedSize = 0;
             decoder.decodeBase64(b64, imageData, imgSize, decodedSize);
 
+            // Copy actual navigation man to ackup map
+            imageBackupWidth  = imgWidth;
+            imageBackupHeight = imgHeight;
+            imageBackupSize   = imgSize;
+            if (decodedSize > 0) {
+                memcpy(imageBackupData, imageData, decodedSize);
+                imageBackupSize = decodedSize;
+            }
+            hasImageBackup = true;
+            lostCounter = 0;
+
             // Show image (navigation map)
             getdisplay().drawBitmap(0, 25, imageData, imgWidth, imgHeight, commonData->fgcolor);
 
             // Clean PSRAM
             free(b64);
             free(imageData);
+        }
+        // If no network connection then use backup navigation map
+        else{
+            // Show backup image (backup navigation map)
+            if (hasImageBackup) {
+                getdisplay().drawBitmap(0, 25, imageBackupData, imageBackupWidth, imageBackupHeight, commonData->fgcolor);
+            }    
+
+            // Show info: Connection lost when 5 page refreshes has a connection lost to the map server
+            // Short connection losts are uncritical
+            if(lostCounter >= 5){
+                getdisplay().setFont(&Ubuntu_Bold12pt8b);
+                getdisplay().fillRect(200, 250 , 200, 25, commonData->fgcolor); // Black rect
+                getdisplay().fillRect(202, 252 , 196, 21, commonData->bgcolor); // White rect
+                getdisplay().setCursor(210, 270);
+                getdisplay().print("Map server lost");
+            }
+
+            lostCounter++; // Increment lost counter
         }
 
 

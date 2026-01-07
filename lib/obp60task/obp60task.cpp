@@ -262,6 +262,8 @@ void registerAllPages(PageList &list){
     list.add(&registerPageSkyView);
     extern PageDescription registerPageNavigation;
     list.add(&registerPageNavigation);
+    extern PageDescription registerPageDigitalOut;
+    list.add(&registerPageDigitalOut);
 }
 
 // Undervoltage detection for shutdown display
@@ -430,7 +432,7 @@ void OBP60Task(GwApi *api){
 #endif
     LOG_DEBUG(GwLog::LOG,"...done");
 
-    int lastPage=pageNumber;
+    int lastPage=-1; // initialize with an impiossible value, so we can detect wether we are during startup and no page has been displayed yet
 
     BoatValueList boatValues; //all the boat values for the api query
     HstryBuffers hstryBufList(1920, &boatValues, logger);  // Create empty list of boat data history buffers
@@ -852,8 +854,10 @@ void OBP60Task(GwApi *api){
                     }
                     else{
                         if (lastPage != pageNumber){
-                            pages[lastPage].page->leavePage(pages[lastPage].parameters); // call page cleanup code
-                            if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember new page for device restart
+			    if (lastPage != -1){ // skip cleanup if we are during startup, and no page has been displayed yet. 
+                                pages[lastPage].page->leavePage(pages[lastPage].parameters); // call page cleanup code
+                                if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember new page for device restart
+			    }
                             currentPage->setupKeys();
                             currentPage->displayNew(pages[pageNumber].parameters);
                             lastPage = pageNumber;

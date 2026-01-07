@@ -934,11 +934,14 @@
         "type": "string",
         "default": "192.168.15.10",
         "check": "checkIpAddress",
-        "description": "IP address only for local map service e.g. 192.168.15.10\nor an MDNS name like Raspi.local",
+        "description": "IP address for local map service e.g. 192.168.15.10\nor an MDNS name like Raspi.local",
         "category": "OBP60 Navigation",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "mapsource": ["Local Service"] }
+        ]
     },
     {
         "name": "localPort",
@@ -947,10 +950,13 @@
         "default": "8080",
         "check":"checkPort",
         "description": "TCP port for local map server",
-        "category": "TCP client",
+        "category": "OBP60 Navigation",
         "capabilities": {
             "obp60":"true"
-        }
+        },
+        "condition": [
+            { "mapsource": ["Local Service"] }
+        ]
     },
     {
         "name": "maptype",
@@ -971,28 +977,31 @@
         }
     },
     {
-        "name": "zoomlevel",
-        "label": "Default Zool Level",
+        "name": "refreshDistance",
+        "label": "Refresh Distance [m]",
         "type": "number",
         "default": "15",
         "check": "checkMinMax",
-        "min": 7,
-        "max": 17,
-        "description": "Zoom level for map [7..17]; 15 = default",
+        "min": 1,
+        "max": 50,
+        "description": "Refresh distance between updates [1..50 m], 15 m = default",
         "category": "OBP60 Navigation",
         "capabilities": {
             "obp60":"true"
         }
     },
     {
-        "name": "grid",
-        "label": "Show Grid",
-        "type": "boolean",
-        "default": "false",
-        "description": "Show the grid for latutude and longitude",
+        "name": "zoomlevel",
+        "label": "Default Zoom Level",
+        "type": "number",
+        "default": "15",
+        "check": "checkMinMax",
+        "min": 7,
+        "max": 17,
+        "description": "Start zoom level for map [7..17]; 15 = default",
         "category": "OBP60 Navigation",
         "capabilities": {
-            "obp60": "true"
+            "obp60":"true"
         }
     },
     {
@@ -1011,17 +1020,36 @@
         }
     },
     {
-        "name": "refreshDistance",
-        "label": "Refresh Distance [m]",
-        "type": "number",
-        "default": "15",
-        "check": "checkMinMax",
-        "min": 1,
-        "max": 50,
-        "description": "Refresh distance between updates [1..50 m], 15 m = default",
+        "name": "grid",
+        "label": "Show Grid",
+        "type": "boolean",
+        "default": "false",
+        "description": "Show the grid for latutude and longitude",
         "category": "OBP60 Navigation",
         "capabilities": {
-            "obp60":"true"
+            "obp60": "true"
+        }
+    },
+    {
+        "name": "showvalues",
+        "label": "Show Values",
+        "type": "boolean",
+        "default": "false",
+        "description": "Show boat data values in the left upper map corner",
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60": "true"
+        }
+    },
+    {
+        "name": "ownheading",
+        "label": "Alternativ Heading",
+        "type": "boolean",
+        "default": "false",
+        "description": "Calculating an alternative travel direction for\na better and calmer map orientation",
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60": "true"
         }
     },
     {
@@ -1336,6 +1364,7 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
@@ -1635,6 +1664,7 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
@@ -1926,6 +1956,7 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
@@ -2209,6 +2240,7 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
@@ -2484,6 +2516,7 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
@@ -2751,6 +2784,7 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
@@ -3010,6 +3044,7 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
@@ -3261,6 +3296,7 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
@@ -3504,6 +3540,7 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
@@ -3739,6 +3776,7 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",

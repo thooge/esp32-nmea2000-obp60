@@ -1,9 +1,9 @@
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include <Arduino.h>
-#include <PCF8574.h>      // Driver for PCF8574 output modul from Horter
 #include <Wire.h>         // I2C
 #include <RTClib.h>       // Driver for DS1388 RTC
+#include <PCF8574.h>      // PCF8574 modules from Horter
 #include "SunRise.h"      // Lib for sunrise and sunset calculation
 #include "Pagedata.h"
 #include "OBP60Hardware.h"
@@ -27,9 +27,7 @@
 #include "fonts/IBM8x8px.h"
 
 // E-Ink Display
-#define GxEPD_WIDTH 400     // Display width
-#define GxEPD_HEIGHT 300    // Display height
-
+// Definition for e-paper width an height refer OBP60Hardware.h
 #ifdef DISPLAY_GDEW042T2
 // Set display type and SPI pins for display
 GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(OBP_SPI_CS, OBP_SPI_DC, OBP_SPI_RST, OBP_SPI_BUSY)); // GDEW042T2 400x300, UC8176 (IL0398)
@@ -90,10 +88,11 @@ void hardwareInit(GwApi *api)
 
     Wire.begin();
     // Init PCF8574 digital outputs
-    Wire.setClock(I2C_SPEED);       // Set I2C clock on 10 kHz
+    Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
     if(pcf8574_Out.begin()){        // Initialize PCF8574
         pcf8574_Out.write8(255);    // Clear all outputs
     }
+    Wire.setClock(I2C_SPEED);       // Set I2C clock on 100 kHz
     fram = Adafruit_FRAM_I2C();
     if (esp_reset_reason() ==  ESP_RST_POWERON) {
         // help initialize FRAM
@@ -193,6 +192,15 @@ void powerInit(String powermode) {
 #endif
     }
 }
+
+void setPCF8574PortPin(uint pin, uint8_t value){
+    Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
+    if(pcf8574_Out.begin()){        // Check available and initialize PCF8574
+        pcf8574_Out.write(pin, value); // Toggle pin
+    }
+    Wire.setClock(I2C_SPEED);       // Set I2C clock on 100 kHz
+}
+
 
 void setPortPin(uint pin, bool value){
     pinMode(pin, OUTPUT);
@@ -904,5 +912,31 @@ void doImageRequest(GwApi *api, int *pageno, const PageStruct pages[MAX_PAGE_NUM
 
     imageBuffer.clear();
 }
+
+
+
+// Calculate the distance between two Geo coordinates
+double distanceBetweenCoordinates(double lat1, double lon1, double lat2, double lon2) {
+    // Grad → Radiant
+    double lat1Rad = lat1 * DEG_TO_RAD;
+    double lon1Rad = lon1 * DEG_TO_RAD;
+    double lat2Rad = lat2 * DEG_TO_RAD;
+    double lon2Rad = lon2 * DEG_TO_RAD;
+
+    // Differenzen
+    double dLat = lat2Rad - lat1Rad;
+    double dLon = lon2Rad - lon1Rad;
+
+    // Haversine-Formel
+    double a = sin(dLat / 2.0) * sin(dLat / 2.0) +
+               cos(lat1Rad) * cos(lat2Rad) *
+               sin(dLon / 2.0) * sin(dLon / 2.0);
+
+    double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+
+    // Abstand in Metern
+    return double(EARTH_RADIUS) * c;
+}
+
 
 #endif
