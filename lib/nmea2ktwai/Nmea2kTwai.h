@@ -1,6 +1,7 @@
 #ifndef _NMEA2KTWAI_H
 #define _NMEA2KTWAI_H
 #include "NMEA2000.h"
+#include "N2kDeviceList.h"
 #include "GwTimer.h"
 
 class Nmea2kTwai : public tNMEA2000{
@@ -26,6 +27,7 @@ class Nmea2kTwai : public tNMEA2000{
             STATE state=ST_ERROR;
         } Status;
         Status getStatus();
+        tN2kDeviceList *getDeviceList(){return pN2kDeviceList;}
         unsigned long getLastRecoveryStart(){return lastRecoveryStart;}
         void loop();
         static const char * stateStr(const STATE &st);
@@ -58,6 +60,7 @@ class Nmea2kTwai : public tNMEA2000{
     GwIntervalRunner timers;
     bool disabled=false;
     unsigned long lastRecoveryStart=0;
+    tN2kDeviceList *pN2kDeviceList;
 };
 
 #endif

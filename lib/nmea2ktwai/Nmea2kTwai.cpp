@@ -9,6 +9,7 @@ static const int TIMEOUT_OFFLINE=256; //# of timeouts to consider offline
 Nmea2kTwai::Nmea2kTwai(gpio_num_t _TxPin,  gpio_num_t _RxPin, unsigned long recP, unsigned long logP):
      tNMEA2000(),RxPin(_RxPin),TxPin(_TxPin)
 {
+    pN2kDeviceList = new tN2kDeviceList(this);
     if (RxPin < 0 || TxPin < 0){
         disabled=true;    
     }
@@ -160,6 +161,8 @@ bool Nmea2kTwai::checkRecovery(){
     }
     return strt;
 }
+
+
 
 void Nmea2kTwai::loop(){
     if (disabled) return;
