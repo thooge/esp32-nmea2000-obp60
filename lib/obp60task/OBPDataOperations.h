@@ -1,8 +1,8 @@
 // Function lib for history buffer handling, true wind calculation, and other operations on boat data
 #pragma once
 #include "OBPRingBuffer.h"
-#include "obp60task.h"
 #include "Pagedata.h"
+#include "obp60task.h"
 #include <map>
 
 class HstryBuf {
@@ -11,8 +11,8 @@ private:
     String boatDataName;
     double hstryMin;
     double hstryMax;
-    GwApi::BoatValue *boatValue;
-    GwLog *logger;
+    GwApi::BoatValue* boatValue;
+    GwLog* logger;
 
     friend class HstryBuffers;
 
@@ -32,31 +32,32 @@ private:
     GwApi::BoatValue *awaBVal, *hdtBVal, *hdmBVal, *varBVal, *cogBVal, *sogBVal, *awdBVal; // boat values for true wind calculation
 
     struct HistoryParams {
-        int hstryUpdFreq;
-        int mltplr;
-        double bufferMinVal;
-        double bufferMaxVal;
-        String format;
+        int hstryUpdFreq; // update frequency of history buffer (documentation only)
+        int mltplr; // specifies actual value precision being storable:
+                    // [10000: 0 - 6.5535 | 1000: 0 - 65.535 | 100: 0 - 650.35 | 10: 0 - 6503.5
+        double bufferMinVal; // minimum valid data value
+        double bufferMaxVal; // maximum valid data value
+        String format; // format of data type
     };
 
     // Define buffer parameters for supported boat data type
     std::map<String, HistoryParams> bufferParams = {
-        {"AWA", {1000, 10000, 0.0, M_TWOPI, "formatWind"}},
-        {"AWD", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
-        {"AWS", {1000, 1000, 0.0, 65.0, "formatKnots"}},
-        {"COG", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
-        {"DBS", {1000, 100, 0.0, 650.0, "formatDepth"}},
-        {"DBT", {1000, 100, 0.0, 650.0, "formatDepth"}},
-        {"DPT", {1000, 100, 0.0, 650.0, "formatDepth"}},
-        {"HDM", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
-        {"HDT", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
-        {"ROT", {1000, 10000, -M_PI / 180.0 * 99.0, M_PI / 180.0 * 99.0, "formatRot"}}, // min/max is -/+ 99 degrees for "rate of turn"
-        {"SOG", {1000, 1000, 0.0, 65.0, "formatKnots"}},
-        {"STW", {1000, 1000, 0.0, 65.0, "formatKnots"}},
-        {"TWA", {1000, 10000, 0.0, M_TWOPI, "formatWind"}},
-        {"TWD", {1000, 10000, 0.0, M_TWOPI, "formatCourse"}},
-        {"TWS", {1000, 1000, 0.0, 65.0, "formatKnots"}},
-        {"WTemp", {1000, 100, 233.0, 650.0, "kelvinToC"}} // [-50..376] °C
+        { "AWA", { 1000, 10000, 0.0, M_TWOPI, "formatWind" } },
+        { "AWD", { 1000, 10000, 0.0, M_TWOPI, "formatCourse" } },
+        { "AWS", { 1000, 1000, 0.0, 65.0, "formatKnots" } },
+        { "COG", { 1000, 10000, 0.0, M_TWOPI, "formatCourse" } },
+        { "DBS", { 1000, 100, 0.0, 650.0, "formatDepth" } },
+        { "DBT", { 1000, 100, 0.0, 650.0, "formatDepth" } },
+        { "DPT", { 1000, 100, 0.0, 650.0, "formatDepth" } },
+        { "HDM", { 1000, 10000, 0.0, M_TWOPI, "formatCourse" } },
+        { "HDT", { 1000, 10000, 0.0, M_TWOPI, "formatCourse" } },
+        { "ROT", { 1000, 10000, -M_PI / 180.0 * 99.0, M_PI / 180.0 * 99.0, "formatRot" } }, // min/max is -/+ 99 degrees for "rate of turn"
+        { "SOG", { 1000, 1000, 0.0, 65.0, "formatKnots" } },
+        { "STW", { 1000, 1000, 0.0, 65.0, "formatKnots" } },
+        { "TWA", { 1000, 10000, 0.0, M_TWOPI, "formatWind" } },
+        { "TWD", { 1000, 10000, 0.0, M_TWOPI, "formatCourse" } },
+        { "TWS", { 1000, 1000, 0.0, 65.0, "formatKnots" } },
+        { "WTemp", { 1000, 100, 233.0, 650.0, "kelvinToC" } } // [-50..376] °C
     };
 
 public:
@@ -75,7 +76,8 @@ private:
 
 public:
     WindUtils(BoatValueList* boatValues, GwLog* log)
-        : logger(log) {
+        : logger(log)
+    {
         twaBVal = boatValues->findValueOrCreate("TWA");
         twsBVal = boatValues->findValueOrCreate("TWS");
         twdBVal = boatValues->findValueOrCreate("TWD");
