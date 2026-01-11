@@ -163,8 +163,6 @@ public:
         oldShowTruW = !showTruW; // Force chart update in displayPage
 #endif
 
-        // With chart object initialization being performed here, PageWindPlot won't properly work as default page,
-        // because <displayNew> is not executed at system start for default page
         if (!twdChart) { // Create true wind charts if they don't exist
             twdHstry = pageData.hstryBuffers->getBuffer("TWD");
             twsHstry = pageData.hstryBuffers->getBuffer("TWS");
