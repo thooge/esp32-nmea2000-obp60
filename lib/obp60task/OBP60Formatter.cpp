@@ -49,7 +49,15 @@ String formatLongitude(double lon) {
     return String(degree, 0) + "\x90 " + String(minute, 4) + "' " + ((lon > 0) ? "E" : "W");
 }
 
-FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
+// Convert and format boat value from SI to user defined format (definition for compatibility purposes)
+FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata) {
+
+    return formatValue(value, commondata, false); // call <formatValue> with standard handling of user setting for simulation data
+}
+
+// Convert and format boat value from SI to user defined format
+// generate random simulation data; can be deselected to use conversion+formatting function even in simulation mode
+FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata, bool ignoreSimuDataSetting){
     GwLog *logger = commondata.logger;
     FormattedData result;
     static int dayoffset = 0;
@@ -66,8 +74,14 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
     String windspeedFormat = commondata.config->getString(commondata.config->windspeedFormat);  // [m/s|km/h|kn|bft]
     String tempFormat = commondata.config->getString(commondata.config->tempFormat);            // [K|°C|°F]
     String dateFormat = commondata.config->getString(commondata.config->dateFormat);            // [DE|GB|US]
-    bool usesimudata = commondata.config->getBool(commondata.config->useSimuData);              // [on|off]
     String precision = commondata.config->getString(commondata.config->valueprecision);         // [1|2]
+
+    bool usesimudata;
+    if (ignoreSimuDataSetting){
+        usesimudata = false; // ignore user setting for simulation data; we want to format the boat value passed to this function
+    } else {
+        usesimudata = commondata.config->getBool(commondata.config->useSimuData);              // [on|off]
+    }
 
     // If boat value not valid
     if (! value->valid && !usesimudata){
@@ -196,10 +210,10 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
             rawvalue = value->value;
         }
         else {
-            course = 2.53 + float(random(0, 10) / 100.0);
+            course = M_PI_2 + float(random(-17, 17) / 100.0); // create random course/wind values with 90° +/- 10°
             rawvalue = course;
         }
-        course = course * 57.2958;      // Unit conversion form rad to deg
+        course = course * RAD_TO_DEG;      // Unit conversion form rad to deg
 
         // Format 3 numbers with prefix zero
         snprintf(buffer,bsize,"%03.0f",course);
@@ -214,7 +228,7 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
             rawvalue = value->value;
         }
         else{
-            rawvalue = 4.0 + float(random(0, 40));
+            rawvalue = 4.0 + float(random(-30, 40) / 10.0); // create random speed values from [1..8] m/s
             speed = rawvalue;
         }
         if (String(speedFormat) == "km/h"){
@@ -248,7 +262,7 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
             rawvalue = value->value;
         }
         else {
-            rawvalue = 4.0 + float(random(0, 40));
+            rawvalue = 4.0 + float(random(0, 40) / 10.0); // create random wind speed values from [4..8] m/s
             speed = rawvalue;
         }
         if (String(windspeedFormat) == "km/h"){
@@ -433,7 +447,7 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
             rawvalue = value->value;
         }
         else {
-            rawvalue = 18.0 + float(random(0, 100)) / 10.0;
+            rawvalue = 18.0 + float(random(0, 100)) / 10.0; // create random depth values from [18..28] metres
             depth = rawvalue;
         }
         if(String(lengthFormat) == "ft"){
@@ -878,6 +892,32 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata){
     buffer[bsize] = 0;
     result.value = rawvalue;        // Return value is only necessary in case of simulation of graphic pointer
     result.svalue = String(buffer);
+    return result;
+}
+
+// Helper method for conversion of any data value from SI to user defined format
+double convertValue(const double &value, const String &name, const String &format, CommonData &commondata)
+{
+    std::unique_ptr<GwApi::BoatValue> tmpBValue; // Temp variable to get converted data value from <OBP60Formatter::formatValue>
+    double result; // data value converted to user defined target data format
+    constexpr bool NO_SIMUDATA = true; // switch off simulation feature of <formatValue> function
+
+    // prepare temporary BoatValue structure for use in <formatValue>
+    tmpBValue = std::unique_ptr<GwApi::BoatValue>(new GwApi::BoatValue(name)); // we don't need boat value name for pure value conversion
+    tmpBValue->setFormat(format);
+    tmpBValue->valid = true;
+    tmpBValue->value = value;
+
+    result = formatValue(tmpBValue.get(), commondata, NO_SIMUDATA).cvalue; // get value (converted); ignore any simulation data setting
+    return result;
+}
+
+// Helper method for conversion of any data value from SI to user defined format
+double convertValue(const double &value, const String &format, CommonData &commondata)
+{
+    double result; // data value converted to user defined target data format
+
+    result = convertValue(value, "dummy", format, commondata);
     return result;
 }
 

@@ -442,7 +442,7 @@ void drawTextRalign(int16_t x, int16_t y, String text) {
     int16_t x1, y1;
     uint16_t w, h;
     getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
-    getdisplay().setCursor(x - w, y);
+    getdisplay().setCursor(x - w - 1, y); // '-1' required since some strings wrap around w/o it
     getdisplay().print(text);
 }
 
