@@ -76,7 +76,7 @@ private:
             nameXoff = -10;
             nameYoff = -34;
             nameFnt = &Ubuntu_Bold20pt8b;
-            unitXoff = 63;
+            unitXoff = -295;
             unitYoff = -119;
             unitFnt = &Ubuntu_Bold12pt8b;
             valueFnt1 = &Ubuntu_Bold12pt8b;
