@@ -89,7 +89,7 @@ uint8_t getLastPage();
 void hardwareInit(GwApi *api);
 void powerInit(String powermode);
 
-void setPCF8574PortPin(uint pin, uint8_t value);// Set PCF8574 port pin
+void setPCF8574PortPin(uint8_t pin, uint8_t value);// Set PCF8574 port pin
 void setPortPin(uint pin, bool value);          // Set port pin for extension port
 void togglePortPin(uint pin);                   // Toggle extension port pin
 
@@ -108,6 +108,7 @@ void setBuzzerPower(uint power);                // Set buzzer power
 String xdrDelete(String input);                 // Delete xdr prefix from string
 
 void drawTextCenter(int16_t cx, int16_t cy, String text);
+void drawButtonCenter(int16_t cx, int16_t cy, int8_t sx, int8_t sy, String text, uint16_t fg, uint16_t bg, bool inverted);
 void drawTextRalign(int16_t x, int16_t y, String text);
 void drawTextBoxed(Rect box, String text, uint16_t fg, uint16_t bg, bool inverted, bool border);
 

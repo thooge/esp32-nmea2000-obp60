@@ -19,18 +19,26 @@ bool firstRun = true;    // Detect the first page run
 int zoom = 15;           // Default zoom level
 bool showValues = false; // Show values HDT, SOG, DBT in navigation map
 
-private:
+    private:
     uint8_t* imageBackupData = nullptr;
     int imageBackupWidth = 0;
     int imageBackupHeight = 0;
     size_t imageBackupSize = 0;
     bool hasImageBackup = false;
 
-public:
+    public:
     PageNavigation(CommonData &common){
         commonData = &common;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageNavigation");
         imageBackupData = (uint8_t*)heap_caps_malloc((GxEPD_WIDTH * GxEPD_HEIGHT), MALLOC_CAP_SPIRAM);
+    }
+
+    // Set botton labels
+    virtual void setupKeys(){
+        Page::setupKeys();
+        commonData->keydata[0].label = "ZOOM -";
+        commonData->keydata[1].label = "ZOOM +";
+        commonData->keydata[4].label = "VALUES";
     }
 
     virtual int handleKey(int key){
@@ -475,12 +483,7 @@ public:
             getdisplay().setCursor(70, 85);
             getdisplay().print(svalue6);
         }
-
-        // Set botton labels
-        commonData->keydata[0].label = "ZOOM -";
-        commonData->keydata[1].label = "ZOOM +";
-        commonData->keydata[4].label = "VALUES";
-
+        
         return PAGE_UPDATE;
     };
 };

@@ -57,7 +57,7 @@ GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay(){r
 #endif
 
 // Horter I2C moduls
-PCF8574 pcf8574_Out(PCF8574_I2C_ADDR1); // First digital output modul PCF8574 from Horter
+PCF8574 pcf8574_Modul1(PCF8574_I2C_ADDR1); // First digital IO modul PCF8574 from Horter
 
 // FRAM
 Adafruit_FRAM_I2C fram;
@@ -89,8 +89,8 @@ void hardwareInit(GwApi *api)
     Wire.begin();
     // Init PCF8574 digital outputs
     Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
-    if(pcf8574_Out.begin()){        // Initialize PCF8574
-        pcf8574_Out.write8(255);    // Clear all outputs
+    if(pcf8574_Modul1.begin()){        // Initialize PCF8574
+        pcf8574_Modul1.write8(255);    // Clear all outputs
     }
     Wire.setClock(I2C_SPEED);       // Set I2C clock on 100 kHz
     fram = Adafruit_FRAM_I2C();
@@ -193,12 +193,28 @@ void powerInit(String powermode) {
     }
 }
 
-void setPCF8574PortPin(uint pin, uint8_t value){
+/* Old function
+void setPCF8574PortPin(uint8_t pin, uint8_t value){
     Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
-    if(pcf8574_Out.begin()){        // Check available and initialize PCF8574
-        pcf8574_Out.write(pin, value); // Toggle pin
+    if(pcf8574_Modul1.begin()){        // Check available and initialize PCF8574
+        pcf8574_Modul1.write(pin, value); // Set pin
     }
     Wire.setClock(I2C_SPEED);       // Set I2C clock on 100 kHz
+}
+*/
+
+void setPCF8574PortPin(uint8_t pin, uint8_t value)
+{
+  if (pin > 7) return;
+  Wire.setClock(I2C_SPEED_LOW);
+  if (pcf8574_Modul1.begin())
+  {
+    uint8_t port = pcf8574_Modul1.read8();   // Read all 8 bits
+    if (value == LOW)  port &= ~(1 << pin);  // Set bit
+    else               port |=  (1 << pin);
+    pcf8574_Modul1.write8(port);             // Write byte
+  }
+  Wire.setClock(I2C_SPEED);                  // Set I2C clock on 100 kHz
 }
 
 
@@ -435,6 +451,25 @@ void drawTextCenter(int16_t cx, int16_t cy, String text) {
     getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
     getdisplay().setCursor(cx - w / 2, cy + h / 2);
     getdisplay().print(text);
+}
+
+// Draw centered botton with centered text
+void drawButtonCenter(int16_t cx, int16_t cy, int8_t sx, int8_t sy, String text, uint16_t fg, uint16_t bg, bool inverted) {
+    int16_t x1, y1;
+    uint16_t w, h;
+    uint16_t color;
+    getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h); // Find text center
+    getdisplay().setCursor(cx - w / 2, cy + h / 2);             // Set cursor to center
+    if (inverted) {
+        getdisplay().setTextColor(bg);
+        getdisplay().print(text);                               // Draw text
+        getdisplay().fillRoundRect(cx - sx / 2, cy + sy / 2, sx, sy, 5, fg); // Draw button
+     }
+     else{
+        getdisplay().setTextColor(fg);
+        getdisplay().print(text);                               // Draw text
+        getdisplay().drawRoundRect(cx - sx / 2, cy + sy / 2, sx, sy, 5, fg); // Draw button
+     }
 }
 
 // Draw right aligned text

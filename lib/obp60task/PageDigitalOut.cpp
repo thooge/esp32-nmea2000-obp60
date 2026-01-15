@@ -22,10 +22,20 @@ bool button3 = false;
 bool button4 = false;
 bool button5 = false;
 
-public:
+    public:
     PageDigitalOut(CommonData &common){
         commonData = &common;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageDigitalOut");
+    }
+
+    // Set botton labels
+    virtual void setupKeys(){
+        Page::setupKeys();
+        commonData->keydata[0].label = "BTN 1";
+        commonData->keydata[1].label = "BTN 2";
+        commonData->keydata[2].label = "BTN 3";
+        commonData->keydata[3].label = "BTN 4";
+        commonData->keydata[4].label = "BTN 5";
     }
 
     virtual int handleKey(int key){
@@ -94,17 +104,15 @@ public:
         getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
         getdisplay().setTextColor(commonData->fgcolor);
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
+        drawButtonCenter(50, 30, 40, 20, "1", commonData->fgcolor, commonData->bgcolor, button1);
+        drawButtonCenter(50, 30, 40, 20, "2", commonData->fgcolor, commonData->bgcolor, button2);
+        drawButtonCenter(50, 30, 40, 20, "3", commonData->fgcolor, commonData->bgcolor, button3);
+        drawButtonCenter(50, 30, 40, 20, "4", commonData->fgcolor, commonData->bgcolor, button4);
+        drawButtonCenter(50, 30, 40, 20, "5", commonData->fgcolor, commonData->bgcolor, button5);
         getdisplay().fillRoundRect(200, 250 , 200, 25, 5, commonData->fgcolor); // Black rect
         getdisplay().fillRoundRect(202, 252 , 196, 21, 5, commonData->bgcolor); // White rect
         getdisplay().setCursor(210, 270);
         getdisplay().print("Map server lost");
-
-        // Set botton labels
-        commonData->keydata[0].label = "BTN 1";
-        commonData->keydata[1].label = "BTN 2";
-        commonData->keydata[2].label = "BTN 3";
-        commonData->keydata[3].label = "BTN 4";
-        commonData->keydata[4].label = "BTN 5";
 
         return PAGE_UPDATE;
     };
