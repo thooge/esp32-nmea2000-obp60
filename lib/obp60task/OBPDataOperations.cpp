@@ -156,7 +156,7 @@ bool CalibrationData::calibrateInstance(GwApi::BoatValue* boatDataValue)
     if (format == "formatWind") { // instance is of type angle
         dataValue = (dataValue * slope) + offset;
         // dataValue = WindUtils::toPI(dataValue);
-        dataValue = WindUtils::to2PI(dataValue); // we should call <toPI> for format of [-180..180], but pages cannot handle negative values yet
+        dataValue = WindUtils::to2PI(dataValue); // we should call <toPI> for format of [-180..180], but pages cannot display negative values properly yet
 
     } else if (format == "formatCourse") { // instance is of type direction
         dataValue = (dataValue * slope) + offset;
@@ -518,7 +518,8 @@ bool WindUtils::addWinds()
                 twsBVal->valid = true;
             }
             if (!twaBVal->valid) {
-                twaBVal->value = twa;
+                //twaBVal->value = twa;
+                twaBVal->value = to2PI(twa); // convert to [0..360], because pages cannot display negative values properly yet
                 twaBVal->valid = true;
             }
             if (!awdBVal->valid) {
