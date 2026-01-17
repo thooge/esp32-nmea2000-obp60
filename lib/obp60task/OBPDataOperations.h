@@ -22,7 +22,7 @@ private:
     std::unordered_map<std::string, double> lastValue; // array for last smoothed values of boat data values
     GwLog* logger;
 
-    static constexpr int8_t MAX_CALIBRATION_DATA = 3; // maximum number of calibration data instances
+    static constexpr int8_t MAX_CALIBRATION_DATA = 4; // maximum number of calibration data instances
 
 public:
     CalibrationData(GwLog* log);
