@@ -89,7 +89,7 @@ uint8_t getLastPage();
 void hardwareInit(GwApi *api);
 void powerInit(String powermode);
 
-void setPCF8574PortPin(uint8_t pin, uint8_t value);// Set PCF8574 port pin
+void setPCF8574PortPinModul1(uint8_t pin, uint8_t value);// Set PCF8574 port pin
 void setPortPin(uint pin, bool value);          // Set port pin for extension port
 void togglePortPin(uint pin);                   // Toggle extension port pin
 

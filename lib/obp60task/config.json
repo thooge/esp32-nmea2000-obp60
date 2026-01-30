@@ -662,6 +662,61 @@
         }
     },
     {
+        "name": "mod1Out1",
+        "label": "Name1",
+        "type": "string",
+        "default": "text1",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "mod1Out2",
+        "label": "Name2",
+        "type": "string",
+        "default": "text2",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "mod1Out3",
+        "label": "Name3",
+        "type": "string",
+        "default": "text3",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "mod1Out4",
+        "label": "Name4",
+        "type": "string",
+        "default": "text4",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "mod1Out5",
+        "label": "Name5",
+        "type": "string",
+        "default": "text5",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
         "name": "tSensitivity",
         "label": "Touch Sensitivity [%]",
         "type": "number",

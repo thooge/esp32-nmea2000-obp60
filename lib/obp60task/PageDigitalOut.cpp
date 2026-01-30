@@ -28,22 +28,15 @@ bool button5 = false;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageDigitalOut");
     }
 
-<<<<<<< Updated upstream
     // Set botton labels
-=======
->>>>>>> Stashed changes
     virtual void setupKeys(){
         Page::setupKeys();
-        commonData->keydata[0].label = "BTN 1";
-        commonData->keydata[1].label = "BTN 2";
-        commonData->keydata[2].label = "BTN 3";
-        commonData->keydata[3].label = "BTN 4";
-        commonData->keydata[4].label = "BTN 5";
-<<<<<<< Updated upstream
+        commonData->keydata[0].label = "1";
+        commonData->keydata[1].label = "2";
+        commonData->keydata[2].label = "3";
+        commonData->keydata[3].label = "4";
+        commonData->keydata[4].label = "5";
     }
-=======
-   }
->>>>>>> Stashed changes
 
     virtual int handleKey(int key){
         // Code for keylock
@@ -54,31 +47,31 @@ bool button5 = false;
         // Code for button 1 
         if(key == 1){
             button1 = !button1;
-            setPCF8574PortPin(0, button1 ? 0 : 1); // Attention! Inverse logic for PCF8574
+            setPCF8574PortPinModul1(0, button1 ? 0 : 1); // Attention! Inverse logic for PCF8574
             return 0;                       // Commit the key
         }
         // Code for button 2
         if(key == 2){
             button2 = !button2;
-            setPCF8574PortPin(1, button2 ? 0 : 1); // Attention! Inverse logic for PCF8574
+            setPCF8574PortPinModul1(1, button2 ? 0 : 1); // Attention! Inverse logic for PCF8574
             return 0;                       // Commit the key
         }
         // Code for button 3
         if(key == 3){
             button3 = !button3;
-            setPCF8574PortPin(2, button3 ? 0 : 1); // Attention! Inverse logic for PCF8574
+            setPCF8574PortPinModul1(2, button3 ? 0 : 1); // Attention! Inverse logic for PCF8574
             return 0;                       // Commit the key
         }
         // Code for button 4
         if(key == 4){
             button4 = !button4;
-            setPCF8574PortPin(3, button4 ? 0 : 1); // Attention! Inverse logic for PCF8574
+            setPCF8574PortPinModul1(3, button4 ? 0 : 1); // Attention! Inverse logic for PCF8574
             return 0;                       // Commit the key
         }
         // Code for button 5
         if(key == 5){
             button5 = !button5;
-            setPCF8574PortPin(4, button5 ? 0 : 1); // Attention! Inverse logic for PCF8574
+            setPCF8574PortPinModul1(4, button5 ? 0 : 1); // Attention! Inverse logic for PCF8574
             return 0;                       // Commit the key
         }
         return key;
@@ -94,6 +87,11 @@ bool button5 = false;
         bool holdvalues = config->getBool(config->holdvalues);
         String flashLED = config->getString(config->flashLED);
         String backlightMode = config->getString(config->backlight);
+        String name1 = config->getString(config->mod1Out1);
+        String name2 = config->getString(config->mod1Out2);
+        String name3 = config->getString(config->mod1Out3);
+        String name4 = config->getString(config->mod1Out4);
+        String name5 = config->getString(config->mod1Out5);
 
         // Optical warning by limit violation (unused)
         if(String(flashLED) == "Limit Violation"){
@@ -111,15 +109,23 @@ bool button5 = false;
         getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
         getdisplay().setTextColor(commonData->fgcolor);
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        drawButtonCenter(50, 30, 40, 20, "1", commonData->fgcolor, commonData->bgcolor, button1);
-        drawButtonCenter(50, 30, 40, 20, "2", commonData->fgcolor, commonData->bgcolor, button2);
-        drawButtonCenter(50, 30, 40, 20, "3", commonData->fgcolor, commonData->bgcolor, button3);
-        drawButtonCenter(50, 30, 40, 20, "4", commonData->fgcolor, commonData->bgcolor, button4);
-        drawButtonCenter(50, 30, 40, 20, "5", commonData->fgcolor, commonData->bgcolor, button5);
-        getdisplay().fillRoundRect(200, 250 , 200, 25, 5, commonData->fgcolor); // Black rect
-        getdisplay().fillRoundRect(202, 252 , 196, 21, 5, commonData->bgcolor); // White rect
-        getdisplay().setCursor(210, 270);
-        getdisplay().print("Map server lost");
+        // Write text
+        getdisplay().setCursor(100, 50 + 8);
+        getdisplay().print(name1);
+        getdisplay().setCursor(100, 100 + 8);
+        getdisplay().print(name2);
+        getdisplay().setCursor(100, 150 + 8);
+        getdisplay().print(name3);
+        getdisplay().setCursor(100,200 + 8);
+        getdisplay().print(name4);
+        getdisplay().setCursor(100, 250 + 8);
+        getdisplay().print(name5);
+        // Draw bottons
+        drawButtonCenter(50, 50, 40, 27, "1", commonData->fgcolor, commonData->bgcolor, button1);
+        drawButtonCenter(50, 100, 40, 27, "2", commonData->fgcolor, commonData->bgcolor, button2);
+        drawButtonCenter(50, 150, 40, 27, "3", commonData->fgcolor, commonData->bgcolor, button3);
+        drawButtonCenter(50, 200, 40, 27, "4", commonData->fgcolor, commonData->bgcolor, button4);
+        drawButtonCenter(50, 250, 40, 27, "5", commonData->fgcolor, commonData->bgcolor, button5);
 
         return PAGE_UPDATE;
     };
