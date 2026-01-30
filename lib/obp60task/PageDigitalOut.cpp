@@ -28,7 +28,10 @@ bool button5 = false;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageDigitalOut");
     }
 
+<<<<<<< Updated upstream
     // Set botton labels
+=======
+>>>>>>> Stashed changes
     virtual void setupKeys(){
         Page::setupKeys();
         commonData->keydata[0].label = "BTN 1";
@@ -36,7 +39,11 @@ bool button5 = false;
         commonData->keydata[2].label = "BTN 3";
         commonData->keydata[3].label = "BTN 4";
         commonData->keydata[4].label = "BTN 5";
+<<<<<<< Updated upstream
     }
+=======
+   }
+>>>>>>> Stashed changes
 
     virtual int handleKey(int key){
         // Code for keylock

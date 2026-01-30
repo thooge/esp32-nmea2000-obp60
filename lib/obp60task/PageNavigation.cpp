@@ -33,14 +33,22 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         imageBackupData = (uint8_t*)heap_caps_malloc((GxEPD_WIDTH * GxEPD_HEIGHT), MALLOC_CAP_SPIRAM);
     }
 
+<<<<<<< Updated upstream
     // Set botton labels
+=======
+>>>>>>> Stashed changes
     virtual void setupKeys(){
         Page::setupKeys();
         commonData->keydata[0].label = "ZOOM -";
         commonData->keydata[1].label = "ZOOM +";
         commonData->keydata[4].label = "VALUES";
+<<<<<<< Updated upstream
     }
 
+=======
+   }
+    
+>>>>>>> Stashed changes
     virtual int handleKey(int key){
         // Code for keylock
         if(key == 11){
@@ -483,7 +491,11 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             getdisplay().setCursor(70, 85);
             getdisplay().print(svalue6);
         }
+<<<<<<< Updated upstream
         
+=======
+
+>>>>>>> Stashed changes
         return PAGE_UPDATE;
     };
 };
