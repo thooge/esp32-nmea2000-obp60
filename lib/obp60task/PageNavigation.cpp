@@ -40,7 +40,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         commonData->keydata[1].label = "ZOOM +";
         commonData->keydata[4].label = "VALUES";
     }
-
+    
     virtual int handleKey(int key){
         // Code for keylock
         if(key == 11){

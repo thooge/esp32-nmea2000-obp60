@@ -90,7 +90,7 @@ void hardwareInit(GwApi *api)
     // Init PCF8574 digital outputs
     Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
     if(pcf8574_Modul1.begin()){        // Initialize PCF8574
-        pcf8574_Modul1.write8(255);    // Clear all outputs
+        pcf8574_Modul1.write8(255);    // Clear all outputs (low activ)
     }
     Wire.setClock(I2C_SPEED);       // Set I2C clock on 100 kHz
     fram = Adafruit_FRAM_I2C();
@@ -193,26 +193,23 @@ void powerInit(String powermode) {
     }
 }
 
-/* Old function
-void setPCF8574PortPin(uint8_t pin, uint8_t value){
-    Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
-    if(pcf8574_Modul1.begin()){        // Check available and initialize PCF8574
-        pcf8574_Modul1.write(pin, value); // Set pin
-    }
-    Wire.setClock(I2C_SPEED);       // Set I2C clock on 100 kHz
-}
-*/
-
-void setPCF8574PortPin(uint8_t pin, uint8_t value)
+void setPCF8574PortPinModul1(uint8_t pin, uint8_t value)
 {
+  static bool firstRunFinished;
+  static uint8_t port1;                      // Retained data for port bits 
+  // If fisrt run then set all outputs to low
+  if(firstRunFinished == false){
+    port1 = 255;                             // Low active
+    firstRunFinished = true;
+  }
   if (pin > 7) return;
-  Wire.setClock(I2C_SPEED_LOW);
-  if (pcf8574_Modul1.begin())
+  Wire.setClock(I2C_SPEED_LOW);              // Set I2C clock on 10 kHz for longer wires
+  // Set bit
+  if (pcf8574_Modul1.begin(port1))           // Check module availability
   {
-    uint8_t port = pcf8574_Modul1.read8();   // Read all 8 bits
-    if (value == LOW)  port &= ~(1 << pin);  // Set bit
-    else               port |=  (1 << pin);
-    pcf8574_Modul1.write8(port);             // Write byte
+    if (value == LOW)  port1 &= ~(1 << pin); // Set bit
+    else               port1 |=  (1 << pin);
+    pcf8574_Modul1.write8(port1);            // Write byte
   }
   Wire.setClock(I2C_SPEED);                  // Set I2C clock on 100 kHz
 }
@@ -458,17 +455,19 @@ void drawButtonCenter(int16_t cx, int16_t cy, int8_t sx, int8_t sy, String text,
     int16_t x1, y1;
     uint16_t w, h;
     uint16_t color;
-    getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h); // Find text center
-    getdisplay().setCursor(cx - w / 2, cy + h / 2);             // Set cursor to center
+
+    getdisplay().getTextBounds(text, cx, cy, &x1, &y1, &w, &h); // Find text center
+    getdisplay().setCursor(cx - w/2, cy + h/2);                 // Set cursor to center
+    //getdisplay().drawPixel(cx, cy, fg);                         // Debug pixel for center position
     if (inverted) {
+        getdisplay().fillRoundRect(cx - sx / 2, cy - sy / 2, sx, sy, 5, fg); // Draw button
         getdisplay().setTextColor(bg);
         getdisplay().print(text);                               // Draw text
-        getdisplay().fillRoundRect(cx - sx / 2, cy + sy / 2, sx, sy, 5, fg); // Draw button
      }
      else{
+        getdisplay().drawRoundRect(cx - sx / 2, cy - sy / 2, sx, sy, 5, fg); // Draw button
         getdisplay().setTextColor(fg);
         getdisplay().print(text);                               // Draw text
-        getdisplay().drawRoundRect(cx - sx / 2, cy + sy / 2, sx, sy, 5, fg); // Draw button
      }
 }
 
