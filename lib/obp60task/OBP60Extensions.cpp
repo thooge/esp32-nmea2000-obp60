@@ -205,7 +205,7 @@ void setPCF8574PortPinModul1(uint8_t pin, uint8_t value)
   if (pin > 7) return;
   Wire.setClock(I2C_SPEED_LOW);              // Set I2C clock on 10 kHz for longer wires
   // Set bit
-  if (pcf8574_Modul1.begin(port1))           // Check module availability
+  if (pcf8574_Modul1.begin(port1))           // Check module availability and start it
   {
     if (value == LOW)  port1 &= ~(1 << pin); // Set bit
     else               port1 |=  (1 << pin);
