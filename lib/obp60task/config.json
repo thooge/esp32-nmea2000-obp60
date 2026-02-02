@@ -1273,9 +1273,9 @@
         "type": "number",
         "default": "50",
         "check": "checkMinMax",
-        "min": 20,
+        "min": 5,
         "max": 100,
-        "description": "Backlight brightness [20...100%]",
+        "description": "Backlight brightness [5...100%]",
         "category": "OBP60 Display",
         "capabilities": {
             "obp60":"true"

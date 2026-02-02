@@ -205,7 +205,7 @@ void setPCF8574PortPinModul1(uint8_t pin, uint8_t value)
   if (pin > 7) return;
   Wire.setClock(I2C_SPEED_LOW);              // Set I2C clock on 10 kHz for longer wires
   // Set bit
-  if (pcf8574_Modul1.begin(port1))           // Check module availability
+  if (pcf8574_Modul1.begin(port1))           // Check module availability and start it
   {
     if (value == LOW)  port1 &= ~(1 << pin); // Set bit
     else               port1 |=  (1 << pin);
@@ -326,6 +326,40 @@ void toggleBacklightLED(uint brightness, const Color &color){
     if (ledTaskData == nullptr) return;
     statusBacklightLED = !statusBacklightLED;
     Color nv=setBrightness(statusBacklightLED?color:COLOR_BLACK,brightness);
+    LedInterface current=ledTaskData->getLedData();
+    current.setBacklight(nv);
+    ledTaskData->setLedData(current); 
+}
+
+void stepsBacklightLED(uint brightness, const Color &color){
+    static uint step = 0;
+    uint actBrightness = 0;
+    // Different brightness steps
+    if(step == 0){
+        actBrightness = brightness;         // 100% from brightess
+        statusBacklightLED = true;
+    }
+    if(step == 1){
+        actBrightness = brightness * 0.5;   // 50% from brightess
+        statusBacklightLED = true;
+    }
+    if(step == 2){
+        actBrightness = brightness * 0.2;   // 20% from brightess
+        statusBacklightLED = true;
+    }
+    if(step == 3){
+        actBrightness = 0;                  // 0%
+        statusBacklightLED = false;
+    }
+    if(actBrightness < 5){                  // Limiter if values too low
+        actBrightness = 5;
+    }
+    step = step + 1;    // Increment step counter
+    if(step == 4){      // Reset counter
+        step = 0;
+    }
+    if (ledTaskData == nullptr) return;
+    Color nv=setBrightness(statusBacklightLED?color:COLOR_BLACK,actBrightness);
     LedInterface current=ledTaskData->getLedData();
     current.setBacklight(nv);
     ledTaskData->setLedData(current); 

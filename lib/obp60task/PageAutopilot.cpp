@@ -3,10 +3,10 @@
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
 
-// these constants have to match the declaration below in :
-//      PageDescription registerPageCompass(
-//      {"COG","HDT", "HDM"}, // Bus values we need in the page
-const int HowManyValues = 6;
+// These constants have to match the declaration below in :
+//  PageDescription registerPageAutopilot(
+//  {"HDM","HDT", "COG", "STW", "SOG", "DBT","XTE", "DTW", "BTW"}, // Bus values we need in the page
+const int HowManyValues = 9;
 
 const int AverageValues = 4;
 
@@ -15,22 +15,25 @@ const int ShowHDT = 1;
 const int ShowCOG = 2;
 const int ShowSTW = 3;
 const int ShowSOG = 4;
-const int ShowDBS = 5;
+const int ShowDBT = 5;
+const int ShowXTE = 6;
+const int ShowDTW = 7;
+const int ShowBTW = 8;
 
 const int Compass_X0 = 200;         // X center point of compass band
 const int Compass_Y0 = 220;         // Y position of compass lines
 const int Compass_LineLength = 22;  // Length of compass lines
 const float Compass_LineDelta = 8.0;// Compass band: 1deg = 5 Pixels, 10deg = 50 Pixels 
 
-class PageCompass : public Page
+class PageAutopilot : public Page
 {
-    int WhichDataCompass = ShowHDM; 
-    int WhichDataDisplay = ShowHDM; 
+    int WhichDataCompass = ShowHDM; // Start value
+    int WhichDataDisplay = ShowHDM; // Start value
 
     public:
-    PageCompass(CommonData &common){
+    PageAutopilot(CommonData &common){
         commonData = &common;
-        common.logger->logDebug(GwLog::LOG,"Instantiate PageCompass");
+        common.logger->logDebug(GwLog::LOG,"Instantiate PageAutopilot");
     }
 
     virtual void setupKeys(){
@@ -50,7 +53,7 @@ class PageCompass : public Page
             }
       if ( key == 2 ) {
             WhichDataDisplay += 1;
-            if ( WhichDataDisplay > ShowDBS)
+            if ( WhichDataDisplay > ShowDBT)
                  WhichDataDisplay = ShowHDM;
              }
 
@@ -66,8 +69,8 @@ class PageCompass : public Page
         GwLog *logger = commonData->logger;
     
         // Old values for hold function
-        static String OldDataText[HowManyValues] = {"", "", "","", "", ""};
-        static String OldDataUnits[HowManyValues] = {"", "", "","", "", ""};
+        static String OldDataText[HowManyValues] = {"", "", "","", "", "","", "", ""};
+        static String OldDataUnits[HowManyValues] = {"", "", "","", "", "","", "", ""};
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
@@ -95,7 +98,7 @@ class PageCompass : public Page
             DataValue[i] = TheFormattedData.value;  // Value as double in SI unit
             DataValid[i] = bvalue->valid;
             DataFormat[i] = bvalue->getFormat();    // Unit of value
-            LOG_DEBUG(GwLog::LOG,"Drawing at PageCompass: %d %s %f %s %s",  i,  DataName[i], DataValue[i], DataFormat[i], DataText[i] );
+            LOG_DEBUG(GwLog::LOG,"Drawing at PageAutopilot: %d %s %f %s %s",  i,  DataName[i], DataValue[i], DataFormat[i], DataText[i] );
         }
 
         // Optical warning by limit violation (unused)
@@ -241,7 +244,7 @@ class PageCompass : public Page
 };
 
 static Page *createPage(CommonData &common){
-    return new PageCompass(common);
+    return new PageAutopilot(common);
 }/**
  * with the code below we make this page known to the PageTask
  * we give it a type (name) that can be selected in the config
@@ -249,11 +252,11 @@ static Page *createPage(CommonData &common){
  * and we provide the number of user parameters we expect
  * this will be number of BoatValue pointers in pageData.values
  */
-PageDescription registerPageCompass(
-    "Compass",    // Page name
+PageDescription registerPageAutopilot(
+    "Autopilot",    // Page name
     createPage,     // Action
     0,              // Number of bus values depends on selection in Web configuration
-    {"HDM","HDT", "COG", "STW", "SOG", "DBS"}, // Bus values we need in the page
+    {"HDM","HDT", "COG", "STW", "SOG", "DBT","XTE", "DTW", "BTW"}, // Bus values we need in the page
    true            // Show display header on/off
 );
 
