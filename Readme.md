@@ -43,6 +43,10 @@ What is included
 
 For the details of the mapped PGNs and NMEA sentences refer to [Conversions](doc/Conversions.pdf).
 
+License
+-------
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either [version 2 of the License](LICENSE), or (at your option) any later version.
+
 Hardware
 --------
 The software is prepared to run on different kinds of ESP32 based modules and accessoirs. For some of them prebuild binaries are available that only need to be flashed, others would require to add some definitions of the used PINs and features and to build the binary.
@@ -170,6 +174,25 @@ For details refer to the [example description](lib/exampletask/Readme.md).
 
 Changelog
 ---------
+[20251126](../../releases/tag/20251126)
+* fix a bug in the Actisense reader that could lead to an endless loop (making the device completely non responsive)
+* upgrade to 4.24.1 of the NMEA2000 library (2025/11/01) - refer to the [changes](https://github.com/ttlappalainen/NMEA2000/blob/master/Documents/src/changes.md) - Especially UTF8 support
+*********
+[20251007](../../releases/tag/20251007)
+*********
+* add AIS Aton translations (PGN 129041 <-> Ais class 21)
+* improved mapping of AIS transducer information (NMEA2000) to AIS channel and Talker on NMEA0183
+* use a forked version of the NMEA2000 library (as an intermediate workaround)
+* [#114](../../issues/114) correctly translate AIS type 1/3 from PGN 129038
+* add support for a generic S3 build in the build UI
+* [#117](../../issues/117) add support for a transmit enable pin for RS 485 conections (also in the build UI)
+* [#116](../../issues/116) SDA and SCL are swapped in the build UI
+* [#112](../../issues/112) clearify licenses
+* [#110](../../issues/110) / [#115](../../pull/115) support for the M5 GPS unit v1.1
+* [#102](../../issues/102) optimize Wifi reconnect handling
+* [#111](../../pull/111) allow for a custom python build script
+* [#113](../../issues/113) support for M5 stack Env4
+
 [20250305](../../releases/tag/20250305)
 *********
 * better handling for reconnect to a raspberry pi after reset [#102](../../issues/102)

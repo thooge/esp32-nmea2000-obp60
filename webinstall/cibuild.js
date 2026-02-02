@@ -167,8 +167,17 @@ class PipelineInfo{
         updateStatus();
         if (gitSha !== undefined) param.tag=gitSha;
         param.config=JSON.stringify(config);
+        let buildname=config['root:buildname']
+        if (buildname){
+            param.suffix="-"+buildname
+        }
         if (buildVersion !== undefined){
-            param.suffix="-"+buildVersion;
+            if (param.suffix){
+               param.suffix+="-"+buildVersion;
+            }
+            else{
+                param.suffix="-"+buildVersion;
+            }
         }
         fetchJson(API,Object.assign({
             api:'start'},param))
@@ -234,7 +243,11 @@ class PipelineInfo{
     }
     const downloadConfig=()=>{
         let name=configName;
-        if (isModified) name=name.replace(/[0-9]*$/,'')+formatDate(undefined,true);
+        const buildname=config["root:buildname"]
+        if (buildname && name != buildname){
+            name+="-"+buildname+"-";
+        }
+        name=name.replace(/[0-9]*$/,'')+formatDate(undefined,true);
         name+=".json";
         fileDownload(JSON.stringify(config),name);
     }
@@ -520,6 +533,38 @@ class PipelineInfo{
             let cb=addEl('div','t'+config.type,inputFrame);
             addDescription(config,inputFrame);
             initialConfig=expandedValues[0];
+        }
+        if (config.type === 'string'){
+            let ip=addEl('input','t'+config.type,inputFrame);
+            addDescription(config,inputFrame);
+            const buildChild=(value)=>{
+                if (value) {
+                    if (config.max) {
+                        if (value && value.length > config.max) {
+                            value = value.substring(0, config.max);
+                        }
+                    }
+                    if (config.allowed) {
+                        let check = new RegExp("[^" + config.allowed + "]", "g");
+                        let nv = value.replace(check, "");
+                        if (nv != value) {
+                            value = nv;
+                        }
+                    }
+                }
+                return Object.assign({},config,{key: value,value:value});
+            }
+            initialConfig=buildChild(current);
+            ip.value=initialConfig.value||"";
+            ip.addEventListener('change',(ev)=>{
+                let value=ev.target.value;
+                let cbv=buildChild(value);
+                if (cbv.value != value){
+                    ev.target.value=cbv.value;
+                }
+                callback(cbv,false);
+
+            });
         }
         let childFrame=addEl('div','childFrame',frame);
         if (initialConfig !== undefined){

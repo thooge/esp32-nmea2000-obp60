@@ -3,7 +3,7 @@
   This code is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
+  version 2 of the License, or (at your option) any later version.
   This code is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -72,9 +72,9 @@ const unsigned long HEAP_REPORT_TIME=2000; //set to 0 to disable heap reporting
 #define MAX_NMEA2000_MESSAGE_SEASMART_SIZE 500
 #define MAX_NMEA0183_MESSAGE_SIZE MAX_NMEA2000_MESSAGE_SEASMART_SIZE
 //assert length of firmware name and version
-CASSERT(strlen(FIRMWARE_TYPE) <= 32, "environment name (FIRMWARE_TYPE) must not exceed 32 chars");
-CASSERT(strlen(VERSION) <= 32, "VERSION must not exceed 32 chars");
-CASSERT(strlen(IDF_VERSION) <= 32,"IDF_VERSION must not exceed 32 chars");
+CASSERT(strlen(FIRMWARE_TYPE) <= 31, "environment name (FIRMWARE_TYPE) must not exceed 32 chars");
+CASSERT(strlen(VERSION) <= 31, "VERSION must not exceed 32 chars");
+CASSERT(strlen(IDF_VERSION) <= 31,"IDF_VERSION must not exceed 32 chars");
 //https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/app_image_format.html
 //and removed the bugs in the doc...
 __attribute__((section(".rodata_custom_desc"))) esp_app_desc_t custom_app_desc = { 

@@ -2,7 +2,7 @@
   This code is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
+  version 2 of the License, or (at your option) any later version.
   This code is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -20,11 +20,7 @@
 #endif
 #ifndef _GWHARDWARE_H
 #define _GWHARDWARE_H
-#define GWSERIAL_TYPE_UNI 1
-#define GWSERIAL_TYPE_BI 2
-#define GWSERIAL_TYPE_RX 3
-#define GWSERIAL_TYPE_TX 4
-#define GWSERIAL_TYPE_UNK 0
+#include "GwChannelModes.h"
 #include <GwConfigItem.h>
 #include <HardwareSerial.h>
 #include "GwAppInfo.h"

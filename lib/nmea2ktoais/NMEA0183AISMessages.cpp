@@ -26,7 +26,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#include <NMEA0183AISMessages.h>
+#include "NMEA0183AISMessages.h"
 #include <N2kTypes.h>
 #include <N2kMsg.h>
 #include <string.h>
@@ -34,7 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //#include <unordered_map>
 #include <sstream>
 #include <math.h>
-#include <NMEA0183AISMsg.h>
+#include "NMEA0183AISMsg.h"
 
 const double pi=3.1415926535897932384626433832795;
 const double kmhToms=1000.0/3600.0;
@@ -47,17 +47,15 @@ const double nmTom=1.852*1000;
 const double mToFathoms=0.546806649;
 const double mToFeet=3.2808398950131;
 const double radsToDegMin = 60 * 360.0 / (2 * pi);    // [rad/s -> degree/minute]
-const char Prefix='!';
 
-std::vector<ship *> vships;
 
-int numShips(){return vships.size();}
 // ************************  Helper for AIS  ***********************************
 static bool AddMessageType(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageType);
 static bool AddRepeat(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t Repeat);
 static bool AddUserID(tNMEA0183AISMsg &NMEA0183AISMsg, uint32_t UserID);
 static bool AddIMONumber(tNMEA0183AISMsg &NMEA0183AISMsg, uint32_t &IMONumber);
 static bool AddText(tNMEA0183AISMsg &NMEA0183AISMsg, char *FieldVal, uint8_t length);
+//static bool AddVesselType(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t VesselType);
 static bool AddDimensions(tNMEA0183AISMsg &NMEA0183AISMsg, double Length, double Beam, double PosRefStbd, double PosRefBow);
 static bool AddNavStatus(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t &NavStatus);
 static bool AddROT(tNMEA0183AISMsg &NMEA0183AISMsg, double &rot);
@@ -81,8 +79,8 @@ static bool AddETADateTime(tNMEA0183AISMsg &NMEA0183AISMsg, uint16_t &ETAdate, d
 //
 // Got values from: ParseN2kPGN129038()
 bool SetAISClassABMessage1( tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageType, uint8_t Repeat,
-                          uint32_t UserID, double Latitude, double Longitude, bool Accuracy, bool RAIM, uint8_t Seconds,
-                          double COG, double SOG, double Heading, double ROT, uint8_t NavStatus ) {
+			    uint32_t UserID, double Latitude, double Longitude, bool Accuracy, bool RAIM, uint8_t Seconds,
+			    double COG, double SOG, double Heading, double ROT, uint8_t NavStatus ) {
 
   NMEA0183AISMsg.ClearAIS();
   if ( !AddMessageType(NMEA0183AISMsg, MessageType) ) return false;    // 0 - 5    | 6    Message Type -> Constant: 1
@@ -91,7 +89,7 @@ bool SetAISClassABMessage1( tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageType
   if ( !AddNavStatus(NMEA0183AISMsg, NavStatus) ) return false;        // 38-41    | 4    Navigational Status  e.g.: "Under way sailing"
   if ( !AddROT(NMEA0183AISMsg, ROT) ) return false;                    // 42-49    | 8    Rate of Turn (ROT)
   if ( !AddSOG(NMEA0183AISMsg, SOG) ) return false;                    // 50-59    | 10   [m/s -> kts]  SOG with one digit  x10, 1023 = N/A
-  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Accuracy, 1) ) return false;// 60       | 1    GPS Accuracy 1 oder 0, Default 0
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Accuracy) ) return false;// 60       | 1    GPS Accuracy 1 oder 0, Default 0
   if ( !AddLongitude(NMEA0183AISMsg, Longitude) ) return false;        // 61-88    | 28  Longitude in Minutes / 10000
   if ( !AddLatitude(NMEA0183AISMsg, Latitude) ) return false;          // 89-115   | 27  Latitude in Minutes / 10000
   if ( !AddCOG(NMEA0183AISMsg, COG) ) return false;                    // 116-127  | 12  Course over ground will be 3600 (0xE10) if that data is not available.
@@ -99,17 +97,12 @@ bool SetAISClassABMessage1( tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageType
   if ( !AddSeconds(NMEA0183AISMsg, Seconds) ) return false;            // 137-142  | 6    Seconds in UTC timestamp)
   if ( !NMEA0183AISMsg.AddIntToPayloadBin(0, 2) ) return false;        // 143-144  | 2    Maneuver Indicator: 0 (default) 1, 2  (not delivered within this PGN)
   if ( !NMEA0183AISMsg.AddIntToPayloadBin(0, 3) ) return false;        // 145-147  | 3   Spare
-  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(RAIM, 1) ) return false;    // 148-148  | 1   RAIM flag 0 = RAIM not in use (default), 1 = RAIM in use
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(RAIM) ) return false;    // 148-148  | 1   RAIM flag 0 = RAIM not in use (default), 1 = RAIM in use
   if ( !NMEA0183AISMsg.AddIntToPayloadBin(0, 19) ) return false;       // 149-167  | 19  Radio Status  (-> 0 NOT SENT WITH THIS PGN!!!!!)
-
-  if ( !NMEA0183AISMsg.Init("VDM","AI", Prefix) ) return false;
-  if ( !NMEA0183AISMsg.AddStrField("1") ) return false;
-  if ( !NMEA0183AISMsg.AddStrField("1") ) return false;
-  if ( !NMEA0183AISMsg.AddEmptyField() ) return false;
-  if ( !NMEA0183AISMsg.AddStrField("A") ) return false;
-  if ( !NMEA0183AISMsg.AddStrField( NMEA0183AISMsg.GetPayload() ) ) return false;
-  if ( !NMEA0183AISMsg.AddStrField("0") ) return false;    // Message 1,2,3 has always Zero Padding
-
+  if ( !NMEA0183AISMsg.InitAis()) return false;        
+  int padBits=0;
+  if ( !NMEA0183AISMsg.AddStrField( NMEA0183AISMsg.GetPayloadFix(padBits) ) ) return false;
+  if ( !NMEA0183AISMsg.AddUInt32Field(padBits) ) return false;           
   return true;
 }
 
@@ -121,14 +114,16 @@ bool  SetAISClassAMessage5(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, u
                           uint32_t UserID, uint32_t IMONumber, char *Callsign, char *Name,
                           uint8_t VesselType, double Length, double Beam, double PosRefStbd,
                           double PosRefBow, uint16_t ETAdate,  double ETAtime, double Draught,
-                          char *Destination, tN2kGNSStype GNSStype, uint8_t DTE ) {
+                          char *Destination, tN2kGNSStype GNSStype, uint8_t DTE,
+                          tN2kAISVersion AISversion) {
 
   // AIS Type 5 Message
   NMEA0183AISMsg.ClearAIS();
   if ( !AddMessageType(NMEA0183AISMsg, 5) ) return false;                // 0 - 5     | 6    Message Type -> Constant: 5
   if ( !AddRepeat(NMEA0183AISMsg, Repeat) ) return false;                // 6 - 7     | 2    Repeat Indicator: 0 = default; 3 = do not repeat any more
   if ( !AddUserID(NMEA0183AISMsg, UserID) ) return false;                // 8 - 37    | 30  MMSI
-  if ( !NMEA0183AISMsg.AddIntToPayloadBin(1, 2) ) return false;          // 38 - 39   |  2   AIS Version  -> 0 oder 1  NOT DERIVED FROM N2k, Always 1!!!!
+  if ( !NMEA0183AISMsg.AddIntToPayloadBin((uint32_t)AISversion, 2) ) 
+    return false;                                                        // 38 - 39   |  2   AIS Version  -> 0 oder 1  NOT DERIVED FROM N2k, Always 1!!!!
   if ( !AddIMONumber(NMEA0183AISMsg, IMONumber) ) return false;          // 40 - 69   | 30   IMO Number unisgned
   if ( !AddText(NMEA0183AISMsg, Callsign, 42) ) return false;            // 70 - 111  | 42   Call Sign  WDE4178      -> 7  6-bit characters -> Ascii lt. Table)
   if ( !AddText(NMEA0183AISMsg, Name, 120) ) return false;               // 112-231   | 120 Vessel Name  POINT FERMIN  -> 20 6-bit characters -> Ascii lt. Table
@@ -146,15 +141,17 @@ bool  SetAISClassAMessage5(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, u
 
 //  ****************************************************************************
 // AIS position report (class B 129039) -> Type 18: Standard Class B CS Position Report
-//  ParseN2kPGN129039(const tN2kMsg &N2kMsg, uint8_t &MessageID, tN2kAISRepeat &Repeat, uint32_t &UserID,
+// PGN129039
+// ParseN2kAISClassBPosition(const tN2kMsg &N2kMsg, uint8_t &MessageID, tN2kAISRepeat &Repeat, uint32_t &UserID,
 //                        double &Latitude, double &Longitude, bool &Accuracy, bool &RAIM,
-//                        uint8_t &Seconds, double &COG, double &SOG, double &Heading, tN2kAISUnit &Unit,
-//                        bool &Display, bool &DSC, bool &Band, bool &Msg22, tN2kAISMode &Mode, bool &State)
+//                        uint8_t &Seconds, double &COG, double &SOG, tN2kAISTransceiverInformation &AISTransceiverInformation,
+//                        double &Heading, tN2kAISUnit &Unit, bool &Display, bool &DSC, bool &Band, bool &Msg22, tN2kAISMode &Mode,
+//                        bool &State)
 //  VDM, VDO (AIS VHF Data-link message 18)
 bool SetAISClassBMessage18(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, uint8_t Repeat, uint32_t UserID,
-                                  double Latitude, double Longitude, bool Accuracy, bool RAIM,
-                                  uint8_t Seconds, double COG, double SOG, double Heading, tN2kAISUnit Unit,
-                                  bool Display, bool DSC, bool Band, bool Msg22, bool Mode, bool State) {
+			   double Latitude, double Longitude, bool Accuracy, bool RAIM,
+			   uint8_t Seconds, double COG, double SOG, double Heading, tN2kAISUnit Unit,
+			   bool Display, bool DSC, bool Band, bool Msg22, bool Mode, bool State) {
   //
   NMEA0183AISMsg.ClearAIS();
   if ( !AddMessageType(NMEA0183AISMsg, MessageID) ) return false;      // 0 - 5    | 6    Message Type -> Constant: 18
@@ -162,7 +159,7 @@ bool SetAISClassBMessage18(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, u
   if ( !AddUserID(NMEA0183AISMsg, UserID) ) return false;              // 8 - 37   | 30  MMSI
   if ( !NMEA0183AISMsg.AddIntToPayloadBin(0, 8) ) return false;        // 38-45    | 8   Regional Reserved
   if ( !AddSOG(NMEA0183AISMsg, SOG) ) return false;                    // 46-55    | 10   [m/s -> kts]  SOG with one digit  x10, 1023 = N/A
-  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Accuracy, 1)) return false; // 56       | 1    GPS Accuracy 1 oder 0, Default 0
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Accuracy)) return false; // 56       | 1    GPS Accuracy 1 oder 0, Default 0
   if ( !AddLongitude(NMEA0183AISMsg, Longitude) ) return false;        // 57-84    | 28  Longitude in Minutes / 10000
   if ( !AddLatitude(NMEA0183AISMsg, Latitude) ) return false;          // 85-111   | 27  Latitude in Minutes / 10000
   if ( !AddCOG(NMEA0183AISMsg, COG) ) return false;                    // 112-123  | 12  Course over ground will be 3600 (0xE10) if that data is not available.
@@ -171,20 +168,16 @@ bool SetAISClassBMessage18(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, u
   if ( !NMEA0183AISMsg.AddIntToPayloadBin(0, 2) ) return false;        // 139-140  | 2   Regional Reserved
   if ( !NMEA0183AISMsg.AddIntToPayloadBin(Unit, 1) ) return false;     // 141      | 1   0=Class B SOTDMA unit 1=Class B CS (Carrier Sense) unit
   if ( !NMEA0183AISMsg.AddIntToPayloadBin(Display, 1) ) return false;  // 142      | 1    0=No visual display, 1=Has display, (Probably not reliable).
-  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(DSC, 1) ) return false;     // 143      | 1    If 1, unit is attached to a VHF voice radio with DSC capability.
-  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Band, 1) ) return false;    // 144      | 1   If this flag is 1, the unit can use any part of the marine channel.
-  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Msg22, 1) ) return false;   // 145      | 1   If 1, unit can accept a channel assignment via Message Type 22.
-  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Mode, 1) ) return false;    // 146      | 1   Assigned-mode flag: 0 = autonomous mode (default), 1 = assigned mode
-  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(RAIM, 1) ) return false;    // 147      | 1   as for Message Type 1,2,3
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(DSC) ) return false;     // 143      | 1    If 1, unit is attached to a VHF voice radio with DSC capability.
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Band) ) return false;    // 144      | 1   If this flag is 1, the unit can use any part of the marine channel.
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Msg22)) return false;   // 145      | 1   If 1, unit can accept a channel assignment via Message Type 22.
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Mode) ) return false;    // 146      | 1   Assigned-mode flag: 0 = autonomous mode (default), 1 = assigned mode
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(RAIM) ) return false;    // 147      | 1   as for Message Type 1,2,3
   if ( !NMEA0183AISMsg.AddIntToPayloadBin(0, 20) ) return false;       // 148-167  | 20  Radio Status not in PGN 129039
-
-  if ( !NMEA0183AISMsg.Init("VDM","AI", Prefix) ) return false;
-  if ( !NMEA0183AISMsg.AddStrField("1") ) return false;
-  if ( !NMEA0183AISMsg.AddStrField("1") ) return false;
-  if ( !NMEA0183AISMsg.AddEmptyField() ) return false;
-  if ( !NMEA0183AISMsg.AddStrField("B") ) return false;
-  if ( !NMEA0183AISMsg.AddStrField( NMEA0183AISMsg.GetPayload() ) ) return false;
-  if ( !NMEA0183AISMsg.AddStrField("0") ) return false;    // Message 18, has always Zero Padding
+  if ( !NMEA0183AISMsg.InitAis()) return false;        
+  int padBits=0;
+  if ( !NMEA0183AISMsg.AddStrField( NMEA0183AISMsg.GetPayloadFix(padBits) ) ) return false;
+  if ( !NMEA0183AISMsg.AddUInt32Field(padBits) ) return false;    
 
   return true;
 }
@@ -209,7 +202,7 @@ bool SetAISClassBMessage18(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, u
 //
 //  PGN 129809 AIS Class B "CS" Static Data Report, Part A -> AIS VHF Data-link message 24
 //  PGN 129810 AIS Class B "CS" Static Data Report, Part B -> AIS VHF Data-link message 24
-//   ParseN2kPGN129809 (const tN2kMsg &N2kMsg, uint8_t &MessageID, tN2kAISRepeat &Repeat, uint32_t &UserID, char *Name)  -> store to vector
+//  ParseN2kPGN129809 (const tN2kMsg &N2kMsg, uint8_t &MessageID, tN2kAISRepeat &Repeat, uint32_t &UserID, char *Name)  -> store to vector
 //  ParseN2kPGN129810(const tN2kMsg &N2kMsg, uint8_t &MessageID, tN2kAISRepeat &Repeat, uint32_t &UserID,
 //                      uint8_t &VesselType, char *Vendor, char *Callsign, double &Length, double &Beam,
 //                      double &PosRefStbd, double &PosRefBow, uint32_t &MothershipID);
@@ -217,41 +210,28 @@ bool SetAISClassBMessage18(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, u
 //  Part A: MessageID, Repeat, UserID, ShipName -> store in vector to call on Part B arrivals!!!
 //  Part B: MessageID, Repeat, UserID, VesselType (5), Callsign (5), Length & Beam, PosRefBow,.. (5)
 bool SetAISClassBMessage24PartA(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, uint8_t Repeat, uint32_t UserID, char *Name) {
-
-  bool found = false;
-  for (size_t i = 0; i < vships.size(); i++) {
-    if ( vships[i]->_userID == UserID ) {
-      found = true;
-      break;
-    }
-  }
-  if ( ! found ) {
-    std::string nm;
-    nm+= Name;
-    vships.push_back(new ship(UserID, nm));
-  }
+  // AIS Type 24 Message
+  NMEA0183AISMsg.ClearAIS();
+  // Common for PART A AND Part B Bit 0 - 39 / len 40
+  if ( !AddMessageType(NMEA0183AISMsg, 24) ) return false;                // 0 - 5    | 6    Message Type -> Constant: 24
+  if ( !AddRepeat(NMEA0183AISMsg, Repeat) ) return false;                 // 6 - 7    | 2    Repeat Indicator: 0 = default; 3 = do not repeat any more
+  if ( !AddUserID(NMEA0183AISMsg, UserID) ) return false;                 // 8 - 37   | 30  MMSI
+  if ( !NMEA0183AISMsg.AddIntToPayloadBin(0, 2) ) return false;           // 38-39    | 2    Part Number 0-1 ->
+  // Part A: 40 + 128 = len 168
+  if ( !AddText(NMEA0183AISMsg, Name, 120) ) return false;                // 40-159   | 120 Vessel Name  20 6-bit characters -> Ascii Table
+  if ( !NMEA0183AISMsg.AddIntToPayloadBin(0, 8) ) return false;           // 160-167  | 8    Spare
+  if ( !NMEA0183AISMsg.InitAis() ) return false;
+  int padBits=0;
+  if ( !NMEA0183AISMsg.AddStrField( NMEA0183AISMsg.GetPayloadFix(padBits) ) ) return false;
+  if ( !NMEA0183AISMsg.AddUInt32Field(padBits) ) return false;    
   return true;
 }
 
 // ***************************************************************************************************************
-bool  SetAISClassBMessage24(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, uint8_t Repeat,
+bool  SetAISClassBMessage24PartB(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, uint8_t Repeat,
                           uint32_t UserID, uint8_t VesselType, char *VendorID, char *Callsign,
                           double Length, double Beam, double PosRefStbd,  double PosRefBow, uint32_t MothershipID ) {
 
-  uint8_t PartNr = 0;            // Identifier for the message part number; always 0 for Part A
-  char *ShipName = (char*)" ";   // get from vector to look up for sent Messages Part A
-
-  uint8_t i;
-  for ( i = 0; i < vships.size(); i++) {
-    if ( vships[i]->_userID == UserID ) {
-      ShipName = const_cast<char*>( vships[i]->_shipName.c_str() );
-    }
-  }
-  if ( i > MAX_SHIP_IN_VECTOR ) {
-    std::vector<ship *>::iterator it=vships.begin();
-    delete *it;
-    vships.erase(it);
-  }
 
   // AIS Type 24 Message
   NMEA0183AISMsg.ClearAIS();
@@ -259,11 +239,7 @@ bool  SetAISClassBMessage24(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, 
   if ( !AddMessageType(NMEA0183AISMsg, 24) ) return false;                // 0 - 5    | 6    Message Type -> Constant: 24
   if ( !AddRepeat(NMEA0183AISMsg, Repeat) ) return false;                 // 6 - 7    | 2    Repeat Indicator: 0 = default; 3 = do not repeat any more
   if ( !AddUserID(NMEA0183AISMsg, UserID) ) return false;                 // 8 - 37   | 30  MMSI
-  if ( !NMEA0183AISMsg.AddIntToPayloadBin(PartNr, 2) ) return false;      // 38-39    | 2    Part Number 0-1 ->
-
-  // Part A: 40 + 128 = len 168
-  if ( !AddText(NMEA0183AISMsg, ShipName, 120) ) return false;            // 40-159   | 120 Vessel Name  20 6-bit characters -> Ascii Table
-  if ( !NMEA0183AISMsg.AddIntToPayloadBin(0, 8) ) return false;           // 160-167  | 8    Spare
+  if ( !NMEA0183AISMsg.AddIntToPayloadBin(1, 2) ) return false;      // 38-39    | 2    Part Number 0-1 ->
 
   // https://www.navcen.uscg.gov/?pageName=AISMessagesB
   // PART B: 40 + 128 = len 168
@@ -272,6 +248,59 @@ bool  SetAISClassBMessage24(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, 
   if ( !AddText(NMEA0183AISMsg, Callsign, 42) ) return false;                // 218-259 | 90-131 | 42   Call Sign  WDE4178      -> 7  6-bit characters, as in Msg Type 5
   if ( !AddDimensions(NMEA0183AISMsg, Length, Beam, PosRefStbd, PosRefBow) ) return false;  // 260-289 | 132-161 | 30 Dimensions
   if ( !NMEA0183AISMsg.AddIntToPayloadBin(0, 6) ) return false;              // 290-295 | 162-167 | 6    Spare
+  if ( !NMEA0183AISMsg.InitAis() ) return false;
+  int padBits=0;
+  if ( !NMEA0183AISMsg.AddStrField( NMEA0183AISMsg.GetPayloadFix(padBits) ) ) return false;
+  if ( !NMEA0183AISMsg.AddUInt32Field(padBits) ) return false;                            
+  return true;
+}
+
+//  ****************************************************************************
+// AIS ATON report (129041) -> Type 21: Position and status report for aids-to-navigation
+// PGN129041
+
+bool SetAISMessage21(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t Repeat, uint32_t UserID,
+			   double Latitude, double Longitude, bool Accuracy, bool RAIM,
+			   uint8_t Seconds, double Length, double Beam, double PositionReferenceStarboard,
+         double PositionReferenceTrueNord, tN2kAISAtoNType Type, bool OffPositionIndicator,
+         bool VirtualAtoNFlag, bool AssignedModeFlag, tN2kGNSStype GNSSType, uint8_t AtoNStatus,
+         char * atonName ) {
+  //
+  NMEA0183AISMsg.ClearAIS();
+  if ( !AddMessageType(NMEA0183AISMsg, 21) ) return false;      // 0 - 5    | 6    Message Type -> Constant: 18
+  if ( !AddRepeat(NMEA0183AISMsg, Repeat) ) return false;              // 6 - 7    | 2    Repeat Indicator: 0 = default; 3 = do not repeat any more
+  if ( !AddUserID(NMEA0183AISMsg, UserID) ) return false;              // 8 - 37   | 30  MMSI
+  if ( ! NMEA0183AISMsg.AddIntToPayloadBin(Type,5)) return false;      //          | 5 aid type
+  //the name must be split:
+  //if it's > 120 bits the rest goes to the last parameter
+  if ( !NMEA0183AISMsg.AddEncodedCharToPayloadBin(atonName,120)) 
+    return false;                                                       //          | 120 name  
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(Accuracy) ) return false; //          | 1 accuracy
+  if ( !AddLongitude(NMEA0183AISMsg,Longitude)) return false;          //          | 28 lon
+  if ( !AddLatitude(NMEA0183AISMsg,Latitude)) return false;            //          | 27 lat
+  if ( !AddDimensions(NMEA0183AISMsg, Length, Beam, 
+    PositionReferenceStarboard, PositionReferenceTrueNord)) return false; //       | 30 dim
+  if ( !AddEPFDFixType(NMEA0183AISMsg,GNSSType)) return false;         //          | 4 fix type
+  if ( !AddSeconds(NMEA0183AISMsg,Seconds)) return false;              //          | 6 second
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(OffPositionIndicator)) 
+      return false;                                                    //          | 1 off
+  if ( !NMEA0183AISMsg.AddIntToPayloadBin(0,8)) return false;     //          | 8 reserverd
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(RAIM)) return false;      //          | 1 raim
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(VirtualAtoNFlag)) 
+      return false;                                                    //          | 1 virt
+  if ( !NMEA0183AISMsg.AddBoolToPayloadBin(AssignedModeFlag))
+      return false;                                                    //          | 1 assigned
+  if ( !NMEA0183AISMsg.AddIntToPayloadBin(0,1)) return false;          //          | 1 spare
+  size_t l=strlen(atonName);
+  if (l >=20){
+    uint8_t bitlen=(l-20)*6;
+    if (bitlen > 88) bitlen=88;
+    if ( !NMEA0183AISMsg.AddEncodedCharToPayloadBin(atonName+20,bitlen)) return false;    //          | name
+  }
+  if ( !NMEA0183AISMsg.InitAis() ) return false;
+  int padBits=0;
+  if ( !NMEA0183AISMsg.AddStrField( NMEA0183AISMsg.GetPayload(padBits) ) ) return false;
+  if ( !NMEA0183AISMsg.AddUInt32Field(padBits) ) return false;   
 
   return true;
 }
@@ -325,7 +354,6 @@ bool AddIMONumber(tNMEA0183AISMsg &NMEA0183AISMsg, uint32_t &IMONumber) {
 // 120bit Name or Destination
 bool AddText(tNMEA0183AISMsg &NMEA0183AISMsg, char *FieldVal, uint8_t length) {
   uint8_t len = length/6;
-
   if ( strlen(FieldVal) > len ) FieldVal[len] = 0;
   if ( !NMEA0183AISMsg.AddEncodedCharToPayloadBin(FieldVal, length) ) return false;
   return true;
@@ -347,29 +375,26 @@ bool AddDimensions(tNMEA0183AISMsg &NMEA0183AISMsg, double Length, double Beam, 
   uint16_t _PosRefStbd = 0;
   uint16_t _PosRefPort = 0;
 
-  if (PosRefBow < 0) PosRefBow=0; //could be N2kIsNA
-  if ( PosRefBow <= 511.0 ) {
-    _PosRefBow = round(PosRefBow);
+  if ( PosRefBow >= 0.0 && PosRefBow <= 511.0 ) {
+    _PosRefBow = ceil(PosRefBow);
   } else {
     _PosRefBow = 511;
   }
-  if (PosRefStbd < 0 ) PosRefStbd=0; //could be N2kIsNA
-  if (PosRefStbd <= 63.0 ) {
-    _PosRefStbd = round(PosRefStbd);
+
+  if ( PosRefStbd >= 0.0 && PosRefStbd <= 63.0 ) {
+    _PosRefStbd = ceil(PosRefStbd);
   } else {
     _PosRefStbd = 63;
   }
 
   if ( !N2kIsNA(Length) ) {
-    if (Length >= PosRefBow){
-      _PosRefStern=round(Length - PosRefBow);
-    }
+    _PosRefStern = ceil( Length ) - _PosRefBow;
+    if ( _PosRefStern < 0 ) _PosRefStern = 0;
     if ( _PosRefStern > 511 ) _PosRefStern = 511;
   }
   if ( !N2kIsNA(Beam) ) {
-    if (Beam >= PosRefStbd){
-      _PosRefPort = round( Beam - PosRefStbd);  
-    }
+    _PosRefPort = ceil( Beam ) - _PosRefStbd;
+    if ( _PosRefPort < 0 ) _PosRefPort = 0;
     if ( _PosRefPort > 63 ) _PosRefPort = 63;
   }
 
@@ -572,3 +597,5 @@ bool AddETADateTime(tNMEA0183AISMsg &NMEA0183AISMsg, uint16_t &ETAdate, double &
   if ( ! NMEA0183AISMsg.AddIntToPayloadBin(minute, 6) ) return false;
   return true;
 }
+
+
