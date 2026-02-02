@@ -264,6 +264,8 @@ void registerAllPages(PageList &list){
     list.add(&registerPageNavigation);
     extern PageDescription registerPageDigitalOut;
     list.add(&registerPageDigitalOut);
+    extern PageDescription registerPageAutopilot;
+    list.add(&registerPageAutopilot);
 }
 
 // Undervoltage detection for shutdown display
@@ -531,7 +533,7 @@ void OBP60Task(GwApi *api){
 
     commonData.backlight.mode = backlightMapping(config->getConfigItem(config->backlight,true)->asString());
     commonData.backlight.color = colorMapping(config->getConfigItem(config->blColor,true)->asString());
-    commonData.backlight.brightness = 2.55 * uint(config->getConfigItem(config->blBrightness,true)->asInt());
+    commonData.backlight.brightness = uint(config->getConfigItem(config->blBrightness,true)->asInt());
     commonData.powermode = api->getConfig()->getConfigItem(api->getConfig()->powerMode,true)->asString();
 
     bool uvoltage = config->getConfigItem(config->underVoltage, true)->asBoolean();
