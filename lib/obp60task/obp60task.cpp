@@ -660,7 +660,7 @@ void OBP60Task(GwApi *api){
                     // if(String(backlight) == "Control by Key"){
                         if(keyboardMessage == 6){
                             LOG_DEBUG(GwLog::LOG,"Toggle Backlight LED");
-                            toggleBacklightLED(commonData.backlight.brightness, commonData.backlight.color);
+                            stepsBacklightLED(commonData.backlight.brightness, commonData.backlight.color);
                         }
                     }
                     #ifdef BOARD_OBP40S3

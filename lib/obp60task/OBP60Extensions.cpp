@@ -331,6 +331,40 @@ void toggleBacklightLED(uint brightness, const Color &color){
     ledTaskData->setLedData(current); 
 }
 
+void stepsBacklightLED(uint brightness, const Color &color){
+    static uint step = 0;
+    uint actBrightness = 0;
+    // Different brightness steps
+    if(step == 0){
+        actBrightness = brightness;         // 100% from brightess
+        statusBacklightLED = true;
+    }
+    if(step == 1){
+        actBrightness = brightness * 0.5;   // 50% from brightess
+        statusBacklightLED = true;
+    }
+    if(step == 2){
+        actBrightness = brightness * 0.2;   // 20% from brightess
+        statusBacklightLED = true;
+    }
+    if(step == 3){
+        actBrightness = 0;                  // 0%
+        statusBacklightLED = false;
+    }
+    if(actBrightness < 5){                  // Limiter if values too low
+        actBrightness = 5;
+    }
+    step = step + 1;    // Increment step counter
+    if(step == 4){      // Reset counter
+        step = 0;
+    }
+    if (ledTaskData == nullptr) return;
+    Color nv=setBrightness(statusBacklightLED?color:COLOR_BLACK,actBrightness);
+    LedInterface current=ledTaskData->getLedData();
+    current.setBacklight(nv);
+    ledTaskData->setLedData(current); 
+}
+
 void setFlashLED(bool status){
     if (ledTaskData == nullptr) return;
     Color c=status?COLOR_RED:COLOR_BLACK;

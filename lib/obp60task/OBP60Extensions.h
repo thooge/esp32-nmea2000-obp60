@@ -96,6 +96,7 @@ void togglePortPin(uint pin);                   // Toggle extension port pin
 Color colorMapping(const String &colorString);          // Color mapping string to CHSV colors
 void setBacklightLED(uint brightness, const Color &color);// Set backlight LEDs
 void toggleBacklightLED(uint brightness,const Color &color);// Toggle backlight LEDs
+void stepsBacklightLED(uint brightness, const Color &color);// Set backlight LEDs in 4 steps (100%, 50%, 10%, 0%)
 BacklightMode backlightMapping(const String &backlightString);// Configuration string to value
 
 void setFlashLED(bool status);                  // Set flash LED
