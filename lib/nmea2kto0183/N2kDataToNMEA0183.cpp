@@ -1587,9 +1587,7 @@ private:
             return;
         }
         // TODO (?) multiple keys together
-
-        // only process configured key count (default 6)
-        for (uint8_t i=1; i<=6; i++) {
+        for (uint8_t i=1; i<=28; i++) {
             tN2kOnOff keystatus = N2kGetStatusOnBinaryStatus(bankstatus, i);
             if (keystatus == 1) {
                 // key pressed: send key to queue

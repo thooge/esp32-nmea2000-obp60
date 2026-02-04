@@ -620,7 +620,8 @@ void OBP60Task(GwApi *api){
             if (xQueueReceive(keyboardQueue, &remotekey, 0) == pdPASS) {
                 LOG_DEBUG(GwLog::LOG, "OBP received remote key: %d", remotekey);
                 // inject into internal keyboard queue
-                 xQueueSend(allParameters.queue, &remotekey, 0);
+                int injectkey = static_cast<int>(remotekey);
+                xQueueSend(allParameters.queue, &injectkey, 0);
             }
 
             // Check the keyboard message

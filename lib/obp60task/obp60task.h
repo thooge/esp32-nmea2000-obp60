@@ -18,6 +18,9 @@
         // CAN NMEA2000
         #define ESP32_CAN_TX_PIN 15
         #define ESP32_CAN_RX_PIN 16
+        // Temporary fix for Connection Board
+        // #define ESP32_CAN_TX_PIN 16
+        // #define ESP32_CAN_RX_PIN 15
         // Bus load in 50mA steps
         #define N2K_LOAD_LEVEL 2 // 2x50mA = 100mA max bus load
         // RS485 NMEA0183
