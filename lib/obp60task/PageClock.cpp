@@ -19,7 +19,12 @@ class PageClock : public Page
 bool simulation = false;
 int simtime;
 bool keylock = false;
+#ifdef BOARD_OBP60S3
+char source = 'G';  // time source (R)TC | (G)PS | (N)TP
+#endif
+#ifdef BOARD_OBP40S3
 char source = 'R';  // time source (R)TC | (G)PS | (N)TP
+#endif
 char mode = 'A';    // display mode (A)nalog | (D)igital | race (T)imer
 char tz = 'L';      // time zone (L)ocal | (U)TC
 double timezone = 0; // there are timezones with non int offsets, e.g. 5.5 or 5.75
@@ -50,29 +55,28 @@ bool homevalid = false; // homelat and homelon are valid
     virtual int handleKey(int key){
         // Time source
         if (key == 1) {
-            if (source == 'G') {
-                source = 'R';
-            } else {
-                source = 'G';
+            switch (source) {
+                case 'G': source = 'R'; break;
+                case 'R': source = 'G'; break;
+                default:  source = 'G'; break;
             }
             return 0;
         }
         if (key == 2) {
-            if (mode == 'A') {
-                mode = 'D';
-            } else if (mode == 'D') {
-                mode = 'T';
-            } else {
-                mode = 'A';
+            switch (mode) {
+                case 'A': mode = 'D'; break;
+                case 'D': mode = 'T'; break;
+                case 'T': mode = 'A'; break;
+                default:  mode = 'A'; break;
             }
             return 0;
         }
         // Time zone: Local / UTC
         if (key == 5) {
-            if (tz == 'L') {
-                tz = 'U';
-            } else {
-                tz = 'L';
+            switch (tz) {
+                case 'L': tz = 'U'; break;
+                case 'U': tz = 'L'; break;
+                default:  tz = 'L'; break;
             }
             return 0;
         }
