@@ -132,8 +132,8 @@ public:
             commonData->keydata[4].label = "RUN";
         } else {
             // Clock modes: like original
-            commonData->keydata[0].label = "SRC";
-            commonData->keydata[1].label = "MODE";
+            commonData->keydata[0].label = "MODE";
+            commonData->keydata[1].label = "SRC";
             commonData->keydata[4].label = "TZ";
         }
     }
@@ -220,18 +220,8 @@ public:
 
         // Clock (A/D) modes key handling – like original PageClock
 
-        // Time source (K1)
+        // MODE (K1)
         if (key == 1) {
-            switch (source) {
-            case 'G': source = 'R'; break;
-            case 'R': source = 'G'; break;
-            default:  source = 'G'; break;
-            }
-            return 0;
-        }
-
-        // MODE (K2)
-        if (key == 2) {
             switch (mode) {
             case 'A': mode = 'D'; break;
             case 'D': mode = 'T'; break;
@@ -239,6 +229,16 @@ public:
             default:  mode = 'A'; break;
             }
             setupKeys();
+            return 0;
+        }
+        
+        // Time source (K2)
+        if (key == 2) {
+            switch (source) {
+            case 'G': source = 'R'; break;
+            case 'R': source = 'G'; break;
+            default:  source = 'G'; break;
+            }
             return 0;
         }
 
@@ -466,7 +466,7 @@ public:
             // Clear central area and draw large digital time
             getdisplay().fillRect(0, 110, getdisplay().width(), 80, commonData->bgcolor);
 
-            getdisplay().setFont(&DSEG7Classic_BoldItalic60pt7b);
+            getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
 
             // Determine widths for digits and colon to position selection underline exactly
             int16_t x0, y0;
@@ -500,20 +500,20 @@ public:
                     selX = baseX + 2 * wDigit + 2 * wColon; // seconds start
                 }
 
-                int16_t underlineY = centerY + hb / 2 + 2;
-                getdisplay().fillRect(selX, underlineY, wDigit, 2, commonData->fgcolor);
+                int16_t underlineY = centerY + hb / 2 + 5;
+                getdisplay().fillRect(selX, underlineY, wDigit, 6, commonData->fgcolor);
             }
 
             // Small indicators: timezone and source
             getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(180, 110);
+            getdisplay().setCursor(185, 110);
             if (holdvalues == false) {
                 getdisplay().print(tz == 'L' ? "LOT" : "UTC");
             } else {
                 getdisplay().print(unit2old); // date unit
             }
 
-            getdisplay().setCursor(185, 190);
+            getdisplay().setCursor(185, 210);
             if (source == 'G') {
                 getdisplay().print("GPS");
             } else {
@@ -555,7 +555,7 @@ public:
 
             getdisplay().fillRect(0, 110, getdisplay().width(), 80, commonData->bgcolor);
 
-            getdisplay().setFont(&DSEG7Classic_BoldItalic60pt7b);
+            getdisplay().setFont(&DSEG7Classic_BoldItalic30pt7b);
 
             int16_t x1b, y1b;
             uint16_t wb, hb;
@@ -568,14 +568,14 @@ public:
             getdisplay().print(timeStr);
 
             getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(180, 110);
+            getdisplay().setCursor(185, 110);
             if (holdvalues == false) {
                 getdisplay().print(tz == 'L' ? "LOT" : "UTC");
             } else {
                 getdisplay().print(unit2old); // date unit
             }
 
-            getdisplay().setCursor(185, 190);
+            getdisplay().setCursor(185, 210);
             if (source == 'G') {
                 getdisplay().print("GPS");
             } else {
