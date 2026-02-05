@@ -4,264 +4,111 @@
 #include "OBP60Extensions.h"
 
 /*
- * PageClock: Clock page with
- *  - Analog mode  (mode == 'A')
- *  - Digital mode (mode == 'D')
- *  - Countdown timer mode (mode == 'T')
- *  - Keys in mode analog and digital clock:
- *      K1: MODE (A/D/T)
- *      K2: POS  (select field: HH / MM / SS)
- *      K3: 
- *      K4: 
- *      K5: TZ  (Local/UTC)
- *
- * Timer mode:
- *  - Format HH:MM:SS (24h, leading zeros)
- *  - Keys in timer mode:
- *      K1: MODE (A/D/T)
- *      K2: POS  (select field: HH / MM / SS)
- *      K3: +    (increment selected field)
- *      K4: -    (decrement selected field)
- *      K5: RUN  (start/stop countdown)
- *  - Selection marker: line under active field (width 2px, not wider than digits)
- *  - Editing only possible when timer is not running
- *  - When page is left, running timer continues in background using RTC time
- *    (on re-entry, remaining time is recalculated from RTC)
+ * Variant of PageClock with switchable analog / digital clock display.
+ * mode: (A)nalog | (D)igital | race (T)imer (T not implemented yet, falls back to analog)
  */
 
-class PageClock : public Page
+class PageClock2 : public Page
 {
     bool simulation = false;
     int simtime;
     bool keylock = false;
 #ifdef BOARD_OBP60S3
-    char source = 'G';  // time source (R)TC | (G)PS | (N)TP
+    char source = 'G'; // time source (R)TC | (G)PS | (N)TP
 #endif
 #ifdef BOARD_OBP40S3
-    char source = 'R';  // time source (R)TC | (G)PS | (N)TP
+    char source = 'R'; // time source (R)TC | (G)PS | (N)TP
 #endif
-    char mode = 'A';    // display mode (A)nalog | (D)igital | race (T)imer
-    char tz = 'L';      // time zone (L)ocal | (U)TC
+    char mode = 'A';   // display mode (A)nalog | (D)igital | race (T)imer
+    char tz = 'L';     // time zone (L)ocal | (U)TC
     double timezone = 0; // there are timezones with non int offsets, e.g. 5.5 or 5.75
     double homelat;
     double homelon;
     bool homevalid = false; // homelat and homelon are valid
 
-    // Timer state (static so it survives page switches)
-    static bool timerInitialized;
-    static bool timerRunning;
-    static int timerHours;
-    static int timerMinutes;
-    static int timerSeconds;
-    static int selectedField;       // 0 = hours, 1 = minutes, 2 = seconds
-    static bool showSelectionMarker;
-    static time_t timerEndEpoch;    // absolute end time based on RTC
-
-    void setupTimerDefaults()
-    {
-        if (!timerInitialized) {
-            timerInitialized = true;
-            timerRunning = false;
-            timerHours = 0;
-            timerMinutes = 0;
-            timerSeconds = 0;
-            selectedField = 0;
-            showSelectionMarker = true;
-            timerEndEpoch = 0;
-        }
-    }
-
-    static int clamp(int value, int minVal, int maxVal)
-    {
-        if (value < minVal) return minVal;
-        if (value > maxVal) return maxVal;
-        return value;
-    }
-
-    void incrementSelected()
-    {
-        if (selectedField == 0) {
-            timerHours = clamp(timerHours + 1, 0, 23);
-        } else if (selectedField == 1) {
-            timerMinutes = clamp(timerMinutes + 1, 0, 59);
-        } else {
-            timerSeconds = clamp(timerSeconds + 1, 0, 59);
-        }
-    }
-
-    void decrementSelected()
-    {
-        if (selectedField == 0) {
-            timerHours = clamp(timerHours - 1, 0, 23);
-        } else if (selectedField == 1) {
-            timerMinutes = clamp(timerMinutes - 1, 0, 59);
-        } else {
-            timerSeconds = clamp(timerSeconds - 1, 0, 59);
-        }
-    }
-
-    int totalTimerSeconds() const
-    {
-        return timerHours * 3600 + timerMinutes * 60 + timerSeconds;
-    }
-
 public:
-    PageClock(CommonData& common)
+    PageClock2(CommonData& common)
     {
         commonData = &common;
-        common.logger->logDebug(GwLog::LOG, "Instantiate PageClock");
+        common.logger->logDebug(GwLog::LOG, "Instantiate PageClock2");
         simulation = common.config->getBool(common.config->useSimuData);
         timezone = common.config->getString(common.config->timeZone).toDouble();
         homelat = common.config->getString(common.config->homeLAT).toDouble();
         homelon = common.config->getString(common.config->homeLON).toDouble();
         homevalid = homelat >= -180.0 and homelat <= 180 and homelon >= -90.0 and homelon <= 90.0;
         simtime = 38160; // time value 11:36
-        setupTimerDefaults();
     }
 
     virtual void setupKeys()
     {
         Page::setupKeys();
-
-        if (mode == 'T') {
-            // Timer mode: MODE, POS, +, -, RUN
-            commonData->keydata[0].label = "MODE";
-            commonData->keydata[1].label = "POS";
-            commonData->keydata[2].label = "+";
-            commonData->keydata[3].label = "-";
-            commonData->keydata[4].label = "RUN";
-        } else {
-            // Clock modes: like original
-            commonData->keydata[0].label = "SRC";
-            commonData->keydata[1].label = "MODE";
-            commonData->keydata[4].label = "TZ";
-        }
+        commonData->keydata[0].label = "SRC";
+        commonData->keydata[1].label = "MODE";
+        commonData->keydata[4].label = "TZ";
     }
 
     // Key functions
     virtual int handleKey(int key)
     {
-        setupTimerDefaults();
-
-        // Keylock function
-        if (key == 11) {              // Code for keylock
-            keylock = !keylock;       // Toggle keylock
-            return 0;                 // Commit the key
-        }
-
-        if (mode == 'T') {
-            // Timer mode key handling
-
-            // MODE (K1): cycle display mode A/D/T
-            if (key == 1) {
-                switch (mode) {
-                case 'A': mode = 'D'; break;
-                case 'D': mode = 'T'; break;
-                case 'T': mode = 'A'; break;
-                default:  mode = 'A'; break;
-                }
-                setupKeys();
-                return 0;
-            }
-
-            // POS (K2): select field HH / MM / SS (only if timer not running)
-            if (key == 2 && !timerRunning) {
-                selectedField = (selectedField + 1) % 3;
-                showSelectionMarker = true;
-                return 0;
-            }
-
-            // + (K3): increment selected field (only if timer not running)
-            if (key == 3 && !timerRunning) {
-                incrementSelected();
-                return 0;
-            }
-
-            // - (K4): decrement selected field (only if timer not running)
-            if (key == 4 && !timerRunning) {
-                decrementSelected();
-                return 0;
-            }
-
-            // RUN (K5): start/stop timer
-            if (key == 5) {
-                if (!timerRunning) {
-                    // Start timer if a non-zero duration is set
-                    int total = totalTimerSeconds();
-                    if (total > 0 && commonData->data.rtcValid) {
-                        struct tm rtcCopy = commonData->data.rtcTime;
-                        time_t nowEpoch = mktime(&rtcCopy);
-                        timerEndEpoch = nowEpoch + total;
-                        timerRunning = true;
-                        showSelectionMarker = false;
-                    }
-                } else {
-                    // Stop timer: compute remaining time and keep as new setting
-                    if (commonData->data.rtcValid) {
-                        struct tm rtcCopy = commonData->data.rtcTime;
-                        time_t nowEpoch = mktime(&rtcCopy);
-                        time_t remaining = timerEndEpoch - nowEpoch;
-                        if (remaining < 0) remaining = 0;
-                        int rem = static_cast<int>(remaining);
-                        timerHours = rem / 3600;
-                        rem -= timerHours * 3600;
-                        timerMinutes = rem / 60;
-                        timerSeconds = rem % 60;
-                    }
-                    timerRunning = false;
-                    // marker will become visible again only after POS press
-                }
-                return 0;
-            }
-
-            // In timer mode, other keys are passed through
-            return key;
-        }
-
-        // Clock (A/D) modes key handling – like original PageClock
-
-        // Time source (K1)
+        // Time source
         if (key == 1) {
             switch (source) {
-            case 'G': source = 'R'; break;
-            case 'R': source = 'G'; break;
-            default:  source = 'G'; break;
+            case 'G':
+                source = 'R';
+                break;
+            case 'R':
+                source = 'G';
+                break;
+            default:
+                source = 'G';
+                break;
             }
             return 0;
         }
-
-        // MODE (K2)
         if (key == 2) {
             switch (mode) {
-            case 'A': mode = 'D'; break;
-            case 'D': mode = 'T'; break;
-            case 'T': mode = 'A'; break;
-            default:  mode = 'A'; break;
+            case 'A':
+                mode = 'D';
+                break;
+            case 'D':
+                mode = 'T';
+                break;
+            case 'T':
+                mode = 'A';
+                break;
+            default:
+                mode = 'A';
+                break;
             }
-            setupKeys();
             return 0;
         }
-
-        // Time zone: Local / UTC (K5)
+        // Time zone: Local / UTC
         if (key == 5) {
             switch (tz) {
-            case 'L': tz = 'U'; break;
-            case 'U': tz = 'L'; break;
-            default:  tz = 'L'; break;
+            case 'L':
+                tz = 'U';
+                break;
+            case 'U':
+                tz = 'L';
+                break;
+            default:
+                tz = 'L';
+                break;
             }
             return 0;
         }
 
+        // Keylock function
+        if (key == 11) {          // Code for keylock
+            keylock = !keylock;   // Toggle keylock
+            return 0;             // Commit the key
+        }
         return key;
     }
 
     int displayPage(PageData& pageData)
     {
         GwConfigHandler* config = commonData->config;
-        GwLog* logger = commonData->logger;
-
-        setupTimerDefaults();
-        setupKeys(); // ensure correct key labels for current mode
 
         static String svalue1old = "";
         static String unit1old = "";
@@ -285,7 +132,7 @@ public:
         String backlightMode = config->getString(config->backlight);
 
         // Get boat values for GPS time
-        GwApi::BoatValue* bvalue1 = pageData.values[0]; // First element in list
+        GwApi::BoatValue* bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
         String name1 = bvalue1->getName().c_str();      // Value name
         name1 = name1.substring(0, 6);                  // String length limit for value name
         if (simulation == false) {
@@ -294,7 +141,7 @@ public:
             value1 = simtime++;                         // Simulation data for time value 11:36 in seconds
         }                                               // Other simulation data see OBP60Formatter.cpp
         bool valid1 = bvalue1->valid;                   // Valid information
-        String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value
+        String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
         if (valid1 == true) {
             svalue1old = svalue1;                       // Save old value
@@ -302,25 +149,25 @@ public:
         }
 
         // Get boat values for GPS date
-        GwApi::BoatValue* bvalue2 = pageData.values[1]; // Second element in list
+        GwApi::BoatValue* bvalue2 = pageData.values[1]; // Second element in list (only one value by PageOneValue)
         String name2 = bvalue2->getName().c_str();      // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
         value2 = bvalue2->value;                        // Value as double in SI unit
         bool valid2 = bvalue2->valid;                   // Valid information
-        String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value
+        String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
         if (valid2 == true) {
             svalue2old = svalue2;                       // Save old value
             unit2old = unit2;                           // Save old unit
         }
 
-        // Get boat values for HDOP
-        GwApi::BoatValue* bvalue3 = pageData.values[2]; // Third element in list
+        // Get boat values for HDOP date
+        GwApi::BoatValue* bvalue3 = pageData.values[2]; // Third element in list (only one value by PageOneValue)
         String name3 = bvalue3->getName().c_str();      // Value name
         name3 = name3.substring(0, 6);                  // String length limit for value name
         value3 = bvalue3->value;                        // Value as double in SI unit
         bool valid3 = bvalue3->valid;                   // Valid information
-        String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value
+        String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
         String unit3 = formatValue(bvalue3, *commonData).unit;        // Unit of value
         if (valid3 == true) {
             svalue3old = svalue3;                       // Save old value
@@ -334,8 +181,9 @@ public:
         }
 
         // Logging boat values
-        if (bvalue1 == NULL) return PAGE_OK;
-        LOG_DEBUG(GwLog::LOG, "Drawing at PageClock, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
+        if (bvalue1 == NULL)
+            return PAGE_OK; // WTF why this statement?
+        LOG_DEBUG(GwLog::LOG, "Drawing at PageClock2, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
 
         // Draw page
         //***********************************************************
@@ -372,10 +220,10 @@ public:
         getdisplay().setCursor(10, 95);
         getdisplay().print("Date");                          // Name
 
-        // Horizontal separator left
+        // Horizintal separator left
         getdisplay().fillRect(0, 149, 60, 3, commonData->fgcolor);
 
-        // Show values GPS time (small text bottom left)
+        // Show values GPS time (small text bottom left, same as original)
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(10, 250);
         if (holdvalues == false) {
@@ -408,13 +256,15 @@ public:
 
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(335, 65);
-        if (holdvalues == false) getdisplay().print(sunrise); // Value
-        else getdisplay().print(svalue5old);
+        if (holdvalues == false)
+            getdisplay().print(sunrise); // Value
+        else
+            getdisplay().print(svalue5old);
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(335, 95);
         getdisplay().print("SunR");                          // Name
 
-        // Horizontal separator right
+        // Horizintal separator right
         getdisplay().fillRect(340, 149, 80, 3, commonData->fgcolor);
 
         // Show values sunset
@@ -428,106 +278,26 @@ public:
 
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(335, 250);
-        if (holdvalues == false) getdisplay().print(sunset);  // Value
-        else getdisplay().print(svalue6old);
+        if (holdvalues == false)
+            getdisplay().print(sunset);  // Value
+        else
+            getdisplay().print(svalue6old);
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(335, 220);
         getdisplay().print("SunS");                          // Name
 
         //*******************************************************************************************
 
-        if (mode == 'T') {
-            // TIMER MODE: countdown timer HH:MM:SS in the center with 7-segment font
+        if (mode == 'D') {
+            // Digital clock mode: large 7-segment time centered on display
 
-            int dispH = timerHours;
-            int dispM = timerMinutes;
-            int dispS = timerSeconds;
-
-            // Update remaining time if timer is running (based on RTC)
-            if (timerRunning && commonData->data.rtcValid) {
-                struct tm rtcCopy = commonData->data.rtcTime;
-                time_t nowEpoch = mktime(&rtcCopy);
-                time_t remaining = timerEndEpoch - nowEpoch;
-                if (remaining <= 0) {
-                    remaining = 0;
-                    timerRunning = false;
-                }
-                int rem = static_cast<int>(remaining);
-                dispH = rem / 3600;
-                rem -= dispH * 3600;
-                dispM = rem / 60;
-                dispS = rem % 60;
-            }
-
-            char buf[9]; // "HH:MM:SS"
-            snprintf(buf, sizeof(buf), "%02d:%02d:%02d", dispH, dispM, dispS);
-            String timeStr = String(buf);
-
-            // Clear central area and draw large digital time
-            getdisplay().fillRect(0, 110, getdisplay().width(), 80, commonData->bgcolor);
-
-            getdisplay().setFont(&DSEG7Classic_BoldItalic60pt7b);
-
-            // Determine widths for digits and colon to position selection underline exactly
-            int16_t x0, y0;
-            uint16_t wDigit, hDigit;
-            uint16_t wColon, hColon;
-
-            getdisplay().getTextBounds("00", 0, 0, &x0, &y0, &wDigit, &hDigit);
-            getdisplay().getTextBounds(":", 0, 0, &x0, &y0, &wColon, &hColon);
-
-            uint16_t totalWidth = 3 * wDigit + 2 * wColon;
-
-            int16_t baseX = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(totalWidth)) / 2;
-            int16_t centerY = 150;
-
-            // Draw time string centered
-            int16_t x1b, y1b;
-            uint16_t wb, hb;
-            getdisplay().getTextBounds(timeStr, 0, 0, &x1b, &y1b, &wb, &hb);
-            int16_t textX = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(wb)) / 2;
-            int16_t textY = centerY + hb / 2;
-
-            getdisplay().setCursor(textX, textY);
-            getdisplay().print(timeStr);
-
-            // Selection marker (only visible when not running and POS pressed)
-            if (!timerRunning && showSelectionMarker) {
-                int16_t selX = baseX;
-                if (selectedField == 1) {
-                    selX = baseX + wDigit + wColon; // minutes start
-                } else if (selectedField == 2) {
-                    selX = baseX + 2 * wDigit + 2 * wColon; // seconds start
-                }
-
-                int16_t underlineY = centerY + hb / 2 + 2;
-                getdisplay().fillRect(selX, underlineY, wDigit, 2, commonData->fgcolor);
-            }
-
-            // Small indicators: timezone and source
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(180, 110);
-            if (holdvalues == false) {
-                getdisplay().print(tz == 'L' ? "LOT" : "UTC");
-            } else {
-                getdisplay().print(unit2old); // date unit
-            }
-
-            getdisplay().setCursor(185, 190);
-            if (source == 'G') {
-                getdisplay().print("GPS");
-            } else {
-                getdisplay().print("RTC");
-            }
-
-        } else if (mode == 'D') {
-            // DIGITAL CLOCK MODE: large 7-segment time based on GPS/RTC
-
+            // Determine current time in hours/minutes/seconds (24h)
             int hour24 = 0;
             int minute24 = 0;
             int second24 = 0;
 
             if (source == 'R' && commonData->data.rtcValid) {
+                // RTC based
                 time_t tv2 = mktime(&commonData->data.rtcTime);
                 if (tz == 'L') {
                     tv2 += static_cast<time_t>(timezone * 3600);
@@ -537,22 +307,26 @@ public:
                 minute24 = tm2->tm_min;
                 second24 = tm2->tm_sec;
             } else {
+                // GPS / simulation based
                 double t = value1;
                 if (tz == 'L') {
                     t += timezone * 3600;
                 }
-                if (t >= 86400) t -= 86400;
-                if (t < 0) t += 86400;
+                if (t >= 86400)
+                    t -= 86400;
+                if (t < 0)
+                    t += 86400;
                 hour24 = static_cast<int>(t / 3600.0);
                 int rest = static_cast<int>(t) - hour24 * 3600;
                 minute24 = rest / 60;
                 second24 = rest % 60;
             }
 
-            char buf[9]; // "HH:MM:SS"
+            char buf[9]; // "HH:MM:SS" + '\0'
             snprintf(buf, sizeof(buf), "%02d:%02d:%02d", hour24, minute24, second24);
             String timeStr = String(buf);
 
+            // Clear central area and draw large digital time
             getdisplay().fillRect(0, 110, getdisplay().width(), 80, commonData->bgcolor);
 
             getdisplay().setFont(&DSEG7Classic_BoldItalic60pt7b);
@@ -562,11 +336,12 @@ public:
             getdisplay().getTextBounds(timeStr, 0, 0, &x1b, &y1b, &wb, &hb);
 
             int16_t x = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(wb)) / 2;
-            int16_t y = 150 + hb / 2;
+            int16_t y = 150 + hb / 2; // vertically around center (y=150)
 
             getdisplay().setCursor(x, y);
             getdisplay().print(timeStr);
 
+            // Small indicators inside the digital area
             getdisplay().setFont(&Ubuntu_Bold8pt8b);
             getdisplay().setCursor(180, 110);
             if (holdvalues == false) {
@@ -583,7 +358,7 @@ public:
             }
 
         } else {
-            // ANALOG CLOCK MODE (mode == 'A')
+            // Analog clock mode (A/T) - original drawing
 
             int rInstrument = 110;     // Radius of clock
             float pi = 3.141592;
@@ -687,7 +462,7 @@ public:
             if (hour > 12) {
                 hour -= 12.0;
             }
-            LOG_DEBUG(GwLog::DEBUG, "... PageClock, value1: %f hour: %f minute:%f", value1, hour, minute);
+            LOG_DEBUG(GwLog::DEBUG, "... PageClock2, value1: %f hour: %f minute:%f", value1, hour, minute);
 
             // Draw hour pointer
             float startwidth = 8;       // Start width of pointer
@@ -750,19 +525,9 @@ public:
     };
 };
 
-// Static member definitions
-bool PageClock::timerInitialized = false;
-bool PageClock::timerRunning = false;
-int PageClock::timerHours = 0;
-int PageClock::timerMinutes = 0;
-int PageClock::timerSeconds = 0;
-int PageClock::selectedField = 0;
-bool PageClock::showSelectionMarker = true;
-time_t PageClock::timerEndEpoch = 0;
-
 static Page* createPage(CommonData& common)
 {
-    return new PageClock(common);
+    return new PageClock2(common);
 }
 /**
  * with the code below we make this page known to the PageTask
@@ -771,12 +536,12 @@ static Page* createPage(CommonData& common)
  * we provide the number of user parameters we expect (0 here)
  * and we provide the names of the fixed values we need
  */
-PageDescription registerPageClock(
-    "Clock",             // Page name
-    createPage,          // Action
-    0,                   // Number of bus values depends on selection in Web configuration
+PageDescription registerPageClock2(
+    "Clock2",            // Page name
+    createPage,         // Action
+    0,                  // Number of bus values depends on selection in Web configuration
     {"GPST", "GPSD", "HDOP"},   // Bus values we need in the page
-    true                 // Show display header on/off
+    true                // Show display header on/off
 );
 
 #endif

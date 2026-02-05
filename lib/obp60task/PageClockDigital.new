@@ -1,0 +1,224 @@
+#if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
+
+#include "Pagedata.h"
+#include "OBP60Extensions.h"
+
+/**
+ * Simple digital clock page.
+ *
+ * - Shows system time as large digital value in the center
+ * - Uses same data sources and configuration as PageClock (GPS / RTC, time zone)
+ * - Keys:
+ *   K1: toggle time source (GPS / RTC)
+ *   K5: toggle time zone (Local / UTC)
+ *   K11: keylock
+ */
+class PageClockDigital : public Page
+{
+    bool simulation = false;
+    int simtime = 0;
+    char source;      // time source (R)TC | (G)PS
+    char tz = 'L';    // time zone (L)ocal | (U)TC
+    double timezone = 0.0;
+
+public:
+    PageClockDigital(CommonData& common)
+    {
+        commonData = &common;
+        common.logger->logDebug(GwLog::LOG, "Instantiate PageClockDigital");
+
+        simulation = common.config->getBool(common.config->useSimuData);
+        timezone = common.config->getString(common.config->timeZone).toDouble();
+
+#ifdef BOARD_OBP60S3
+        source = 'G'; // default to GPS time on OBP60
+#endif
+#ifdef BOARD_OBP40S3
+        source = 'R'; // default to RTC time on OBP40
+#endif
+        simtime = 38160; // time value 11:36 for simulation (seconds)
+    }
+
+    virtual void setupKeys()
+    {
+        Page::setupKeys();
+        commonData->keydata[0].label = "SRC";
+        commonData->keydata[4].label = "TZ";
+    }
+
+    // Key functions
+    virtual int handleKey(int key)
+    {
+        // Time source
+        if (key == 1) {
+            switch (source) {
+            case 'G':
+                source = 'R';
+                break;
+            case 'R':
+                source = 'G';
+                break;
+            default:
+                source = 'G';
+                break;
+            }
+            return 0;
+        }
+
+        // Time zone: Local / UTC
+        if (key == 5) {
+            switch (tz) {
+            case 'L':
+                tz = 'U';
+                break;
+            case 'U':
+                tz = 'L';
+                break;
+            default:
+                tz = 'L';
+                break;
+            }
+            return 0;
+        }
+
+        // Keylock function
+        if (key == 11) { // Code for keylock
+            commonData->keylock = !commonData->keylock;
+            return 0; // Commit the key
+        }
+        return key;
+    }
+
+    int displayPage(PageData& pageData)
+    {
+        GwConfigHandler* config = commonData->config;
+
+        static String svalueTimeOld = "";
+        static String svalueDateOld = "";
+
+        // Get config data
+        bool holdvalues = config->getBool(config->holdvalues);
+        String flashLED = config->getString(config->flashLED);
+
+        // Get boat values for GPS time and date (same as PageClock)
+        if (pageData.values.size() < 2) {
+            return PAGE_OK;
+        }
+
+        GwApi::BoatValue* bvalueTime = pageData.values[0];
+        GwApi::BoatValue* bvalueDate = pageData.values[1];
+
+        if (bvalueTime == nullptr || bvalueDate == nullptr) {
+            return PAGE_OK;
+        }
+
+        double valueTime = 0;
+        if (!simulation) {
+            valueTime = bvalueTime->value; // Value as double in SI unit (seconds)
+        } else {
+            valueTime = simtime++; // Simulation data
+        }
+        bool validTime = bvalueTime->valid;
+        String svalueTime = formatValue(bvalueTime, *commonData).svalue; // formatted time string
+        if (validTime) {
+            svalueTimeOld = svalueTime; // Save old value
+        }
+
+        bool validDate = bvalueDate->valid;
+        String svalueDate = formatValue(bvalueDate, *commonData).svalue; // formatted date string
+        if (validDate) {
+            svalueDateOld = svalueDate; // Save old value
+        }
+
+        // Optical warning by limit violation (unused)
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+
+        // Draw page
+        //***********************************************************
+
+        // Set display in partial refresh mode
+        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        getdisplay().setTextColor(commonData->fgcolor);
+
+        // Build time string depending on source and configuration
+        String timeStr = "---";
+
+        if (!holdvalues) {
+            if (source == 'G') {
+                // GPS value as formatted by formatter
+                timeStr = svalueTime;
+            } else if (commonData->data.rtcValid) {
+                // RTC value
+                time_t tv = mktime(&commonData->data.rtcTime);
+                if (tz == 'L') {
+                    tv += static_cast<time_t>(timezone * 3600);
+                }
+                struct tm* local_tm = localtime(&tv);
+                timeStr = formatTime('s', local_tm->tm_hour, local_tm->tm_min, local_tm->tm_sec);
+            }
+        } else {
+            timeStr = svalueTimeOld;
+        }
+
+        // Clear central area and draw large digital time
+        getdisplay().fillRect(0, 80, getdisplay().width(), 140, commonData->bgcolor);
+
+        getdisplay().setFont(&DSEG7Classic_BoldItalic60pt7b);
+
+        int16_t x1, y1;
+        uint16_t w, h;
+        getdisplay().getTextBounds(timeStr, 0, 0, &x1, &y1, &w, &h);
+
+        int16_t x = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(w)) / 2;
+        int16_t y = (static_cast<int16_t>(getdisplay().height()) + static_cast<int16_t>(h)) / 2;
+
+        getdisplay().setCursor(x, y);
+        getdisplay().print(timeStr);
+
+        // Show date in the upper left corner
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
+        getdisplay().setCursor(10, 40);
+        getdisplay().print("Date");
+
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        getdisplay().setCursor(10, 60);
+        if (!holdvalues) {
+            getdisplay().print(svalueDate);
+        } else {
+            getdisplay().print(svalueDateOld);
+        }
+
+        // Show small labels for source and timezone in the lower right corner
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        getdisplay().setCursor(getdisplay().width() - 80, getdisplay().height() - 40);
+        getdisplay().print(source == 'G' ? "GPS" : "RTC");
+
+        getdisplay().setCursor(getdisplay().width() - 80, getdisplay().height() - 20);
+        getdisplay().print(tz == 'L' ? "LOC" : "UTC");
+
+        return PAGE_UPDATE;
+    };
+};
+
+static Page* createPage(CommonData& common)
+{
+    return new PageClockDigital(common);
+}
+
+/**
+ * Register page so it can be selected in the configuration.
+ * Uses the same fixed values as PageClock.
+ */
+PageDescription registerPageClockDigital(
+    "ClockDigital",                 // Page name
+    createPage,                     // Action
+    0,                              // Number of user parameters
+    {"GPST", "GPSD", "HDOP"},       // Bus values we need in the page
+    true                            // Show display header on/off
+);
+
+#endif
+

@@ -4,16 +4,10 @@
 #include "OBP60Extensions.h"
 
 /*
- * PageClock: Clock page with
+ * PageClock3: Clock page with
  *  - Analog mode  (mode == 'A')
  *  - Digital mode (mode == 'D')
  *  - Countdown timer mode (mode == 'T')
- *  - Keys in mode analog and digital clock:
- *      K1: MODE (A/D/T)
- *      K2: POS  (select field: HH / MM / SS)
- *      K3: 
- *      K4: 
- *      K5: TZ  (Local/UTC)
  *
  * Timer mode:
  *  - Format HH:MM:SS (24h, leading zeros)
@@ -29,7 +23,7 @@
  *    (on re-entry, remaining time is recalculated from RTC)
  */
 
-class PageClock : public Page
+class PageClock3 : public Page
 {
     bool simulation = false;
     int simtime;
@@ -106,10 +100,10 @@ class PageClock : public Page
     }
 
 public:
-    PageClock(CommonData& common)
+    PageClock3(CommonData& common)
     {
         commonData = &common;
-        common.logger->logDebug(GwLog::LOG, "Instantiate PageClock");
+        common.logger->logDebug(GwLog::LOG, "Instantiate PageClock3");
         simulation = common.config->getBool(common.config->useSimuData);
         timezone = common.config->getString(common.config->timeZone).toDouble();
         homelat = common.config->getString(common.config->homeLAT).toDouble();
@@ -335,7 +329,7 @@ public:
 
         // Logging boat values
         if (bvalue1 == NULL) return PAGE_OK;
-        LOG_DEBUG(GwLog::LOG, "Drawing at PageClock, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
+        LOG_DEBUG(GwLog::LOG, "Drawing at PageClock3, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
 
         // Draw page
         //***********************************************************
@@ -687,7 +681,7 @@ public:
             if (hour > 12) {
                 hour -= 12.0;
             }
-            LOG_DEBUG(GwLog::DEBUG, "... PageClock, value1: %f hour: %f minute:%f", value1, hour, minute);
+            LOG_DEBUG(GwLog::DEBUG, "... PageClock3, value1: %f hour: %f minute:%f", value1, hour, minute);
 
             // Draw hour pointer
             float startwidth = 8;       // Start width of pointer
@@ -751,18 +745,18 @@ public:
 };
 
 // Static member definitions
-bool PageClock::timerInitialized = false;
-bool PageClock::timerRunning = false;
-int PageClock::timerHours = 0;
-int PageClock::timerMinutes = 0;
-int PageClock::timerSeconds = 0;
-int PageClock::selectedField = 0;
-bool PageClock::showSelectionMarker = true;
-time_t PageClock::timerEndEpoch = 0;
+bool PageClock3::timerInitialized = false;
+bool PageClock3::timerRunning = false;
+int PageClock3::timerHours = 0;
+int PageClock3::timerMinutes = 0;
+int PageClock3::timerSeconds = 0;
+int PageClock3::selectedField = 0;
+bool PageClock3::showSelectionMarker = true;
+time_t PageClock3::timerEndEpoch = 0;
 
 static Page* createPage(CommonData& common)
 {
-    return new PageClock(common);
+    return new PageClock3(common);
 }
 /**
  * with the code below we make this page known to the PageTask
@@ -771,8 +765,8 @@ static Page* createPage(CommonData& common)
  * we provide the number of user parameters we expect (0 here)
  * and we provide the names of the fixed values we need
  */
-PageDescription registerPageClock(
-    "Clock",             // Page name
+PageDescription registerPageClock3(
+    "Clock3",            // Page name
     createPage,          // Action
     0,                   // Number of bus values depends on selection in Web configuration
     {"GPST", "GPSD", "HDOP"},   // Bus values we need in the page
