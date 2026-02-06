@@ -184,10 +184,16 @@ public:
                 incrementSelected();
                 return 0;
             }
+            if (key == 3 && timerRunning) { // No action if timer running
+                return 0;
+            }
 
             // - (K4): decrement selected field (only if timer not running)
             if (key == 4 && !timerRunning) {
                 decrementSelected();
+                return 0;
+            }
+            if (key == 4 && timerRunning) { // No action if timer running
                 return 0;
             }
 
@@ -366,10 +372,10 @@ public:
                 struct tm rtcCopy = commonData->data.rtcTime;
                 time_t nowEpoch = mktime(&rtcCopy);
                 time_t remaining = timerEndEpoch - nowEpoch;
-                if(remaining <= 5){
-                    // Short buzzer alarm (100% power)
+                if(remaining <= 5 && remaining != 0){
+                    // Short pre buzzer alarm (100% power)
                     setBuzzerPower(100);
-                    buzzer(TONE4, 75);
+                    buzzer(TONE2, 75);
                     setBuzzerPower(config->getInt(config->buzzerPower));
                 }
                 if (remaining <= 0) {
@@ -378,7 +384,7 @@ public:
                     commonData->keydata[4].label = "START";
                     // Buzzer alarm (100% power)
                     setBuzzerPower(100);
-                    buzzer(TONE4, 800);
+                    buzzer(TONE2, 800);
                     setBuzzerPower(config->getInt(config->buzzerPower));
 
                     // When countdown is finished, restore the initial start time
@@ -492,20 +498,21 @@ public:
             int16_t x = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(wb)) / 2;
             int16_t y = 150 + hb / 2;
 
-            getdisplay().setCursor(x, y);
+            //getdisplay().setCursor(x, y);
+            getdisplay().setCursor(47, y);
             getdisplay().print(timeStr); // Display actual time
 
             // Small indicators: timezone and source
             getdisplay().setFont(&Ubuntu_Bold8pt8b);
 
-            getdisplay().setCursor(x, 110);
+            getdisplay().setCursor(47, 110);
             if (source == 'G') {
                 getdisplay().print("GPS");
             } else {
                 getdisplay().print("RTC");
             }
 
-            getdisplay().setCursor(x + 40, 110);
+            getdisplay().setCursor(47 + 40, 110);
             if (holdvalues == false) {
                 getdisplay().print(tz == 'L' ? "LOT" : "UTC");
             } else {
