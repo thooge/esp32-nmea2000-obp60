@@ -137,7 +137,7 @@ public:
             commonData->keydata[1].label = "POS";
             commonData->keydata[2].label = "+";
             commonData->keydata[3].label = "-";
-            commonData->keydata[4].label = "RUN";
+            commonData->keydata[4].label = "START";
         } else {
             // Clock modes: like original
             commonData->keydata[0].label = "MODE";
@@ -362,7 +362,7 @@ public:
             int dispS = timerSeconds;
 
             // Update remaining time if timer is running (based on RTC)
-                if (timerRunning && commonData->data.rtcValid) {
+            if (timerRunning && commonData->data.rtcValid) {
                 struct tm rtcCopy = commonData->data.rtcTime;
                 time_t nowEpoch = mktime(&rtcCopy);
                 time_t remaining = timerEndEpoch - nowEpoch;
@@ -375,7 +375,7 @@ public:
                 if (remaining <= 0) {
                     remaining = 0;
                     timerRunning = false;
-                    commonData->keydata[4].label = "RUN";
+                    commonData->keydata[4].label = "START";
                     // Buzzer alarm (100% power)
                     setBuzzerPower(100);
                     buzzer(TONE4, 800);
@@ -387,7 +387,7 @@ public:
                     timerSeconds = timerStartSeconds;
                 }
                 else{
-                    commonData->keydata[4].label = "STOP";
+                    commonData->keydata[4].label = "RESET";
                 }
                 int rem = static_cast<int>(remaining);
                 dispH = rem / 3600;
