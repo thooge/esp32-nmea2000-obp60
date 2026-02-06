@@ -51,7 +51,7 @@ typedef struct{
   double rotationAngle = 0;     // Rotation angle in radiant
   bool validRotAngle = false;   // Valid flag magnet present for rotation sensor
   struct tm rtcTime;            // UTC time from internal RTC
-  bool rtcValid = false;
+  bool rtcValid = false;        // Internal RTC chip
   int sunsetHour = 0;
   int sunsetMinute = 0;
   int sunriseHour = 0;

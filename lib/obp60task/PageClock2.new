@@ -1,0 +1,548 @@
+#if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
+
+#include "Pagedata.h"
+#include "OBP60Extensions.h"
+
+/*
+ * Variant of PageClock with switchable analog / digital clock display.
+ * mode: (A)nalog | (D)igital | race (T)imer (T not implemented yet, falls back to analog)
+ */
+
+class PageClock2 : public Page
+{
+    bool simulation = false;
+    int simtime;
+    bool keylock = false;
+#ifdef BOARD_OBP60S3
+    char source = 'G'; // time source (R)TC | (G)PS | (N)TP
+#endif
+#ifdef BOARD_OBP40S3
+    char source = 'R'; // time source (R)TC | (G)PS | (N)TP
+#endif
+    char mode = 'A';   // display mode (A)nalog | (D)igital | race (T)imer
+    char tz = 'L';     // time zone (L)ocal | (U)TC
+    double timezone = 0; // there are timezones with non int offsets, e.g. 5.5 or 5.75
+    double homelat;
+    double homelon;
+    bool homevalid = false; // homelat and homelon are valid
+
+public:
+    PageClock2(CommonData& common)
+    {
+        commonData = &common;
+        common.logger->logDebug(GwLog::LOG, "Instantiate PageClock2");
+        simulation = common.config->getBool(common.config->useSimuData);
+        timezone = common.config->getString(common.config->timeZone).toDouble();
+        homelat = common.config->getString(common.config->homeLAT).toDouble();
+        homelon = common.config->getString(common.config->homeLON).toDouble();
+        homevalid = homelat >= -180.0 and homelat <= 180 and homelon >= -90.0 and homelon <= 90.0;
+        simtime = 38160; // time value 11:36
+    }
+
+    virtual void setupKeys()
+    {
+        Page::setupKeys();
+        commonData->keydata[0].label = "SRC";
+        commonData->keydata[1].label = "MODE";
+        commonData->keydata[4].label = "TZ";
+    }
+
+    // Key functions
+    virtual int handleKey(int key)
+    {
+        // Time source
+        if (key == 1) {
+            switch (source) {
+            case 'G':
+                source = 'R';
+                break;
+            case 'R':
+                source = 'G';
+                break;
+            default:
+                source = 'G';
+                break;
+            }
+            return 0;
+        }
+        if (key == 2) {
+            switch (mode) {
+            case 'A':
+                mode = 'D';
+                break;
+            case 'D':
+                mode = 'T';
+                break;
+            case 'T':
+                mode = 'A';
+                break;
+            default:
+                mode = 'A';
+                break;
+            }
+            return 0;
+        }
+        // Time zone: Local / UTC
+        if (key == 5) {
+            switch (tz) {
+            case 'L':
+                tz = 'U';
+                break;
+            case 'U':
+                tz = 'L';
+                break;
+            default:
+                tz = 'L';
+                break;
+            }
+            return 0;
+        }
+
+        // Keylock function
+        if (key == 11) {          // Code for keylock
+            keylock = !keylock;   // Toggle keylock
+            return 0;             // Commit the key
+        }
+        return key;
+    }
+
+    int displayPage(PageData& pageData)
+    {
+        GwConfigHandler* config = commonData->config;
+
+        static String svalue1old = "";
+        static String unit1old = "";
+        static String svalue2old = "";
+        static String unit2old = "";
+        static String svalue3old = "";
+        static String unit3old = "";
+
+        static String svalue5old = "";
+        static String svalue6old = "";
+
+        double value1 = 0;
+        double value2 = 0;
+        double value3 = 0;
+
+        // Get config data
+        String lengthformat = config->getString(config->lengthFormat);
+        String dateformat = config->getString(config->dateFormat);
+        bool holdvalues = config->getBool(config->holdvalues);
+        String flashLED = config->getString(config->flashLED);
+        String backlightMode = config->getString(config->backlight);
+
+        // Get boat values for GPS time
+        GwApi::BoatValue* bvalue1 = pageData.values[0]; // First element in list (only one value by PageOneValue)
+        String name1 = bvalue1->getName().c_str();      // Value name
+        name1 = name1.substring(0, 6);                  // String length limit for value name
+        if (simulation == false) {
+            value1 = bvalue1->value;                    // Value as double in SI unit
+        } else {
+            value1 = simtime++;                         // Simulation data for time value 11:36 in seconds
+        }                                               // Other simulation data see OBP60Formatter.cpp
+        bool valid1 = bvalue1->valid;                   // Valid information
+        String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit1 = formatValue(bvalue1, *commonData).unit;        // Unit of value
+        if (valid1 == true) {
+            svalue1old = svalue1;                       // Save old value
+            unit1old = unit1;                           // Save old unit
+        }
+
+        // Get boat values for GPS date
+        GwApi::BoatValue* bvalue2 = pageData.values[1]; // Second element in list (only one value by PageOneValue)
+        String name2 = bvalue2->getName().c_str();      // Value name
+        name2 = name2.substring(0, 6);                  // String length limit for value name
+        value2 = bvalue2->value;                        // Value as double in SI unit
+        bool valid2 = bvalue2->valid;                   // Valid information
+        String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
+        if (valid2 == true) {
+            svalue2old = svalue2;                       // Save old value
+            unit2old = unit2;                           // Save old unit
+        }
+
+        // Get boat values for HDOP date
+        GwApi::BoatValue* bvalue3 = pageData.values[2]; // Third element in list (only one value by PageOneValue)
+        String name3 = bvalue3->getName().c_str();      // Value name
+        name3 = name3.substring(0, 6);                  // String length limit for value name
+        value3 = bvalue3->value;                        // Value as double in SI unit
+        bool valid3 = bvalue3->valid;                   // Valid information
+        String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
+        String unit3 = formatValue(bvalue3, *commonData).unit;        // Unit of value
+        if (valid3 == true) {
+            svalue3old = svalue3;                       // Save old value
+            unit3old = unit3;                           // Save old unit
+        }
+
+        // Optical warning by limit violation (unused)
+        if (String(flashLED) == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+
+        // Logging boat values
+        if (bvalue1 == NULL)
+            return PAGE_OK; // WTF why this statement?
+        LOG_DEBUG(GwLog::LOG, "Drawing at PageClock2, %s:%f,  %s:%f", name1.c_str(), value1, name2.c_str(), value2);
+
+        // Draw page
+        //***********************************************************
+
+        // Set display in partial refresh mode
+        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+
+        getdisplay().setTextColor(commonData->fgcolor);
+
+        time_t tv = mktime(&commonData->data.rtcTime) + timezone * 3600;
+        struct tm* local_tm = localtime(&tv);
+
+        // Show values GPS date
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        getdisplay().setCursor(10, 65);
+        if (holdvalues == false) {
+            if (source == 'G') {
+                // GPS value
+                getdisplay().print(svalue2);
+            } else if (commonData->data.rtcValid) {
+                // RTC value
+                if (tz == 'L') {
+                    getdisplay().print(formatDate(dateformat, local_tm->tm_year + 1900, local_tm->tm_mon + 1, local_tm->tm_mday));
+                } else {
+                    getdisplay().print(formatDate(dateformat, commonData->data.rtcTime.tm_year + 1900, commonData->data.rtcTime.tm_mon + 1, commonData->data.rtcTime.tm_mday));
+                }
+            } else {
+                getdisplay().print("---");
+            }
+        } else {
+            getdisplay().print(svalue2old);
+        }
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
+        getdisplay().setCursor(10, 95);
+        getdisplay().print("Date");                          // Name
+
+        // Horizintal separator left
+        getdisplay().fillRect(0, 149, 60, 3, commonData->fgcolor);
+
+        // Show values GPS time (small text bottom left, same as original)
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        getdisplay().setCursor(10, 250);
+        if (holdvalues == false) {
+            if (source == 'G') {
+                getdisplay().print(svalue1); // Value
+            } else if (commonData->data.rtcValid) {
+                if (tz == 'L') {
+                    getdisplay().print(formatTime('s', local_tm->tm_hour, local_tm->tm_min, local_tm->tm_sec));
+                } else {
+                    getdisplay().print(formatTime('s', commonData->data.rtcTime.tm_hour, commonData->data.rtcTime.tm_min, commonData->data.rtcTime.tm_sec));
+                }
+            } else {
+                getdisplay().print("---");
+            }
+        } else {
+            getdisplay().print(svalue1old);
+        }
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
+        getdisplay().setCursor(10, 220);
+        getdisplay().print("Time");                          // Name
+
+        // Show values sunrise
+        String sunrise = "---";
+        if ((valid1 and valid2 and valid3 == true) or (homevalid and commonData->data.rtcValid)) {
+            sunrise = String(commonData->sundata.sunriseHour) + ":" + String(commonData->sundata.sunriseMinute + 100).substring(1);
+            svalue5old = sunrise;
+        } else if (simulation) {
+            sunrise = String("06:42");
+        }
+
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        getdisplay().setCursor(335, 65);
+        if (holdvalues == false)
+            getdisplay().print(sunrise); // Value
+        else
+            getdisplay().print(svalue5old);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
+        getdisplay().setCursor(335, 95);
+        getdisplay().print("SunR");                          // Name
+
+        // Horizintal separator right
+        getdisplay().fillRect(340, 149, 80, 3, commonData->fgcolor);
+
+        // Show values sunset
+        String sunset = "---";
+        if ((valid1 and valid2 and valid3 == true) or (homevalid and commonData->data.rtcValid)) {
+            sunset = String(commonData->sundata.sunsetHour) + ":" + String(commonData->sundata.sunsetMinute + 100).substring(1);
+            svalue6old = sunset;
+        } else if (simulation) {
+            sunset = String("21:03");
+        }
+
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+        getdisplay().setCursor(335, 250);
+        if (holdvalues == false)
+            getdisplay().print(sunset);  // Value
+        else
+            getdisplay().print(svalue6old);
+        getdisplay().setFont(&Ubuntu_Bold12pt8b);
+        getdisplay().setCursor(335, 220);
+        getdisplay().print("SunS");                          // Name
+
+        //*******************************************************************************************
+
+        if (mode == 'D') {
+            // Digital clock mode: large 7-segment time centered on display
+
+            // Determine current time in hours/minutes/seconds (24h)
+            int hour24 = 0;
+            int minute24 = 0;
+            int second24 = 0;
+
+            if (source == 'R' && commonData->data.rtcValid) {
+                // RTC based
+                time_t tv2 = mktime(&commonData->data.rtcTime);
+                if (tz == 'L') {
+                    tv2 += static_cast<time_t>(timezone * 3600);
+                }
+                struct tm* tm2 = localtime(&tv2);
+                hour24 = tm2->tm_hour;
+                minute24 = tm2->tm_min;
+                second24 = tm2->tm_sec;
+            } else {
+                // GPS / simulation based
+                double t = value1;
+                if (tz == 'L') {
+                    t += timezone * 3600;
+                }
+                if (t >= 86400)
+                    t -= 86400;
+                if (t < 0)
+                    t += 86400;
+                hour24 = static_cast<int>(t / 3600.0);
+                int rest = static_cast<int>(t) - hour24 * 3600;
+                minute24 = rest / 60;
+                second24 = rest % 60;
+            }
+
+            char buf[9]; // "HH:MM:SS" + '\0'
+            snprintf(buf, sizeof(buf), "%02d:%02d:%02d", hour24, minute24, second24);
+            String timeStr = String(buf);
+
+            // Clear central area and draw large digital time
+            getdisplay().fillRect(0, 110, getdisplay().width(), 80, commonData->bgcolor);
+
+            getdisplay().setFont(&DSEG7Classic_BoldItalic60pt7b);
+
+            int16_t x1b, y1b;
+            uint16_t wb, hb;
+            getdisplay().getTextBounds(timeStr, 0, 0, &x1b, &y1b, &wb, &hb);
+
+            int16_t x = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(wb)) / 2;
+            int16_t y = 150 + hb / 2; // vertically around center (y=150)
+
+            getdisplay().setCursor(x, y);
+            getdisplay().print(timeStr);
+
+            // Small indicators inside the digital area
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
+            getdisplay().setCursor(180, 110);
+            if (holdvalues == false) {
+                getdisplay().print(tz == 'L' ? "LOT" : "UTC");
+            } else {
+                getdisplay().print(unit2old); // date unit
+            }
+
+            getdisplay().setCursor(185, 190);
+            if (source == 'G') {
+                getdisplay().print("GPS");
+            } else {
+                getdisplay().print("RTC");
+            }
+
+        } else {
+            // Analog clock mode (A/T) - original drawing
+
+            int rInstrument = 110;     // Radius of clock
+            float pi = 3.141592;
+
+            getdisplay().fillCircle(200, 150, rInstrument + 10, commonData->fgcolor);    // Outer circle
+            getdisplay().fillCircle(200, 150, rInstrument + 7, commonData->bgcolor);     // Outer circle
+
+            for (int i = 0; i < 360; i = i + 1)
+            {
+                // Scaling values
+                float x = 200 + (rInstrument - 30) * sin(i / 180.0 * pi);  //  x-coordinate dots
+                float y = 150 - (rInstrument - 30) * cos(i / 180.0 * pi);  //  y-coordinate dots
+                const char* ii = "";
+                switch (i)
+                {
+                case 0: ii = "12"; break;
+                case 90: ii = "3"; break;
+                case 180: ii = "6"; break;
+                case 270: ii = "9"; break;
+                default: break;
+                }
+
+                // Print text centered on position x, y
+                int16_t x1c, y1c;     // Return values of getTextBounds
+                uint16_t wc, hc;      // Return values of getTextBounds
+                getdisplay().getTextBounds(ii, int(x), int(y), &x1c, &y1c, &wc, &hc); // Calc width of new string
+                getdisplay().setCursor(x - wc / 2, y + hc / 2);
+                if (i % 90 == 0) {
+                    getdisplay().setFont(&Ubuntu_Bold12pt8b);
+                    getdisplay().print(ii);
+                }
+
+                // Draw sub scale with dots
+                float sinx = 0;
+                float cosx = 0;
+                if (i % 6 == 0) {
+                    float x1d = 200 + rInstrument * sin(i / 180.0 * pi);
+                    float y1d = 150 - rInstrument * cos(i / 180.0 * pi);
+                    getdisplay().fillCircle((int)x1d, (int)y1d, 2, commonData->fgcolor);
+                    sinx = sin(i / 180.0 * pi);
+                    cosx = cos(i / 180.0 * pi);
+                }
+
+                // Draw sub scale with lines (two triangles)
+                if (i % 30 == 0) {
+                    float dx = 2;   // Line thickness = 2*dx+1
+                    float xx1 = -dx;
+                    float xx2 = +dx;
+                    float yy1 = -(rInstrument - 10);
+                    float yy2 = -(rInstrument + 10);
+                    getdisplay().fillTriangle(200 + (int)(cosx * xx1 - sinx * yy1), 150 + (int)(sinx * xx1 + cosx * yy1),
+                        200 + (int)(cosx * xx2 - sinx * yy1), 150 + (int)(sinx * xx2 + cosx * yy1),
+                        200 + (int)(cosx * xx1 - sinx * yy2), 150 + (int)(sinx * xx1 + cosx * yy2), commonData->fgcolor);
+                    getdisplay().fillTriangle(200 + (int)(cosx * xx2 - sinx * yy1), 150 + (int)(sinx * xx2 + cosx * yy1),
+                        200 + (int)(cosx * xx1 - sinx * yy2), 150 + (int)(sinx * xx1 + cosx * yy2),
+                        200 + (int)(cosx * xx2 - sinx * yy2), 150 + (int)(sinx * xx2 + cosx * yy2), commonData->fgcolor);
+                }
+            }
+
+            // Print Unit in clock
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
+            getdisplay().setCursor(175, 110);
+            if (holdvalues == false) {
+                getdisplay().print(tz == 'L' ? "LOT" : "UTC");
+            } else {
+                getdisplay().print(unit2old); // date unit
+            }
+
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
+            getdisplay().setCursor(185, 190);
+            if (source == 'G') {
+                getdisplay().print("GPS");
+            } else {
+                getdisplay().print("RTC");
+            }
+
+            // Clock values
+            double hour = 0;
+            double minute = 0;
+            if (source == 'R') {
+                if (tz == 'L') {
+                    time_t tv2 = mktime(&commonData->data.rtcTime) + timezone * 3600;
+                    struct tm* local_tm2 = localtime(&tv2);
+                    minute = local_tm2->tm_min;
+                    hour = local_tm2->tm_hour;
+                } else {
+                    minute = commonData->data.rtcTime.tm_min;
+                    hour = commonData->data.rtcTime.tm_hour;
+                }
+                hour += minute / 60;
+            } else {
+                if (tz == 'L') {
+                    value1 += timezone * 3600;
+                }
+                if (value1 > 86400) { value1 -= 86400; }
+                if (value1 < 0) { value1 += 86400; }
+                hour = (value1 / 3600.0);
+                // minute = (hour - int(hour)) * 3600.0 / 60.0;        // Analog minute pointer smooth moving
+                minute = int((hour - int(hour)) * 3600.0 / 60.0);   // Jumping minute pointer from minute to minute
+            }
+            if (hour > 12) {
+                hour -= 12.0;
+            }
+            LOG_DEBUG(GwLog::DEBUG, "... PageClock2, value1: %f hour: %f minute:%f", value1, hour, minute);
+
+            // Draw hour pointer
+            float startwidth = 8;       // Start width of pointer
+            if (valid1 == true || (source == 'R' && commonData->data.rtcValid) || holdvalues == true || simulation == true) {
+                float sinx = sin(hour * 30.0 * pi / 180);     // Hour
+                float cosx = cos(hour * 30.0 * pi / 180);
+                // Normal pointer
+                // Pointer as triangle with center base 2*width
+                float xx1 = -startwidth;
+                float xx2 = startwidth;
+                float yy1 = -startwidth;
+                float yy2 = -(rInstrument * 0.5);
+                getdisplay().fillTriangle(200 + (int)(cosx * xx1 - sinx * yy1), 150 + (int)(sinx * xx1 + cosx * yy1),
+                    200 + (int)(cosx * xx2 - sinx * yy1), 150 + (int)(sinx * xx2 + cosx * yy1),
+                    200 + (int)(cosx * 0 - sinx * yy2), 150 + (int)(sinx * 0 + cosx * yy2), commonData->fgcolor);
+                // Inverted pointer
+                // Pointer as triangle with center base 2*width
+                float endwidth = 2;         // End width of pointer
+                float ix1 = endwidth;
+                float ix2 = -endwidth;
+                float iy1 = -(rInstrument * 0.5);
+                float iy2 = -endwidth;
+                getdisplay().fillTriangle(200 + (int)(cosx * ix1 - sinx * iy1), 150 + (int)(sinx * ix1 + cosx * iy1),
+                    200 + (int)(cosx * ix2 - sinx * iy1), 150 + (int)(sinx * ix2 + cosx * iy1),
+                    200 + (int)(cosx * 0 - sinx * iy2), 150 + (int)(sinx * 0 + cosx * iy2), commonData->fgcolor);
+            }
+
+            // Draw minute pointer
+            startwidth = 8;       // Start width of pointer
+            if (valid1 == true || (source == 'R' && commonData->data.rtcValid) || holdvalues == true || simulation == true) {
+                float sinx = sin(minute * 6.0 * pi / 180);     // Minute
+                float cosx = cos(minute * 6.0 * pi / 180);
+                // Normal pointer
+                // Pointer as triangle with center base 2*width
+                float xx1 = -startwidth;
+                float xx2 = startwidth;
+                float yy1 = -startwidth;
+                float yy2 = -(rInstrument - 15);
+                getdisplay().fillTriangle(200 + (int)(cosx * xx1 - sinx * yy1), 150 + (int)(sinx * xx1 + cosx * yy1),
+                    200 + (int)(cosx * xx2 - sinx * yy1), 150 + (int)(sinx * xx2 + cosx * yy1),
+                    200 + (int)(cosx * 0 - sinx * yy2), 150 + (int)(sinx * 0 + cosx * yy2), commonData->fgcolor);
+                // Inverted pointer
+                // Pointer as triangle with center base 2*width
+                float endwidth = 2;         // End width of pointer
+                float ix1 = endwidth;
+                float ix2 = -endwidth;
+                float iy1 = -(rInstrument - 15);
+                float iy2 = -endwidth;
+                getdisplay().fillTriangle(200 + (int)(cosx * ix1 - sinx * iy1), 150 + (int)(sinx * ix1 + cosx * iy1),
+                    200 + (int)(cosx * ix2 - sinx * iy1), 150 + (int)(sinx * ix2 + cosx * iy1),
+                    200 + (int)(cosx * 0 - sinx * iy2), 150 + (int)(sinx * 0 + cosx * iy2), commonData->fgcolor);
+            }
+
+            // Center circle
+            getdisplay().fillCircle(200, 150, startwidth + 6, commonData->bgcolor);
+            getdisplay().fillCircle(200, 150, startwidth + 4, commonData->fgcolor);
+        }
+
+        return PAGE_UPDATE;
+    };
+};
+
+static Page* createPage(CommonData& common)
+{
+    return new PageClock2(common);
+}
+/**
+ * with the code below we make this page known to the PageTask
+ * we give it a type (name) that can be selected in the config
+ * we define which function is to be called
+ * we provide the number of user parameters we expect (0 here)
+ * and we provide the names of the fixed values we need
+ */
+PageDescription registerPageClock2(
+    "Clock2",            // Page name
+    createPage,         // Action
+    0,                  // Number of bus values depends on selection in Web configuration
+    {"GPST", "GPSD", "HDOP"},   // Bus values we need in the page
+    true                // Show display header on/off
+);
+
+#endif
+
