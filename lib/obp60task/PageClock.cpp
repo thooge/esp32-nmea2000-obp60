@@ -431,7 +431,8 @@ public:
             int16_t textX = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(wb)) / 2;
             int16_t textY = centerY + hb / 2;
 
-            getdisplay().setCursor(textX, textY);
+            //getdisplay().setCursor(textX, textY);
+            getdisplay().setCursor(47, textY);
             getdisplay().print(timeStr);
 
             // Selection marker (only visible when not running and POS pressed)
@@ -450,8 +451,8 @@ public:
 
             // Page label
             getdisplay().setFont(&Ubuntu_Bold16pt8b);
-            getdisplay().setCursor(80, 70);
-            getdisplay().print("Count Dow Timer");
+            getdisplay().setCursor(65, 70);
+            getdisplay().print("Count Down Timer");
 
         } else if (mode == 'D') {
             // DIGITAL CLOCK MODE: large 7-segment time based on GPS/RTC
