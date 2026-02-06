@@ -35,17 +35,17 @@ class PageClock : public Page
     int simtime;
     bool keylock = false;
 #ifdef BOARD_OBP60S3
-    char source = 'G';  // time source (R)TC | (G)PS | (N)TP
+    char source = 'G';  // Time source (R)TC | (G)PS | (N)TP
 #endif
 #ifdef BOARD_OBP40S3
     char source = 'R';  // time source (R)TC | (G)PS | (N)TP
 #endif
-    char mode = 'A';    // display mode (A)nalog | (D)igital | race (T)imer
-    char tz = 'L';      // time zone (L)ocal | (U)TC
-    double timezone = 0; // there are timezones with non int offsets, e.g. 5.5 or 5.75
+    char mode = 'A';    // Display mode (A)nalog | (D)igital | race (T)imer
+    char tz = 'L';      // Time zone (L)ocal | (U)TC
+    double timezone = 0; // There are timezones with non int offsets, e.g. 5.5 or 5.75
     double homelat;
     double homelon;
-    bool homevalid = false; // homelat and homelon are valid
+    bool homevalid = false; // Homelat and homelon are valid
 
     // Timer state (static so it survives page switches)
     static bool timerInitialized;
@@ -53,9 +53,13 @@ class PageClock : public Page
     static int timerHours;
     static int timerMinutes;
     static int timerSeconds;
+    // Initial timer setting at start (so we can restore it)
+    static int timerStartHours;
+    static int timerStartMinutes;
+    static int timerStartSeconds;
     static int selectedField;       // 0 = hours, 1 = minutes, 2 = seconds
     static bool showSelectionMarker;
-    static time_t timerEndEpoch;    // absolute end time based on RTC
+    static time_t timerEndEpoch;    // Absolute end time based on RTC
 
     void setupTimerDefaults()
     {
@@ -65,16 +69,20 @@ class PageClock : public Page
             timerHours = 0;
             timerMinutes = 0;
             timerSeconds = 0;
+            timerStartHours = 0;
+            timerStartMinutes = 0;
+            timerStartSeconds = 0;
             selectedField = 0;
             showSelectionMarker = true;
             timerEndEpoch = 0;
         }
     }
 
+    // Limiter for overrun settings values
     static int clamp(int value, int minVal, int maxVal)
     {
-        if (value < minVal) return minVal;
-        if (value > maxVal) return maxVal;
+        if (value < minVal) return maxVal;
+        if (value > maxVal) return minVal;
         return value;
     }
 
@@ -189,6 +197,11 @@ public:
                     // Start timer if a non-zero duration is set
                     int total = totalTimerSeconds();
                     if (total > 0 && commonData->data.rtcValid) {
+                        // Remember initial timer setting at start
+                        timerStartHours = timerHours;
+                        timerStartMinutes = timerMinutes;
+                        timerStartSeconds = timerSeconds;
+
                         struct tm rtcCopy = commonData->data.rtcTime;
                         time_t nowEpoch = mktime(&rtcCopy);
                         timerEndEpoch = nowEpoch + total;
@@ -196,18 +209,10 @@ public:
                         showSelectionMarker = false;
                     }
                 } else {
-                    // Stop timer: compute remaining time and keep as new setting
-                    if (commonData->data.rtcValid) {
-                        struct tm rtcCopy = commonData->data.rtcTime;
-                        time_t nowEpoch = mktime(&rtcCopy);
-                        time_t remaining = timerEndEpoch - nowEpoch;
-                        if (remaining < 0) remaining = 0;
-                        int rem = static_cast<int>(remaining);
-                        timerHours = rem / 3600;
-                        rem -= timerHours * 3600;
-                        timerMinutes = rem / 60;
-                        timerSeconds = rem % 60;
-                    }
+                    // Stop timer: restore initial start setting
+                    timerHours = timerStartHours;
+                    timerMinutes = timerStartMinutes;
+                    timerSeconds = timerStartSeconds;
                     timerRunning = false;
                     // marker will become visible again only after POS press
                 }
@@ -261,7 +266,7 @@ public:
         GwLog* logger = commonData->logger;
 
         setupTimerDefaults();
-        setupKeys(); // ensure correct key labels for current mode
+        setupKeys(); // Ensure correct key labels for current mode
 
         static String svalue1old = "";
         static String unit1old = "";
@@ -306,7 +311,7 @@ public:
         String name2 = bvalue2->getName().c_str();      // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
         value2 = bvalue2->value;                        // Value as double in SI unit
-        bool valid2 = bvalue2->valid;                   // Valid information
+        bool valid2 = bvalue2->valid;                   // Valid informationgetdisplay().print("RTC");
         String svalue2 = formatValue(bvalue2, *commonData).svalue;    // Formatted value
         String unit2 = formatValue(bvalue2, *commonData).unit;        // Unit of value
         if (valid2 == true) {
@@ -348,109 +353,41 @@ public:
         time_t tv = mktime(&commonData->data.rtcTime) + timezone * 3600;
         struct tm* local_tm = localtime(&tv);
 
-        // Show values GPS date
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(10, 65);
-        if (holdvalues == false) {
-            if (source == 'G') {
-                // GPS value
-                getdisplay().print(svalue2);
-            } else if (commonData->data.rtcValid) {
-                // RTC value
-                if (tz == 'L') {
-                    getdisplay().print(formatDate(dateformat, local_tm->tm_year + 1900, local_tm->tm_mon + 1, local_tm->tm_mday));
-                } else {
-                    getdisplay().print(formatDate(dateformat, commonData->data.rtcTime.tm_year + 1900, commonData->data.rtcTime.tm_mon + 1, commonData->data.rtcTime.tm_mday));
-                }
-            } else {
-                getdisplay().print("---");
-            }
-        } else {
-            getdisplay().print(svalue2old);
-        }
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(10, 95);
-        getdisplay().print("Date");                          // Name
-
-        // Horizontal separator left
-        getdisplay().fillRect(0, 149, 60, 3, commonData->fgcolor);
-
-        // Show values GPS time (small text bottom left)
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(10, 250);
-        if (holdvalues == false) {
-            if (source == 'G') {
-                getdisplay().print(svalue1); // Value
-            } else if (commonData->data.rtcValid) {
-                if (tz == 'L') {
-                    getdisplay().print(formatTime('s', local_tm->tm_hour, local_tm->tm_min, local_tm->tm_sec));
-                } else {
-                    getdisplay().print(formatTime('s', commonData->data.rtcTime.tm_hour, commonData->data.rtcTime.tm_min, commonData->data.rtcTime.tm_sec));
-                }
-            } else {
-                getdisplay().print("---");
-            }
-        } else {
-            getdisplay().print(svalue1old);
-        }
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(10, 220);
-        getdisplay().print("Time");                          // Name
-
-        // Show values sunrise
-        String sunrise = "---";
-        if ((valid1 and valid2 and valid3 == true) or (homevalid and commonData->data.rtcValid)) {
-            sunrise = String(commonData->sundata.sunriseHour) + ":" + String(commonData->sundata.sunriseMinute + 100).substring(1);
-            svalue5old = sunrise;
-        } else if (simulation) {
-            sunrise = String("06:42");
-        }
-
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(335, 65);
-        if (holdvalues == false) getdisplay().print(sunrise); // Value
-        else getdisplay().print(svalue5old);
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(335, 95);
-        getdisplay().print("SunR");                          // Name
-
-        // Horizontal separator right
-        getdisplay().fillRect(340, 149, 80, 3, commonData->fgcolor);
-
-        // Show values sunset
-        String sunset = "---";
-        if ((valid1 and valid2 and valid3 == true) or (homevalid and commonData->data.rtcValid)) {
-            sunset = String(commonData->sundata.sunsetHour) + ":" + String(commonData->sundata.sunsetMinute + 100).substring(1);
-            svalue6old = sunset;
-        } else if (simulation) {
-            sunset = String("21:03");
-        }
-
-        getdisplay().setFont(&Ubuntu_Bold8pt8b);
-        getdisplay().setCursor(335, 250);
-        if (holdvalues == false) getdisplay().print(sunset);  // Value
-        else getdisplay().print(svalue6old);
-        getdisplay().setFont(&Ubuntu_Bold12pt8b);
-        getdisplay().setCursor(335, 220);
-        getdisplay().print("SunS");                          // Name
-
-        //*******************************************************************************************
-
         if (mode == 'T') {
             // TIMER MODE: countdown timer HH:MM:SS in the center with 7-segment font
+            //************************************************************************
 
             int dispH = timerHours;
             int dispM = timerMinutes;
             int dispS = timerSeconds;
 
             // Update remaining time if timer is running (based on RTC)
-            if (timerRunning && commonData->data.rtcValid) {
+                if (timerRunning && commonData->data.rtcValid) {
                 struct tm rtcCopy = commonData->data.rtcTime;
                 time_t nowEpoch = mktime(&rtcCopy);
                 time_t remaining = timerEndEpoch - nowEpoch;
+                if(remaining <= 5){
+                    // Short buzzer alarm (100% power)
+                    setBuzzerPower(100);
+                    buzzer(TONE4, 75);
+                    setBuzzerPower(config->getInt(config->buzzerPower));
+                }
                 if (remaining <= 0) {
                     remaining = 0;
                     timerRunning = false;
+                    commonData->keydata[4].label = "RUN";
+                    // Buzzer alarm (100% power)
+                    setBuzzerPower(100);
+                    buzzer(TONE4, 800);
+                    setBuzzerPower(config->getInt(config->buzzerPower));
+
+                    // When countdown is finished, restore the initial start time
+                    timerHours = timerStartHours;
+                    timerMinutes = timerStartMinutes;
+                    timerSeconds = timerStartSeconds;
+                }
+                else{
+                    commonData->keydata[4].label = "STOP";
                 }
                 int rem = static_cast<int>(remaining);
                 dispH = rem / 3600;
@@ -493,35 +430,26 @@ public:
 
             // Selection marker (only visible when not running and POS pressed)
             if (!timerRunning && showSelectionMarker) {
-                int16_t selX = baseX;
+                int16_t selX = baseX - 8; // Hours start
                 if (selectedField == 1) {
-                    selX = baseX + wDigit + wColon; // minutes start
+                    selX = baseX + wDigit + wColon; // Minutes start
                 } else if (selectedField == 2) {
-                    selX = baseX + 2 * wDigit + 2 * wColon; // seconds start
+                    selX = baseX + 2 * wDigit + 2 * wColon + 12; // Seconds start
                 }
 
                 int16_t underlineY = centerY + hb / 2 + 5;
-                getdisplay().fillRect(selX, underlineY, wDigit, 6, commonData->fgcolor);
+                //getdisplay().fillRect(selX, underlineY, wDigit, 6, commonData->fgcolor);
+                getdisplay().fillRoundRect(selX, underlineY, wDigit, 6, 2, commonData->fgcolor);
             }
 
-            // Small indicators: timezone and source
-            getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(185, 110);
-            if (holdvalues == false) {
-                getdisplay().print(tz == 'L' ? "LOT" : "UTC");
-            } else {
-                getdisplay().print(unit2old); // date unit
-            }
-
-            getdisplay().setCursor(185, 210);
-            if (source == 'G') {
-                getdisplay().print("GPS");
-            } else {
-                getdisplay().print("RTC");
-            }
+            // Page label
+            getdisplay().setFont(&Ubuntu_Bold16pt8b);
+            getdisplay().setCursor(80, 70);
+            getdisplay().print("Count Dow Timer");
 
         } else if (mode == 'D') {
             // DIGITAL CLOCK MODE: large 7-segment time based on GPS/RTC
+            //**********************************************************
 
             int hour24 = 0;
             int minute24 = 0;
@@ -565,26 +493,120 @@ public:
             int16_t y = 150 + hb / 2;
 
             getdisplay().setCursor(x, y);
-            getdisplay().print(timeStr);
+            getdisplay().print(timeStr); // Display actual time
 
+            // Small indicators: timezone and source
             getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(185, 110);
-            if (holdvalues == false) {
-                getdisplay().print(tz == 'L' ? "LOT" : "UTC");
-            } else {
-                getdisplay().print(unit2old); // date unit
-            }
 
-            getdisplay().setCursor(185, 210);
+            getdisplay().setCursor(x, 110);
             if (source == 'G') {
                 getdisplay().print("GPS");
             } else {
                 getdisplay().print("RTC");
             }
 
+            getdisplay().setCursor(x + 40, 110);
+            if (holdvalues == false) {
+                getdisplay().print(tz == 'L' ? "LOT" : "UTC");
+            } else {
+                getdisplay().print(unit2old); // date unit
+            }
+
+            // Page label
+            getdisplay().setFont(&Ubuntu_Bold16pt8b);
+            getdisplay().setCursor(100, 70);
+            getdisplay().print("Digital Clock");
+
         } else {
             // ANALOG CLOCK MODE (mode == 'A')
+            //********************************
 
+            // Show values GPS date
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
+            getdisplay().setCursor(10, 65);
+            if (holdvalues == false) {
+                if (source == 'G') {
+                    // GPS value
+                    getdisplay().print(svalue2);
+                } else if (commonData->data.rtcValid) {
+                    // RTC value
+                    if (tz == 'L') {
+                        getdisplay().print(formatDate(dateformat, local_tm->tm_year + 1900, local_tm->tm_mon + 1, local_tm->tm_mday));
+                    } else {
+                        getdisplay().print(formatDate(dateformat, commonData->data.rtcTime.tm_year + 1900, commonData->data.rtcTime.tm_mon + 1, commonData->data.rtcTime.tm_mday));
+                    }
+                } else {
+                    getdisplay().print("---");
+                }
+            } else {
+                getdisplay().print(svalue2old);
+            }
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
+            getdisplay().setCursor(10, 95);
+            getdisplay().print("Date");                          // Name
+
+            // Horizontal separator left
+            getdisplay().fillRect(0, 149, 60, 3, commonData->fgcolor);
+
+            // Show values GPS time (small text bottom left)
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
+            getdisplay().setCursor(10, 250);
+            if (holdvalues == false) {
+                if (source == 'G') {
+                    getdisplay().print(svalue1); // Value
+                } else if (commonData->data.rtcValid) {
+                    if (tz == 'L') {
+                        getdisplay().print(formatTime('s', local_tm->tm_hour, local_tm->tm_min, local_tm->tm_sec));
+                    } else {
+                        getdisplay().print(formatTime('s', commonData->data.rtcTime.tm_hour, commonData->data.rtcTime.tm_min, commonData->data.rtcTime.tm_sec));
+                    }
+                } else {
+                    getdisplay().print("---");
+                }
+            } else {
+                getdisplay().print(svalue1old);
+            }
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
+            getdisplay().setCursor(10, 220);
+            getdisplay().print("Time");                          // Name
+
+            // Show values sunrise
+            String sunrise = "---";
+            if ((valid1 and valid2 and valid3 == true) or (homevalid and commonData->data.rtcValid)) {
+                sunrise = String(commonData->sundata.sunriseHour) + ":" + String(commonData->sundata.sunriseMinute + 100).substring(1);
+                svalue5old = sunrise;
+            } else if (simulation) {
+                sunrise = String("06:42");
+            }
+
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
+            getdisplay().setCursor(335, 65);
+            if (holdvalues == false) getdisplay().print(sunrise); // Value
+            else getdisplay().print(svalue5old);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
+            getdisplay().setCursor(335, 95);
+            getdisplay().print("SunR");                          // Name
+
+            // Horizontal separator right
+            getdisplay().fillRect(340, 149, 80, 3, commonData->fgcolor);
+
+            // Show values sunset
+            String sunset = "---";
+            if ((valid1 and valid2 and valid3 == true) or (homevalid and commonData->data.rtcValid)) {
+                sunset = String(commonData->sundata.sunsetHour) + ":" + String(commonData->sundata.sunsetMinute + 100).substring(1);
+                svalue6old = sunset;
+            } else if (simulation) {
+                sunset = String("21:03");
+            }
+
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
+            getdisplay().setCursor(335, 250);
+            if (holdvalues == false) getdisplay().print(sunset);  // Value
+            else getdisplay().print(svalue6old);
+            getdisplay().setFont(&Ubuntu_Bold12pt8b);
+            getdisplay().setCursor(335, 220);
+            getdisplay().print("SunS");                          // Name
+            
             int rInstrument = 110;     // Radius of clock
             float pi = 3.141592;
 
@@ -756,6 +778,9 @@ bool PageClock::timerRunning = false;
 int PageClock::timerHours = 0;
 int PageClock::timerMinutes = 0;
 int PageClock::timerSeconds = 0;
+int PageClock::timerStartHours = 0;
+int PageClock::timerStartMinutes = 0;
+int PageClock::timerStartSeconds = 0;
 int PageClock::selectedField = 0;
 bool PageClock::showSelectionMarker = true;
 time_t PageClock::timerEndEpoch = 0;
