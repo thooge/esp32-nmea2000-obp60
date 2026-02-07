@@ -15,7 +15,7 @@
  *      K4: 
  *      K5: TZ  (Local/UTC)
  *
- * Timer mode:
+ * Regatta timer mode:
  *  - Format HH:MM:SS (24h, leading zeros)
  *  - Keys in timer mode:
  *      K1: MODE (A/D/T)
@@ -383,8 +383,8 @@ public:
         struct tm* local_tm = localtime(&tv);
 
         if (mode == 'T') {
-            // TIMER MODE: countdown timer HH:MM:SS in the center with 7-segment font
-            //************************************************************************
+            // REGATTA TIMER MODE: countdown timer HH:MM:SS in the center with 7-segment font
+            //*******************************************************************************
 
             int dispH = timerHours;
             int dispM = timerMinutes;
