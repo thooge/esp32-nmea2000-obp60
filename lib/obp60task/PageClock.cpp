@@ -205,7 +205,7 @@ public:
                     timerHours = timerStartHours;
                     timerMinutes = timerStartMinutes;
                     timerSeconds = timerStartSeconds;
-                    commonData->keydata[4].label = "RESET";
+//                    commonData->keydata[4].label = "RESET";
                 }
                 return 0;
             }
@@ -242,6 +242,7 @@ public:
                     timerMinutes = timerStartMinutes;
                     timerSeconds = timerStartSeconds;
                     timerRunning = false;
+                    showSelectionMarker = true;
                     // marker will become visible again only after POS press
                 }
                 return 0;
@@ -403,7 +404,9 @@ public:
                 if (remaining <= 0) {
                     remaining = 0;
                     timerRunning = false;
+                    commonData->keydata[3].label = "-";
                     commonData->keydata[4].label = "START";
+                    showSelectionMarker = true;
                     // Buzzer alarm (100% power)
                     setBuzzerPower(100);
                     buzzer(TONE2, 800);
@@ -415,6 +418,7 @@ public:
                     timerSeconds = timerStartSeconds;
                 }
                 else{
+                    commonData->keydata[3].label = "";
                     commonData->keydata[4].label = "RESET";
                 }
                 int rem = static_cast<int>(remaining);
@@ -453,8 +457,8 @@ public:
             int16_t textX = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(wb)) / 2;
             int16_t textY = centerY + hb / 2;
 
-            //getdisplay().setCursor(textX, textY);
-            getdisplay().setCursor(47, textY);
+            //getdisplay().setCursor(textX, textY); // horzontal jitter
+            getdisplay().setCursor(47, textY);      // static X position
             getdisplay().print(timeStr);
 
             // Selection marker (only visible when not running and POS pressed)
@@ -473,8 +477,8 @@ public:
 
             // Page label
             getdisplay().setFont(&Ubuntu_Bold16pt8b);
-            getdisplay().setCursor(65, 70);
-            getdisplay().print("Count Down Timer");
+            getdisplay().setCursor(100, 70);
+            getdisplay().print("Regatta Timer");
 
         } else if (mode == 'D') {
             // DIGITAL CLOCK MODE: large 7-segment time based on GPS/RTC
@@ -521,8 +525,8 @@ public:
             int16_t x = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(wb)) / 2;
             int16_t y = 150 + hb / 2;
 
-            //getdisplay().setCursor(x, y);
-            getdisplay().setCursor(47, y);
+            //getdisplay().setCursor(x, y); // horizontal jitter
+            getdisplay().setCursor(47, y);  // static X position
             getdisplay().print(timeStr); // Display actual time
 
             // Small indicators: timezone and source

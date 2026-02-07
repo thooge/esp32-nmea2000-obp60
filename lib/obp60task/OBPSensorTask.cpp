@@ -425,7 +425,7 @@ void sensorTask(void *param){
         N2K = GPS time on N2K od 183 bus
         0 = device not ready
         1 = device ready
-        X = undependend
+        X = independend
         () = source for set time N2K
         -> = set RTC via iRTC
         <- = set RTC via GPS
@@ -442,8 +442,8 @@ void sensorTask(void *param){
 
         */
 
-        // If RTC DS1388 ready, then copy iRTC and GPS data to RTC all 5min
-        if(millis() > starttime11 + 5*60*1000){
+        // If RTC DS1388 ready, then copy iRTC and GPS data to RTC all 1min
+        if(millis() > starttime11 + 1*60*1000){
             starttime11 = millis();
             // Set RTC chip via iRTC (NTP)
             if(iRTC_ready == true && RTC_ready == true && GPS_ready == false){
@@ -497,7 +497,7 @@ void sensorTask(void *param){
         // Send RTC date and time to N2K all 500ms
         if (millis() > starttime12 + 500) {
             starttime12 = millis();
-            // Send date and time from RTC chip
+            // Send date and time from RTC chip if GPS not ready
             if (rtcOn == "DS1388" && RTC_ready) {
                 DateTime dt = ds1388.now();
                 sensors.rtcTime.tm_year  = dt.year() - 1900; // Save values in SensorData
