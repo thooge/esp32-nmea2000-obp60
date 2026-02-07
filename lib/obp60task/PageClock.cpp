@@ -53,6 +53,8 @@ class PageClock : public Page
     static int timerHours;
     static int timerMinutes;
     static int timerSeconds;
+    // Preset seconds for sync button (default 4 minutes)
+    static const int timerPresetSeconds = 4 * 60;
     // Initial timer setting at start (so we can restore it)
     static int timerStartHours;
     static int timerStartMinutes;
@@ -135,9 +137,10 @@ public:
             // Timer mode: MODE, POS, +, -, RUN
             commonData->keydata[0].label = "MODE";
             commonData->keydata[1].label = "POS";
-            commonData->keydata[2].label = "+";
+            // K3: '+' while editing, 'SYNC' while running to set a preset countdown
+            commonData->keydata[2].label = timerRunning ? "SYNC" : "+";
             commonData->keydata[3].label = "-";
-            commonData->keydata[4].label = "START";
+            commonData->keydata[4].label = timerRunning ? "RESET" : "START";
         } else {
             // Clock modes: like original
             commonData->keydata[0].label = "MODE";
@@ -184,7 +187,26 @@ public:
                 incrementSelected();
                 return 0;
             }
-            if (key == 3 && timerRunning) { // No action if timer running
+            if (key == 3 && timerRunning) {
+                // When timer is running, K3 acts as a synchronization button:
+                // set remaining countdown to the preset value (e.g. 4 minutes).
+                if (commonData->data.rtcValid) {
+                    int preset = timerPresetSeconds;
+                    // update start-setting so STOP will restore this preset
+                    timerStartHours = preset / 3600;
+                    timerStartMinutes = (preset % 3600) / 60;
+                    timerStartSeconds = preset % 60;
+
+                    struct tm rtcCopy = commonData->data.rtcTime;
+                    time_t nowEpoch = mktime(&rtcCopy);
+                    timerEndEpoch = nowEpoch + preset;
+
+                    // Update visible timer fields immediately
+                    timerHours = timerStartHours;
+                    timerMinutes = timerStartMinutes;
+                    timerSeconds = timerStartSeconds;
+                    commonData->keydata[4].label = "RESET";
+                }
                 return 0;
             }
 
