@@ -128,6 +128,9 @@ void solarGraphic(uint x, uint y, int pcolor, int bcolor);                  // S
 void generatorGraphic(uint x, uint y, int pcolor, int bcolor);              // Generator graphic
 void startLedTask(GwApi *api);
 
+// Display rudder position as horizontal bargraph +/-30 degrees
+void displayRudderPosition(int rudderPosition, uint16_t x, uint16_t y, uint16_t fg, uint16_t bg);
+
 void doImageRequest(GwApi *api, int *pageno, const PageStruct pages[MAX_PAGE_NUMBER], AsyncWebServerRequest *request);
 
 // Icons
