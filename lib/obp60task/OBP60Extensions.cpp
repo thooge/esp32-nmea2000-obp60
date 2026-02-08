@@ -942,7 +942,7 @@ void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
 
 // Display rudder position as horizontal bargraph +/-30 degrees
 void displayRudderPosition(int rudderPosition, uint16_t cx, uint16_t cy, uint16_t fg, uint16_t bg){
-    const int w = 300;
+    const int w = 360;
     const int h = 20;
     const int t = 3; // Line thickness
     const int halfw = w/2;
@@ -987,15 +987,14 @@ void displayRudderPosition(int rudderPosition, uint16_t cx, uint16_t cy, uint16_
     for (int angle = -30; angle <= 30; angle += 5) {
         int xpos = int(round(centerx + angle * pxPerDeg));
         // Vertical tick inside bar
-        getdisplay().drawLine(xpos, top, xpos, top + h, fg);
+        getdisplay().drawLine(xpos, top, xpos, top + h + 2, fg);
         // Label outside: below the bar
         String lbl = String(angle);
-        lbl += "\u00B0"; // Degree symbol
         int16_t bx, by;
         uint16_t bw, bh;
         getdisplay().getTextBounds(lbl, 0, 0, &bx, &by, &bw, &bh);
         int16_t tx = xpos - bw/2;
-        int16_t ty = top + h + bh + 2; // A little spacing
+        int16_t ty = top + h + bh + 5; // A little spacing
         getdisplay().setCursor(tx, ty);
         getdisplay().print(lbl);
     }
