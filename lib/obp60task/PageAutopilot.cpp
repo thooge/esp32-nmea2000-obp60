@@ -5,8 +5,9 @@
 
 // These constants have to match the declaration below in :
 //  PageDescription registerPageAutopilot(
-//  {"HDM","HDT", "COG", "STW", "SOG", "DBT","XTE", "DTW", "BTW"}, // Bus values we need in the page
-const int HowManyValues = 9;
+//  {"HDM","HDT", "COG", "STW", "SOG", "DBT","XTE", "DTW", "BTW", "RPOS", "ROT"}, // Bus values we need in the page
+
+const int HowManyValues = 11;
 
 const int AverageValues = 4;
 
@@ -19,6 +20,8 @@ const int ShowDBT = 5;
 const int ShowXTE = 6;
 const int ShowDTW = 7;
 const int ShowBTW = 8;
+const int ShowRPOS = 9;
+const int ShowROT = 10;
 
 const int Compass_X0 = 200;         // X center point of compass band
 const int Compass_Y0 = 90;          // Y position of compass lines
@@ -73,8 +76,8 @@ class PageAutopilot : public Page
         GwLog *logger = commonData->logger;
     
         // Old values for hold function
-        static String OldDataText[HowManyValues] = {"", "", "","", "", "","", "", ""};
-        static String OldDataUnits[HowManyValues] = {"", "", "","", "", "","", "", ""};
+        static String OldDataText[HowManyValues] = {"", "", "", "", "", "","", "", "", "", ""};
+        static String OldDataUnits[HowManyValues] = {"", "", "", "", "", "","", "", "", "", ""};
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
@@ -240,7 +243,7 @@ class PageAutopilot : public Page
         // if ( x_test > 390)
         //     x_test = 320;
 
-        displayRudderPosition(12, 20, 200, 160, commonData->fgcolor, commonData->bgcolor);
+        displayRudderPosition(DataValue[ShowRPOS], 20, 200, 160, commonData->fgcolor, commonData->bgcolor);
 
         return PAGE_UPDATE;
     };
@@ -260,7 +263,7 @@ PageDescription registerPageAutopilot(
     "Autopilot",    // Page name
     createPage,     // Action
     0,              // Number of bus values depends on selection in Web configuration
-    {"HDM","HDT", "COG", "STW", "SOG", "DBT","XTE", "DTW", "BTW"}, // Bus values we need in the page
+    {"HDM","HDT", "COG", "STW", "SOG", "DBT","XTE", "DTW", "BTW", "RPOS", "ROT"}, // Bus values we need in the page
    true            // Show display header on/off
 );
 

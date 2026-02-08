@@ -966,6 +966,9 @@ void displayRudderPosition(int rudderPosition, uint8_t rangeDeg, uint16_t cx, ui
     // Fill inner area with background
     getdisplay().fillRect(left + t, top + t, w - 2 * t, h - 2 * t, bg);
 
+    // Draw center line
+    getdisplay().drawRect(cx - 1, top + 1, 3 , h - 2, fg);
+
     // Clamp rudder position to -rangeDeg..rangeDeg
     if (rudderPosition > (int)rangeDeg) rudderPosition = (int)rangeDeg;
     if (rudderPosition < -((int)rangeDeg)) rudderPosition = -((int)rangeDeg);
@@ -985,6 +988,7 @@ void displayRudderPosition(int rudderPosition, uint8_t rangeDeg, uint16_t cx, ui
         getdisplay().fillRect(centerx + fillPx, innerTop, -fillPx, innerH, fg);
     }
 
+    
     // Draw tick marks every 5° and labels outside the bar
     getdisplay().setTextColor(fg);
     getdisplay().setFont(&Ubuntu_Bold8pt8b);
