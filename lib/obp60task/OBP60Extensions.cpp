@@ -940,8 +940,8 @@ void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
         getdisplay().print("G");
 }
 
-// Display rudder position as horizontal bargraph +/-30 degrees
-void displayRudderPosition(int rudderPosition, uint16_t cx, uint16_t cy, uint16_t fg, uint16_t bg){
+// Display rudder position as horizontal bargraph with configurable +/- range (degrees)
+void displayRudderPosition(int rudderPosition, uint8_t rangeDeg, uint16_t cx, uint16_t cy, uint16_t fg, uint16_t bg){
     const int w = 360;
     const int h = 20;
     const int t = 3; // Line thickness
@@ -951,8 +951,12 @@ void displayRudderPosition(int rudderPosition, uint16_t cx, uint16_t cy, uint16_
     int left = int(cx) - halfw;
     int top = int(cy) - halfh;
 
-    // Pixels per degree for +/-30° -> 60° span
-    const float pxPerDeg = float(w) / 60.0f; // =5.0
+    // clamp provided range to allowed bounds [10,45]
+    if (rangeDeg < 10) rangeDeg = 10;
+    if (rangeDeg > 45) rangeDeg = 45;
+
+    // Pixels per degree for +/-rangeDeg -> total span = 2*rangeDeg
+    const float pxPerDeg = float(w) / (2.0f * float(rangeDeg));
 
     // Draw outer border (thickness t)
     for (int i = 0; i < t; i++) {
@@ -962,9 +966,9 @@ void displayRudderPosition(int rudderPosition, uint16_t cx, uint16_t cy, uint16_
     // Fill inner area with background
     getdisplay().fillRect(left + t, top + t, w - 2 * t, h - 2 * t, bg);
 
-    // Clamp rudder position to -30..30
-    if (rudderPosition > 30) rudderPosition = 30;
-    if (rudderPosition < -30) rudderPosition = -30;
+    // Clamp rudder position to -rangeDeg..rangeDeg
+    if (rudderPosition > (int)rangeDeg) rudderPosition = (int)rangeDeg;
+    if (rudderPosition < -((int)rangeDeg)) rudderPosition = -((int)rangeDeg);
 
     // Compute fill width in pixels
     int fillPx = int(round(rudderPosition * pxPerDeg)); // positive -> right
@@ -984,7 +988,7 @@ void displayRudderPosition(int rudderPosition, uint16_t cx, uint16_t cy, uint16_
     // Draw tick marks every 5° and labels outside the bar
     getdisplay().setTextColor(fg);
     getdisplay().setFont(&Ubuntu_Bold8pt8b);
-    for (int angle = -30; angle <= 30; angle += 5) {
+    for (int angle = -((int)rangeDeg); angle <= (int)rangeDeg; angle += 5) {
         int xpos = int(round(centerx + angle * pxPerDeg));
         // Vertical tick inside bar
         getdisplay().drawLine(xpos, top, xpos, top + h + 2, fg);

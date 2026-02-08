@@ -240,7 +240,7 @@ class PageAutopilot : public Page
         // if ( x_test > 390)
         //     x_test = 320;
 
-        displayRudderPosition(12, 200, 160, commonData->fgcolor, commonData->bgcolor);
+        displayRudderPosition(12, 20, 200, 160, commonData->fgcolor, commonData->bgcolor);
 
         return PAGE_UPDATE;
     };
