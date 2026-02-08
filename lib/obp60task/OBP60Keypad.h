@@ -58,7 +58,7 @@ void initKeys(CommonData &commonData) {
     commonData.keydata[5].h = height;
 }
 
-  #ifdef HARDWARE_V21
+  #if defined HARDWARE_V20 || HARDWARE_V21
   // Keypad functions for original OBP60 hardware
   int readKeypad(GwLog* logger, uint thSensitivity, bool use_syspage) {
     

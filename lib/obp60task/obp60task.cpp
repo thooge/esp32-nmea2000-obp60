@@ -332,7 +332,7 @@ void OBP60Task(GwApi *api){
 //    return;
     GwLog *logger=api->getLogger();
     GwConfigHandler *config=api->getConfig();
-#ifdef HARDWARE_V21
+#if defined HARDWARE_V20 || HARDWARE_V21
     startLedTask(api);
 #endif
     PageList allPages;
@@ -341,7 +341,7 @@ void OBP60Task(GwApi *api){
     commonData.logger=logger;
     commonData.config=config;
 
-#ifdef HARDWARE_V21
+#if defined HARDWARE_V20 || HARDWARE_V21
     // Keyboard coordinates for page footer
     initKeys(commonData);
 #endif

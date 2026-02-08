@@ -1,7 +1,7 @@
     // General hardware definitions
     // CAN and RS485 bus pin definitions see obp60task.h
 
-#ifdef HARDWARE_V21
+#if defined HARDWARE_V20 || HARDWARE_V21
     // Direction pin for RS485 NMEA0183
     #define OBP_DIRECTION_PIN 18
     // I2C
