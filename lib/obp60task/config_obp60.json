@@ -1235,8 +1235,9 @@
         "label": "Status Time Source",
         "type": "list",
         "default": "GPS",
-        "description": "Data source for date and time display in status line [RTC|GPS]",
+        "description": "Data source for date and time display in status line [iRTC|RTC|GPS]",
         "list": [
+            {"l":"Internal real time clock (iRTC)","v":"iRTC"},
             {"l":"Real time clock (RTC)","v":"RTC"},
             {"l":"Time via bus (GPS)","v":"GPS"}
         ],

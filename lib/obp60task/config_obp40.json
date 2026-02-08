@@ -1245,8 +1245,8 @@
         "name": "timeSource",
         "label": "Status Time Source",
         "type": "list",
-        "default": "GPS",
-        "description": "Data source for date and time display in status line [RTC|iRTC|GPS]",
+        "default": "iRTC",
+        "description": "Data source for date and time display in status line [iRTC|RTC|GPS]",
         "list": [
             {"l":"Internal real time clock (iRTC)","v":"iRTC"},
             {"l":"External real time clock (RTC)","v":"RTC"},

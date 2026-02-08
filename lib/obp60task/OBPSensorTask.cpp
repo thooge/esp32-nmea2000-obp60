@@ -371,7 +371,7 @@ void sensorTask(void *param){
     GwApi::BoatValue *hdop=new GwApi::BoatValue(GwBoatData::_HDOP);
     GwApi::BoatValue *valueList[]={gpsdays, gpsseconds, hdop};
 
-    // Internal RTC with NTP init
+    // Internal iRTC with NTP init
     ESP32Time rtc(0);
     if (api->getConfig()->getString(api->getConfig()->timeSource) == "iRTC") {
         GwApi::Status status;
@@ -432,17 +432,17 @@ void sensorTask(void *param){
 
         iRTC  RTC  GPS N2K
           0    0    0  (1)
-          0    0   (1) (X)
-          0   (1)   0  (X)
-          0    1 <-(1) (X)
-         (1)   0    0  (X)
-          1    0   (1) (X)
-          1 ->(1)   0  (X)
-          1    1 <-(1) (X)
+          0    0   (1)  X 
+          0   (1)   0   X 
+          0    1 <-(1)  X 
+         (1)   0    0   X 
+          1    0   (1)  X 
+          1 ->(1)   0   X 
+          1    1 <-(1)  X 
 
         */
 
-        // If RTC DS1388 ready, then copy iRTC and GPS data to RTC all 1min
+        // If RTC DS1388 ready, then copy iRTC and GPS data to RTC all 1 min
         if(millis() > starttime11 + 1*60*1000){
             starttime11 = millis();
             // Set RTC chip via iRTC (NTP)
@@ -475,7 +475,7 @@ void sensorTask(void *param){
                     // Adjust RTC time as unix time value
                     ds1388.adjust(adjusttime);
                 }
-            }          
+            }    
         }
 
         // Set RTC chip via N2K or 183 in case the internal GPS is off (only one time)
@@ -524,7 +524,7 @@ void sensorTask(void *param){
                     // N2K sysTime is double in n2klib
                     double sysTime = (dt.hour() * 3600) + (dt.minute() * 60) + dt.second();
                     if(!isnan(daysAt1970) && !isnan(sysTime)){
-                        //api->getLogger()->logDebug(GwLog::LOG,"RTC time: %04d/%02d/%02d %02d:%02d:%02d",sensors.rtcTime.tm_year+1900,sensors.rtcTime.tm_mon, sensors.rtcTime.tm_mday, sensors.rtcTime.tm_hour, sensors.rtcTime.tm_min, sensors.rtcTime.tm_sec);
+                        //api->getLogger()->logDebug(GwLog::LOG,"RTC time: %04d/%02d/%02d %02d:%02d:%02d",sensors.rtcTime.tm_year+1900,sensors.rtcTime.tm_mon+1, sensors.rtcTime.tm_mday, sensors.rtcTime.tm_hour, sensors.rtcTime.tm_min, sensors.rtcTime.tm_sec);
                         //api->getLogger()->logDebug(GwLog::LOG,"Send PGN126992: %10d %10d",daysAt1970, (uint16_t)sysTime);
                         SetN2kPGN126992(N2kMsg,0,daysAt1970,sysTime,N2ktimes_LocalCrystalClock);
                         api->sendN2kMessage(N2kMsg);
@@ -533,25 +533,26 @@ void sensorTask(void *param){
             }
             // Send date and time from software RTC (iRTC)
             if (iRTC_ready == true && RTC_ready == false && GPS_ready == false) {
-                // Use internal RTC feature
-                sensors.rtcTime = rtc.getTimeStruct(); // Save software RTC values in SensorData
-                // TODO implement daysAt1970 and sysTime as methods of DateTime
+                sensors.rtcTime = rtc.getTimeStruct();
+
                 const short daysOfYear[12] = {0,31,59,90,120,151,181,212,243,273,304,334};
-                uint16_t switchYear = ((sensors.rtcTime.tm_year-1)-1968)/4 - ((sensors.rtcTime.tm_year-1)-1900)/100 + ((sensors.rtcTime.tm_year-1)-1600)/400;
-                long daysAt1970 = (sensors.rtcTime.tm_year-1970)*365 + switchYear + daysOfYear[sensors.rtcTime.tm_mon-1] + sensors.rtcTime.tm_mday-1;
-                // If switch year then add one day
-                if ((sensors.rtcTime.tm_mon > 2) && (sensors.rtcTime.tm_year % 4 == 0  && (sensors.rtcTime.tm_year % 100 != 0 || sensors.rtcTime.tm_year % 400 == 0))) {
+                int year  = sensors.rtcTime.tm_year + 1900;
+                int month = sensors.rtcTime.tm_mon;
+                int day   = sensors.rtcTime.tm_mday;
+                uint16_t switchYear = ((year - 1) - 1968) / 4 - ((year - 1) - 1900) / 100 + ((year - 1) - 1600) / 400;
+                long daysAt1970 = (year - 1970) * 365L + switchYear + daysOfYear[month] + day - 1;
+
+                // Leap day add if date is after Feb (i.e. month >= March)
+                if (month >= 2 && (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))) {
                     daysAt1970 += 1;
                 }
-                // N2K sysTime is double in n2klib
-                double sysTime = (sensors.rtcTime.tm_hour * 3600) + (sensors.rtcTime.tm_min * 60) + sensors.rtcTime.tm_sec;
-                if(!isnan(daysAt1970) && !isnan(sysTime)){
-                    //api->getLogger()->logDebug(GwLog::LOG,"RTC time: %04d/%02d/%02d %02d:%02d:%02d",sensors.rtcTime.tm_year+1900,sensors.rtcTime.tm_mon, sensors.rtcTime.tm_mday, sensors.rtcTime.tm_hour, sensors.rtcTime.tm_min, sensors.rtcTime.tm_sec);
-                    //api->getLogger()->logDebug(GwLog::LOG,"Send PGN126992: %10d %10d",daysAt1970, (uint16_t)sysTime);
-                    SetN2kPGN126992(N2kMsg,0,daysAt1970,sysTime,N2ktimes_LocalCrystalClock);
-                    api->sendN2kMessage(N2kMsg);
-                }
+                double sysTime = sensors.rtcTime.tm_hour * 3600.0 + sensors.rtcTime.tm_min  * 60.0 + sensors.rtcTime.tm_sec;
+                //api->getLogger()->logDebug(GwLog::LOG, "iRTC time: %04d/%02d/%02d %02d:%02d:%02d", year, month + 1, day, sensors.rtcTime.tm_hour, sensors.rtcTime.tm_min, sensors.rtcTime.tm_sec);
+                //api->getLogger()->logDebug(GwLog::LOG,"Send PGN126992: %10d %10d",daysAt1970, (uint16_t)sysTime);
+                SetN2kPGN126992(N2kMsg, 0, daysAt1970, sysTime, N2ktimes_LocalCrystalClock);
+                api->sendN2kMessage(N2kMsg);
             }
+
         }
 
         // Send 1Wire data for all temperature sensors to N2K all 2s

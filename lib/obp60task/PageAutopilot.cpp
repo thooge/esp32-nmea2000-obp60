@@ -243,7 +243,7 @@ class PageAutopilot : public Page
         // if ( x_test > 390)
         //     x_test = 320;
 
-        displayRudderPosition(DataValue[ShowRPOS], 20, 200, 160, commonData->fgcolor, commonData->bgcolor);
+        displayRudderPosition(DataValue[ShowSOG], 20, 200, 160, commonData->fgcolor, commonData->bgcolor);
 
         return PAGE_UPDATE;
     };
