@@ -8,6 +8,6 @@
 
 # Install tools
 echo "Installing tools"
-cd /workspace/esp32-nmea2000
+cd /workspaces/esp32-nmea2000
 pip3 install -U esptool
 pip3 install  platformio
