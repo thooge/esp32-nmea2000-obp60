@@ -162,9 +162,13 @@ public:
         constexpr int ZOOM_KEY = 1;
 #endif
 
-        if (dataHstryBuf) { // show "Mode" key only if chart supported boat data type is available
+        if (dataHstryBuf) { // show "Mode" key only if chart-supported boat data type is available
             commonData->keydata[0].label = "MODE";
-            commonData->keydata[ZOOM_KEY].label = "ZOOM";
+            if (pageMode != VALUE) { // show "ZOOM" key only if chart is visible
+                commonData->keydata[ZOOM_KEY].label = "ZOOM";
+            } else {
+                commonData->keydata[ZOOM_KEY].label = "";
+            }
         } else {
             commonData->keydata[0].label = "";
             commonData->keydata[ZOOM_KEY].label = "";
@@ -189,14 +193,15 @@ public:
                     pageMode = VALUE;
                     break;
                 }
+                setupKeys(); // Adjust key definition depending on <pageMode> and chart-supported boat data type
                 return 0; // Commit the key
             }
 
-            // Set time frame to show for history chart
+            // Set time frame to show for chart
 #if defined BOARD_OBP60S3
-            if (key == 5) {
+            if (key == 5  && pageMode != VALUE) {
 #elif defined BOARD_OBP40S3
-            if (key == 2) {
+            if (key == 2  && pageMode != VALUE) {
 #endif
                 if (dataIntv == 1) {
                     dataIntv = 2;
@@ -247,7 +252,7 @@ public:
             }
         }
 
-        setupKeys(); // adjust <mode> key depending on chart supported boat data type
+        setupKeys(); // Adjust key definition depending on <pageMode> and chart-supported boat data type
     }
 
     int displayPage(PageData& pageData)

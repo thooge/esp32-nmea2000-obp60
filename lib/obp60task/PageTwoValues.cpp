@@ -114,7 +114,7 @@ private:
         }
 
         if (numValues == 2 && mode == FULL) { // print line only, if we want to show 2 data values
-            getdisplay().fillRect(0, 145, width, 3, commonData->fgcolor);             // Horizontal line 3 pix
+            getdisplay().fillRect(0, 145, width, 3, commonData->fgcolor); // Horizontal line 3 pix
         }
     }
 
@@ -149,7 +149,11 @@ public:
 
         if (dataHstryBuf[0] || dataHstryBuf[1]) { // show "Mode" key only if at least 1 chart supported boat data type is available
             commonData->keydata[0].label = "MODE";
-            commonData->keydata[ZOOM_KEY].label = "ZOOM";
+            if (pageMode != VALUES) { // show "ZOOM" key only if chart is visible
+                commonData->keydata[ZOOM_KEY].label = "ZOOM";
+            } else {
+                commonData->keydata[ZOOM_KEY].label = "";
+            }
         } else {
             commonData->keydata[0].label = "";
             commonData->keydata[ZOOM_KEY].label = "";
@@ -191,14 +195,15 @@ public:
                     pageMode = VALUES;
                     break;
                 }
+                setupKeys(); // Adjust key definition depending on <pageMode> and chart-supported boat data type
                 return 0; // Commit the key
             }
 
-            // Set time frame to show for history chart
+            // Set time frame to show for chart
 #if defined BOARD_OBP60S3
-            if (key == 5) {
+            if (key == 5 && pageMode != VALUES) {
 #elif defined BOARD_OBP40S3
-            if (key == 2) {
+            if (key == 2  && pageMode != VALUES) {
 #endif
                 if (dataIntv == 1) {
                     dataIntv = 2;
@@ -251,7 +256,7 @@ public:
             }
         }
 
-        setupKeys(); // adjust <mode> key depending on chart supported boat data type
+        setupKeys(); // Adjust key definition depending on <pageMode> and chart-supported boat data type
     }
 
     int displayPage(PageData& pageData)
@@ -285,13 +290,13 @@ public:
             showData(bValue, FULL);
 
         } else if (pageMode == VAL1_CHART) { // show data value 1 and chart
-            showData({bValue[0]}, HALF);
+            showData({ bValue[0] }, HALF);
             if (dataChart[0]) {
                 dataChart[0]->showChrt(HORIZONTAL, HALF_SIZE_BOTTOM, dataIntv, NO_PRNT_NAME, NO_PRNT_VALUE, *bValue[0]);
             }
 
         } else if (pageMode == VAL2_CHART) { // show data value 2 and chart
-            showData({bValue[1]}, HALF);
+            showData({ bValue[1] }, HALF);
             if (dataChart[1]) {
                 dataChart[1]->showChrt(HORIZONTAL, HALF_SIZE_BOTTOM, dataIntv, NO_PRNT_NAME, NO_PRNT_VALUE, *bValue[1]);
             }

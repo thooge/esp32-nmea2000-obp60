@@ -196,7 +196,7 @@ public:
     int displayPage(PageData& pageData)
     {
         LOG_DEBUG(GwLog::LOG, "Display PageWindPlot");
-        ulong pageTime = millis();
+        // ulong pageTime = millis();
 
         if (showTruW != oldShowTruW) {
 
@@ -243,7 +243,7 @@ public:
             }
         }
 
-        LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: page time %ldms", millis() - pageTime);
+        // LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: page time %ldms", millis() - pageTime);
         return PAGE_UPDATE;
     }
 };
