@@ -811,11 +811,9 @@ void OBP60Task(GwApi *api){
                 api->getBoatDataValues(boatValues.numValues,boatValues.allBoatValues);
                 api->getStatus(commonData.status);
 
-                if (calcTrueWnds) {
-                    trueWind.addWinds(); // calculate true wind data from apparent wind values
-                }
+                trueWind.handleWinds(calcTrueWnds); // calculate true wind data from apparent wind values
                 calibrationDataList.handleCalibration(&boatValues); // Process calibration for all boat data in <calibrationDataList>
-                hstryBufferList.handleHstryBufs(useSimuData, commonData); // Handle history buffers for certain boat data for windplot page and other usage
+                hstryBufferList.handleHstryBufs(useSimuData, commonData); // Handle history buffers for certain boat data for charts and other usage
 
                 // Clear display
                 // getdisplay().fillRect(0, 0, getdisplay().width(), getdisplay().height(), commonData.bgcolor);
