@@ -32,6 +32,7 @@ public:
     bool smoothInstance(GwApi::BoatValue* boatDataValue); // Smooth single boat data value
 };
 
+// Class for a single history buffer of boat values
 class HstryBuf {
 private:
     RingBuffer<uint16_t> hstryBuf; // Circular buffer to store history values
@@ -50,14 +51,13 @@ public:
     void handle(bool useSimuData, CommonData& common);
 };
 
-// Manage history buffer for supported boat data; used by boat data charts
+// Manage list of history buffers for supported boat data; used by boat data charts
 class HstryBuffers {
 private:
     std::map<String, std::unique_ptr<HstryBuf>> hstryBuffers;
     int size; // size of all history buffers
     BoatValueList* boatValueList;
     GwLog* logger;
-    GwApi::BoatValue *awaBVal, *hdtBVal, *hdmBVal, *varBVal, *cogBVal, *sogBVal, *awdBVal; // boat values for true wind calculation
 
     struct HistoryParams {
         int hstryUpdFreq; // update frequency of history buffer (documentation only)

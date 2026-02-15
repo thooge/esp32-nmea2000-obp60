@@ -249,7 +249,7 @@ void HstryBuf::handle(bool useSimuData, CommonData& common)
     if (boatValue->valid) {
         add(boatValue->value);
     } else if (useSimuData) { // add simulated value to history buffer
-        tmpBVal = std::unique_ptr<GwApi::BoatValue>(new GwApi::BoatValue(boatDataName));  // create temporary boat value for retrieval of simulation value
+        tmpBVal = std::unique_ptr<GwApi::BoatValue>(new GwApi::BoatValue(boatDataName)); // create temporary boat value for retrieval of simulation value
         tmpBVal->setFormat(boatValue->getFormat());
         tmpBVal->value = boatValue->value;
         tmpBVal->valid = boatValue->valid;
@@ -265,20 +265,7 @@ void HstryBuf::handle(bool useSimuData, CommonData& common)
 HstryBuffers::HstryBuffers(int size, BoatValueList* boatValues, GwLog* log)
     : size(size)
     , boatValueList(boatValues)
-    , logger(log)
-{
-
-    // collect boat values for true wind calculation
-    // should all have been already created at true wind object initialization
-    // potentially to be moved to history buffer handling
-    awaBVal = boatValueList->findValueOrCreate("AWA");
-    hdtBVal = boatValueList->findValueOrCreate("HDT");
-    hdmBVal = boatValueList->findValueOrCreate("HDM");
-    varBVal = boatValueList->findValueOrCreate("VAR");
-    cogBVal = boatValueList->findValueOrCreate("COG");
-    sogBVal = boatValueList->findValueOrCreate("SOG");
-    awdBVal = boatValueList->findValueOrCreate("AWD");
-}
+    , logger(log) { };
 
 // Create history buffer for boat data type
 void HstryBuffers::addBuffer(const String& name)
@@ -290,8 +277,6 @@ void HstryBuffers::addBuffer(const String& name)
         return;
     }
 
-    hstryBuffers[name] = std::unique_ptr<HstryBuf>(new HstryBuf(name, size, boatValueList, logger));
-
     // Initialize metadata for buffer
     String valueFormat = bufferParams[name].format; // Data format of boat data type
     // String valueFormat = boatValueList->findValueOrCreate(name)->getFormat().c_str(); // Unfortunately, format is not yet available during system initialization
@@ -300,6 +285,7 @@ void HstryBuffers::addBuffer(const String& name)
     double bufferMinVal = bufferParams[name].bufferMinVal; // Min value for this history buffer
     double bufferMaxVal = bufferParams[name].bufferMaxVal; // Max value for this history buffer
 
+    hstryBuffers[name] = std::unique_ptr<HstryBuf>(new HstryBuf(name, size, boatValueList, logger));
     hstryBuffers[name]->init(valueFormat, hstryUpdFreq, mltplr, bufferMinVal, bufferMaxVal);
     LOG_DEBUG(GwLog::DEBUG, "HstryBuffers: new buffer added: name: %s, format: %s, multiplier: %d, min value: %.2f, max value: %.2f", name, valueFormat, mltplr, bufferMinVal, bufferMaxVal);
 }
@@ -318,8 +304,9 @@ RingBuffer<uint16_t>* HstryBuffers::getBuffer(const String& name)
     auto it = hstryBuffers.find(name);
     if (it != hstryBuffers.end()) {
         return &it->second->hstryBuf;
+    } else {
+        return nullptr;
     }
-    return nullptr;
 }
 // --- End Class HstryBuffers ---------------
 
@@ -415,8 +402,8 @@ bool WindUtils::calcHDT(const double* hdmVal, const double* varVal, const double
         *hdtVal = DBL_MAX; // Cannot calculate HDT without valid HDM or HDM+VAR or COG
         return false;
     }
-    //LOG_DEBUG(GwLog::DEBUG, "WindUtils:calcHDT: HDT: %.1f, HDM %.1f, VAR %.1f, COG %.1f, SOG %.1f", *hdtVal * RAD_TO_DEG, *hdmVal * RAD_TO_DEG, *varVal * RAD_TO_DEG,
-    //     *cogVal * RAD_TO_DEG, *sogVal * 3.6 / 1.852);
+    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:calcHDT: HDT: %.1f, HDM %.1f, VAR %.1f, COG %.1f, SOG %.1f", *hdtVal * RAD_TO_DEG, *hdmVal * RAD_TO_DEG, *varVal * RAD_TO_DEG,
+    //      *cogVal * RAD_TO_DEG, *sogVal * 3.6 / 1.852);
 
     return true;
 }
@@ -464,7 +451,7 @@ bool WindUtils::calcTrueWinds(const double* awaVal, const double* awsVal, const 
         // If STW and SOG are not available, we cannot calculate true wind
         return false;
     }
-    //LOG_DEBUG(GwLog::DEBUG, "WindUtils:calcTrueWinds: HDT: %.1f, CTW %.1f, STW %.1f", *hdtVal * RAD_TO_DEG, ctw * RAD_TO_DEG, stw * 3.6 / 1.852);
+    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:calcTrueWinds: HDT: %.1f, CTW %.1f, STW %.1f", *hdtVal * RAD_TO_DEG, ctw * RAD_TO_DEG, stw * 3.6 / 1.852);
 
     calcTwdSA(awaVal, awsVal, awd, &ctw, &stw, hdtVal, &twa, &tws, &twd);
     *twaVal = twa;
@@ -490,8 +477,8 @@ bool WindUtils::handleWinds(bool calcWinds)
     double varVal = varBVal->valid ? varBVal->value : DBL_MAX;
     double twaVal = twaBVal->valid ? twaBVal->value : DBL_MAX;
     double twsVal = twsBVal->valid ? twsBVal->value : DBL_MAX;
-    //LOG_DEBUG(GwLog::DEBUG, "WindUtils:handleWinds: AWA %.1f, AWS %.1f, AWD %.1f, COG %.1f, STW %.1f, SOG %.2f, HDT %.1f, HDM %.1f, VAR %.1f", awaVal * RAD_TO_DEG, awsVal * 3.6 / 1.852,
-    //    awd * RAD_TO_DEG, cogVal * RAD_TO_DEG, stwVal * 3.6 / 1.852, sogVal * 3.6 / 1.852, hdtVal * RAD_TO_DEG, hdmVal * RAD_TO_DEG, varVal * RAD_TO_DEG);
+    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:handleWinds: AWA %.1f, AWS %.1f, AWD %.1f, COG %.1f, STW %.1f, SOG %.2f, HDT %.1f, HDM %.1f, VAR %.1f", awaVal * RAD_TO_DEG, awsVal * 3.6 / 1.852,
+    //     awd * RAD_TO_DEG, cogVal * RAD_TO_DEG, stwVal * 3.6 / 1.852, sogVal * 3.6 / 1.852, hdtVal * RAD_TO_DEG, hdmVal * RAD_TO_DEG, varVal * RAD_TO_DEG);
 
     if (calcHDT(&hdmVal, &varVal, &cogVal, &sogVal, &hdtVal)) {
         hdtBVal->value = hdtVal;
@@ -512,7 +499,7 @@ bool WindUtils::handleWinds(bool calcWinds)
             return false;
         }
     }
-    
+
     // calculate TWD if not existing and if possible
     if (!twdBVal->valid) {
         // calculate TWD if it does not exist yet and TWA is available
@@ -542,8 +529,8 @@ bool WindUtils::handleWinds(bool calcWinds)
             }
         }
     }
-    //LOG_DEBUG(GwLog::DEBUG, "WindUtils:handleWinds: twCalculated %d, TWD %.1f, TWA %.1f, TWS %.2f kn, AWD: %.1f", twCalculated, twdBVal->value * RAD_TO_DEG,
-    //    twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852, awdBVal->value * RAD_TO_DEG);
+    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:handleWinds: twCalculated %d, TWD %.1f, TWA %.1f, TWS %.2f kn, AWD: %.1f", twCalculated, twdBVal->value * RAD_TO_DEG,
+    //     twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852, awdBVal->value * RAD_TO_DEG);
 
     return twCalculated;
 }

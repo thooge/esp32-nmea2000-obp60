@@ -479,7 +479,8 @@ void OBP60Task(GwApi *api){
             pages[i].parameters.values.push_back(value); 
        }
 
-       // Read the specified boat data types of relevant pages and create a history buffer for each type
+       // Read the specified boat data types of relevant pages and create a history buffer for each type for later use in charts
+       // applies only for pages that uses charts
        if (pages[i].parameters.pageName == "OneValue" || pages[i].parameters.pageName == "TwoValues" || pages[i].parameters.pageName == "WindPlot") {
            for (auto pVal : pages[i].parameters.values) {
                 hstryBufferList.addBuffer(pVal->getName());
