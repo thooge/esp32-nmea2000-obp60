@@ -1,7 +1,6 @@
 #include <esp_wifi.h>
 #include "GWWifi.h"
 
-
 GwWifi::GwWifi(const GwConfigHandler *config,GwLog *log, bool fixedApPass){
     this->config=config;
     this->logger=log;
@@ -9,6 +8,28 @@ GwWifi::GwWifi(const GwConfigHandler *config,GwLog *log, bool fixedApPass){
     wifiSSID=config->getConfigItem(config->wifiSSID,true);
     wifiPass=config->getConfigItem(config->wifiPass,true);
     this->fixedApPass=fixedApPass;
+    wifiMutex=xSemaphoreCreateMutex();
+    if (wifiMutex==nullptr){
+        LOG_DEBUG(GwLog::ERROR,"GwWifi: unable to create mutex");
+    }
+}
+
+GwWifi::~GwWifi(){
+    if (wifiMutex!=nullptr){
+        vSemaphoreDelete(wifiMutex);
+        wifiMutex=nullptr;
+    }
+}
+
+bool GwWifi::acquireMutex(){
+    if (wifiMutex==nullptr) return false;
+    return xSemaphoreTake(wifiMutex,WIFI_MUTEX_TIMEOUT)==pdTRUE;
+}
+
+void GwWifi::releaseMutex(){
+    if (wifiMutex!=nullptr){
+        xSemaphoreGive(wifiMutex);
+    }
 }
 void GwWifi::setup(){
     LOG_DEBUG(GwLog::LOG,"Wifi setup");
@@ -85,8 +106,14 @@ bool GwWifi::connectInternal(){
     if (wifiClient->asBoolean()){
         clientIsConnected=false;
         LOG_DEBUG(GwLog::LOG,"creating wifiClient ssid=%s",wifiSSID->asString().c_str());
+        // CRITICAL SECTION: WiFi-Operationen müssen serialisiert werden
+        if (!acquireMutex()){
+            LOG_DEBUG(GwLog::ERROR,"GwWifi: mutex timeout in connectInternal");
+            return false;
+        }
         WiFi.setAutoReconnect(false); //#102
         wl_status_t rt=WiFi.begin(wifiSSID->asCString(),wifiPass->asCString());
+        releaseMutex();
         LOG_DEBUG(GwLog::LOG,"wifiClient connect returns %d",(int)rt);
         lastConnectStart=millis();
         return true;
@@ -104,8 +131,15 @@ void GwWifi::loop(){
             if (lastConnectStart > now || (lastConnectStart + RETRY_MILLIS) < now)
             {
                 LOG_DEBUG(GwLog::LOG,"wifiClient: retry connect to %s", wifiSSID->asCString());
-                WiFi.disconnect();
-                connectInternal();
+                // CRITICAL SECTION: WiFi-Operationen müssen serialisiert werden
+                if (acquireMutex()){
+                    WiFi.disconnect();
+                    releaseMutex();
+                    connectInternal();
+                }
+                else{
+                    LOG_DEBUG(GwLog::ERROR,"GwWifi: mutex timeout in loop");
+                }
             }
         }
         else{
@@ -127,10 +161,39 @@ void GwWifi::loop(){
     }
 }
 bool GwWifi::clientConnected(){
-    return WiFi.status() == WL_CONNECTED;
+    // CRITICAL SECTION: WiFi.status() muss geschützt werden
+    if (!acquireMutex()){
+        LOG_DEBUG(GwLog::ERROR,"GwWifi: mutex timeout in clientConnected");
+        return false;  // Conservative: nehme an, nicht verbunden
+    }
+    bool result = WiFi.status() == WL_CONNECTED;
+    releaseMutex();
+    return result;
 };
 bool GwWifi::connectClient(){
+    // CRITICAL SECTION: Disconnect und Connect müssen atomar sein
+    if (!acquireMutex()){
+        LOG_DEBUG(GwLog::ERROR,"GwWifi: mutex timeout in connectClient");
+        return false;
+    }
     WiFi.disconnect();
+    releaseMutex();
+    return connectInternal();
+}
+
+bool GwWifi::connectClientAsync(){
+    // Non-blocking version: Versuche Mutex zu nehmen, gib aber sofort auf
+    // Ideal für Tasks, die nicht blockieren dürfen
+    if (wifiMutex==nullptr){
+        LOG_DEBUG(GwLog::ERROR,"GwWifi: mutex not initialized in connectClientAsync");
+        return false;
+    }
+    if (xSemaphoreTake(wifiMutex, 0)!=pdTRUE){
+        LOG_DEBUG(GwLog::LOG,"GwWifi: connectClientAsync skipped - WiFi busy");
+        return false;  // WiFi ist aktuell busy, versuche es später nochmal
+    }
+    WiFi.disconnect();
+    xSemaphoreGive(wifiMutex);
     return connectInternal();
 }
 
