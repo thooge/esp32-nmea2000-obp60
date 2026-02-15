@@ -4,8 +4,12 @@
 #include "OBP60Extensions.h"
 #include "NetworkClient.h"      // Network connection
 #include "ImageDecoder.h"       // Image decoder for navigation map
+#include "GWWifi.h"             // WiFi management (thread-safe)
 
 #include "Logo_OBP_400x300_sw.h"
+
+// Extern declaration of global WiFi instance
+extern GwWifi gwWifi;
 
 // Defines for reading of navigation map 
 #define JSON_BUFFER 30000       // Max buffer size for JSON content (30 kB picture + values)
@@ -25,6 +29,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
     int imageBackupHeight = 0;
     size_t imageBackupSize = 0;
     bool hasImageBackup = false;
+    static bool wifiConnectRequested;  // Track if WiFi connection was requested
 
     public:
     PageNavigation(CommonData &common){
@@ -55,12 +60,15 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             }
             return 0;                   // Commit the key
         }
-        // Code for zoom -
+        // Code for zoom +
         if(key == 2){
             zoom ++;                    // Zoom +
             if(zoom >17){
                 zoom = 17;
             }
+            // Optional: Versuche WiFi-Verbindung nach Zoom-Änderung
+            // Dies ermöglicht eine neue Kartendarstellung
+            gwWifi.connectClientAsync();
             return 0;                   // Commit the key
         }
         if(key == 5){
@@ -95,6 +103,13 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             zoom = zoomLevel;           // Over write zoom level with setup value
             showValues = showValuesMap; // Over write showValues with setup value 
             firstRun = false;           // Restet variable
+            
+            // Versuche beim ersten Laden eine WiFi-Verbindung herzustellen (non-blocking)
+            // Dies ist thread-safe und blockiert das UI nicht
+            if (!gwWifi.clientConnected()) {
+                LOG_DEBUG(GwLog::LOG, "PageNavigation: Initiating WiFi connection for map download");
+                gwWifi.connectClientAsync();
+            }
         }
 
         // Local variables
@@ -344,6 +359,16 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         // Load navigation map
         //***********************************************************
 
+        // Prüfe WiFi-Verbindung (Thread-Safe)
+        // Diese Methode ist synchronisiert und blockiert maximal 1 Sekunde
+        bool wifiConnected = gwWifi.clientConnected();
+        
+        if (!wifiConnected && !wifiConnectRequested) {
+            LOG_DEBUG(GwLog::LOG, "PageNavigation: WiFi not connected, attempting async connect");
+            gwWifi.connectClientAsync();
+            wifiConnectRequested = true;
+        }
+        
         // URL to OBP Maps Converter
         // For more details see: https://github.com/norbert-walter/maps-converter
         String url = String("http://") + server + ":" + port +  // OBP Server
@@ -375,7 +400,8 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         getdisplay().setTextColor(commonData->fgcolor);
 
         // If a network connection to URL then load the navigation map
-        if (net.fetchAndDecompressJson(url)) {
+        if (wifiConnected && net.fetchAndDecompressJson(url)) {
+            wifiConnectRequested = false;  // Reset flag after successful connection
 
             auto& json = net.json();                // Extract JSON content
             int numPix = json["number_pixels"] | 0; // Read number of pixels
@@ -442,6 +468,12 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             }
 
             lostCounter++; // Increment lost counter
+            
+            // Nur einmal pro Sekunde einen neuen Verbindungsversuch machen
+            if (!wifiConnectRequested) {
+                gwWifi.connectClientAsync();
+                wifiConnectRequested = true;
+            }
         }
 
 
@@ -487,6 +519,9 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         return PAGE_UPDATE;
     };
 };
+
+// Initialize static member variable
+bool PageNavigation::wifiConnectRequested = false;
 
 static Page *createPage(CommonData &common){
     return new PageNavigation(common);
