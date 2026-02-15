@@ -1,9 +1,9 @@
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include <Arduino.h>
-#include <PCF8574.h>      // Driver for PCF8574 output modul from Horter
 #include <Wire.h>         // I2C
 #include <RTClib.h>       // Driver for DS1388 RTC
+#include <PCF8574.h>      // PCF8574 modules from Horter
 #include "SunRise.h"      // Lib for sunrise and sunset calculation
 #include "Pagedata.h"
 #include "OBP60Hardware.h"
@@ -27,9 +27,7 @@
 #include "fonts/IBM8x8px.h"
 
 // E-Ink Display
-#define GxEPD_WIDTH 400     // Display width
-#define GxEPD_HEIGHT 300    // Display height
-
+// Definition for e-paper width an height refer OBP60Hardware.h
 #ifdef DISPLAY_GDEW042T2
 // Set display type and SPI pins for display
 GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(OBP_SPI_CS, OBP_SPI_DC, OBP_SPI_RST, OBP_SPI_BUSY)); // GDEW042T2 400x300, UC8176 (IL0398)
@@ -59,7 +57,7 @@ GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay(){r
 #endif
 
 // Horter I2C moduls
-PCF8574 pcf8574_Out(PCF8574_I2C_ADDR1); // First digital output modul PCF8574 from Horter
+PCF8574 pcf8574_Modul1(PCF8574_I2C_ADDR1); // First digital IO modul PCF8574 from Horter
 
 // FRAM
 Adafruit_FRAM_I2C fram;
@@ -90,10 +88,11 @@ void hardwareInit(GwApi *api)
 
     Wire.begin();
     // Init PCF8574 digital outputs
-    Wire.setClock(I2C_SPEED);       // Set I2C clock on 10 kHz
-    if(pcf8574_Out.begin()){        // Initialize PCF8574
-        pcf8574_Out.write8(255);    // Clear all outputs
+    Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
+    if(pcf8574_Modul1.begin()){        // Initialize PCF8574
+        pcf8574_Modul1.write8(255);    // Clear all outputs (low activ)
     }
+    Wire.setClock(I2C_SPEED);       // Set I2C clock on 100 kHz
     fram = Adafruit_FRAM_I2C();
     if (esp_reset_reason() ==  ESP_RST_POWERON) {
         // help initialize FRAM
@@ -193,6 +192,28 @@ void powerInit(String powermode) {
 #endif
     }
 }
+
+void setPCF8574PortPinModul1(uint8_t pin, uint8_t value)
+{
+  static bool firstRunFinished;
+  static uint8_t port1;                      // Retained data for port bits 
+  // If fisrt run then set all outputs to low
+  if(firstRunFinished == false){
+    port1 = 255;                             // Low active
+    firstRunFinished = true;
+  }
+  if (pin > 7) return;
+  Wire.setClock(I2C_SPEED_LOW);              // Set I2C clock on 10 kHz for longer wires
+  // Set bit
+  if (pcf8574_Modul1.begin(port1))           // Check module availability and start it
+  {
+    if (value == LOW)  port1 &= ~(1 << pin); // Set bit
+    else               port1 |=  (1 << pin);
+    pcf8574_Modul1.write8(port1);            // Write byte
+  }
+  Wire.setClock(I2C_SPEED);                  // Set I2C clock on 100 kHz
+}
+
 
 void setPortPin(uint pin, bool value){
     pinMode(pin, OUTPUT);
@@ -305,6 +326,40 @@ void toggleBacklightLED(uint brightness, const Color &color){
     if (ledTaskData == nullptr) return;
     statusBacklightLED = !statusBacklightLED;
     Color nv=setBrightness(statusBacklightLED?color:COLOR_BLACK,brightness);
+    LedInterface current=ledTaskData->getLedData();
+    current.setBacklight(nv);
+    ledTaskData->setLedData(current); 
+}
+
+void stepsBacklightLED(uint brightness, const Color &color){
+    static uint step = 0;
+    uint actBrightness = 0;
+    // Different brightness steps
+    if(step == 0){
+        actBrightness = brightness;         // 100% from brightess
+        statusBacklightLED = true;
+    }
+    if(step == 1){
+        actBrightness = brightness * 0.5;   // 50% from brightess
+        statusBacklightLED = true;
+    }
+    if(step == 2){
+        actBrightness = brightness * 0.2;   // 20% from brightess
+        statusBacklightLED = true;
+    }
+    if(step == 3){
+        actBrightness = 0;                  // 0%
+        statusBacklightLED = false;
+    }
+    if(actBrightness < 5){                  // Limiter if values too low
+        actBrightness = 5;
+    }
+    step = step + 1;    // Increment step counter
+    if(step == 4){      // Reset counter
+        step = 0;
+    }
+    if (ledTaskData == nullptr) return;
+    Color nv=setBrightness(statusBacklightLED?color:COLOR_BLACK,actBrightness);
     LedInterface current=ledTaskData->getLedData();
     current.setBacklight(nv);
     ledTaskData->setLedData(current); 
@@ -429,12 +484,33 @@ void drawTextCenter(int16_t cx, int16_t cy, String text) {
     getdisplay().print(text);
 }
 
+// Draw centered botton with centered text
+void drawButtonCenter(int16_t cx, int16_t cy, int8_t sx, int8_t sy, String text, uint16_t fg, uint16_t bg, bool inverted) {
+    int16_t x1, y1;
+    uint16_t w, h;
+    uint16_t color;
+
+    getdisplay().getTextBounds(text, cx, cy, &x1, &y1, &w, &h); // Find text center
+    getdisplay().setCursor(cx - w/2, cy + h/2);                 // Set cursor to center
+    //getdisplay().drawPixel(cx, cy, fg);                         // Debug pixel for center position
+    if (inverted) {
+        getdisplay().fillRoundRect(cx - sx / 2, cy - sy / 2, sx, sy, 5, fg); // Draw button
+        getdisplay().setTextColor(bg);
+        getdisplay().print(text);                               // Draw text
+     }
+     else{
+        getdisplay().drawRoundRect(cx - sx / 2, cy - sy / 2, sx, sy, 5, fg); // Draw button
+        getdisplay().setTextColor(fg);
+        getdisplay().print(text);                               // Draw text
+     }
+}
+
 // Draw right aligned text
 void drawTextRalign(int16_t x, int16_t y, String text) {
     int16_t x1, y1;
     uint16_t w, h;
     getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
-    getdisplay().setCursor(x - w, y);
+    getdisplay().setCursor(x - w - 1, y); // '-1' required since some strings wrap around w/o it
     getdisplay().print(text);
 }
 
@@ -904,5 +980,31 @@ void doImageRequest(GwApi *api, int *pageno, const PageStruct pages[MAX_PAGE_NUM
 
     imageBuffer.clear();
 }
+
+
+
+// Calculate the distance between two Geo coordinates
+double distanceBetweenCoordinates(double lat1, double lon1, double lat2, double lon2) {
+    // Grad → Radiant
+    double lat1Rad = lat1 * DEG_TO_RAD;
+    double lon1Rad = lon1 * DEG_TO_RAD;
+    double lat2Rad = lat2 * DEG_TO_RAD;
+    double lon2Rad = lon2 * DEG_TO_RAD;
+
+    // Differenzen
+    double dLat = lat2Rad - lat1Rad;
+    double dLon = lon2Rad - lon1Rad;
+
+    // Haversine-Formel
+    double a = sin(dLat / 2.0) * sin(dLat / 2.0) +
+               cos(lat1Rad) * cos(lat2Rad) *
+               sin(dLon / 2.0) * sin(dLon / 2.0);
+
+    double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+
+    // Abstand in Metern
+    return double(EARTH_RADIUS) * c;
+}
+
 
 #endif

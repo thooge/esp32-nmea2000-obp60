@@ -7,6 +7,7 @@
 #include "Graphics.h"
 #include <GxEPD2_BW.h>                  // E-paper lib V2
 #include <Adafruit_FRAM_I2C.h>          // I2C FRAM
+#include <math.h>
 
 #ifdef BOARD_OBP40S3
 #include "esp_vfs_fat.h"
@@ -29,6 +30,9 @@
 // Barograph history data
 #define FRAM_BAROGRAPH_START 0x0400
 #define FRAM_BAROGRAPH_END 0x13FF
+
+#define PI 3.1415926535897932384626433832795
+#define EARTH_RADIUS 6371000.0
 
 extern Adafruit_FRAM_I2C fram;
 extern bool hasFRAM;
@@ -85,13 +89,14 @@ uint8_t getLastPage();
 void hardwareInit(GwApi *api);
 void powerInit(String powermode);
 
+void setPCF8574PortPinModul1(uint8_t pin, uint8_t value);// Set PCF8574 port pin
 void setPortPin(uint pin, bool value);          // Set port pin for extension port
-
 void togglePortPin(uint pin);                   // Toggle extension port pin
 
 Color colorMapping(const String &colorString);          // Color mapping string to CHSV colors
 void setBacklightLED(uint brightness, const Color &color);// Set backlight LEDs
 void toggleBacklightLED(uint brightness,const Color &color);// Toggle backlight LEDs
+void stepsBacklightLED(uint brightness, const Color &color);// Set backlight LEDs in 4 steps (100%, 50%, 10%, 0%)
 BacklightMode backlightMapping(const String &backlightString);// Configuration string to value
 
 void setFlashLED(bool status);                  // Set flash LED
@@ -104,6 +109,7 @@ void setBuzzerPower(uint power);                // Set buzzer power
 String xdrDelete(String input);                 // Delete xdr prefix from string
 
 void drawTextCenter(int16_t cx, int16_t cy, String text);
+void drawButtonCenter(int16_t cx, int16_t cy, int8_t sx, int8_t sy, String text, uint16_t fg, uint16_t bg, bool inverted);
 void drawTextRalign(int16_t x, int16_t y, String text);
 void drawTextBoxed(Rect box, String text, uint16_t fg, uint16_t bg, bool inverted, bool border);
 

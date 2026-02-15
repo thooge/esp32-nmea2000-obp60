@@ -53,16 +53,16 @@ types:
           - value: M5_ENV3#grv#
             key: true
             resource: qmp69881#grv#1,sht3x#grv#1
-#      - label: "M5 ENV4"
-#        type: checkbox
-#        key: m5env4#grv#
-#        target: define
-#        url: "https://docs.m5stack.com/en/unit/ENV%E2%85%A3%20Unit"
-#        description: "M5 sensor module temperature, humidity, pressure"
-#        values:
-#          - value: M5_ENV4#grv#
-#            key: true
-#            resource: bmp280#grv#1,sht3x#grv#1
+      - label: "M5 ENV4"
+        type: checkbox
+        key: m5env4#grv#
+        target: define
+        url: "https://docs.m5stack.com/en/unit/ENV%E2%85%A3%20Unit"
+        description: "M5 sensor module temperature, humidity, pressure"
+        values:
+          - value: M5_ENV4#grv#
+            key: true
+            resource: bmp280#grv#1,sht4x#grv#1
       - type: checkbox
         label: SHT3X-1
         description: "SHT30 temperature and humidity sensor 0x44"
@@ -179,6 +179,11 @@ types:
         description: "M5 Gps Unit"
         url: "https://docs.m5stack.com/en/unit/gps"
         resource: serial
+      - label: "Gps Unit v1.1"
+        value: M5_GPSV11_UNIT#grv#
+        description: "M5 Gps Unit v1.1"
+        url: "https://docs.m5stack.com/en/unit/Unit-GPS%20v1.1"
+        resource: serial
       - label: "RS232/RS422"
         value: SERIAL_GROOVE_232#grv#
         description: "Generic RS232/RS422 Unit (bidirectional)"
@@ -234,6 +239,46 @@ types:
       - 37
       - 38
 
+  - &gpiopinvs3
+      - {label: unset,value:}
+      - {label: "0: boot mode control",value: 0}
+      - 1
+      - 2
+      - {label: "3: JTAG control", value: 3}
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 17
+      - 18
+      - 19
+      - 20
+      - 21
+      - 33
+      - 34
+      - 35
+      - 36
+      - 37
+      - 38
+      - 39
+      - 40
+      - 41
+      - 42
+      - 43
+      - 44
+      - {label: "45: strapping pin", value: 45}
+      - {label: "46: strapping pin", value: 46}
+      - 47
+      - 48
+
+
   - &gpioinput
     type: dropdown
     resource: "gpio:"
@@ -275,12 +320,39 @@ types:
   
   - &protogpio
       - {label: unset,value:}
-      - PPIN19
-      - PPIN21
-      - PPIN22
-      - PPIN23
-      - PPIN25
-      - PPIN33
+      - {label: "PPIN19(left-2,gpio 19)", value: PPIN19}
+      - {label: "PPIN21(right-1,gpio 21)", value: PPIN21}
+      - {label: "PPIN22(left-1,gpio 22)", value: PPIN22}
+      - {label: "PPIN23(left-3,gpio 23)", value: PPIN23}
+      - {label: "PPIN25(right-2,gpio 25)", value: PPIN25}
+      - {label: "PPIN33(left-4,gpio 33)", value: PPIN33}
+  
+  - &protogpios3
+      - {label: unset,value:}
+      - {label: "PPIN19(left-2,gpio 6)", value: PPIN19}
+      - {label: "PPIN21(right-1,gpio 39)", value: PPIN21}
+      - {label: "PPIN22(left-1,gpio 5)", value: PPIN22}
+      - {label: "PPIN23(left-3,gpio 7)", value: PPIN23}
+      - {label: "PPIN25(right-2,gpio 38)", value: PPIN25}
+      - {label: "PPIN33(left-4,gpio 8)", value: PPIN33}  
+  
+  - &baudselect
+    type: dropdown
+    help: 'Select the baud rate'
+    values: 
+            - {label: unset,value:}
+            - 1200
+            - 2400
+            - 4800
+            - 9600
+            - 14400
+            - 19200
+            - 28800
+            - 38400
+            - 57600
+            - 115200
+            - 230400
+            - 460800
   
   - &serialRX
     <<: *gpioinput
@@ -294,6 +366,33 @@ types:
     help: 'number of the GPIO pin for the transmit function'
     target: "define:#serial#TX"
     mandatory: true
+  - &serialEnablePin
+    <<: *gpiopin
+    key: ENA
+    label: "enable pin"
+    help: "GPIO pin for output enable"
+    target: "define:#serial#ENA"
+    mandatory: false
+  - &serialEnableLow
+    type: checkbox
+    key: ELOW
+    label: "enable low"
+    target: "define:#serial#ELO"
+    default: false
+    help: "set: low on enable pin for output, unset: high on enable pin for output"
+    values:
+    - key: true
+      value: 1
+    - key: false
+      value: 0
+  
+  - &serialFixedBaud
+    <<: *baudselect
+    key: fixedBaud
+    label: "fixed baud"
+    help: "you can set a fixed baud rate here, this disables changing the baud rate in the UI"
+    target: "define:#serial#BAUD"
+
   - &serialValues
       - key: true
         children:
@@ -310,6 +409,9 @@ types:
               children:
                 - *serialRX
                 - *serialTX
+                - *serialEnablePin
+                - *serialEnableLow
+                - *serialFixedBaud
             - key: bi
               value: 2
               label: "BiDir" 
@@ -318,18 +420,25 @@ types:
               children:
                 - *serialRX
                 - *serialTX
+                - *serialFixedBaud
             - key: rx
               value: 3
               label: "RX"    
               description: "Input only"
               children:
                 - *serialRX
+                - *serialEnablePin
+                - *serialEnableLow
+                - *serialFixedBaud
             - key: tx
               value: 1
               label: "TX"
               description: "output only"    
               children:
                 - *serialTX
+                - *serialEnablePin
+                - *serialEnableLow
+                - *serialFixedBaud
   - &serial1
     type: checkbox
     label: 'Serial 1'
@@ -664,13 +773,18 @@ types:
           label: "Gps Base"
           url: "https://docs.m5stack.com/en/atom/atomicgps"
           resource: serial
+        - value: M5_GPSV2_KIT
+          description: "M5 Stack Gps Base v2.0"
+          label: "Gps Base"
+          url: "https://docs.m5stack.com/en/atom/Atomic_GPS_Base_v2.0"
+          resource: serial
         - value: M5_PROTO_HUB
           description: "M5 Stack HUB PROTO"
           url: "https://docs.m5stack.com/en/atom/atomhub"
           label: "Hub Proto"
           base:
-            gpioinputv: *protogpio
-            gpiopinv: *protogpio
+            gpioinputv: "#protogpio#"
+            gpiopinv: "#protogpio#"
           children:
             *m5protochildren
         - value: M5_PORTABC
@@ -689,6 +803,13 @@ resources:
 
 config:
   children:
+    - type: string
+      label: 'Build Name'
+      key: buildname
+      target: "define:GWBUILD_NAME"
+      help: "Set a name to identify your build. Will also become the name for the generated files and the firmware type in the image. Max 31 characters."
+      max: 31
+      allowed: "0-9A-Za-z_-"
     - type: select
       target: environment
       label: 'Board'
@@ -697,6 +818,7 @@ config:
         gpiopinv: *gpiopinv
         gpioinputv: *gpioinputv
         grv: ""
+        protogpio: *protogpio
       values: 
         - value: m5stack-atom-generic
           label: m5stack-atom
@@ -711,6 +833,8 @@ config:
           description: "M5 Stack AtomS3 light"
           url: "http://docs.m5stack.com/en/core/AtomS3%20Lite"
           resource: *esp32default
+          base:
+            protogpio: *protogpios3
           children:
             - *m5base    
             - *m5groove
@@ -725,7 +849,7 @@ config:
 
         - value: nodemcu-generic
           label: nodemcu
-          description: "Node mcu esp32"
+          description: "Node mcu esp32,4MB flash, no PSRAM"
           url: "https://docs.platformio.org/en/stable/boards/espressif32/nodemcu-32s.html"
           resource: *esp32default
           children:
@@ -740,6 +864,38 @@ config:
                 bus: ""
             - <<: *iicsensors
               base: 
+                busname: "2"
+                bus: "2"
+            - <<: *spisensors
+              base:
+                busname: "1"
+                bus: "1"
+            - <<: *spisensors
+              base:
+                busname: "2"
+                bus: "2"
+
+        - value: s3devkitm-generic
+          label: s3devkitm
+          description: "esp32 s3 generic, 8MB flash, no PSRAM "
+          url: "https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/hw-reference/esp32s3/user-guide-devkitm-1.html"
+          resource: *esp32default
+          base:
+            gpiopinv: *gpiopinvs3
+            gpioinputv: *gpiopinvs3
+            protogpio: *protogpios3
+          children:
+            - *serial1
+            - *serial2
+            - *can
+            - *resetButton
+            - *led
+            - <<: *iicsensors
+              base:
+                busname: "1"
+                bus: ""
+            - <<: *iicsensors
+              base:
                 busname: "2"
                 bus: "2"
             - <<: *spisensors

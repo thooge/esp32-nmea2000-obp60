@@ -12,7 +12,6 @@
 #include <GxEPD2_BW.h>                  // GxEPD2 lib for b/w E-Ink displays
 #include "OBP60Extensions.h"            // Functions lib for extension board
 #include "OBP60Keypad.h"                // Functions for keypad
-#include "BoatDataCalibration.h"        // Functions lib for data instance calibration
 #include "OBPDataOperations.h"          // Functions lib for data operations such as true wind calculation
 
 #ifdef BOARD_OBP40S3
@@ -147,7 +146,6 @@ void keyboardTask(void *param){
     vTaskDelete(NULL);
 }
 
-// Scorgan: moved class declaration to header file <obp60task.h> to make class available to other functions
 // --- Class BoatValueList --------------
 bool BoatValueList::addValueToList(GwApi::BoatValue *v){
     for (int i=0;i<numValues;i++){
@@ -172,7 +170,7 @@ GwApi::BoatValue *BoatValueList::findValueOrCreate(String name){
     addValueToList(rt);
     return rt;
 }
-// --- Class BoatValueList --------------
+// --- End Class BoatValueList --------------
 
 //we want to have a list that has all our page definitions
 //this way each page can easily be added here
@@ -260,6 +258,12 @@ void registerAllPages(PageList &list){
     list.add(&registerPageFluid);
     extern PageDescription registerPageSkyView;
     list.add(&registerPageSkyView);
+    extern PageDescription registerPageNavigation;
+    list.add(&registerPageNavigation);
+    extern PageDescription registerPageDigitalOut;
+    list.add(&registerPageDigitalOut);
+    extern PageDescription registerPageAutopilot;
+    list.add(&registerPageAutopilot);
     extern PageDescription registerPageAnchor;
     list.add(&registerPageAnchor);
 }
@@ -330,7 +334,7 @@ void OBP60Task(GwApi *api){
 //    return;
     GwLog *logger=api->getLogger();
     GwConfigHandler *config=api->getConfig();
-#ifdef HARDWARE_V21
+#if defined HARDWARE_V20 || HARDWARE_V21
     startLedTask(api);
 #endif
     PageList allPages;
@@ -339,7 +343,7 @@ void OBP60Task(GwApi *api){
     commonData.logger=logger;
     commonData.config=config;
 
-#ifdef HARDWARE_V21
+#if defined HARDWARE_V20 || HARDWARE_V21
     // Keyboard coordinates for page footer
     initKeys(commonData);
 #endif
@@ -430,13 +434,12 @@ void OBP60Task(GwApi *api){
 #endif
     LOG_DEBUG(GwLog::LOG,"...done");
 
-    int lastPage=pageNumber;
+    int lastPage=-1; // initialize with an impiossible value, so we can detect wether we are during startup and no page has been displayed yet
 
     BoatValueList boatValues; //all the boat values for the api query
-    HstryBuf hstryBufList(1920);  // Create ring buffers for history storage of some boat data (1920 seconds = 32 minutes)
-    WindUtils trueWind(&boatValues);  // Create helper object for true wind calculation
-    //commonData.distanceformat=config->getString(xxx);
-    //add all necessary data to common data
+    HstryBuffers hstryBufferList(1920, &boatValues, logger);  // Create empty list of boat data history buffers (1.920 values = seconds = 32 min.)
+    WindUtils trueWind(&boatValues, logger);  // Create helper object for true wind calculation
+    CalibrationData calibrationDataList(logger); // all boat data types which are supposed to be calibrated
 
     //fill the page data from config
     numPages=config->getInt(config->visiblePages,1);
@@ -477,21 +480,26 @@ void OBP60Task(GwApi *api){
             LOG_DEBUG(GwLog::DEBUG,"added fixed value %s to page %d",value->getName().c_str(),i);
             pages[i].parameters.values.push_back(value); 
        }
-       // Add boat history data to page parameters
-       pages[i].parameters.boatHstry = &hstryBufList;
+
+       // Read the specified boat data types of relevant pages and create a history buffer for each type
+       if (pages[i].parameters.pageName == "OneValue" || pages[i].parameters.pageName == "TwoValues" || pages[i].parameters.pageName == "WindPlot") {
+           for (auto pVal : pages[i].parameters.values) {
+                hstryBufferList.addBuffer(pVal->getName());
+           }
+       }
+       // Add list of history buffers to page parameters
+       pages[i].parameters.hstryBuffers = &hstryBufferList;
+
     }
+
     // add out of band system page (always available)
     Page *syspage = allPages.pages[0]->creator(commonData);
 
-    // Read all calibration data settings from config
-    calibrationData.readConfig(config, logger);
-
-    // Check user settings for true wind calculation
+    // Read user settings from config file
     bool calcTrueWnds = api->getConfig()->getBool(api->getConfig()->calcTrueWnds, false);
     bool useSimuData = api->getConfig()->getBool(api->getConfig()->useSimuData, false);
-
-    // Initialize history buffer for certain boat data
-    hstryBufList.init(&boatValues, logger);
+    // Read user calibration data settings from config file
+    calibrationDataList.readConfig(config);
 
     // Display screenshot handler for HTTP request
     // http://192.168.15.1/api/user/OBP60Task/screenshot
@@ -523,7 +531,7 @@ void OBP60Task(GwApi *api){
 
     commonData.backlight.mode = backlightMapping(config->getConfigItem(config->backlight,true)->asString());
     commonData.backlight.color = colorMapping(config->getConfigItem(config->blColor,true)->asString());
-    commonData.backlight.brightness = 2.55 * uint(config->getConfigItem(config->blBrightness,true)->asInt());
+    commonData.backlight.brightness = uint(config->getConfigItem(config->blBrightness,true)->asInt());
     commonData.powermode = api->getConfig()->getConfigItem(api->getConfig()->powerMode,true)->asString();
 
     bool uvoltage = config->getConfigItem(config->underVoltage, true)->asBoolean();
@@ -650,7 +658,7 @@ void OBP60Task(GwApi *api){
                     // if(String(backlight) == "Control by Key"){
                         if(keyboardMessage == 6){
                             LOG_DEBUG(GwLog::LOG,"Toggle Backlight LED");
-                            toggleBacklightLED(commonData.backlight.brightness, commonData.backlight.color);
+                            stepsBacklightLED(commonData.backlight.brightness, commonData.backlight.color);
                         }
                     }
                     #ifdef BOARD_OBP40S3
@@ -806,10 +814,10 @@ void OBP60Task(GwApi *api){
                 api->getStatus(commonData.status);
 
                 if (calcTrueWnds) {
-                    trueWind.addTrueWind(api, &boatValues, logger);
+                    trueWind.addWinds(); // calculate true wind data from apparent wind values
                 }
-                // Handle history buffers for TWD, TWS for wind plot page and other usage
-                 hstryBufList.handleHstryBuf(useSimuData);
+                calibrationDataList.handleCalibration(&boatValues); // Process calibration for all boat data in <calibrationDataList>
+                hstryBufferList.handleHstryBufs(useSimuData, commonData); // Handle history buffers for certain boat data for windplot page and other usage
 
                 // Clear display
                 // getdisplay().fillRect(0, 0, getdisplay().width(), getdisplay().height(), commonData.bgcolor);
@@ -846,8 +854,10 @@ void OBP60Task(GwApi *api){
                     }
                     else{
                         if (lastPage != pageNumber){
-                            pages[lastPage].page->leavePage(pages[lastPage].parameters); // call page cleanup code
-                            if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember new page for device restart
+			    if (lastPage != -1){ // skip cleanup if we are during startup, and no page has been displayed yet. 
+                                pages[lastPage].page->leavePage(pages[lastPage].parameters); // call page cleanup code
+                                if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember new page for device restart
+			    }
                             currentPage->setupKeys();
                             currentPage->displayNew(pages[pageNumber].parameters);
                             lastPage = pageNumber;

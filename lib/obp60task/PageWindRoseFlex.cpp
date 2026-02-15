@@ -2,13 +2,11 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
-#include "BoatDataCalibration.h"
 
 class PageWindRoseFlex : public Page
 {
 int16_t lp = 80;                    // Pointer length
 char source = 'A';		    // data source (A)pparent | (T)rue
-String 	ssource="App.";		    // String for Data Source 
 
 public:
     PageWindRoseFlex(CommonData &common){
@@ -26,10 +24,8 @@ public:
 	 // Code for set source 
 	    if(source == 'A'){ 
 		    source = 'T'; 
-		    ssource = "True"; // String to display
 	    } else { 
 		    source = 'A'; 
-		    ssource = "App."; // String to display
 	    } 
 	   } 
 	return key;               // Commit the key
@@ -82,7 +78,6 @@ public:
         }
         String name1 = bvalue1->getName().c_str();      // Value name
         name1 = name1.substring(0, 6);                  // String length limit for value name
-        calibrationData.calibrateInstance(bvalue1, logger); // Check if boat data value is to be calibrated
         double value1 = bvalue1->value;                 // Value as double in SI unit
         bool valid1 = bvalue1->valid;                   // Valid information
         String svalue1 = formatValue(bvalue1, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -100,7 +95,6 @@ public:
         }
         String name2 = bvalue2->getName().c_str();      // Value name
         name2 = name2.substring(0, 6);                  // String length limit for value name
-        calibrationData.calibrateInstance(bvalue2, logger); // Check if boat data value is to be calibrated
         double value2 = bvalue2->value;                 // Value as double in SI unit
         bool valid2 = bvalue2->valid;                   // Valid information
         if (simulation) {
@@ -125,7 +119,6 @@ public:
         else{
             name3font=Ubuntu_Bold12pt8b;
         }
-        calibrationData.calibrateInstance(bvalue3, logger); // Check if boat data value is to be calibrated
         double value3 = bvalue3->value;                 // Value as double in SI unit
         bool valid3 = bvalue3->valid;                   // Valid information 
         String svalue3 = formatValue(bvalue3, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -145,7 +138,6 @@ public:
         else{
             name4font=Ubuntu_Bold12pt8b;
         }
-        calibrationData.calibrateInstance(bvalue4, logger); // Check if boat data value is to be calibrated
         double value4 = bvalue4->value;                 // Value as double in SI unit
         bool valid4 = bvalue4->valid;                   // Valid information 
         String svalue4 = formatValue(bvalue4, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -165,7 +157,6 @@ public:
         else{
             name5font=Ubuntu_Bold12pt8b;
         }
-        calibrationData.calibrateInstance(bvalue5, logger); // Check if boat data value is to be calibrated
         double value5 = bvalue5->value;                 // Value as double in SI unit
         bool valid5 = bvalue5->valid;                   // Valid information 
         String svalue5 = formatValue(bvalue5, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -185,7 +176,6 @@ public:
         else{
             name6font=Ubuntu_Bold8pt8b;
         }
-        calibrationData.calibrateInstance(bvalue6, logger); // Check if boat data value is to be calibrated
         double value6 = bvalue6->value;                 // Value as double in SI unit
         bool valid6 = bvalue6->valid;                   // Valid information 
         String svalue6 = formatValue(bvalue6, *commonData).svalue;    // Formatted value as string including unit conversion and switching decimal places
@@ -381,12 +371,22 @@ public:
         }
 
         // Center circle
-        getdisplay().fillCircle(200, 150, startwidth + 6, commonData->bgcolor);
-        getdisplay().fillCircle(200, 150, startwidth + 4, commonData->fgcolor);
+        getdisplay().fillCircle(200, 150, startwidth + 8, commonData->bgcolor);
+        getdisplay().fillCircle(200, 150, startwidth + 6, commonData->fgcolor);
+        getdisplay().fillCircle(200, 150, startwidth + 4, commonData->bgcolor);
+    	getdisplay().setFont(&Ubuntu_Bold10pt8b);
+    	if (source=='A'){
+		getdisplay().setCursor(193, 155);
+	}
+	else {
+		getdisplay().setCursor(195, 156);
+	}
+    	getdisplay().print({source}); 
+
 
 //*******************************************************************************************
 
-	// Show value6 (=fourth user-configured parameter) and ssource, so that they do not collide with the wind pointer
+	// Show value6 (=fourth user-configured parameter) 
 if ( cos(value1) > 0){ 
     //pointer points upwards 
     getdisplay().setFont(&DSEG7Classic_BoldItalic16pt7b);
@@ -401,13 +401,6 @@ if ( cos(value1) > 0){
     else{  
         getdisplay().print(unit6old);                // Unit
     }
-    if (sin(value1)>0){
-	    getdisplay().setCursor(160, 130);
-    }
-    else{
-	    getdisplay().setCursor(220, 130);
-    }
-    getdisplay().print(ssource);		// true or app.
 }
 else{ 
     // pointer points downwards
@@ -423,13 +416,6 @@ else{
     else{  
         getdisplay().print(unit6old);                // Unit
     }
-    if (sin(value1)>0){
-	    getdisplay().setCursor(160, 200);
-    }
-    else{
-	    getdisplay().setCursor(220, 200);
-    }
-    getdisplay().print(ssource);		//true or app. 
 }
 
         return PAGE_UPDATE;

@@ -17,10 +17,10 @@ const int ShowSTW = 3;
 const int ShowSOG = 4;
 const int ShowDBS = 5;
 
-const int Compass_X0 = 200;         // center point of compass band
-const int Compass_Y0 = 220;         // position of compass lines
-const int Compass_LineLength = 22;  // length of compass lines
-const float Compass_LineDelta = 8.0;// compass band: 1deg = 5 Pixels, 10deg = 50 Pixels 
+const int Compass_X0 = 200;         // X center point of compass band
+const int Compass_Y0 = 220;         // Y position of compass lines
+const int Compass_LineLength = 22;  // Length of compass lines
+const float Compass_LineDelta = 8.0;// Compass band: 1deg = 5 Pixels, 10deg = 50 Pixels 
 
 class PageCompass : public Page
 {

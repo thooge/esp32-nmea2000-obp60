@@ -49,8 +49,10 @@ void sensorTask(void *param){
 
     // Init sensor stuff
     bool oneWire_ready = false;     // 1Wire initialized and ready to use
+    bool iRTC_ready = false;        // Software RTC initialized and ready to use
     bool RTC_ready = false;         // DS1388 initialized and ready to use
     bool GPS_ready = false;         // GPS initialized and ready to use
+    bool N2K_GPS_ready = false;     // GPS time on N2K bus
     bool BME280_ready = false;      // BME280 initialized and ready to use
     bool BMP280_ready = false;      // BMP280 initialized and ready to use
     bool BMP180_ready = false;      // BMP180 initialized and ready to use
@@ -382,6 +384,7 @@ void sensorTask(void *param){
             if (getLocalTime(&timeinfo)) {
                 api->getLogger()->logDebug(GwLog::LOG,"NTP time: %04d-%02d-%02d %02d:%02d:%02d UTC", timeinfo.tm_year+1900, timeinfo.tm_mon+1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
                 rtc.setTimeStruct(timeinfo);
+                iRTC_ready = true;
                 sensors.rtcValid = true;
             } else {
                 api->getLogger()->logDebug(GwLog::LOG,"NTP time fetch failed!");
@@ -400,7 +403,7 @@ void sensorTask(void *param){
         if (millis() > starttime0 + 100)
         {
             starttime0 = millis();
-            // Send NMEA0183 GPS data on several bus systems all 100ms
+            // Send NMEA0183 GPS data on several bus systems (N2K an 0183) all 100ms
             if (GPS_ready == true && hdop->value <= hdopAccuracy)
             {
                 SNMEA0183Msg NMEA0183Msg;
@@ -412,9 +415,55 @@ void sensorTask(void *param){
             
         }
 
-        // If RTC DS1388 ready, then copy GPS data to RTC all 5min
-        if(millis() > starttime11 + 5*60*1000){
+        /*
+        Time set logic for RTC and N2K
+        ###############################
+
+        iRTC = Software RTC updatetd with NTP via internet
+        RTC = RTC chip on PCB
+        GPS = GPS Receiver on PCB
+        N2K = GPS time on N2K od 183 bus
+        0 = device not ready
+        1 = device ready
+        X = independend
+        () = source for set time N2K
+        -> = set RTC via iRTC
+        <- = set RTC via GPS
+
+        iRTC  RTC  GPS N2K
+          0    0    0  (1)
+          0    0   (1) (X)
+          0   (1)   0  (X)
+          0    1 <-(1) (X)
+         (1)   0    0  (X)
+          1    0   (1) (X)
+          1 ->(1)   0  (X)
+          1    1 <-(1) (X)
+
+        */
+
+        // If RTC DS1388 ready, then copy iRTC and GPS data to RTC all 1min
+        if(millis() > starttime11 + 1*60*1000){
             starttime11 = millis();
+            // Set RTC chip via iRTC (NTP)
+            if(iRTC_ready == true && RTC_ready == true && GPS_ready == false){
+                GwApi::Status status;
+                api->getStatus(status);
+                // Check WiFi connection
+                if (status.wifiClientConnected) {
+                    sensors.rtcTime = rtc.getTimeStruct();  // Get time from software RTC (iRTC)      
+                    DateTime now = DateTime(
+                        sensors.rtcTime.tm_year + 1900,
+                        sensors.rtcTime.tm_mon + 1,
+                        sensors.rtcTime.tm_mday,
+                        sensors.rtcTime.tm_hour,
+                        sensors.rtcTime.tm_min,
+                        sensors.rtcTime.tm_sec
+                    );   
+                    ds1388.adjust(now);
+                }    
+            }
+            // Set RTC chip via internal GPS
             if(rtcOn == "DS1388" && RTC_ready == true && GPS_ready == true){
                 api->getBoatDataValues(3,valueList);
                 if(gpsdays->valid && gpsseconds->valid && hdop->valid){
@@ -422,40 +471,33 @@ void sensorTask(void *param){
                     // sample input: date = "Dec 26 2009", time = "12:34:56"
                     // ds1388.adjust(DateTime("Dec 26 2009", "12:34:56"));
                     DateTime adjusttime(ts);
-                    api->getLogger()->logDebug(GwLog::LOG,"Adjust RTC time: %04d/%02d/%02d %02d:%02d:%02d",adjusttime.year(), adjusttime.month(), adjusttime.day(), adjusttime.hour(), adjusttime.minute(), adjusttime.second());
+                    api->getLogger()->logDebug(GwLog::LOG,"Adjust RTC time via internal GPS: %04d/%02d/%02d %02d:%02d:%02d",adjusttime.year(), adjusttime.month(), adjusttime.day(), adjusttime.hour(), adjusttime.minute(), adjusttime.second());
                     // Adjust RTC time as unix time value
                     ds1388.adjust(adjusttime);
                 }
-            }
+            }          
         }
 
-        // Send 1Wire data for all temperature sensors all 2s
-        if(millis() > starttime13 + 2000 && String(oneWireOn) == "DS18B20" && oneWire_ready == true){
-            starttime13 = millis();
-            float tempC;
-            ds18b20.requestTemperatures();  // Collect all temperature values (max.8)
-            for(int i=0;i<numberOfDevices; i++){
-                // Send only one 1Wire data per loop step (time reduction)
-                if(i == loopCounter % numberOfDevices){
-                    if(ds18b20.getAddress(tempDeviceAddress, i)){
-                        // Read temperature value in Celsius
-                        tempC = ds18b20.getTempC(tempDeviceAddress); 
-                    }
-                    // Send to NMEA200 bus for each sensor with instance number
-                    if(!isnan(tempC)){
-                        sensors.onewireTemp[i] = tempC; // Save values in SensorData
-                        api->getLogger()->logDebug(GwLog::DEBUG,"DS18B20-%1d Temp: %.1f",i,tempC);
-                        SetN2kPGN130316(N2kMsg, 0, i, N2kts_OutsideTemperature, CToKelvin(tempC), N2kDoubleNA);
-                        api->sendN2kMessage(N2kMsg);
-                    }
-                }    
-            }
-            loopCounter++;
+        // Set RTC chip via N2K or 183 in case the internal GPS is off (only one time)
+        if(N2K_GPS_ready == false && RTC_ready == true && GPS_ready == false){
+            api->getBoatDataValues(3,valueList);
+            if(gpsdays->valid && gpsseconds->valid && hdop->valid){
+                long ts = tNMEA0183Msg::daysToTime_t(gpsdays->value - (30*365+7))+floor(gpsseconds->value); // Adjusted to reference year 2000 (-30 years and 7 days for switch years)
+                // sample input: date = "Dec 26 2009", time = "12:34:56"
+                // ds1388.adjust(DateTime("Dec 26 2009", "12:34:56"));
+                DateTime adjusttime(ts);
+                api->getLogger()->logDebug(GwLog::LOG,"Adjust RTC time via N2K/183: %04d/%02d/%02d %02d:%02d:%02d",adjusttime.year(), adjusttime.month(), adjusttime.day(), adjusttime.hour(), adjusttime.minute(), adjusttime.second());
+                // Adjust RTC time as unix time value
+                ds1388.adjust(adjusttime);
+                // N2K GPS time ready
+                N2K_GPS_ready = true;
+            }    
         }
 
-        // Get current RTC date and time all 500ms
+        // Send RTC date and time to N2K all 500ms
         if (millis() > starttime12 + 500) {
             starttime12 = millis();
+            // Send date and time from RTC chip if GPS not ready
             if (rtcOn == "DS1388" && RTC_ready) {
                 DateTime dt = ds1388.now();
                 sensors.rtcTime.tm_year  = dt.year() - 1900; // Save values in SensorData
@@ -481,21 +523,62 @@ void sensorTask(void *param){
                     }
                     // N2K sysTime is double in n2klib
                     double sysTime = (dt.hour() * 3600) + (dt.minute() * 60) + dt.second();
-                    // WHY? isnan should always fail here
-                    //if(!isnan(daysAt1970) && !isnan(sysTime)){
+                    if(!isnan(daysAt1970) && !isnan(sysTime)){
                         //api->getLogger()->logDebug(GwLog::LOG,"RTC time: %04d/%02d/%02d %02d:%02d:%02d",sensors.rtcTime.tm_year+1900,sensors.rtcTime.tm_mon, sensors.rtcTime.tm_mday, sensors.rtcTime.tm_hour, sensors.rtcTime.tm_min, sensors.rtcTime.tm_sec);
                         //api->getLogger()->logDebug(GwLog::LOG,"Send PGN126992: %10d %10d",daysAt1970, (uint16_t)sysTime);
                         SetN2kPGN126992(N2kMsg,0,daysAt1970,sysTime,N2ktimes_LocalCrystalClock);
                         api->sendN2kMessage(N2kMsg);
-                    // }
+                    }
                 }
-            } else if (sensors.rtcValid) {
-                // use internal rtc feature
-                sensors.rtcTime = rtc.getTimeStruct();
+            }
+            // Send date and time from software RTC (iRTC)
+            if (iRTC_ready == true && RTC_ready == false && GPS_ready == false) {
+                // Use internal RTC feature
+                sensors.rtcTime = rtc.getTimeStruct(); // Save software RTC values in SensorData
+                // TODO implement daysAt1970 and sysTime as methods of DateTime
+                const short daysOfYear[12] = {0,31,59,90,120,151,181,212,243,273,304,334};
+                uint16_t switchYear = ((sensors.rtcTime.tm_year-1)-1968)/4 - ((sensors.rtcTime.tm_year-1)-1900)/100 + ((sensors.rtcTime.tm_year-1)-1600)/400;
+                long daysAt1970 = (sensors.rtcTime.tm_year-1970)*365 + switchYear + daysOfYear[sensors.rtcTime.tm_mon-1] + sensors.rtcTime.tm_mday-1;
+                // If switch year then add one day
+                if ((sensors.rtcTime.tm_mon > 2) && (sensors.rtcTime.tm_year % 4 == 0  && (sensors.rtcTime.tm_year % 100 != 0 || sensors.rtcTime.tm_year % 400 == 0))) {
+                    daysAt1970 += 1;
+                }
+                // N2K sysTime is double in n2klib
+                double sysTime = (sensors.rtcTime.tm_hour * 3600) + (sensors.rtcTime.tm_min * 60) + sensors.rtcTime.tm_sec;
+                if(!isnan(daysAt1970) && !isnan(sysTime)){
+                    //api->getLogger()->logDebug(GwLog::LOG,"RTC time: %04d/%02d/%02d %02d:%02d:%02d",sensors.rtcTime.tm_year+1900,sensors.rtcTime.tm_mon, sensors.rtcTime.tm_mday, sensors.rtcTime.tm_hour, sensors.rtcTime.tm_min, sensors.rtcTime.tm_sec);
+                    //api->getLogger()->logDebug(GwLog::LOG,"Send PGN126992: %10d %10d",daysAt1970, (uint16_t)sysTime);
+                    SetN2kPGN126992(N2kMsg,0,daysAt1970,sysTime,N2ktimes_LocalCrystalClock);
+                    api->sendN2kMessage(N2kMsg);
+                }
             }
         }
 
-        // Send supply voltage value all 1s
+        // Send 1Wire data for all temperature sensors to N2K all 2s
+        if(millis() > starttime13 + 2000 && String(oneWireOn) == "DS18B20" && oneWire_ready == true){
+            starttime13 = millis();
+            float tempC;
+            ds18b20.requestTemperatures();  // Collect all temperature values (max.8)
+            for(int i=0;i<numberOfDevices; i++){
+                // Send only one 1Wire data per loop step (time reduction)
+                if(i == loopCounter % numberOfDevices){
+                    if(ds18b20.getAddress(tempDeviceAddress, i)){
+                        // Read temperature value in Celsius
+                        tempC = ds18b20.getTempC(tempDeviceAddress); 
+                    }
+                    // Send to NMEA200 bus for each sensor with instance number
+                    if(!isnan(tempC)){
+                        sensors.onewireTemp[i] = tempC; // Save values in SensorData
+                        api->getLogger()->logDebug(GwLog::DEBUG,"DS18B20-%1d Temp: %.1f",i,tempC);
+                        SetN2kPGN130316(N2kMsg, 0, i, N2kts_OutsideTemperature, CToKelvin(tempC), N2kDoubleNA);
+                        api->sendN2kMessage(N2kMsg);
+                    }
+                }    
+            }
+            loopCounter++;
+        }
+
+        // Send supply voltage value to N2K all 1s
         if(millis() > starttime5 + 1000 && String(powsensor1) == "off"){
             starttime5 = millis();
             float rawVoltage = 0;       // Default value
@@ -565,7 +648,7 @@ void sensorTask(void *param){
             #endif
         }
 
-        // Send data from environment sensor all 2s
+        // Send data from environment sensor to N2K all 2s
         if(millis() > starttime6 + 2000){
             starttime6 = millis();
             unsigned char TempSource = 2;       // Inside temperature
@@ -630,7 +713,7 @@ void sensorTask(void *param){
             }                
         }
 
-        // Send rotation angle all 500ms
+        // Send rotation angle to N2K all 500ms
         if(millis() > starttime7 + 500){
             starttime7 = millis();
             double rotationAngle=0;
@@ -678,7 +761,7 @@ void sensorTask(void *param){
             }    
         }
 
-        // Send battery power value all 1s
+        // Send battery power value to N2K all 1s
         if(millis() > starttime8 + 1000 && (String(powsensor1) == "INA219" || String(powsensor1) == "INA226")){
             starttime8 = millis();
             if(String(powsensor1) == "INA226" && INA226_1_ready == true){
@@ -720,7 +803,7 @@ void sensorTask(void *param){
             }
         }
 
-        // Send solar power value all 1s
+        // Send solar power value to N2K all 1s
         if(millis() > starttime9 + 1000 && (String(powsensor2) == "INA219" || String(powsensor2) == "INA226")){
             starttime9 = millis();
             if(String(powsensor2) == "INA226" && INA226_2_ready == true){
@@ -750,7 +833,7 @@ void sensorTask(void *param){
             }
         }
 
-        // Send generator power value all 1s
+        // Send generator power value to N2K all 1s
         if(millis() > starttime10 + 1000 && (String(powsensor3) == "INA219" || String(powsensor3) == "INA226")){
             starttime10 = millis();
             if(String(powsensor3) == "INA226" && INA226_3_ready == true){

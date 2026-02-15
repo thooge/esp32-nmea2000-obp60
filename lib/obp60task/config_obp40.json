@@ -260,7 +260,7 @@
         "label": "Calculate True Wind",
         "type": "boolean",
         "default": "false",
-        "description": "If not available, calculate true wind data from appearant wind and other boat data",
+        "description": "If not available, calculate true wind data from apparent wind and other boat data",
         "category": "OBP40 Settings",
         "capabilities": {
             "obp40": "true"
@@ -709,6 +709,61 @@
         }
     },
     {
+        "name": "mod1Out1",
+        "label": "Name1",
+        "type": "string",
+        "default": "text1",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "mod1Out2",
+        "label": "Name2",
+        "type": "string",
+        "default": "text2",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "mod1Out3",
+        "label": "Name3",
+        "type": "string",
+        "default": "text3",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "mod1Out4",
+        "label": "Name4",
+        "type": "string",
+        "default": "text4",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "mod1Out5",
+        "label": "Name5",
+        "type": "string",
+        "default": "text5",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
         "name": "tSensitivity",
         "label": "Touch Sensitivity [%]",
         "type": "number",
@@ -755,8 +810,10 @@
             "AWA",
             "AWS",
             "COG",
+            "DBS",
             "DBT",
             "HDM",
+            "HDT",
             "PRPOS",
             "RPOS",
             "SOG",
@@ -782,7 +839,7 @@
             "obp40":"true"
         },
         "condition": [
-            { "calInstance1": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+            { "calInstance1": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
         ]
     },
     {
@@ -790,13 +847,13 @@
         "label": "Data Instance 1 Calibration Slope",
         "type": "number",
         "default": "1.00",
-        "description": "Slope for data instance 1",
+        "description": "Slope for data instance 1, Default: 1(!)",
         "category": "OBP40 Calibrations",
         "capabilities": {
             "obp40":"true"
         },
         "condition": [
-            { "calInstance1": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+            { "calInstance1": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
         ]
     },
     {
@@ -813,7 +870,7 @@
             "obp40":"true"
         },
         "condition": [
-            { "calInstance1": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+            { "calInstance1": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
         ]
     },
     {
@@ -827,8 +884,10 @@
             "AWA",
             "AWS",
             "COG",
+            "DBS",
             "DBT",
             "HDM",
+            "HDT",
             "PRPOS",
             "RPOS",
             "SOG",
@@ -854,7 +913,7 @@
             "obp40":"true"
         },
         "condition": [
-            { "calInstance2": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+            { "calInstance2": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
         ]
     },
     {
@@ -862,13 +921,13 @@
         "label": "Data Instance 2 Calibration Slope",
         "type": "number",
         "default": "1.00",
-        "description": "Slope for data instance 2",
+        "description": "Slope for data instance 2; Default: 1(!)",
         "category": "OBP40 Calibrations",
         "capabilities": {
             "obp40":"true"
         },
         "condition": [
-            { "calInstance2": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+            { "calInstance2": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
         ]
     },
     {
@@ -885,7 +944,7 @@
             "obp40":"true"
         },
         "condition": [
-            { "calInstance2": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+            { "calInstance2": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
         ]
     },
     {
@@ -899,8 +958,10 @@
             "AWA",
             "AWS",
             "COG",
+            "DBS",
             "DBT",
             "HDM",
+            "HDT",
             "PRPOS",
             "RPOS",
             "SOG",
@@ -926,7 +987,7 @@
             "obp40":"true"
         },
         "condition": [
-            { "calInstance3": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+            { "calInstance3": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
         ]
     },
     {
@@ -934,13 +995,13 @@
         "label": "Data Instance 3 Calibration Slope",
         "type": "number",
         "default": "1.00",
-        "description": "Slope for data instance 3",
+        "description": "Slope for data instance 3, Default: 1(!)",
         "category": "OBP40 Calibrations",
         "capabilities": {
             "obp40":"true"
         },
         "condition": [
-            { "calInstance3": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+            { "calInstance3": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
         ]
     },
     {
@@ -957,8 +1018,221 @@
             "obp40":"true"
         },
         "condition": [
-            { "calInstance3": ["AWA", "AWS", "COG", "DBT", "HDM", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+            { "calInstance3": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
         ]
+    },
+    {
+        "name": "calInstance4",
+        "label": "Calibration Data Instance 4",
+        "type": "list",
+        "default": "---",
+        "description": "Data instance for calibration",
+        "list": [
+            "---",
+            "AWA",
+            "AWS",
+            "COG",
+            "DBS",
+            "DBT",
+            "HDM",
+            "HDT",
+            "PRPOS",
+            "RPOS",
+            "SOG",
+            "STW",
+            "TWA",
+            "TWS",
+            "TWD",
+            "WTemp"
+        ],
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "calOffset4",
+        "label": "Data Instance 4 Calibration Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 4",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40":"true"
+        },
+        "condition": [
+            { "calInstance4": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSlope4",
+        "label": "Data Instance 4 Calibration Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 4, Default: 1(!)",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40":"true"
+        },
+        "condition": [
+            { "calInstance4": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSmooth4",
+        "label": "Data Instance 4 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 10,
+        "description": "Smoothing factor [0..10]; 0 = no smoothing",
+        "category": "OBP40 Calibrations",
+        "capabilities": {
+            "obp40":"true"
+        },
+        "condition": [
+            { "calInstance4": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "mapsource",
+        "label": "Map Source",
+        "type": "list",
+        "default": "OBP Service",
+        "description": "Type of map source, cloud service or local service",
+        "list": [
+            "OBP Service",
+            "Local Service"
+        ],
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "ipAddress",
+        "label": "IP Address",
+        "type": "string",
+        "default": "192.168.15.10",
+        "check": "checkIpAddress",
+        "description": "IP address for local map service e.g. 192.168.15.10\nor an MDNS name like Raspi.local",
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40":"true"
+        },
+        "condition": [
+            { "mapsource": ["Local Service"] }
+        ]
+    },
+    {
+        "name": "localPort",
+        "label": "Port",
+        "type": "number",
+        "default": "8080",
+        "check":"checkPort",
+        "description": "TCP port for local map server",
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40":"true"
+        },
+        "condition": [
+            { "mapsource": ["Local Service"] }
+        ]
+    },
+    {
+        "name": "maptype",
+        "label": "Map Type",
+        "type": "list",
+        "default": "Open Street Map",
+        "description": "Type of base navigation map with sea marks overlay",
+        "list": [
+            "Open Street Map",
+            "Google Street",
+            "Open Topo Map",
+            "Stadimaps Toner",
+            "Free Nautical Chart"
+        ],
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "refreshDistance",
+        "label": "Refresh Distance [m]",
+        "type": "number",
+        "default": "15",
+        "check": "checkMinMax",
+        "min": 1,
+        "max": 50,
+        "description": "Refresh distance between updates [1..50 m], 15 m = default",
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "zoomlevel",
+        "label": "Default Zoom Level",
+        "type": "number",
+        "default": "15",
+        "check": "checkMinMax",
+        "min": 7,
+        "max": 17,
+        "description": "Start zoom level for map [7..17]; 15 = default",
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "orientation",
+        "label": "Map Orientation",
+        "type": "list",
+        "default": "North Dirirection",
+        "description": "Map orientation for navigation",
+        "list": [
+            "North Direction",
+            "Travel Direction"
+        ],
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40":"true"
+        }
+    },
+    {
+        "name": "grid",
+        "label": "Show Grid",
+        "type": "boolean",
+        "default": "false",
+        "description": "Show the grid for latutude and longitude",
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "showvalues",
+        "label": "Show Values",
+        "type": "boolean",
+        "default": "false",
+        "description": "Show boat data values in the left upper map corner",
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
+        "name": "ownheading",
+        "label": "Alternativ Heading",
+        "type": "boolean",
+        "default": "false",
+        "description": "Calculating an alternative travel direction for\na better and calmer map orientation",
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40": "true"
+        }
     },
     {
         "name": "display",
@@ -1127,9 +1401,9 @@
         "type": "number",
         "default": "50",
         "check": "checkMinMax",
-        "min": 20,
+        "min": 5,
         "max": 100,
-        "description": "Backlight brightness [20...100%]",
+        "description": "Backlight brightness [5...100%]",
         "category": "OBP40 Display",
         "capabilities": {
             "obp40": "false"
@@ -1285,12 +1559,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -1579,7 +1855,7 @@
         "description": "Wind source for page 1: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "Apparent wind"
         ],
         "category": "OBP40 Page 1",
         "capabilities": {
@@ -1614,12 +1890,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -1900,7 +2178,7 @@
         "description": "Wind source for page 2: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "Apparent wind"
         ],
         "category": "OBP40 Page 2",
         "capabilities": {
@@ -1934,12 +2212,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -2212,7 +2492,7 @@
         "description": "Wind source for page 3: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "Apparent wind"
         ],
         "category": "OBP40 Page 3",
         "capabilities": {
@@ -2245,12 +2525,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -2515,7 +2797,7 @@
         "description": "Wind source for page 4: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "Apparent wind"
         ],
         "category": "OBP40 Page 4",
         "capabilities": {
@@ -2547,12 +2829,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -2809,7 +3093,7 @@
         "description": "Wind source for page 5: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "Apparent wind"
         ],
         "category": "OBP40 Page 5",
         "capabilities": {
@@ -2840,12 +3124,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -3094,7 +3380,7 @@
         "description": "Wind source for page 6: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "Apparent wind"
         ],
         "category": "OBP40 Page 6",
         "capabilities": {
@@ -3124,12 +3410,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -3370,7 +3658,7 @@
         "description": "Wind source for page 7: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "Apparent wind"
         ],
         "category": "OBP40 Page 7",
         "capabilities": {
@@ -3399,12 +3687,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -3637,7 +3927,7 @@
         "description": "Wind source for page 8: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "Apparent wind"
         ],
         "category": "OBP40 Page 8",
         "capabilities": {
@@ -3665,12 +3955,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -3895,7 +4187,7 @@
         "description": "Wind source for page 9: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "Apparent wind"
         ],
         "category": "OBP40 Page 9",
         "capabilities": {
@@ -3922,12 +4214,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -4144,7 +4438,7 @@
         "description": "Wind source for page 10: [true|apparent]",
         "list": [
             "True wind",
-            "Apparant wind"
+            "Apparent wind"
         ],
         "category": "OBP40 Page 10",
         "capabilities": {

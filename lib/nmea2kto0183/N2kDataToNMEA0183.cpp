@@ -708,12 +708,37 @@ private:
         }
     }
 
+    //helper for converting the AIS transceiver info to talker/channel
+
+    void setTalkerChannel(tNMEA0183AISMsg &msg, tN2kAISTransceiverInformation &transceiver){
+        bool channelA=true;
+        bool own=false;
+        switch (transceiver){
+            case tN2kAISTransceiverInformation::N2kaischannel_A_VDL_reception:
+                channelA=true;
+                own=false;
+                break;
+            case tN2kAISTransceiverInformation::N2kaischannel_B_VDL_reception:
+                channelA=false;
+                own=false;
+                break;
+            case tN2kAISTransceiverInformation::N2kaischannel_A_VDL_transmission:
+                channelA=true;
+                own=true;
+                break;
+            case tN2kAISTransceiverInformation::N2kaischannel_B_VDL_transmission:
+                channelA=false;
+                own=true;
+                break;
+        }
+        msg.SetChannelAndTalker(channelA,own);
+    }
+
     //*****************************************************************************
     // 129038 AIS Class A Position Report (Message 1, 2, 3)
     void HandleAISClassAPosReport(const tN2kMsg &N2kMsg)
     {
 
-        unsigned char SID;
         tN2kAISRepeat _Repeat;
         uint32_t _UserID; // MMSI
         double _Latitude =N2kDoubleNA;
@@ -732,64 +757,19 @@ private:
         uint8_t _MessageType = 1;
         tNMEA0183AISMsg NMEA0183AISMsg;
 
-        if (ParseN2kPGN129038(N2kMsg, SID, _Repeat, _UserID, _Latitude, _Longitude, _Accuracy, _RAIM, _Seconds,
+        if (ParseN2kPGN129038(N2kMsg, _MessageType, _Repeat, _UserID, _Latitude, _Longitude, _Accuracy, _RAIM, _Seconds,
                               _COG, _SOG, _Heading, _ROT, _NavStatus,_AISTransceiverInformation,_SID))
         {
 
-// Debug
-#ifdef SERIAL_PRINT_AIS_FIELDS
-            Serial.println("–––––––––––––––––––––––– Msg 1 ––––––––––––––––––––––––––––––––");
 
-            const double pi = 3.1415926535897932384626433832795;
-            const double radToDeg = 180.0 / pi;
-            const double msTokn = 3600.0 / 1852.0;
-            const double radsToDegMin = 60 * 360.0 / (2 * pi); // [rad/s -> degree/minute]
-            Serial.print("Repeat: ");
-            Serial.println(_Repeat);
-            Serial.print("UserID: ");
-            Serial.println(_UserID);
-            Serial.print("Latitude: ");
-            Serial.println(_Latitude);
-            Serial.print("Longitude: ");
-            Serial.println(_Longitude);
-            Serial.print("Accuracy: ");
-            Serial.println(_Accuracy);
-            Serial.print("RAIM: ");
-            Serial.println(_RAIM);
-            Serial.print("Seconds: ");
-            Serial.println(_Seconds);
-            Serial.print("COG: ");
-            Serial.println(_COG * radToDeg);
-            Serial.print("SOG: ");
-            Serial.println(_SOG * msTokn);
-            Serial.print("Heading: ");
-            Serial.println(_Heading * radToDeg);
-            Serial.print("ROT: ");
-            Serial.println(_ROT * radsToDegMin);
-            Serial.print("NavStatus: ");
-            Serial.println(_NavStatus);
-#endif
-
+            setTalkerChannel(NMEA0183AISMsg,_AISTransceiverInformation);
+            if (_MessageType < 1 || _MessageType > 3) _MessageType=1; //only allow type 1...3 for 129038
             if (SetAISClassABMessage1(NMEA0183AISMsg, _MessageType, _Repeat, _UserID, _Latitude, _Longitude, _Accuracy,
                                       _RAIM, _Seconds, _COG, _SOG, _Heading, _ROT, _NavStatus))
             {
 
                 SendMessage(NMEA0183AISMsg);
 
-#ifdef SERIAL_PRINT_AIS_NMEA
-                // Debug Print AIS-NMEA
-                Serial.print(NMEA0183AISMsg.GetPrefix());
-                Serial.print(NMEA0183AISMsg.Sender());
-                Serial.print(NMEA0183AISMsg.MessageCode());
-                for (int i = 0; i < NMEA0183AISMsg.FieldCount(); i++)
-                {
-                    Serial.print(",");
-                    Serial.print(NMEA0183AISMsg.Field(i));
-                }
-                char buf[7];
-                sprintf(buf, "*%02X\r\n", NMEA0183AISMsg.GetCheckSum());
-                Serial.print(buf);
-#endif
             }
         }
     } // end 129038 AIS Class A Position Report Message 1/3
@@ -825,84 +805,18 @@ private:
                               _Length, _Beam, _PosRefStbd, _PosRefBow, _ETAdate, _ETAtime, _Draught, _Destination,21,
                               _AISversion, _GNSStype, _DTE, _AISinfo,_SID))
         {
-
-#ifdef SERIAL_PRINT_AIS_FIELDS
-            // Debug Print N2k Values
-            Serial.println("––––––––––––––––––––––– Msg 5 –––––––––––––––––––––––––––––––––");
-            Serial.print("MessageID: ");
-            Serial.println(_MessageID);
-            Serial.print("Repeat: ");
-            Serial.println(_Repeat);
-            Serial.print("UserID: ");
-            Serial.println(_UserID);
-            Serial.print("IMONumber: ");
-            Serial.println(_IMONumber);
-            Serial.print("Callsign: ");
-            Serial.println(_Callsign);
-            Serial.print("VesselType: ");
-            Serial.println(_VesselType);
-            Serial.print("Name: ");
-            Serial.println(_Name);
-            Serial.print("Length: ");
-            Serial.println(_Length);
-            Serial.print("Beam: ");
-            Serial.println(_Beam);
-            Serial.print("PosRefStbd: ");
-            Serial.println(_PosRefStbd);
-            Serial.print("PosRefBow: ");
-            Serial.println(_PosRefBow);
-            Serial.print("ETAdate: ");
-            Serial.println(_ETAdate);
-            Serial.print("ETAtime: ");
-            Serial.println(_ETAtime);
-            Serial.print("Draught: ");
-            Serial.println(_Draught);
-            Serial.print("Destination: ");
-            Serial.println(_Destination);
-            Serial.print("GNSStype: ");
-            Serial.println(_GNSStype);
-            Serial.print("DTE: ");
-            Serial.println(_DTE);
-            Serial.println("––––––––––––––––––––––– Msg 5 –––––––––––––––––––––––––––––––––");
-#endif
-
+            setTalkerChannel(NMEA0183AISMsg,_AISinfo);
             if (SetAISClassAMessage5(NMEA0183AISMsg, _MessageID, _Repeat, _UserID, _IMONumber, _Callsign, _Name, _VesselType,
                                      _Length, _Beam, _PosRefStbd, _PosRefBow, _ETAdate, _ETAtime, _Draught, _Destination,
-                                     _GNSStype, _DTE))
+                                     _GNSStype, _DTE,_AISversion))
             {
-
-                SendMessage(NMEA0183AISMsg.BuildMsg5Part1(NMEA0183AISMsg));
-
-#ifdef SERIAL_PRINT_AIS_NMEA
-                // Debug Print AIS-NMEA Message Type 5, Part 1
-                char buf[7];
-                Serial.print(NMEA0183AISMsg.GetPrefix());
-                Serial.print(NMEA0183AISMsg.Sender());
-                Serial.print(NMEA0183AISMsg.MessageCode());
-                for (int i = 0; i < NMEA0183AISMsg.FieldCount(); i++)
-                {
-                    Serial.print(",");
-                    Serial.print(NMEA0183AISMsg.Field(i));
+                if (NMEA0183AISMsg.BuildMsg5Part1()){
+                    SendMessage(NMEA0183AISMsg);
                 }
-                sprintf(buf, "*%02X\r\n", NMEA0183AISMsg.GetCheckSum());
-                Serial.print(buf);
-#endif
-
-                SendMessage(NMEA0183AISMsg.BuildMsg5Part2(NMEA0183AISMsg));
-
-#ifdef SERIAL_PRINT_AIS_NMEA
-                // Print AIS-NMEA Message Type 5, Part 2
-                Serial.print(NMEA0183AISMsg.GetPrefix());
-                Serial.print(NMEA0183AISMsg.Sender());
-                Serial.print(NMEA0183AISMsg.MessageCode());
-                for (int i = 0; i < NMEA0183AISMsg.FieldCount(); i++)
-                {
-                    Serial.print(",");
-                    Serial.print(NMEA0183AISMsg.Field(i));
+                if (NMEA0183AISMsg.BuildMsg5Part2()){
+                    SendMessage(NMEA0183AISMsg);
                 }
-                sprintf(buf, "*%02X\r\n", NMEA0183AISMsg.GetCheckSum());
-                Serial.print(buf);
-#endif
+
             }
         }
     }
@@ -926,35 +840,21 @@ private:
         tN2kAISUnit _Unit;
         bool _Display, _DSC, _Band, _Msg22, _State;
         tN2kAISMode _Mode;
-        tN2kAISTransceiverInformation  _AISTranceiverInformation;
+        tN2kAISTransceiverInformation  _AISTransceiverInformation;
         uint8_t _SID;
 
         if (ParseN2kPGN129039(N2kMsg, _MessageID, _Repeat, _UserID, _Latitude, _Longitude, _Accuracy, _RAIM,
-                              _Seconds, _COG, _SOG, _AISTranceiverInformation, _Heading, _Unit, _Display, _DSC, _Band, _Msg22, _Mode, _State,_SID))
+                              _Seconds, _COG, _SOG, _AISTransceiverInformation, _Heading, _Unit, _Display, _DSC, _Band, _Msg22, _Mode, _State,_SID))
         {
 
             tNMEA0183AISMsg NMEA0183AISMsg;
-
+            setTalkerChannel(NMEA0183AISMsg,_AISTransceiverInformation);
             if (SetAISClassBMessage18(NMEA0183AISMsg, _MessageID, _Repeat, _UserID, _Latitude, _Longitude, _Accuracy, _RAIM,
                                       _Seconds, _COG, _SOG,  _Heading, _Unit, _Display, _DSC, _Band, _Msg22, _Mode, _State))
             {
 
                 SendMessage(NMEA0183AISMsg);
 
-#ifdef SERIAL_PRINT_AIS_NMEA
-                // Debug Print AIS-NMEA
-                Serial.print(NMEA0183AISMsg.GetPrefix());
-                Serial.print(NMEA0183AISMsg.Sender());
-                Serial.print(NMEA0183AISMsg.MessageCode());
-                for (int i = 0; i < NMEA0183AISMsg.FieldCount(); i++)
-                {
-                    Serial.print(",");
-                    Serial.print(NMEA0183AISMsg.Field(i));
-                }
-                char buf[7];
-                sprintf(buf, "*%02X\r\n", NMEA0183AISMsg.GetCheckSum());
-                Serial.print(buf);
-#endif
             }
         }
         return;
@@ -976,8 +876,10 @@ private:
         {
 
             tNMEA0183AISMsg NMEA0183AISMsg;
+            setTalkerChannel(NMEA0183AISMsg,_AISInfo);
             if (SetAISClassBMessage24PartA(NMEA0183AISMsg, _MessageID, _Repeat, _UserID, _Name))
             {
+                SendMessage(NMEA0183AISMsg);
             }
         }
         return;
@@ -1005,75 +907,49 @@ private:
                               _Length, _Beam, _PosRefStbd, _PosRefBow, _MothershipID,_AISInfo,_SID))
         {
 
-//
-#ifdef SERIAL_PRINT_AIS_FIELDS
-            // Debug Print N2k Values
-            Serial.println("––––––––––––––––––––––– Msg 24 ––––––––––––––––––––––––––––––––");
-            Serial.print("MessageID: ");
-            Serial.println(_MessageID);
-            Serial.print("Repeat: ");
-            Serial.println(_Repeat);
-            Serial.print("UserID: ");
-            Serial.println(_UserID);
-            Serial.print("VesselType: ");
-            Serial.println(_VesselType);
-            Serial.print("Vendor: ");
-            Serial.println(_Vendor);
-            Serial.print("Callsign: ");
-            Serial.println(_Callsign);
-            Serial.print("Length: ");
-            Serial.println(_Length);
-            Serial.print("Beam: ");
-            Serial.println(_Beam);
-            Serial.print("PosRefStbd: ");
-            Serial.println(_PosRefStbd);
-            Serial.print("PosRefBow: ");
-            Serial.println(_PosRefBow);
-            Serial.print("MothershipID: ");
-            Serial.println(_MothershipID);
-            Serial.println("––––––––––––––––––––––– Msg 24 ––––––––––––––––––––––––––––––––");
-#endif
-
             tNMEA0183AISMsg NMEA0183AISMsg;
-
-            if (SetAISClassBMessage24(NMEA0183AISMsg, _MessageID, _Repeat, _UserID, _VesselType, _Vendor, _Callsign,
+            setTalkerChannel(NMEA0183AISMsg,_AISInfo);
+            if (SetAISClassBMessage24PartB(NMEA0183AISMsg, _MessageID, _Repeat, _UserID, _VesselType, _Vendor, _Callsign,
                                       _Length, _Beam, _PosRefStbd, _PosRefBow, _MothershipID))
             {
-
-                SendMessage(NMEA0183AISMsg.BuildMsg24PartA(NMEA0183AISMsg));
-
-#ifdef SERIAL_PRINT_AIS_NMEA
-                // Debug Print AIS-NMEA
-                char buf[7];
-                Serial.print(NMEA0183AISMsg.GetPrefix());
-                Serial.print(NMEA0183AISMsg.Sender());
-                Serial.print(NMEA0183AISMsg.MessageCode());
-                for (int i = 0; i < NMEA0183AISMsg.FieldCount(); i++)
-                {
-                    Serial.print(",");
-                    Serial.print(NMEA0183AISMsg.Field(i));
-                }
-                sprintf(buf, "*%02X\r\n", NMEA0183AISMsg.GetCheckSum());
-                Serial.print(buf);
-#endif
-
-                SendMessage(NMEA0183AISMsg.BuildMsg24PartB(NMEA0183AISMsg));
-
-#ifdef SERIAL_PRINT_AIS_NMEA
-                Serial.print(NMEA0183AISMsg.GetPrefix());
-                Serial.print(NMEA0183AISMsg.Sender());
-                Serial.print(NMEA0183AISMsg.MessageCode());
-                for (int i = 0; i < NMEA0183AISMsg.FieldCount(); i++)
-                {
-                    Serial.print(",");
-                    Serial.print(NMEA0183AISMsg.Field(i));
-                }
-                sprintf(buf, "*%02X\r\n", NMEA0183AISMsg.GetCheckSum());
-                Serial.print(buf);
-#endif
+                SendMessage(NMEA0183AISMsg);             
             }
         }
         return;
+    }
+
+    //*****************************************************************************
+    // PGN 129041 Aton
+    void HandleAISMessage21(const tN2kMsg &N2kMsg)
+    {
+        tN2kAISAtoNReportData data;
+        if (ParseN2kPGN129041(N2kMsg,data)){
+            tNMEA0183AISMsg nmea0183Msg;
+            setTalkerChannel(nmea0183Msg,data.AISTransceiverInformation);
+            if (SetAISMessage21(
+                nmea0183Msg,
+                data.Repeat,
+                data.UserID,
+                data.Latitude,
+                data.Longitude,
+                data.Accuracy,
+                data.RAIM,
+                data.Seconds,
+                data.Length,
+                data.Beam,
+                data.PositionReferenceStarboard,
+                data.PositionReferenceTrueNorth,
+                data.AtoNType,
+                data.OffPositionIndicator,
+                data.VirtualAtoNFlag,
+                data.AssignedModeFlag,
+                data.GNSSType,
+                data.AtoNStatus,
+                data.AtoNName
+            )){
+                SendMessage(nmea0183Msg);
+            }
+        }
     }
 
     void HandleSystemTime(const tN2kMsg &msg){
@@ -1271,12 +1147,12 @@ private:
         double Level=N2kDoubleNA;
         double Capacity=N2kDoubleNA;
         if (ParseN2kPGN127505(N2kMsg,Instance,FluidType,Level,Capacity)) {
-            GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRFLUID,FluidType,0,Instance);
+            GwXDRFoundMapping mapping=xdrMappings->getMapping(Level,XDRFLUID,FluidType,0,Instance);
             if (updateDouble(&mapping,Level)){
                 LOG_DEBUG(GwLog::DEBUG+1,"found fluidlevel mapping %s",mapping.definition->toString().c_str());
                 addToXdr(mapping.buildXdrEntry(Level));
             }
-            mapping=xdrMappings->getMapping(XDRFLUID,FluidType,1,Instance);
+            mapping=xdrMappings->getMapping(Capacity, XDRFLUID,FluidType,1,Instance);
             if (updateDouble(&mapping,Capacity)){
                 LOG_DEBUG(GwLog::DEBUG+1,"found fluid capacity mapping %s",mapping.definition->toString().c_str());
                 addToXdr(mapping.buildXdrEntry(Capacity));
@@ -1294,19 +1170,19 @@ private:
         double BatteryTemperature=N2kDoubleNA;
         if (ParseN2kPGN127508(N2kMsg,BatteryInstance,BatteryVoltage,BatteryCurrent,BatteryTemperature,SID)) {
             int i=0;
-            GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRBAT,0,0,BatteryInstance);
+            GwXDRFoundMapping mapping=xdrMappings->getMapping(BatteryVoltage, XDRBAT,0,0,BatteryInstance);
             if (updateDouble(&mapping,BatteryVoltage)){
                 LOG_DEBUG(GwLog::DEBUG+1,"found BatteryVoltage mapping %s",mapping.definition->toString().c_str());
                 addToXdr(mapping.buildXdrEntry(BatteryVoltage));
                 i++;
             }
-            mapping=xdrMappings->getMapping(XDRBAT,0,1,BatteryInstance);
+            mapping=xdrMappings->getMapping(BatteryCurrent,XDRBAT,0,1,BatteryInstance);
             if (updateDouble(&mapping,BatteryCurrent)){
                 LOG_DEBUG(GwLog::DEBUG+1,"found BatteryCurrent mapping %s",mapping.definition->toString().c_str());
                 addToXdr(mapping.buildXdrEntry(BatteryCurrent));
                 i++;
             }
-            mapping=xdrMappings->getMapping(XDRBAT,0,2,BatteryInstance);
+            mapping=xdrMappings->getMapping(BatteryTemperature,XDRBAT,0,2,BatteryInstance);
             if (updateDouble(&mapping,BatteryTemperature)){
                 LOG_DEBUG(GwLog::DEBUG+1,"found BatteryTemperature mapping %s",mapping.definition->toString().c_str());
                 addToXdr(mapping.buildXdrEntry(BatteryTemperature));
@@ -1338,13 +1214,13 @@ private:
             SendMessage(NMEA0183Msg);
         }
         int i=0;
-        GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRTEMP,N2kts_OutsideTemperature,0,0);
+        GwXDRFoundMapping mapping=xdrMappings->getMapping(OutsideAmbientAirTemperature, XDRTEMP,N2kts_OutsideTemperature,0,0);
         if (updateDouble(&mapping,OutsideAmbientAirTemperature)){
             LOG_DEBUG(GwLog::DEBUG+1,"found temperature mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(OutsideAmbientAirTemperature));
             i++;
         }
-        mapping=xdrMappings->getMapping(XDRPRESSURE,N2kps_Atmospheric,0,0);
+        mapping=xdrMappings->getMapping(AtmosphericPressure,XDRPRESSURE,N2kps_Atmospheric,0,0);
         if (updateDouble(&mapping,AtmosphericPressure)){
             LOG_DEBUG(GwLog::DEBUG+1,"found pressure mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(AtmosphericPressure));
@@ -1379,19 +1255,19 @@ private:
             SendMessage(NMEA0183Msg);
         }
 
-        GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRTEMP,TempSource,0,0);
+        GwXDRFoundMapping mapping=xdrMappings->getMapping(Temperature, XDRTEMP,TempSource,0,0);
         if (updateDouble(&mapping,Temperature)){
             LOG_DEBUG(GwLog::DEBUG+1,"found temperature mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(Temperature));
             i++;
         }
-        mapping=xdrMappings->getMapping(XDRHUMIDITY,HumiditySource,0,0);
+        mapping=xdrMappings->getMapping(Humidity, XDRHUMIDITY,HumiditySource,0,0);
         if (updateDouble(&mapping,Humidity)){
             LOG_DEBUG(GwLog::DEBUG+1,"found humidity mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(Humidity));
             i++;
         }   
-        mapping=xdrMappings->getMapping(XDRPRESSURE,N2kps_Atmospheric,0,0);
+        mapping=xdrMappings->getMapping(AtmosphericPressure, XDRPRESSURE,N2kps_Atmospheric,0,0);
         if (updateDouble(&mapping,AtmosphericPressure)){
             LOG_DEBUG(GwLog::DEBUG+1,"found pressure mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(AtmosphericPressure));
@@ -1426,12 +1302,12 @@ private:
             SendMessage(NMEA0183Msg);
         }
 
-        GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRTEMP,(int)TemperatureSource,0,TemperatureInstance);
+        GwXDRFoundMapping mapping=xdrMappings->getMapping(Temperature, XDRTEMP,(int)TemperatureSource,0,TemperatureInstance);
         if (updateDouble(&mapping,Temperature)){
             LOG_DEBUG(GwLog::DEBUG+1,"found temperature mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(Temperature));
         }
-        mapping=xdrMappings->getMapping(XDRTEMP,(int)TemperatureSource,1,TemperatureInstance);
+        mapping=xdrMappings->getMapping(setTemperature, XDRTEMP,(int)TemperatureSource,1,TemperatureInstance);
         if (updateDouble(&mapping,setTemperature)){
             LOG_DEBUG(GwLog::DEBUG+1,"found temperature mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(setTemperature));
@@ -1449,12 +1325,13 @@ private:
            LOG_DEBUG(GwLog::DEBUG,"unable to parse PGN %d",msg.PGN);
            return;
         }
-        GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRHUMIDITY,(int)HumiditySource,0,HumidityInstance);
+        GwXDRFoundMapping mapping;
+        mapping=xdrMappings->getMapping(ActualHumidity, XDRHUMIDITY,(int)HumiditySource,0,HumidityInstance);
         if (updateDouble(&mapping,ActualHumidity)){
             LOG_DEBUG(GwLog::DEBUG+1,"found humidity mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(ActualHumidity));
         }
-        mapping=xdrMappings->getMapping(XDRHUMIDITY,(int)HumiditySource,1,HumidityInstance);
+        mapping=xdrMappings->getMapping(SetHumidity, XDRHUMIDITY,(int)HumiditySource,1,HumidityInstance);
         if (updateDouble(&mapping,SetHumidity)){
             LOG_DEBUG(GwLog::DEBUG+1,"found humidity mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(SetHumidity));
@@ -1472,7 +1349,7 @@ private:
             LOG_DEBUG(GwLog::DEBUG,"unable to parse PGN %d",msg.PGN);
             return; 
         }
-        GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRPRESSURE,(int)PressureSource,0,PressureInstance);
+        GwXDRFoundMapping mapping=xdrMappings->getMapping(ActualPressure, XDRPRESSURE,(int)PressureSource,0,PressureInstance);
         if (! updateDouble(&mapping,ActualPressure)) return;
         LOG_DEBUG(GwLog::DEBUG+1,"found pressure mapping %s",mapping.definition->toString().c_str());
         addToXdr(mapping.buildXdrEntry(ActualPressure));
@@ -1490,12 +1367,12 @@ private:
            LOG_DEBUG(GwLog::DEBUG,"unable to parse PGN %d",msg.PGN); 
         }
         for (int i=0;i<8;i++){
-            GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRENGINE,0,i,instance);
+            GwXDRFoundMapping mapping=xdrMappings->getMapping(values[i], XDRENGINE,0,i,instance);
             if (! updateDouble(&mapping,values[i])) continue; 
             addToXdr(mapping.buildXdrEntry(values[i])); 
         }
         for (int i=0;i< 2;i++){
-            GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRENGINE,0,i+8,instance);
+            GwXDRFoundMapping mapping=xdrMappings->getMapping(ivalues[i],XDRENGINE,0,i+8,instance);
             if (! updateDouble(&mapping,ivalues[i])) continue; 
             addToXdr(mapping.buildXdrEntry((double)ivalues[i])); 
         }
@@ -1511,7 +1388,7 @@ private:
            LOG_DEBUG(GwLog::DEBUG,"unable to parse PGN %d",msg.PGN); 
         }
         for (int i=0;i<3;i++){
-            GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRATTITUDE,0,i,instance);
+            GwXDRFoundMapping mapping=xdrMappings->getMapping(values[i], XDRATTITUDE,0,i,instance);
             if (! updateDouble(&mapping,values[i])) continue; 
             addToXdr(mapping.buildXdrEntry(values[i])); 
         }
@@ -1525,15 +1402,15 @@ private:
             speed,pressure,tilt)){
            LOG_DEBUG(GwLog::DEBUG,"unable to parse PGN %d",msg.PGN); 
         }
-        GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRENGINE,0,10,instance);
+        GwXDRFoundMapping mapping=xdrMappings->getMapping(speed, XDRENGINE,0,10,instance);
         if (updateDouble(&mapping,speed)){
             addToXdr(mapping.buildXdrEntry(speed)); 
         }
-        mapping=xdrMappings->getMapping(XDRENGINE,0,11,instance);
+        mapping=xdrMappings->getMapping(pressure, XDRENGINE,0,11,instance);
         if (updateDouble(&mapping,pressure)){
             addToXdr(mapping.buildXdrEntry(pressure)); 
         }
-        mapping=xdrMappings->getMapping(XDRENGINE,0,12,instance);
+        mapping=xdrMappings->getMapping(tilt, XDRENGINE,0,12,instance);
         if (updateDouble(&mapping,tilt)){
             addToXdr(mapping.buildXdrEntry((double)tilt)); 
         }
@@ -1559,12 +1436,12 @@ private:
            LOG_DEBUG(GwLog::DEBUG,"unable to parse PGN %d",msg.PGN);
            return;
         }
-        GwXDRFoundMapping mapping=xdrMappings->getMapping(XDRTEMP,(int)TemperatureSource,0,TemperatureInstance);
+        GwXDRFoundMapping mapping=xdrMappings->getMapping(Temperature, XDRTEMP,(int)TemperatureSource,0,TemperatureInstance);
         if (updateDouble(&mapping,Temperature)){
             LOG_DEBUG(GwLog::DEBUG+1,"found temperature mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(Temperature));
         }
-        mapping=xdrMappings->getMapping(XDRTEMP,(int)TemperatureSource,1,TemperatureInstance);
+        mapping=xdrMappings->getMapping(setTemperature, XDRTEMP,(int)TemperatureSource,1,TemperatureInstance);
         if (updateDouble(&mapping,setTemperature)){
             LOG_DEBUG(GwLog::DEBUG+1,"found temperature mapping %s",mapping.definition->toString().c_str());
             addToXdr(mapping.buildXdrEntry(setTemperature));
@@ -1614,6 +1491,7 @@ private:
       converters.registerConverter(129794UL, &N2kToNMEA0183Functions::HandleAISClassAMessage5);   // AIS Class A Ship Static and Voyage related data, Message Type 5
       converters.registerConverter(129809UL, &N2kToNMEA0183Functions::HandleAISClassBMessage24A); // AIS Class B "CS" Static Data Report, Part A
       converters.registerConverter(129810UL, &N2kToNMEA0183Functions::HandleAISClassBMessage24B); // AIS Class B "CS" Static Data Report, Part B
+      converters.registerConverter(129041UL, &N2kToNMEA0183Functions::HandleAISMessage21);        // AIS Aton
 #endif
     }
 

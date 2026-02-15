@@ -10,7 +10,7 @@ from datetime import datetime
 import re
 import pprint
 from platformio.project.config import ProjectConfig
-from platformio.project.exception import InvalidProjectConfError
+
 
 Import("env")
 #print(env.Dump())
@@ -104,18 +104,7 @@ def writeFileIfChanged(fileName,data):
     return True    
 
 def mergeConfig(base,other):
-    try:
-        customconfig = env.GetProjectOption("custom_config")
-    except InvalidProjectConfError:
-        customconfig = None
-    for bdir in other:
-        if customconfig and os.path.exists(os.path.join(bdir,customconfig)):
-            cname=os.path.join(bdir,customconfig)
-            print("merge custom config {}".format(cname))
-            with open(cname,'rb') as ah:
-                base += json.load(ah)
-            continue   
-        cname=os.path.join(bdir,"config.json")
+    for cname in other:
         if os.path.exists(cname):
             print("merge config %s"%cname)
             with open(cname,'rb') as ah:
@@ -161,13 +150,25 @@ def expandConfig(config):
                     rt.append(replaceTexts(c,replace))
     return rt
 
-def generateMergedConfig(inFile,outFile,addDirs=[]):
+def createUserItemList(dirs,itemName,files):
+    rt=[]
+    for d in dirs:
+        iname=os.path.join(d,itemName)
+        if os.path.exists(iname):
+            rt.append(iname)
+    for f in files:
+        if not os.path.exists(f):
+            raise Exception("user item %s not found"%f)
+        rt.append(f)
+    return rt
+
+def generateMergedConfig(inFile,outFile,addFiles=[]):
     if not os.path.exists(inFile):
         raise Exception("unable to read cfg file %s"%inFile)
     data=""
     with open(inFile,'rb') as ch:    
         config=json.load(ch)
-        config=mergeConfig(config,addDirs)
+        config=mergeConfig(config,addFiles)
         config=expandConfig(config)
         data=json.dumps(config,indent=2)
         writeFileIfChanged(outFile,data)
@@ -387,12 +388,7 @@ def getLibs():
 
 
 
-def joinFiles(target,pattern,dirlist):
-    flist=[]
-    for dir in dirlist:
-            fn=os.path.join(dir,pattern)
-            if os.path.exists(fn):
-                flist.append(fn)
+def joinFiles(target,flist):
     current=False
     if os.path.exists(target):
         current=True
@@ -463,7 +459,28 @@ def handleDeps(env):
         )
     env.AddBuildMiddleware(injectIncludes)
 
+def getOption(env,name,toArray=True):
+    try:
+        opt=env.GetProjectOption(name)
+        if toArray:
+            if opt is None:
+                return []
+            if isinstance(opt,list):
+                return opt
+            return opt.split("\n" if "\n" in opt else ",")
+        return opt
+    except:
+        pass
+    if toArray:
+        return []
 
+def getFileList(files):
+    base=basePath()
+    rt=[]
+    for f in files:
+        if f is not None and f != "":
+            rt.append(os.path.join(base,f))
+    return rt
 def prebuild(env):
     global userTaskDirs
     print("#prebuild running")
@@ -473,14 +490,18 @@ def prebuild(env):
     if ldf_mode == 'off':
         print("##ldf off - own dependency handling")
         handleDeps(env)
+    extraConfigs=getOption(env,'custom_config',toArray=True)
+    extraJs=getOption(env,'custom_js',toArray=True)
+    extraCss=getOption(env,'custom_css',toArray=True)
+
     userTaskDirs=getUserTaskDirs()
     mergedConfig=os.path.join(outPath(),os.path.basename(CFG_FILE))
-    generateMergedConfig(os.path.join(basePath(),CFG_FILE),mergedConfig,userTaskDirs)
+    generateMergedConfig(os.path.join(basePath(),CFG_FILE),mergedConfig,createUserItemList(userTaskDirs,"config.json", getFileList(extraConfigs)))
     compressFile(mergedConfig,mergedConfig+".gz")
     generateCfg(mergedConfig,os.path.join(outPath(),CFG_INCLUDE),False)
     generateCfg(mergedConfig,os.path.join(outPath(),CFG_INCLUDE_IMPL),True)
-    joinFiles(os.path.join(outPath(),INDEXJS+".gz"),INDEXJS,["web"]+userTaskDirs)
-    joinFiles(os.path.join(outPath(),INDEXCSS+".gz"),INDEXCSS,["web"]+userTaskDirs)
+    joinFiles(os.path.join(outPath(),INDEXJS+".gz"),createUserItemList(["web"]+userTaskDirs,INDEXJS,getFileList(extraJs)))
+    joinFiles(os.path.join(outPath(),INDEXCSS+".gz"),createUserItemList(["web"]+userTaskDirs,INDEXCSS,getFileList(extraCss)))
     embedded=getEmbeddedFiles(env)
     filedefs=[]
     for ef in embedded:
@@ -526,17 +547,16 @@ env.Append(
 )
 #script does not run on clean yet - maybe in the future
 env.AddPostAction("clean",cleangenerated)
-
-#look for extra task scripts and include them here
-for taskdir in userTaskDirs:
-    script = os.path.join(taskdir, "extra_task.py")
+extraScripts=getFileList(getOption(env,'custom_script',toArray=True))
+for script in extraScripts:
     if os.path.isfile(script):
-        taskname = os.path.basename(os.path.normpath(taskdir))
-        print("#extra task script for '{}'".format(taskname))
+        print(f"#extra {script}")
         with open(script) as fh:
             try:
-                code = compile(fh.read(), taskname, 'exec')
-            except SyntaxError:
-                print("#ERROR: script does not compile")
+                code = compile(fh.read(), script, 'exec')
+            except SyntaxError as e:
+                print(f"#ERROR: script {script} does not compile: {e}")
                 continue
             exec(code)
+    else:
+        print(f"#ERROR: script {script} not found")
