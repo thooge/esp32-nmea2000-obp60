@@ -135,7 +135,7 @@ bool CalibrationData::calibrateInstance(GwApi::BoatValue* boatDataValue)
     double dataValue = 0;
     std::string format = "";
 
-    // we test this earlier, but for safety reason ...
+    // we test this earlier, but for safety reasons ...
     if (calibrationMap.find(instance) == calibrationMap.end()) {
         LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s not in calibration list", instance.c_str());
         return false;
@@ -151,7 +151,7 @@ bool CalibrationData::calibrateInstance(GwApi::BoatValue* boatDataValue)
     slope = calibrationMap[instance].slope;
     dataValue = boatDataValue->value;
     format = boatDataValue->getFormat().c_str();
-    LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: value: %f, format: %s", instance.c_str(), dataValue, format.c_str());
+    // LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: value: %f, format: %s", instance.c_str(), dataValue, format.c_str());
 
     if (format == "formatWind") { // instance is of type angle
         dataValue = (dataValue * slope) + offset;
@@ -174,7 +174,7 @@ bool CalibrationData::calibrateInstance(GwApi::BoatValue* boatDataValue)
     calibrationMap[instance].value = dataValue; // store the calibrated value in the list
     calibrationMap[instance].isCalibrated = true;
 
-    LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: Offset: %f, Slope: %f, Result: %f", instance.c_str(), offset, slope, calibrationMap[instance].value);
+    // LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: Offset: %f, Slope: %f, Result: %f", instance.c_str(), offset, slope, calibrationMap[instance].value);
     return true;
 }
 
@@ -189,7 +189,7 @@ bool CalibrationData::smoothInstance(GwApi::BoatValue* boatDataValue)
 
     // we test this earlier, but for safety reason ...
     if (calibrationMap.find(instance) == calibrationMap.end()) {
-        LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s not in calibration list", instance.c_str());
+        // LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s not in calibration list", instance.c_str());
         return false;
     }
 
@@ -211,7 +211,7 @@ bool CalibrationData::smoothInstance(GwApi::BoatValue* boatDataValue)
     calibrationMap[instance].value = dataValue; // store the smoothed value in the list
     calibrationMap[instance].isCalibrated = true;
 
-    LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: smooth: %f, oldValue: %f, result: %f", instance.c_str(), smoothFactor, oldValue, calibrationMap[instance].value);
+    // LOG_DEBUG(GwLog::DEBUG, "BoatDataCalibration: %s: smooth: %f, oldValue: %f, result: %f", instance.c_str(), smoothFactor, oldValue, calibrationMap[instance].value);
 
     return true;
 }
@@ -241,7 +241,7 @@ void HstryBuf::add(double value)
 {
     if (value >= hstryMin && value <= hstryMax) {
         hstryBuf.add(value);
-        LOG_DEBUG(GwLog::DEBUG, "HstryBuf::add:  name: %s, value: %.3f", hstryBuf.getName(), value);
+        // LOG_DEBUG(GwLog::DEBUG, "HstryBuf::add:  name: %s, value: %.3f", hstryBuf.getName(), value);
     }
 }
 
@@ -405,7 +405,7 @@ void WindUtils::calcTwdSA(const double* AWA, const double* AWS,
     double stw = -*STW;
     addPolar(AWD, AWS, CTW, &stw, TWD, TWS);
 
-    // Normalize TWD and TWA to 0-360°/2PI
+    // Normalize TWD to [0..360°] (2PI) and TWA to [-180..180] (PI)
     *TWD = to2PI(*TWD);
     *TWA = toPI(*TWD - *HDT);
 }
@@ -487,8 +487,8 @@ bool WindUtils::addWinds()
     double hdtVal = hdtBVal->valid ? hdtBVal->value : DBL_MAX;
     double hdmVal = hdmBVal->valid ? hdmBVal->value : DBL_MAX;
     double varVal = varBVal->valid ? varBVal->value : DBL_MAX;
-    LOG_DEBUG(GwLog::DEBUG, "WindUtils:addWinds: AWA %.1f, AWS %.1f, COG %.1f, STW %.1f, SOG %.2f, HDT %.1f, HDM %.1f, VAR %.1f", awaBVal->value * RAD_TO_DEG, awsBVal->value * 3.6 / 1.852,
-        cogBVal->value * RAD_TO_DEG, stwBVal->value * 3.6 / 1.852, sogBVal->value * 3.6 / 1.852, hdtBVal->value * RAD_TO_DEG, hdmBVal->value * RAD_TO_DEG, varBVal->value * RAD_TO_DEG);
+    //LOG_DEBUG(GwLog::DEBUG, "WindUtils:addWinds: AWA %.1f, AWS %.1f, COG %.1f, STW %.1f, SOG %.2f, HDT %.1f, HDM %.1f, VAR %.1f", awaBVal->value * RAD_TO_DEG, awsBVal->value * 3.6 / 1.852,
+    //     cogBVal->value * RAD_TO_DEG, stwBVal->value * 3.6 / 1.852, sogBVal->value * 3.6 / 1.852, hdtBVal->value * RAD_TO_DEG, hdmBVal->value * RAD_TO_DEG, varBVal->value * RAD_TO_DEG);
 
     // Check if TWD can be calculated from TWA and HDT/HDM
     if (twaBVal->valid) {
@@ -528,8 +528,8 @@ bool WindUtils::addWinds()
             }
         }
     }
-    LOG_DEBUG(GwLog::DEBUG, "WindUtils:addWinds: twCalculated %d, TWD %.1f, TWA %.1f, TWS %.2f kn, AWD: %.1f", twCalculated, twdBVal->value * RAD_TO_DEG,
-        twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852, awdBVal->value * RAD_TO_DEG);
+    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:addWinds: twCalculated %d, TWD %.1f, TWA %.1f, TWS %.2f kn, AWD: %.1f", twCalculated, twdBVal->value * RAD_TO_DEG,
+    //     twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852, awdBVal->value * RAD_TO_DEG);
 
     return twCalculated;
 }

@@ -161,8 +161,8 @@ bool Chart::setChartDimensions(const char direction, const int8_t size)
             break;
         }
     }
-    LOG_DEBUG(GwLog::ERROR, "obp60:setChartDimensions %s: direction: %c, size: %d, dWidth: %d, dHeight: %d, timAxis: %d, valAxis: %d, cRoot{%d, %d}, top: %d, bottom: %d, hGap: %d, vGap: %d",
-        dataBuf.getName(), direction, size, dWidth, dHeight, timAxis, valAxis, cRoot.x, cRoot.y, top, bottom, hGap, vGap);
+    //LOG_DEBUG(GwLog::DEBUG, "obp60:setChartDimensions %s: direction: %c, size: %d, dWidth: %d, dHeight: %d, timAxis: %d, valAxis: %d, cRoot{%d, %d}, top: %d, bottom: %d, hGap: %d, vGap: %d",
+    //     dataBuf.getName(), direction, size, dWidth, dHeight, timAxis, valAxis, cRoot.x, cRoot.y, top, bottom, hGap, vGap);
     return true;
 }
 
@@ -176,7 +176,7 @@ void Chart::drawChrt(const char chrtDir, const int8_t chrtIntv, GwApi::BoatValue
     // LOG_DEBUG(GwLog::DEBUG, "Chart:drawChart: min: %.1f, mid: %.1f, max: %.1f, rng: %.1f", chrtMin, chrtMid, chrtMax, chrtRng);
     calcChrtBorders(chrtMin, chrtMid, chrtMax, chrtRng);
     chrtScale = double(valAxis) / chrtRng; // Chart scale: pixels per value step
-    LOG_DEBUG(GwLog::DEBUG, "Chart:drawChart: min: %.1f, mid: %.1f, max: %.1f, rng: %.1f", chrtMin, chrtMid, chrtMax, chrtRng);
+    // LOG_DEBUG(GwLog::DEBUG, "Chart:drawChart: min: %.1f, mid: %.1f, max: %.1f, rng: %.1f", chrtMin, chrtMid, chrtMax, chrtRng);
 
     // Do we have valid buffer data?
     if (dataBuf.getMax() == dbMAX_VAL) { // only <MAX_VAL> values in buffer -> no valid wind data available
@@ -261,8 +261,8 @@ void Chart::calcChrtBorders(double& rngMin, double& rngMid, double& rngMax, doub
                 }
                 recalcRngMid = false; // Reset flag for <rngMid> determination
 
-                LOG_DEBUG(GwLog::DEBUG, "calcChrtRange: rngMin: %.1f°, rngMid: %.1f°, rngMax: %.1f°, rng: %.1f°, rngStep: %.1f°", rngMin * RAD_TO_DEG, rngMid * RAD_TO_DEG, rngMax * RAD_TO_DEG,
-                    rng * RAD_TO_DEG, rngStep * RAD_TO_DEG);
+                // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange: rngMin: %.1f°, rngMid: %.1f°, rngMax: %.1f°, rng: %.1f°, rngStep: %.1f°", rngMin * RAD_TO_DEG, rngMid * RAD_TO_DEG, rngMax * RAD_TO_DEG,
+                //     rng * RAD_TO_DEG, rngStep * RAD_TO_DEG);
             }
         }
 
@@ -287,8 +287,8 @@ void Chart::calcChrtBorders(double& rngMin, double& rngMid, double& rngMax, doub
 
         rng = halfRng * 2.0;
 
-        LOG_DEBUG(GwLog::DEBUG, "calcChrtBorders: rngMin: %.1f°, rngMid: %.1f°, rngMax: %.1f°, tmpRng: %.1f°, rng: %.1f°, rngStep: %.1f°", rngMin * RAD_TO_DEG, rngMid * RAD_TO_DEG, rngMax * RAD_TO_DEG,
-            tmpRng * RAD_TO_DEG, rng * RAD_TO_DEG, rngStep * RAD_TO_DEG);
+        // LOG_DEBUG(GwLog::DEBUG, "calcChrtBorders: rngMin: %.1f°, rngMid: %.1f°, rngMax: %.1f°, tmpRng: %.1f°, rng: %.1f°, rngStep: %.1f°", rngMin * RAD_TO_DEG, rngMid * RAD_TO_DEG, rngMax * RAD_TO_DEG,
+        //     tmpRng * RAD_TO_DEG, rng * RAD_TO_DEG, rngStep * RAD_TO_DEG);
 
     } else { // chart data is of any other type
 
@@ -320,8 +320,8 @@ void Chart::calcChrtBorders(double& rngMin, double& rngMid, double& rngMax, doub
         rngMid = (rngMin + rngMax) / 2.0;
         rng = rngMax - rngMin;
 
-        LOG_DEBUG(GwLog::DEBUG, "calcChrtRange-end: currMinVal: %.1f, currMaxVal: %.1f, rngMin: %.1f, rngMid: %.1f, rngMax: %.1f, rng: %.1f, rngStep: %.1f, zeroValue: %.1f, dbMIN_VAL: %.1f",
-            currMinVal, currMaxVal, rngMin, rngMid, rngMax, rng, rngStep, zeroValue, dbMIN_VAL);
+        // LOG_DEBUG(GwLog::DEBUG, "calcChrtRange-end: currMinVal: %.1f, currMaxVal: %.1f, rngMin: %.1f, rngMid: %.1f, rngMax: %.1f, rng: %.1f, rngStep: %.1f, zeroValue: %.1f, dbMIN_VAL: %.1f",
+        //     currMinVal, currMaxVal, rngMin, rngMid, rngMax, rng, rngStep, zeroValue, dbMIN_VAL);
     }
 }
 
@@ -397,6 +397,8 @@ void Chart::drawChartLines(const char direction, const int8_t chrtIntv, const do
             }
             break;
         }
+
+        taskYIELD(); // we run for 50-150ms; be polite to other tasks with same priority
     }
 }
 
@@ -656,7 +658,7 @@ void Chart::prntHorizChartThreeValueAxisLabel(const GFXfont* font)
 
     if (font == &Ubuntu_Bold10pt8b) {
         xOffset = 39;
-        yOffset = 15;
+        yOffset = 16;
     } else if (font == &Ubuntu_Bold12pt8b) {
         xOffset = 51;
         yOffset = 18;
@@ -718,7 +720,7 @@ void Chart::prntHorizChartMultiValueAxisLabel(const GFXfont* font)
     axSlots = valAxis / static_cast<double>(VALAXIS_STEP); // number of axis labels (and we want to have a double calculation, no integer)
     axIntv = chrtRng / axSlots;
     axLabel = chrtMin + axIntv;
-    LOG_DEBUG(GwLog::DEBUG, "Chart::printHorizMultiValueAxisLabel: chrtRng: %.2f, th-chrtRng: %.2f, axSlots: %.2f, axIntv: %.2f, axLabel: %.2f, chrtMin: %.2f, chrtMid: %.2f, chrtMax: %.2f", chrtRng, this->chrtRng, axSlots, axIntv, axLabel, this->chrtMin, chrtMid, chrtMax);
+    // LOG_DEBUG(GwLog::DEBUG, "Chart::printHorizMultiValueAxisLabel: chrtRng: %.2f, th-chrtRng: %.2f, axSlots: %.2f, axIntv: %.2f, axLabel: %.2f, chrtMin: %.2f, chrtMid: %.2f, chrtMax: %.2f", chrtRng, this->chrtRng, axSlots, axIntv, axLabel, this->chrtMin, chrtMid, chrtMax);
 
     int loopStrt, loopEnd, loopStp;
     if (chrtDataFmt == SPEED || chrtDataFmt == TEMPERATURE || chrtDataFmt == OTHER) {
