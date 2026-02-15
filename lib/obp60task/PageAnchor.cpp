@@ -26,6 +26,25 @@
     force map update if new position is different from old position by 
     a certain level (e.g. 10m)
 
+    Map service options / URL parameters
+      - mandatory
+          lat: latitude
+          lon: longitude
+          width: image width in px
+          height: image height in px
+      - optional
+          zoom: zoom level, default 15
+          mrot: map rotation angle in degrees
+          mtype: map type, default="Open Street Map"
+          dtype: dithering type, default="Atkinson"
+          cutout: image cutout type 0=none
+          tab: tab size, 0=none
+          border: border line zize in px, default 2
+          symbol: synmol number, default=2 triangle
+          srot: symbol rotation in degrees
+          ssize: symbol size in px, default=15
+          grid: show map grid
+
 */
 
 #include <WiFi.h>
@@ -53,9 +72,11 @@ private:
     const uint16_t map_width = 264;
     const uint16_t map_height = 260;
     bool map_valid = false;
+    char map_service = 'R'; // (O)BP Service, (L)ocal Service, (R)emote Service
     double map_lat = 0; // current center of valid map
     double map_lon = 0;
     String server_name; // server with map service
+    uint16_t server_port = 80;
     String tile_path;
 
     String lengthformat;
@@ -109,7 +130,7 @@ private:
                 if (posdiff > 25) {
                     map_lat = bv_lat->value;
                     map_lon = bv_lon->value;
-                    getBackgroundMap(map_lat, map_lon, zoom);
+                    map_valid = getBackgroundMap(map_lat, map_lon, zoom);
                     if (map_valid) {
                         // prepare visible space for anchor-symbol or boat
                         canvas->fillCircle(132, 130, 12, commonData->fgcolor);
@@ -139,10 +160,10 @@ private:
         // TODO rotate boat according to current heading
         if (bv_hdt->valid) {
             if (map_valid) {
-                Point b1 = rotatePoint(c, {b.x, b.y - 8}, RadToDeg(bv_hdt->value));
+                Point b1 = rotatePoint(c, {b.x, b.y - 8}, bv_hdt->value * RAD_TO_DEG);
                 getdisplay().fillCircle(b1.x, b1.y, 10, commonData->bgcolor);
             }
-            drawPoly(rotatePoints(c, pts_boat, RadToDeg(bv_hdt->value)), commonData->fgcolor);
+            drawPoly(rotatePoints(c, pts_boat, bv_hdt->value * RAD_TO_DEG), commonData->fgcolor);
         } else {
             // no heading available draw north oriented
             if (map_valid) {
@@ -246,12 +267,32 @@ private:
 
     }
 
-    void displayModeConfig() {
+    void displayModeConfig(PageData &pageData) {
+
 
         getdisplay().setTextColor(commonData->fgcolor);
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(8, 48);
         getdisplay().print("Anchor configuration");
+
+        getdisplay().setFont(&Ubuntu_Bold8pt8b);
+
+        getdisplay().setCursor(8, 250);
+        getdisplay().print("Press MODE to leave config");
+
+        getdisplay().setCursor(8, 68);
+        getdisplay().printf("Server: %s", server_name.c_str());
+        getdisplay().setCursor(8, 88);
+        getdisplay().printf("Port: %d", server_port);
+        getdisplay().setCursor(8, 108);
+        getdisplay().printf("Tilepath: %s", tile_path.c_str());
+
+        GwApi::BoatValue *bv_lat = pageData.values[4]; // LAT
+        GwApi::BoatValue *bv_lon = pageData.values[5]; // LON
+        if (!bv_lat->valid or !bv_lon->valid) {
+            getdisplay().setCursor(8, 128);
+            getdisplay().printf("No valid position: background map disabled");
+        }
 
     }
 
@@ -261,8 +302,22 @@ public:
         commonData = &common;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageAnchor");
 
-        server_name = common.config->getString(common.config->mapServer);
-        tile_path = common.config->getString(common.config->mapTilePath);
+        String mapsource = common.config->getString(common.config->mapsource);
+        if (mapsource == "Local Service") {
+            map_service = 'L';
+            server_name = common.config->getString(common.config->ipAddress);
+            server_port = common.config->getInt(common.config->localPort);
+            tile_path = "";
+        } else if (mapsource == "Remote Service") {
+            map_service = 'R';
+            server_name = common.config->getString(common.config->mapServer);
+            tile_path = common.config->getString(common.config->mapTilePath);
+        } else { // OBP Service or undefined
+            map_service = 'O';
+            server_name = "norbert-walter.dnshome.de";
+            tile_path = "";
+        }
+        zoom = common.config->getInt(common.config->zoomlevel);
 
         lengthformat = common.config->getString(common.config->lengthFormat);
         chain_length = common.config->getInt(common.config->chainLength);
@@ -414,7 +469,7 @@ public:
        if (mode == 'N') {
            displayModeNormal(pageData);
        } else if (mode == 'C') {
-           displayModeConfig();
+           displayModeConfig(pageData);
        }
 
         return PAGE_UPDATE;

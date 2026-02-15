@@ -20,28 +20,6 @@
         }
     },
     {
-        "name": "mapServer",
-        "label": "map server",
-        "type": "string",
-        "default": "",
-        "description": "Server for converting map tiles. Use only one hostname or IP address",
-        "category": "wifi client",
-        "capabilities": {
-            "obp40": "true"
-        }
-    },
-    {
-        "name": "mapTilePath",
-        "label": "map tile path",
-        "type": "string",
-        "default": "map.php",
-        "description": "Path to converter access e.g. index.php or map.php",
-        "category": "wifi client",
-        "capabilities": {
-            "obp40": "true"
-        }
-    },
-    {
         "name": "timeZone",
         "label": "Time Zone",
         "type": "number",
@@ -108,7 +86,7 @@
         "description": "The length of the anchor chain [0...255m]",
         "category": "OBP40 Settings",
         "capabilities": {
-            "obp40":"true"
+            "obp40": "true"
         }
     },
     {
@@ -714,7 +692,7 @@
         "type": "string",
         "default": "text1",
         "description": "Button name",
-        "category": "OBP60 IO-Modul1",
+        "category": "OBP40 IO-Modul1",
         "capabilities": {
             "obp40":"true"
         }
@@ -725,7 +703,7 @@
         "type": "string",
         "default": "text2",
         "description": "Button name",
-        "category": "OBP60 IO-Modul1",
+        "category": "OBP40 IO-Modul1",
         "capabilities": {
             "obp40":"true"
         }
@@ -736,7 +714,7 @@
         "type": "string",
         "default": "text3",
         "description": "Button name",
-        "category": "OBP60 IO-Modul1",
+        "category": "OBP40 IO-Modul1",
         "capabilities": {
             "obp40":"true"
         }
@@ -747,7 +725,7 @@
         "type": "string",
         "default": "text4",
         "description": "Button name",
-        "category": "OBP60 IO-Modul1",
+        "category": "OBP40 IO-Modul1",
         "capabilities": {
             "obp40":"true"
         }
@@ -758,7 +736,7 @@
         "type": "string",
         "default": "text5",
         "description": "Button name",
-        "category": "OBP60 IO-Modul1",
+        "category": "OBP40 IO-Modul1",
         "capabilities": {
             "obp40":"true"
         }
@@ -1103,7 +1081,8 @@
         "description": "Type of map source, cloud service or local service",
         "list": [
             "OBP Service",
-            "Local Service"
+            "Local Service",
+            "Remote Service"
         ],
         "category": "OBP40 Navigation",
         "capabilities": {
@@ -1138,6 +1117,34 @@
         },
         "condition": [
             { "mapsource": ["Local Service"] }
+        ]
+    },
+    {
+        "name": "mapServer",
+        "label": "map server",
+        "type": "string",
+        "default": "",
+        "description": "Server for converting map tiles. Use only one hostname or IP address",
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            { "mapsource": ["Remote Service"] }
+        ]
+    },
+    {
+        "name": "mapTilePath",
+        "label": "map tile path",
+        "type": "string",
+        "default": "map.php",
+        "description": "Path to converter access e.g. index.php or map.php",
+        "category": "OBP40 Navigation",
+        "capabilities": {
+            "obp40": "true"
+        },
+        "condition": [
+            { "mapsource": ["Remote Service"] }
         ]
     },
     {
