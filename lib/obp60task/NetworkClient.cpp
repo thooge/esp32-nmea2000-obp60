@@ -1,4 +1,7 @@
 #include "NetworkClient.h"
+#include "GWWifi.h"             // WiFi management (thread-safe)
+
+extern GwWifi gwWifi;   // Extern declaration of global WiFi instance
 
 extern "C" {
     #include "puff.h"
@@ -51,8 +54,13 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
     const size_t capacity = READLIMIT;   // Read limit for data (can be adjusted in NetworkClient.h)
     uint8_t* buffer = (uint8_t*)malloc(capacity);
 
+    if (!gwWifi.clientConnected()) {
+        if (DEBUGING) {Serial.println("No WiFi connection");}
+        return false;
+    }
+    
     if (!buffer) {
-        if (DEBUG) {Serial.println("Malloc failed (buffer");}
+        if (DEBUGING) {Serial.println("Malloc failed buffer");}
         return false;
     }
 
@@ -106,7 +114,7 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
         len += read;
         lastData = millis();
 
-        if (DEBUG) {Serial.printf("Read chunk: %d (total: %d)\n", read, (int)len);}
+        if (DEBUGING) {Serial.printf("Read chunk: %d (total: %d)\n", read, (int)len);}
 
         if (len < 20) continue;  // Not enough data for header
 
@@ -122,7 +130,7 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
 
         int res = puff(test, &testLen, buffer + headerOffset, &srcLen);
         if (res == 0) {
-            if (DEBUG) {Serial.printf("Decompress OK! Size: %lu bytes\n", testLen);}
+            if (DEBUGING) {Serial.printf("Decompress OK! Size: %lu bytes\n", testLen);}
             outData = test;
             outLen = testLen;
             complete = true;
@@ -167,7 +175,7 @@ bool NetworkClient::fetchAndDecompressJson(const String& url) {
         return false;
     }
 
-    if (DEBUG) {Serial.println("JSON OK!");}
+    if (DEBUGING) {Serial.println("JSON OK!");}
     _valid = true;
     return true;
 }

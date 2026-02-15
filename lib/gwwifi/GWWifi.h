@@ -34,6 +34,6 @@ class GwWifi{
         bool connectClientAsync();     // Non-blocking version for other tasks
         String apIP();
         bool isApActive(){return apActive;}
-        bool isClientActive(){return wifiClient->asBoolean();}}
+        bool isClientActive(){return wifiClient->asBoolean();}
 };
 #endif
