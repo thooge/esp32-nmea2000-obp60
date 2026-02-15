@@ -269,7 +269,6 @@ private:
 
     void displayModeConfig(PageData &pageData) {
 
-
         getdisplay().setTextColor(commonData->fgcolor);
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
         getdisplay().setCursor(8, 48);
