@@ -231,6 +231,9 @@ public:
 
         } else if (chrtMode == SPEED) {
             if (wsChart) {
+                if (dataIntv == 8) {
+                    dataIntv = 1; // horizontal charts show max. 4 x 7 min. only; no factor 8 multiplier
+                }
                 wsChart->showChrt(HORIZONTAL, FULL_SIZE, dataIntv, PRNT_NAME, PRNT_VALUE, *wsBVal);
             }
 

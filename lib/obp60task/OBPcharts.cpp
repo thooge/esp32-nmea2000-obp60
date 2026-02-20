@@ -434,46 +434,47 @@ Pos Chart::setCurrentChartPoint(const int i, const char direction, const double 
 // chart time axis label + lines
 void Chart::drawChrtTimeAxis(const char chrtDir, const int8_t chrtSz, const int8_t chrtIntv)
 {
-    float axSlots, intv, i;
+    int axSlots, intv, i, timeRng;
     char sTime[6];
-    int timeRng = chrtIntv * 4; // chart time interval: [1] 4 min., [2] 8 min., [3] 12 min., [4] 16 min., [8] 32 min.
+    int tOffset;
 
     getdisplay().setFont(&Ubuntu_Bold8pt8b);
     getdisplay().setTextColor(fgColor);
 
-    axSlots = 5; // number of axis labels
-    intv = timAxis / (axSlots - 1); // minutes per chart axis interval (interval is 1 less than axSlots)
-    i = timeRng; // Chart axis label start at -32, -16, -12, ... minutes
+    intv = 60; // print axis label each 60 pixels = seconds
+    axSlots = timAxis / intv; // number of axis labels; value will be truncated to full number
+    i = axSlots * chrtIntv * -1; // current minute label
 
     if (chrtDir == HORIZONTAL) {
         getdisplay().fillRect(0, cRoot.y, dWidth, 2, fgColor);
 
-        for (float j = 0; j < timAxis - 1; j += intv) { // fill time axis with values but keep area free on right hand side for value label
+    LOG_DEBUG(GwLog::DEBUG, "Chart::drawChrtTimeAxis: intv: %d, axSlots: %d, timAxis: %d, chrtIntv: %d", intv, axSlots, timAxis, chrtIntv);
+        for (int j = intv; j < timAxis - 1; j += intv) { // fill time axis with values but keep area free on right hand side for value label
 
             // draw text with appropriate offset
-            int tOffset = j == 0 ? 13 : -4;
-            snprintf(sTime, sizeof(sTime), "-%.0f", i);
+            tOffset = j == 0 ? 13 : -4;
+            snprintf(sTime, sizeof(sTime), "%d", i);
             drawTextCenter(cRoot.x + j + tOffset, cRoot.y - 8, sTime);
             getdisplay().drawLine(cRoot.x + j, cRoot.y, cRoot.x + j, cRoot.y + 5, fgColor); // draw short vertical time mark
 
-            i -= chrtIntv;
+            i += chrtIntv;
         }
 
     } else { // vertical chart
 
         for (float j = intv; j < timAxis - 1; j += intv) { // don't print time label at upper and lower end of time axis
 
-            i -= chrtIntv; // we start not at top chart position
-            snprintf(sTime, sizeof(sTime), "-%.0f", i);
+            snprintf(sTime, sizeof(sTime), "%d", i);
             getdisplay().drawLine(cRoot.x, cRoot.y + j, cRoot.x + valAxis, cRoot.y + j, fgColor); // Grid line
 
             if (chrtSz == FULL_SIZE) { // full size chart
                 getdisplay().fillRect(0, cRoot.y + j - 9, 32, 15, bgColor); // clear small area to remove potential chart lines
                 getdisplay().setCursor((4 - strlen(sTime)) * 7, cRoot.y + j + 3); // time value; print left screen; value right-formated
-                getdisplay().printf("%s", sTime); // Range value
+                getdisplay().printf("%s", sTime); // time value
             } else if (chrtSz == HALF_SIZE_RIGHT) { // half size chart; right side
                 drawTextCenter(dWidth / 2, cRoot.y + j, sTime); // time value; print mid screen
             }
+            i += chrtIntv;
         }
     }
 }
@@ -491,11 +492,11 @@ void Chart::drawChrtValAxis(const char chrtDir, const int8_t chrtSz, bool prntNa
 
         if (chrtSz == FULL_SIZE) {
 
+            // print buffer data name on left hand side of time axis (max. size 5 characters)
             font = &Ubuntu_Bold12pt8b;
-
-            // print buffer data name on right hand side of time axis (max. size 5 characters)
             getdisplay().setFont(font);
-            drawTextRalign(cRoot.x + timAxis, cRoot.y - 3, dbName.substring(0, 5));
+            getdisplay().fillRect(cRoot.x + timAxis - 57, cRoot.y + 2, 58, 20, bgColor); // clear small area to remove potential chart lines
+            drawTextRalign(cRoot.x + timAxis, cRoot.y + 19, dbName.substring(0, 5));
 
             if (chrtDataFmt == WIND) {
                 prntHorizChartThreeValueAxisLabel(font);
@@ -509,11 +510,11 @@ void Chart::drawChrtValAxis(const char chrtDir, const int8_t chrtSz, bool prntNa
         } else { // half size chart -> just print edge values + middle chart line
 
             font = &Ubuntu_Bold10pt8b;
-
             if (prntName) {
                 // print buffer data name on right hand side of time axis (max. size 5 characters)
                 getdisplay().setFont(font);
-                drawTextRalign(cRoot.x + timAxis, cRoot.y - 3, dbName.substring(0, 5));
+                getdisplay().fillRect(cRoot.x + timAxis - 57, cRoot.y + 2, 58, 20, bgColor); // clear small area to remove potential chart lines
+                drawTextRalign(cRoot.x + timAxis, cRoot.y + 16, dbName.substring(0, 5));
             }
 
             prntHorizChartThreeValueAxisLabel(font);
