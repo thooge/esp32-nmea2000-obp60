@@ -923,7 +923,7 @@ void solarGraphic(uint x, uint y, int pcolor, int bcolor){
 
 }
 
-// Generator graphic with fill level
+// Generator graphic
 void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
     // Show battery
         int xb = x;     // X position
@@ -938,6 +938,74 @@ void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
         getdisplay().setFont(&Ubuntu_Bold32pt8b);
         getdisplay().setCursor(xb-22, yb+20);
         getdisplay().print("G");
+}
+
+// Display rudder position as horizontal bargraph with configurable +/- range (degrees)
+void displayRudderPosition(int rudderPosition, uint8_t rangeDeg, uint16_t cx, uint16_t cy, uint16_t fg, uint16_t bg){
+    const int w = 360;
+    const int h = 20;
+    const int t = 3; // Line thickness
+    const int halfw = w/2;
+    const int halfh = h/2;
+    // Calculate top-left of bar (cx,cy are center of 0°)
+    int left = int(cx) - halfw;
+    int top = int(cy) - halfh;
+
+    // clamp provided range to allowed bounds [10,45]
+    if (rangeDeg < 10) rangeDeg = 10;
+    if (rangeDeg > 45) rangeDeg = 45;
+
+    // Pixels per degree for +/-rangeDeg -> total span = 2*rangeDeg
+    const float pxPerDeg = float(w) / (2.0f * float(rangeDeg));
+
+    // Draw outer border (thickness t)
+    for (int i = 0; i < t; i++) {
+        getdisplay().drawRect(left + i, top + i, w - 2 * i, h - 2 * i, fg);
+    }
+
+    // Fill inner area with background
+    getdisplay().fillRect(left + t, top + t, w - 2 * t, h - 2 * t, bg);
+
+    // Draw center line
+    getdisplay().drawRect(cx - 1, top + 1, 3 , h - 2, fg);
+
+    // Clamp rudder position to -rangeDeg..rangeDeg
+    if (rudderPosition > (int)rangeDeg) rudderPosition = (int)rangeDeg;
+    if (rudderPosition < -((int)rangeDeg)) rudderPosition = -((int)rangeDeg);
+
+    // Compute fill width in pixels
+    int fillPx = int(round(rudderPosition * pxPerDeg)); // positive -> right
+
+    // Fill area from center to position (if non-zero)
+    int centerx = cx;
+    int innerTop = top + t;
+    int innerH = h - 2 * t;
+    if (fillPx > 0) {
+        // Right side
+        getdisplay().fillRect(centerx, innerTop, fillPx, innerH, fg);
+    } else if (fillPx < 0) {
+        // Left side
+        getdisplay().fillRect(centerx + fillPx, innerTop, -fillPx, innerH, fg);
+    }
+
+    
+    // Draw tick marks every 5° and labels outside the bar
+    getdisplay().setTextColor(fg);
+    getdisplay().setFont(&Ubuntu_Bold8pt8b);
+    for (int angle = -((int)rangeDeg); angle <= (int)rangeDeg; angle += 5) {
+        int xpos = int(round(centerx + angle * pxPerDeg));
+        // Vertical tick inside bar
+        getdisplay().drawLine(xpos, top, xpos, top + h + 2, fg);
+        // Label outside: below the bar
+        String lbl = String(angle);
+        int16_t bx, by;
+        uint16_t bw, bh;
+        getdisplay().getTextBounds(lbl, 0, 0, &bx, &by, &bw, &bh);
+        int16_t tx = xpos - bw/2;
+        int16_t ty = top + h + bh + 5; // A little spacing
+        getdisplay().setCursor(tx, ty);
+        getdisplay().print(lbl);
+    }
 }
 
 // Function to handle HTTP image request

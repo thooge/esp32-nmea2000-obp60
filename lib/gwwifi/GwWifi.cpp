@@ -131,9 +131,14 @@ void GwWifi::loop(){
             if (lastConnectStart > now || (lastConnectStart + RETRY_MILLIS) < now)
             {
                 LOG_DEBUG(GwLog::LOG,"wifiClient: retry connect to %s", wifiSSID->asCString());
+
                 // CRITICAL SECTION: WiFi-Operationen müssen serialisiert werden
                 if (acquireMutex()){
-                    WiFi.disconnect();
+                    WiFi.disconnect(true); 
+                    delay(300);
+                    esp_wifi_stop();
+                    delay(100);
+                    esp_wifi_start();
                     releaseMutex();
                     connectInternal();
                 }
@@ -160,6 +165,7 @@ void GwWifi::loop(){
         }
     }
 }
+
 bool GwWifi::clientConnected(){
     // CRITICAL SECTION: WiFi.status() muss geschützt werden
     if (!acquireMutex()){
@@ -170,6 +176,7 @@ bool GwWifi::clientConnected(){
     releaseMutex();
     return result;
 };
+
 bool GwWifi::connectClient(){
     // CRITICAL SECTION: Disconnect und Connect müssen atomar sein
     if (!acquireMutex()){
