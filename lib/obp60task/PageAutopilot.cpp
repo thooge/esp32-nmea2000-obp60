@@ -5,8 +5,9 @@
 
 // These constants have to match the declaration below in :
 //  PageDescription registerPageAutopilot(
-//  {"HDM","HDT", "COG", "STW", "SOG", "DBT","XTE", "DTW", "BTW"}, // Bus values we need in the page
-const int HowManyValues = 9;
+//  {"HDM","HDT", "COG", "STW", "SOG", "DBT","XTE", "DTW", "BTW", "RPOS", "ROT"}, // Bus values we need in the page
+
+const int HowManyValues = 11;
 
 const int AverageValues = 4;
 
@@ -19,10 +20,13 @@ const int ShowDBT = 5;
 const int ShowXTE = 6;
 const int ShowDTW = 7;
 const int ShowBTW = 8;
+const int ShowRPOS = 9;
+const int ShowROT = 10;
 
 const int Compass_X0 = 200;         // X center point of compass band
-const int Compass_Y0 = 220;         // Y position of compass lines
-const int Compass_LineLength = 22;  // Length of compass lines
+const int Compass_Y0 = 90;          // Y position of compass lines
+//const int Compass_LineLength = 22;  // Length of compass lines
+const int Compass_LineLength = 15;  // Length of compass lines
 const float Compass_LineDelta = 8.0;// Compass band: 1deg = 5 Pixels, 10deg = 50 Pixels 
 
 class PageAutopilot : public Page
@@ -38,8 +42,11 @@ class PageAutopilot : public Page
 
     virtual void setupKeys(){
         Page::setupKeys();
-        commonData->keydata[0].label = "CMP";
-        commonData->keydata[1].label = "SRC";
+        commonData->keydata[0].label = "-10";
+        commonData->keydata[1].label = "-1";
+        commonData->keydata[2].label = "Auto";
+        commonData->keydata[3].label = "+1";
+        commonData->keydata[4].label = "+10";
    }
     
     virtual int handleKey(int key){
@@ -69,8 +76,8 @@ class PageAutopilot : public Page
         GwLog *logger = commonData->logger;
     
         // Old values for hold function
-        static String OldDataText[HowManyValues] = {"", "", "","", "", "","", "", ""};
-        static String OldDataUnits[HowManyValues] = {"", "", "","", "", "","", "", ""};
+        static String OldDataText[HowManyValues] = {"", "", "", "", "", "","", "", "", "", ""};
+        static String OldDataUnits[HowManyValues] = {"", "", "", "", "", "","", "", "", "", ""};
 
         // Get config data
         String lengthformat = config->getString(config->lengthFormat);
@@ -106,15 +113,13 @@ class PageAutopilot : public Page
             setBlinkingLED(false);
             setFlashLED(false); 
         }
-
-        if (bvalue == NULL) return PAGE_OK; // WTF why this statement?
         
         //***********************************************************
 
         // Set display in partial refresh mode
         getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
         getdisplay().setTextColor(commonData->fgcolor);
-
+/*
         // Horizontal line 2 pix top & bottom
         // Print data on top half
         getdisplay().fillRect(0, 130, 400, 2, commonData->fgcolor); 
@@ -138,7 +143,7 @@ class PageAutopilot : public Page
             OldDataText[WhichDataDisplay] = DataText[WhichDataDisplay];         // Save the old value
             OldDataUnits[WhichDataDisplay] = DataUnits[WhichDataDisplay];       // Save the old unit
         }
-
+*/
         // Now draw compass band                
         // Get the data
         double TheAngle = DataValue[WhichDataCompass];
@@ -152,13 +157,13 @@ class PageAutopilot : public Page
         buffer[0]=0;              
 
         getdisplay().setFont(&Ubuntu_Bold16pt8b);
-        getdisplay().setCursor(10, Compass_Y0-60);
+        getdisplay().setCursor(10, Compass_Y0-40);
         getdisplay().print(DataName[WhichDataCompass]);                         // Page name
- 
      
         // Draw compass base line and pointer
         getdisplay().fillRect(0, Compass_Y0, 400, 3, commonData->fgcolor);            
-        getdisplay().fillTriangle(Compass_X0,Compass_Y0-40,Compass_X0-10,Compass_Y0-80,Compass_X0+10,Compass_Y0-80,commonData->fgcolor);
+        //getdisplay().fillTriangle(Compass_X0,Compass_Y0-40,Compass_X0-10,Compass_Y0-80,Compass_X0+10,Compass_Y0-80,commonData->fgcolor);
+        getdisplay().fillTriangle(Compass_X0,Compass_Y0-30,Compass_X0-10,Compass_Y0-60,Compass_X0+10,Compass_Y0-60,commonData->fgcolor);
         // Draw trendlines
         for ( int i = 1; i < abs(TheTrend) / 2; i++){
             int x1;
@@ -238,6 +243,8 @@ class PageAutopilot : public Page
         // if ( x_test > 390)
         //     x_test = 320;
 
+        displayRudderPosition(DataValue[ShowSOG], 20, 200, 160, commonData->fgcolor, commonData->bgcolor);
+
         return PAGE_UPDATE;
     };
 
@@ -256,7 +263,7 @@ PageDescription registerPageAutopilot(
     "Autopilot",    // Page name
     createPage,     // Action
     0,              // Number of bus values depends on selection in Web configuration
-    {"HDM","HDT", "COG", "STW", "SOG", "DBT","XTE", "DTW", "BTW"}, // Bus values we need in the page
+    {"HDM","HDT", "COG", "STW", "SOG", "DBT","XTE", "DTW", "BTW", "RPOS", "ROT"}, // Bus values we need in the page
    true            // Show display header on/off
 );
 

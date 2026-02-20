@@ -131,6 +131,7 @@ void GwWifi::loop(){
             if (lastConnectStart > now || (lastConnectStart + RETRY_MILLIS) < now)
             {
                 LOG_DEBUG(GwLog::LOG,"wifiClient: retry connect to %s", wifiSSID->asCString());
+<<<<<<< HEAD
                 // CRITICAL SECTION: WiFi-Operationen müssen serialisiert werden
                 if (acquireMutex()){
                     WiFi.disconnect();
@@ -140,6 +141,23 @@ void GwWifi::loop(){
                 else{
                     LOG_DEBUG(GwLog::ERROR,"GwWifi: mutex timeout in loop");
                 }
+=======
+                
+//+++++++++ Old part +++++++++++++++++++++
+//                WiFi.disconnect();
+//                connectInternal();
+//++++++++++++++++++++++++++++++++++++++++
+
+//+++++++++ New part +++++++++++++++++++++                
+                WiFi.disconnect(true); 
+                delay(300);
+                esp_wifi_stop();
+                delay(100);
+                esp_wifi_start();
+                connectInternal();
+//++++++++++++++++++++++++++++++++++++++++                
+
+>>>>>>> autopilot2
             }
         }
         else{
