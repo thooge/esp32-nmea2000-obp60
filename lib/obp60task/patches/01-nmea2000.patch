@@ -1,0 +1,103 @@
+diff --git a/lib/api/GwApi.h b/lib/api/GwApi.h
+index 88f9690..9663a65 100644
+--- a/lib/api/GwApi.h
++++ b/lib/api/GwApi.h
+@@ -2,6 +2,8 @@
+ #define _GWAPI_H
+ #include "GwMessage.h"
+ #include "N2kMsg.h"
++#include "Nmea2kTwai.h"
++#include "N2kDeviceList.h"
+ #include "NMEA0183Msg.h"
+ #include "GWConfig.h"
+ #include "GwBoatData.h"
+@@ -222,6 +224,8 @@ class GwApi{
+          * accessing boat data must only be executed from within the main thread
+          * you need to use the request pattern as shown in GwExampleTask.cpp
+          */
++        virtual Nmea2kTwai *getNMEA2000()=0;
++        virtual tN2kDeviceList *getN2kDeviceList()=0;
+         virtual GwBoatData *getBoatData()=0;
+         virtual ~GwApi(){}
+ };
+diff --git a/lib/obp60task/OBP60Extensions.h b/lib/obp60task/OBP60Extensions.h
+index 604c356..2fe4496 100644
+--- a/lib/obp60task/OBP60Extensions.h
++++ b/lib/obp60task/OBP60Extensions.h
+@@ -15,6 +15,9 @@
+ #define MOUNT_POINT "/sdcard"
+ #endif
+ 
++// Patches to apply to gateway code
++#define PATCH_N2K
++
+ // FRAM address reservations 32kB: 0x0000 - 0x7FFF
+ // 0x0000 - 0x03ff: single variables
+ #define FRAM_PAGE_NO 0x0002
+diff --git a/lib/usercode/GwUserCode.cpp b/lib/usercode/GwUserCode.cpp
+index 1b007f8..90087d4 100644
+--- a/lib/usercode/GwUserCode.cpp
++++ b/lib/usercode/GwUserCode.cpp
+@@ -216,6 +216,14 @@ public:
+     {
+         return api->getLogger();
+     }
++    virtual Nmea2kTwai *getNMEA2000()
++    {
++        return api->getNMEA2000();
++    }
++    virtual tN2kDeviceList *getN2kDeviceList()
++    {
++        return api->getN2kDeviceList();
++    }
+     virtual GwBoatData *getBoatData()
+     {
+         return api->getBoatData();
+@@ -428,4 +436,4 @@ void GwUserCode::handleWebRequest(const String &url,AsyncWebServerRequest *req){
+     }
+     LOG_DEBUG(GwLog::DEBUG,"no task found for web request %s[%s]",url.c_str(),tname.c_str());
+     req->send(404, "text/plain", "not found");
+-}
+\ No newline at end of file
++}
+diff --git a/src/main.cpp b/src/main.cpp
+index 44c715f..fdb0366 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -100,6 +100,7 @@ GwLog logger(LOGLEVEL,NULL);
+ GwConfigHandler config(&logger);
+ 
+ #include "Nmea2kTwai.h"
++#include <N2kDeviceList.h>
+ static const unsigned long CAN_RECOVERY_PERIOD=3000; //ms
+ static const unsigned long NMEA2000_HEARTBEAT_INTERVAL=5000;
+ class Nmea2kTwaiLog : public Nmea2kTwai{
+@@ -126,6 +127,7 @@ class Nmea2kTwaiLog : public Nmea2kTwai{
+ #endif
+ 
+ Nmea2kTwai &NMEA2000=*(new Nmea2kTwaiLog((gpio_num_t)ESP32_CAN_TX_PIN,(gpio_num_t)ESP32_CAN_RX_PIN,CAN_RECOVERY_PERIOD,&logger));
++tN2kDeviceList *pN2kDeviceList;
+ 
+ #ifdef GWBUTTON_PIN
+ bool fixedApPass=false;
+@@ -333,6 +335,12 @@ public:
+     status.n2kTx=countNMEA2KOut.getGlobal();
+     channels.fillStatus(status);
+   }
++  virtual Nmea2kTwai *getNMEA2000(){
++    return &NMEA2000;
++  }
++  virtual tN2kDeviceList *getN2kDeviceList(){
++    return pN2kDeviceList;
++  }
+   virtual GwBoatData *getBoatData(){
+     return &boatData;
+   }
+@@ -935,6 +943,7 @@ void setup() {
+   NMEA2000.SetMsgHandler([](const tN2kMsg &n2kMsg){
+     handleN2kMessage(n2kMsg,N2K_CHANNEL_ID);
+   });
++  pN2kDeviceList = new tN2kDeviceList(&NMEA2000);
+   NMEA2000.Open();
+   logger.logDebug(GwLog::LOG,"starting addon tasks");
+   logger.flush();

@@ -15,6 +15,7 @@
 #include "images/logo64.xbm"
 #include <esp32/clk.h>
 #include "qrcode.h"
+#include <vector>
 
 #ifdef BOARD_OBP40S3
 #include "dirent.h"
@@ -40,6 +41,7 @@ private:
     String rtc_module;
     String gps_module;
     String env_module;
+    String flashLED;
 
     String batt_sensor;
     String solar_sensor;
@@ -49,6 +51,17 @@ private:
     double homelon;
 
     char mode = 'N'; // (N)ormal, (S)ettings, (D)evice list, (C)ard
+
+#ifdef PATCH_N2K
+    struct device {
+        uint64_t NAME;
+        uint8_t id;
+        char hex_name[17];
+        uint16_t manuf_code;
+        const char *model;
+    };
+    std::vector<device> devicelist;
+#endif
 
 public:
     PageSystem(CommonData &common){
@@ -76,6 +89,7 @@ public:
         rot_sensor = common.config->getString(common.config->useRotSensor);
         homelat = common.config->getString(common.config->homeLAT).toDouble();
         homelon = common.config->getString(common.config->homeLON).toDouble();
+        flashLED = common.config->getString(common.config->flashLED);
     }
 
     void setupKeys() {
@@ -168,18 +182,42 @@ public:
         }
     }
 
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+
+#ifdef PATCH_N2K
+        // load current device list
+        tN2kDeviceList *pDevList = pageData.api->getN2kDeviceList();
+        // TODO check if changed
+        if (pDevList->ReadResetIsListUpdated()) {
+            // only reload if changed
+            devicelist.clear();
+            for (uint8_t i = 0; i <= 252; i++) {
+                const tNMEA2000::tDevice *d = pDevList->FindDeviceBySource(i);
+                if (d == nullptr) {
+                    continue;
+                }
+                device dev;
+                dev.id = i;
+                dev.NAME = d->GetName();
+                snprintf(dev.hex_name, sizeof(dev.hex_name), "%08X%08X", (uint32_t)(dev.NAME >> 32), (uint32_t)(dev.NAME & 0xFFFFFFFF));
+                dev.manuf_code = d->GetManufacturerCode();
+                dev.model = d->GetModelID();
+                devicelist.push_back(dev);
+            }
+        }
+#endif
+    };
+
     int displayPage(PageData &pageData){
         GwConfigHandler *config = commonData->config;
         GwLog *logger = commonData->logger;
-
-        // Get config data
-        String flashLED = config->getString(config->flashLED);
-
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false); 
-        }
 
         // Logging boat values
         logger->logDebug(GwLog::LOG, "Drawing at PageSystem, Mode=%c", mode);
@@ -461,12 +499,54 @@ public:
             getdisplay().print("NMEA2000 device list");
 
             getdisplay().setFont(&Ubuntu_Bold8pt8b);
-            getdisplay().setCursor(20, 80);
+            getdisplay().setCursor(20, 70);
             getdisplay().print("RxD: ");
             getdisplay().print(String(commonData->status.n2kRx));
-            getdisplay().setCursor(20, 100);
+            getdisplay().setCursor(120, 70);
             getdisplay().print("TxD: ");
             getdisplay().print(String(commonData->status.n2kTx));
+
+#ifdef PATCH_N2K
+            x0 = 20;
+            y0 = 100;
+
+            getdisplay().setFont(&Ubuntu_Bold10pt8b);
+            getdisplay().setCursor(x0, y0);
+            getdisplay().print("ID");
+            getdisplay().setCursor(x0 + 50, y0);
+            getdisplay().print("Model");
+            getdisplay().setCursor(x0 + 250, y0);
+            getdisplay().print("Manuf.");
+            getdisplay().drawLine(18, y0 + 4, 360 , y0 + 4 , commonData->fgcolor);
+
+            getdisplay().setFont(&Ubuntu_Bold8pt8b);
+            y0 = 120;
+            uint8_t n_dev = 0;
+            for (const device& item : devicelist) {
+                if (n_dev > 8) {
+                    break;
+                }
+                getdisplay().setCursor(x0, y0 + n_dev * 20);
+                getdisplay().print(item.id);
+                getdisplay().setCursor(x0 + 50, y0 + n_dev * 20);
+                getdisplay().print(item.model);
+                getdisplay().setCursor(x0 + 250, y0 + n_dev * 20);
+                getdisplay().print(item.manuf_code);
+                n_dev++;
+            }
+            getdisplay().setCursor(x0, y0 + (n_dev + 1) * 20);
+            if (n_dev == 0) {
+                getdisplay().printf("no devices found on bus");
+
+            } else {
+                getdisplay().drawLine(18, y0 + n_dev * 20, 360 , y0 + n_dev * 20, commonData->fgcolor);
+                getdisplay().printf("%d devices of %d in total", n_dev, devicelist.size());
+            }
+#else
+            getdisplay().setCursor(20, 100);
+            getdisplay().print("NMEA2000 not exposed to obp60 task");
+#endif
+
         }
 
         // Update display
