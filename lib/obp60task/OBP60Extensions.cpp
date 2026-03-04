@@ -60,10 +60,15 @@ GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay(){r
 // panel device + offscreen shadow framebuffer
 static LGFX panelDisplay;
 static LGFXCanvas shadowDisplay(&panelDisplay);
+static LGFXCanvas scaleDisplay(&panelDisplay);
 static bool shadowDisplayInitialized = false;
+static bool scaleDisplayInitialized = false;
+static uint16_t scaleDisplayWidth = 0;
+static uint16_t scaleDisplayHeight = 0;
 
 LGFXCanvas & getdisplay(){return shadowDisplay;}
 LGFX & getpaneldisplay(){return panelDisplay;}
+LGFXCanvas & getscaleddisplay(){return scaleDisplay;}
 
 bool initDisplayShadowBuffer(){
     if (shadowDisplayInitialized) return true;
@@ -79,6 +84,29 @@ bool initDisplayShadowBuffer(){
 
     shadowDisplay.fillScreen(GxEPD_BLACK);
     shadowDisplayInitialized = true;
+    return true;
+}
+
+bool initDisplayScaleBuffer(uint16_t width, uint16_t height){
+    if (scaleDisplayInitialized && scaleDisplayWidth == width && scaleDisplayHeight == height) {
+        return true;
+    }
+
+    scaleDisplay.deleteSprite();
+    scaleDisplay.setPsram(true);
+    scaleDisplay.setColorDepth(16);
+    scaleDisplay.setTextDatum(textdatum_t::baseline_left);
+
+    if (scaleDisplay.createSprite(width, height) == nullptr) {
+        scaleDisplayInitialized = false;
+        scaleDisplayWidth = 0;
+        scaleDisplayHeight = 0;
+        return false;
+    }
+
+    scaleDisplayWidth = width;
+    scaleDisplayHeight = height;
+    scaleDisplayInitialized = true;
     return true;
 }
 #endif

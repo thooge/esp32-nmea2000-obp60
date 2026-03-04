@@ -423,7 +423,9 @@ private:
 
 LGFXCanvas & getdisplay();
 LGFX & getpaneldisplay();
+LGFXCanvas & getscaleddisplay();
 bool initDisplayShadowBuffer();
+bool initDisplayScaleBuffer(uint16_t width, uint16_t height);
 #endif
 
 // Page display return values
@@ -568,42 +570,44 @@ inline void displayNextPage() {
         const uint16_t drawX = static_cast<uint16_t>((dstW - targetW) / 2U);
         const uint16_t drawY = static_cast<uint16_t>((dstH - targetH) / 2U);
 
-        dst.startWrite();
         const uint16_t borderColor = src.readPixel(0, 0);
-        if (drawX > 0) {
-            dst.fillRect(0, drawY, drawX, targetH, borderColor);
-            dst.fillRect(drawX + targetW, drawY, dstW - (drawX + targetW), targetH, borderColor);
-        }
+        if (initDisplayScaleBuffer(dstW, dstH)) {
+            LGFXCanvas &scaled = getscaleddisplay();
+            scaled.fillScreen(borderColor);
 
-        for (uint16_t y = 0; y < targetH; ++y) {
-            const uint32_t syfp = (targetH > 1)
-                                    ? (static_cast<uint32_t>(y) * (srcH - 1) * 256U) / (targetH - 1)
-                                    : 0;
-            const uint16_t sy0 = static_cast<uint16_t>(syfp >> 8);
-            const uint16_t sy1 = (sy0 + 1 < srcH) ? static_cast<uint16_t>(sy0 + 1) : sy0;
-            const uint16_t wy  = static_cast<uint16_t>(syfp & 0xFFU);
-
-            for (uint16_t x = 0; x < targetW; ++x) {
-                const uint32_t sxfp = (targetW > 1)
-                                        ? (static_cast<uint32_t>(x) * (srcW - 1) * 256U) / (targetW - 1)
+            for (uint16_t y = 0; y < targetH; ++y) {
+                const uint32_t syfp = (targetH > 1)
+                                        ? (static_cast<uint32_t>(y) * (srcH - 1) * 256U) / (targetH - 1)
                                         : 0;
-                const uint16_t sx0 = static_cast<uint16_t>(sxfp >> 8);
-                const uint16_t sx1 = (sx0 + 1 < srcW) ? static_cast<uint16_t>(sx0 + 1) : sx0;
+                const uint16_t sy0 = static_cast<uint16_t>(syfp >> 8);
+                const uint16_t sy1 = (sy0 + 1 < srcH) ? static_cast<uint16_t>(sy0 + 1) : sy0;
+                const uint16_t wy  = static_cast<uint16_t>(syfp & 0xFFU);
 
-                #if OBP_TFT_SCALE_ANTIALIAS
-                const uint16_t wx = static_cast<uint16_t>(sxfp & 0xFFU);
-                const uint16_t color = sampleBilinearRgb565(src, sx0, sy0, sx1, sy1, wx, wy);
-                #else
-                const uint16_t color = src.readPixel(sx0, sy0);
-                #endif
+                for (uint16_t x = 0; x < targetW; ++x) {
+                    const uint32_t sxfp = (targetW > 1)
+                                            ? (static_cast<uint32_t>(x) * (srcW - 1) * 256U) / (targetW - 1)
+                                            : 0;
+                    const uint16_t sx0 = static_cast<uint16_t>(sxfp >> 8);
+                    const uint16_t sx1 = (sx0 + 1 < srcW) ? static_cast<uint16_t>(sx0 + 1) : sx0;
 
-                dst.drawPixel(drawX + x, drawY + y, color);
+                    #if OBP_TFT_SCALE_ANTIALIAS
+                    const uint16_t wx = static_cast<uint16_t>(sxfp & 0xFFU);
+                    const uint16_t color = sampleBilinearRgb565(src, sx0, sy0, sx1, sy1, wx, wy);
+                    #else
+                    const uint16_t color = src.readPixel(sx0, sy0);
+                    #endif
+
+                    scaled.drawPixel(drawX + x, drawY + y, color);
+                }
+                if ((y & 0x0F) == 0) {
+                    yield();
+                }
             }
-            if ((y & 0x0F) == 0) {
-                yield();
-            }
+
+            scaled.pushSprite(0, 0);
+        } else {
+            src.pushSprite(drawX, drawY);
         }
-        dst.endWrite();
         #endif
     }
     #else
