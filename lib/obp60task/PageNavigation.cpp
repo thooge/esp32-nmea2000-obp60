@@ -4,6 +4,7 @@
 #include "OBP60Extensions.h"
 #include "NetworkClient.h"      // Network connection
 #include "ImageDecoder.h"       // Image decoder for navigation map
+#include <mbedtls/base64.h>
 
 #include "Logo_OBP_400x300_sw.h"
 
@@ -432,13 +433,21 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
 
             // Decode Base64 content to image
             size_t decodedSize = 0;
-            bool decodeOk = decoder.decodeBase64(b64, imageData, imgSize, decodedSize);
+            bool decodeOk = decoder.decodeBase64(b64, b64len, imageData, imgSize, decodedSize);
             if (!decodeOk || decodedSize < requiredBytes){
+                int base64Ret = mbedtls_base64_decode(
+                    nullptr,
+                    0,
+                    &decodedSize,
+                    (const unsigned char*)b64,
+                    b64len
+                );
                 LOG_DEBUG(GwLog::ERROR,
-                    "Error PageNavigation: decode failed (ok=%d, decoded=%u, required=%u)",
+                    "Error PageNavigation: decode failed (ok=%d, decoded=%u, required=%u, b64ret=%d)",
                     decodeOk ? 1 : 0,
                     (unsigned int)decodedSize,
-                    (unsigned int)requiredBytes
+                    (unsigned int)requiredBytes,
+                    base64Ret
                 );
                 free(b64);
                 free(imageData);
