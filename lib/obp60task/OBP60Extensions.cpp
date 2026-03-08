@@ -475,6 +475,30 @@ std::vector<String> wordwrap(String &line, uint16_t maxwidth) {
     return lines;
 }
 
+// Helper function to just get the exact width of a string
+uint16_t getStringPixelWidth(const char* str, const GFXfont* font) {
+    int16_t minx = INT16_MAX;
+    int16_t maxx = INT16_MIN;
+    int16_t cursor_x = 0;
+    while (*str) {
+        char c = *str++;
+        if (c < font->first || c > font->last) {
+            continue;
+        }
+        GFXglyph* glyph = &font->glyph[c - font->first];
+        if (glyph->width > 0) {
+            int16_t glyphStart = cursor_x + glyph->xOffset;
+            int16_t glyphEnd = glyphStart + glyph->width;
+            if (glyphStart < minx) minx = glyphStart;
+            if (glyphEnd > maxx) maxx = glyphEnd;
+        }
+        cursor_x += glyph->xAdvance;
+    }
+    if (minx > maxx)
+        return 0;
+    return maxx - minx;
+}
+
 // Draw centered text
 void drawTextCenter(int16_t cx, int16_t cy, String text) {
     int16_t x1, y1;
@@ -638,20 +662,19 @@ void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatVa
         // Date and time
         String fmttype = commonData.config->getString(commonData.config->dateFormat);
         String timesource = commonData.config->getString(commonData.config->timeSource);
-        double tz = commonData.config->getString(commonData.config->timeZone).toDouble();
         getdisplay().setTextColor(commonData.fgcolor);
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
         getdisplay().setCursor(230, 15);
         if (timesource == "RTC" or timesource == "iRTC") {
             // TODO take DST into account
             if (commonData.data.rtcValid) {
-                time_t tv = mktime(&commonData.data.rtcTime) + (int)(tz * 3600);
+                time_t tv = mktime(&commonData.data.rtcTime) + (int)(commonData.tz * 3600);
                 struct tm *local_tm = localtime(&tv);
                 getdisplay().print(formatTime('m', local_tm->tm_hour, local_tm->tm_min, 0));
                 getdisplay().print(" ");
                 getdisplay().print(formatDate(fmttype, local_tm->tm_year + 1900, local_tm->tm_mon + 1, local_tm->tm_mday));
                 getdisplay().print(" ");
-                getdisplay().print(tz == 0 ? "UTC" : "LOT");
+                getdisplay().print(commonData.tz == 0 ? "UTC" : "LOT");
             } else {
                 drawTextRalign(396, 15, "RTC invalid");
             }
@@ -666,7 +689,7 @@ void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatVa
                 getdisplay().print(" ");
                 getdisplay().print(actdate);
                 getdisplay().print(" ");
-                getdisplay().print(tz == 0 ? "UTC" : "LOT");
+                getdisplay().print(commonData.tz == 0 ? "UTC" : "LOT");
             }
             else{
                 if(commonData.config->getBool(commonData.config->useSimuData) == true){

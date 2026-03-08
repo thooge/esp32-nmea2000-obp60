@@ -527,8 +527,8 @@ void OBP60Task(GwApi *api){
     // Configuration values for main loop
     String gpsFix = api->getConfig()->getConfigItem(api->getConfig()->flashLED,true)->asString();
     String gpsOn=api->getConfig()->getConfigItem(api->getConfig()->useGPS,true)->asString();
-    float tz = api->getConfig()->getConfigItem(api->getConfig()->timeZone,true)->asFloat();
 
+    commonData.tz = api->getConfig()->getConfigItem(api->getConfig()->timeZone,true)->asFloat();
     commonData.backlight.mode = backlightMapping(config->getConfigItem(config->backlight,true)->asString());
     commonData.backlight.color = colorMapping(config->getConfigItem(config->blColor,true)->asString());
     commonData.backlight.brightness = uint(config->getConfigItem(config->blBrightness,true)->asInt());
@@ -703,7 +703,7 @@ void OBP60Task(GwApi *api){
                 starttime5 = millis();
                 if(time->valid == true && date->valid == true && lat->valid == true && lon->valid == true){
                     // Provide sundata to all pages
-                    commonData.sundata = calcSunsetSunrise(time->value , date->value, lat->value, lon->value, tz);
+                    commonData.sundata = calcSunsetSunrise(time->value , date->value, lat->value, lon->value, commonData.tz);
                     // Backlight with sun control
                     if (commonData.backlight.mode == BacklightMode::SUN) {
                     // if(String(backlight) == "Control by Sun"){
@@ -716,7 +716,7 @@ void OBP60Task(GwApi *api){
                     }
                 } else if (homevalid and commonData.data.rtcValid) {
                     // No gps fix but valid home location and time configured
-                    commonData.sundata = calcSunsetSunriseRTC(&commonData.data.rtcTime, homelat, homelon, tz);
+                    commonData.sundata = calcSunsetSunriseRTC(&commonData.data.rtcTime, homelat, homelon, commonData.tz);
                 }
             }
             

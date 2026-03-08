@@ -20,28 +20,6 @@
         }
     },
     {
-        "name": "mapServer",
-        "label": "map server",
-        "type": "string",
-        "default": "",
-        "description": "Server for converting map tiles. Use only one hostname or IP address",
-        "category": "wifi client",
-        "capabilities": {
-            "obp40": "true"
-        }
-    },
-    {
-        "name": "mapTilePath",
-        "label": "map tile path",
-        "type": "string",
-        "default": "map.php",
-        "description": "Path to converter access e.g. index.php or map.php",
-        "category": "wifi client",
-        "capabilities": {
-            "obp40": "true"
-        }
-    },
-    {
         "name": "timeZone",
         "label": "Time Zone",
         "type": "number",
@@ -1574,7 +1552,6 @@
             "obp40": "true"
         }
     },
-
     {
         "name": "page1type",
         "label": "Type",

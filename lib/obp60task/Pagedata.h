@@ -110,6 +110,7 @@ typedef struct{
     AlarmData alarm;
     GwApi::BoatValue *time = nullptr;
     GwApi::BoatValue *date = nullptr;
+    float tz = 0.0; // timezone from config
     uint16_t fgcolor;
     uint16_t bgcolor;
     bool keylock = false;
