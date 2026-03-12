@@ -15,7 +15,7 @@ ImageDecoder decoder;           // Define image decoder
 
 #ifdef DISPLAY_ST7796
 // Set to true to render a generated RGB565 color-bar test image.
-static constexpr bool kShowRgb565StripeTestImage = true;
+static constexpr bool kShowRgb565StripeTestImage = false;
 
 static void drawRgb565Image(int16_t x, int16_t y, const uint16_t *img, int16_t w, int16_t h) {
     if (img == nullptr || w <= 0 || h <= 0) {
@@ -402,22 +402,28 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         // URL to OBP Maps Converter
         // For more details see: https://github.com/norbert-walter/maps-converter
         String url = String("http://") + server + ":" + port +  // OBP Server
-                    String("/get_image_json?") +               // Service: Output B&W picture as JSON (Base64 + gzip)
-                    "zoom=" + zoom +   // Default zoom level: 15
+                    String("/get_image_json?") +                // Service: Output B&W picture as JSON (Base64 + gzip)
+//                    "oformat=4" +       // Image output format in JSON: 4=b/w 1-Bit format
+                    "oformat=3" +       // Image output format in JSON: 3=RGB565 format                    
+                    "&zoom=" + zoom +    // Default zoom level: 15
                     "&lat=" + String(latitude, 6) +   // Latitude
                     "&lon=" + String(longitude, 6) +  // Longitude
                     "&mrot=" + mapRot + // Rotation angle navigation map in degree
                     "&mtype=" + mType + // Default Map: Open Street Map
-                    "&dtype=" + dType + // Dithering type: Atkinson dithering
-                    "&width=400" +     // With navigation map
-                    "&height=250" +    // Height navigation map
-                    "&cutout=0" +      // No picture cutouts
-                    "&tab=0" +         // No tab size
-                    "&border=2" +      // Border line size: 2 pixel
-                    "&symbol=2" +      // Symbol: Triangle
+                    "&itype=1" +        // Image type: 1=Color
+//                    "&itype=2" +        // Image type: 2=Gray scale
+//                    "&itype=4" +        // Image type: 4=b/w with dithering                    
+                    "&dtype=" + dType + // Dithering type: Atkinson dithering (only activ when itype=4 otherwise inactive)                   
+                    "&width=400" +      // With navigation map
+                    "&height=250" +     // Height navigation map
+                    "&cutout=0" +       // No picture cutouts (tab, border and alpha are unused when cutout=0)
+                    "&tab=0" +          // No tab size (only available when sqare cutouts selected coutout=3...7)
+                    "&border=2" +       // Border line size: 2 pixel (only available when sqare cutouts selected)
+                    "&alpha=80" +       // Alpha for tabs: 80% visible (only available when sqare cutouts selected)
+                    "&symbol=2" +       // Symbol: Triangle
                     "&srot=" + symbolRot + // Symbol rotation angle
-                    "&ssize=15" +      // Symbole size: 15 pixel
-                    "&grid=" + mapGrid // Show grid: On
+                    "&ssize=15" +       // Symbole size: 15 pixel (center pointer)
+                    "&grid=" + mapGrid  // Show grid: On
                     ;         
         
         // Draw page
