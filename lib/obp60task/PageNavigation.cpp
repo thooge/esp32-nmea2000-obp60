@@ -13,6 +13,54 @@
 NetworkClient net(JSON_BUFFER); // Define network client
 ImageDecoder decoder;           // Define image decoder        
 
+#ifdef DISPLAY_ST7796
+// Set to true to render a generated RGB565 color-bar test image.
+static constexpr bool kShowRgb565StripeTestImage = true;
+
+static void drawRgb565Image(int16_t x, int16_t y, const uint16_t *img, int16_t w, int16_t h) {
+    if (img == nullptr || w <= 0 || h <= 0) {
+        return;
+    }
+    for (int16_t yy = 0; yy < h; ++yy) {
+        const uint16_t *row = img + ((size_t)yy * (size_t)w);
+        for (int16_t xx = 0; xx < w; ++xx) {
+            getdisplay().drawPixel(x + xx, y + yy, row[xx]);
+        }
+        if ((yy & 0x0F) == 0) {
+            yield();
+        }
+    }
+}
+
+static void createRgb565StripeImage(uint16_t *img, int16_t w, int16_t h) {
+    if (img == nullptr || w <= 0 || h <= 0) {
+        return;
+    }
+    static const uint16_t stripes[] = {
+        0xF800, // red
+        0xFD20, // orange
+        0xFFE0, // yellow
+        0x07E0, // green
+        0x07FF, // cyan
+        0x001F, // blue
+        0xF81F, // magenta
+        0xFFFF  // white
+    };
+    const int stripeCount = (int)(sizeof(stripes) / sizeof(stripes[0]));
+
+    for (int16_t y = 0; y < h; ++y) {
+        uint16_t *row = img + ((size_t)y * (size_t)w);
+        for (int16_t x = 0; x < w; ++x) {
+            int idx = ((int)x * stripeCount) / (int)w;
+            if (idx >= stripeCount) {
+                idx = stripeCount - 1;
+            }
+            row[x] = stripes[idx];
+        }
+    }
+}
+#endif
+
 class PageNavigation : public Page
 {
 // Values for buttons
@@ -25,13 +73,19 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
     int imageBackupWidth = 0;
     int imageBackupHeight = 0;
     size_t imageBackupSize = 0;
+    size_t imageBackupCapacity = 0;
     bool hasImageBackup = false;
+    bool imageBackupIsRgb565 = false;
 
     public:
     PageNavigation(CommonData &common){
         commonData = &common;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageNavigation");
-        imageBackupData = (uint8_t*)heap_caps_malloc((GxEPD_WIDTH * GxEPD_HEIGHT), MALLOC_CAP_SPIRAM);
+        imageBackupCapacity = (size_t)GxEPD_WIDTH * (size_t)GxEPD_HEIGHT;
+        #ifdef DISPLAY_ST7796
+        imageBackupCapacity *= 2U;
+        #endif
+        imageBackupData = (uint8_t*)heap_caps_malloc(imageBackupCapacity, MALLOC_CAP_SPIRAM);
     }
 
     // Set botton labels
@@ -395,11 +449,13 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             int numPix = json["number_pixels"] | 0; // Read number of pixels
             imgWidth = json["width"] | 0;           // Read width of image
             imgHeight = json["height"] | 0;         // Read height og image
-            size_t requiredBytes = 0;
+            size_t requiredBytesMono = 0;
+            size_t requiredBytesRgb565 = 0;
             if (imgWidth > 0 && imgHeight > 0){
-                requiredBytes = (size_t)((imgWidth + 7) / 8) * (size_t)imgHeight;
+                requiredBytesMono = (size_t)((imgWidth + 7) / 8) * (size_t)imgHeight;
+                requiredBytesRgb565 = (size_t)imgWidth * (size_t)imgHeight * 2U;
             }
-            if (requiredBytes == 0){
+            if (requiredBytesMono == 0){
                 LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: invalid image geometry w=%d h=%d",imgWidth,imgHeight);
                 return PAGE_UPDATE;
             }
@@ -420,10 +476,15 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
 
             // Set image buffer in PSRAM
             //size_t imgSize = getdisplay().width() * getdisplay().height();
-            size_t imgSize = (numPix > 0) ? (size_t)numPix : requiredBytes;    // Calculate image size
-            if (imgSize < requiredBytes){
-                imgSize = requiredBytes;
+            size_t imgSize = (numPix > 0) ? (size_t)numPix : requiredBytesMono;    // Calculate image size
+            if (imgSize < requiredBytesMono){
+                imgSize = requiredBytesMono;
             }
+            #ifdef DISPLAY_ST7796
+            if (imgSize < requiredBytesRgb565){
+                imgSize = requiredBytesRgb565;
+            }
+            #endif
             uint8_t* imageData = (uint8_t*) heap_caps_malloc(imgSize, MALLOC_CAP_SPIRAM);           // Allocate PSRAM for image
             if (!imageData) {
                 LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: PSRAM alloc image buffer failed");
@@ -434,7 +495,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             // Decode Base64 content to image
             size_t decodedSize = 0;
             bool decodeOk = decoder.decodeBase64(b64, b64len, imageData, imgSize, decodedSize);
-            if (!decodeOk || decodedSize < requiredBytes){
+            if (!decodeOk || decodedSize < requiredBytesMono){
                 int base64Ret = mbedtls_base64_decode(
                     nullptr,
                     0,
@@ -446,7 +507,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
                     "Error PageNavigation: decode failed (ok=%d, decoded=%u, required=%u, b64ret=%d)",
                     decodeOk ? 1 : 0,
                     (unsigned int)decodedSize,
-                    (unsigned int)requiredBytes,
+                    (unsigned int)requiredBytesMono,
                     base64Ret
                 );
                 free(b64);
@@ -454,21 +515,42 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
                 return PAGE_UPDATE;
             }
 
+            bool imageIsRgb565 = false;
+            #ifdef DISPLAY_ST7796
+            imageIsRgb565 = (decodedSize >= requiredBytesRgb565);
+            #endif
+
+            #ifdef DISPLAY_ST7796
+            if (kShowRgb565StripeTestImage) {
+                createRgb565StripeImage(reinterpret_cast<uint16_t*>(imageData), imgWidth, imgHeight);
+                decodedSize = requiredBytesRgb565;
+                imageIsRgb565 = true;
+            }
+            #endif
+
             // Copy actual navigation man to ackup map
             imageBackupWidth  = imgWidth;
             imageBackupHeight = imgHeight;
             imageBackupSize   = imgSize;
             if (decodedSize > 0 && imageBackupData != nullptr) {
-                size_t backupCapacity = (size_t)GxEPD_WIDTH * (size_t)GxEPD_HEIGHT;
-                size_t copySize = (decodedSize > backupCapacity) ? backupCapacity : decodedSize;
+                size_t copySize = (decodedSize > imageBackupCapacity) ? imageBackupCapacity : decodedSize;
                 memcpy(imageBackupData, imageData, copySize);
                 imageBackupSize = copySize;
             }
+            imageBackupIsRgb565 = imageIsRgb565;
             hasImageBackup = (imageBackupData != nullptr);
             lostCounter = 0;
 
             // Show image (navigation map)
+            #ifdef DISPLAY_ST7796
+            if (imageIsRgb565) {
+                drawRgb565Image(0, 25, reinterpret_cast<const uint16_t*>(imageData), imgWidth, imgHeight);
+            } else {
+                displayDrawBitmap(0, 25, imageData, imgWidth, imgHeight, commonData->fgcolor);
+            }
+            #else
             displayDrawBitmap(0, 25, imageData, imgWidth, imgHeight, commonData->fgcolor);
+            #endif
 
             // Clean PSRAM
             free(b64);
@@ -491,7 +573,15 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
 
             // Show backup image (backup navigation map)
             if (hasImageBackup) {
+                #ifdef DISPLAY_ST7796
+                if (imageBackupIsRgb565) {
+                    drawRgb565Image(0, 25, reinterpret_cast<const uint16_t*>(imageBackupData), imageBackupWidth, imageBackupHeight);
+                } else {
+                    displayDrawBitmap(0, 25, imageBackupData, imageBackupWidth, imageBackupHeight, commonData->fgcolor);
+                }
+                #else
                 displayDrawBitmap(0, 25, imageBackupData, imageBackupWidth, imageBackupHeight, commonData->fgcolor);
+                #endif
             }    
 
             // Show connection lost info when 5 page refreshes has a connection lost to the map server
