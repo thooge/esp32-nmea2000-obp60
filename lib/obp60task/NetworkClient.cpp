@@ -292,23 +292,43 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
                 if (headerOffset < 0) {
                     aborting = true;
                 } else {
-                    unsigned long testLen = len * 8; // Dynamic expansion
-                    uint8_t* test = (uint8_t*)malloc(testLen);
+                    size_t deflateLen = len - (size_t)headerOffset;
+                    // GZIP trailer (CRC32 + ISIZE) is 8 bytes and not part of deflate stream.
+                    if (deflateLen >= 8) {
+                        deflateLen -= 8;
+                    }
 
-                    if (!test) {
-                        Serial.println("Malloc failed test buffer, aborting.");
+                    unsigned long srcLenForSize = (unsigned long)deflateLen;
+                    unsigned long outNeeded = 0;
+                    int sizeRes = puff(NIL, &outNeeded, buffer + headerOffset, &srcLenForSize);
+
+                    if (sizeRes != 0) {
+                        if (DEBUGING) {
+                            Serial.printf("Decompress size probe failed: res=%d src=%lu\n", sizeRes, srcLenForSize);
+                        }
                         aborting = true;
                     } else {
-                        unsigned long srcLen = (unsigned long)(len - (size_t)headerOffset);
-                        int res = puff(test, &testLen, buffer + headerOffset, &srcLen);
-
-                        if (res == 0) {
-                            if (DEBUGING) {Serial.printf("Decompress OK! Size: %lu bytes\n", testLen);}
-                            outData = test;
-                            outLen = (size_t)testLen;
-                            complete = true;
+                        uint8_t* test = (uint8_t*)malloc((size_t)outNeeded);
+                        if (!test) {
+                            Serial.println("Malloc failed test buffer, aborting.");
+                            aborting = true;
                         } else {
-                            free(test);
+                            unsigned long srcLen = (unsigned long)deflateLen;
+                            unsigned long testLen = outNeeded;
+                            int res = puff(test, &testLen, buffer + headerOffset, &srcLen);
+
+                            if (res == 0) {
+                                if (DEBUGING) {Serial.printf("Decompress OK! Size: %lu bytes\n", testLen);}
+                                outData = test;
+                                outLen = (size_t)testLen;
+                                complete = true;
+                            } else {
+                                if (DEBUGING) {
+                                    Serial.printf("Decompress failed: res=%d out=%lu src=%lu\n", res, testLen, srcLen);
+                                }
+                                free(test);
+                                aborting = true;
+                            }
                         }
                     }
                 }
