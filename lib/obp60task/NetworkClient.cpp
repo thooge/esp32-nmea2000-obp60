@@ -10,8 +10,18 @@ extern "C" {
 // Constructor
 NetworkClient::NetworkClient(size_t reserveSize)
     : _doc(reserveSize),
-      _valid(false)
+      _valid(false),
+      _jsonRaw(nullptr),
+      _jsonRawLen(0)
 {
+}
+
+NetworkClient::~NetworkClient() {
+    if (_jsonRaw != nullptr) {
+        free(_jsonRaw);
+        _jsonRaw = nullptr;
+        _jsonRawLen = 0;
+    }
 }
 
 // Skip GZIP Header an goto DEFLATE content
@@ -324,6 +334,13 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
 bool NetworkClient::fetchAndDecompressJson(const String& url) {
 
     _valid = false;
+    _doc.clear();
+
+    if (_jsonRaw != nullptr) {
+        free(_jsonRaw);
+        _jsonRaw = nullptr;
+        _jsonRawLen = 0;
+    }
 
     uint8_t* raw = nullptr;
     size_t rawLen = 0;
@@ -333,13 +350,17 @@ bool NetworkClient::fetchAndDecompressJson(const String& url) {
         return false;
     }
 
-    DeserializationError err = deserializeJson(_doc, raw, rawLen);
-    free(raw);
+    // Parse in zero-copy mode and keep the backing buffer alive in the class.
+    DeserializationError err = deserializeJson(_doc, reinterpret_cast<char*>(raw), rawLen);
 
     if (err) {
         Serial.printf("JSON ERROR: %s\n", err.c_str());
+        free(raw);
         return false;
     }
+
+    _jsonRaw = raw;
+    _jsonRawLen = rawLen;
 
     if (DEBUGING) {Serial.println("JSON OK!");}
     _valid = true;

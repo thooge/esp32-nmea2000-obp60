@@ -12,6 +12,7 @@
 class NetworkClient {
 public:
     NetworkClient(size_t reserveSize = 0);
+    ~NetworkClient();
 
     bool fetchAndDecompressJson(const String& url);
     JsonDocument& json();
@@ -20,6 +21,8 @@ public:
 private:
     DynamicJsonDocument _doc;
     bool _valid;
+    uint8_t* _jsonRaw;
+    size_t _jsonRawLen;
 
     int skipGzipHeader(const uint8_t* data, size_t len);
     bool httpGetGzip(const String& url, uint8_t*& outData, size_t& outLen);
