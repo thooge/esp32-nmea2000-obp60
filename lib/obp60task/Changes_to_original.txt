@@ -1,6 +1,6 @@
 Changes to original project (wellenvogel)
 
-* esp32-nmea2000-obp60/gwwifi/GwWifi.CPPDEFINES
+* esp32-nmea2000-obp60/gwwifi/GwWifi.cpp
     - any fixes for reconnect handling
 * GWStatisticsw.h
     - changed time source for log messages   

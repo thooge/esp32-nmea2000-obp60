@@ -403,16 +403,21 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         // For more details see: https://github.com/norbert-walter/maps-converter
         String url = String("http://") + server + ":" + port +  // OBP Server
                     String("/get_image_json?") +                // Service: Output B&W picture as JSON (Base64 + gzip)
-//                    "oformat=4" +       // Image output format in JSON: 4=b/w 1-Bit format
-                    "oformat=3" +       // Image output format in JSON: 3=RGB565 format                    
+                    #ifdef DISPLAY_ST7796
+                    "oformat=3" +       // Image output format in JSON: 3=RGB565 format
+                    #else
+                    "oformat=4" +       // Image output format in JSON: 4=b/w 1-Bit format
+                    #endif                 
                     "&zoom=" + zoom +    // Default zoom level: 15
                     "&lat=" + String(latitude, 6) +   // Latitude
                     "&lon=" + String(longitude, 6) +  // Longitude
                     "&mrot=" + mapRot + // Rotation angle navigation map in degree
                     "&mtype=" + mType + // Default Map: Open Street Map
+                    #ifdef DISPLAY_ST7796
                     "&itype=1" +        // Image type: 1=Color
-//                    "&itype=2" +        // Image type: 2=Gray scale
-//                    "&itype=4" +        // Image type: 4=b/w with dithering                    
+                    #else
+                    "&itype=4" +        // Image type: 4=b/w with dithering
+                    #endif              
                     "&dtype=" + dType + // Dithering type: Atkinson dithering (only activ when itype=4 otherwise inactive)                   
                     "&width=400" +      // With navigation map
                     "&height=250" +     // Height navigation map
