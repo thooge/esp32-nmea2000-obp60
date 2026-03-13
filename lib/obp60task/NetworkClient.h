@@ -16,6 +16,11 @@ public:
 
     bool fetchAndDecompressJson(const String& url);
     JsonDocument& json();
+    int imageWidth() const;
+    int imageHeight() const;
+    int numberPixels() const;
+    const char* pictureBase64() const;
+    size_t pictureBase64Len() const;
     bool isValid() const;
 
 private:
@@ -23,8 +28,15 @@ private:
     bool _valid;
     uint8_t* _jsonRaw;
     size_t _jsonRawLen;
+    int _imageWidth;
+    int _imageHeight;
+    int _numberPixels;
+    char* _pictureBase64;
+    size_t _pictureBase64Len;
 
     int skipGzipHeader(const uint8_t* data, size_t len);
     bool httpGetGzip(const String& url, uint8_t*& outData, size_t& outLen);
+    static bool findJsonIntField(const char* json, size_t len, const char* key, int& outValue);
+    static bool extractJsonStringInPlace(char* json, size_t len, const char* key, char*& outValue, size_t& outLen);
 };
 
