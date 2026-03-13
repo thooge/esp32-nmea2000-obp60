@@ -475,7 +475,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
                 LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: picture_base64 missing");
                 return PAGE_UPDATE;
             }
-            size_t b64len = net.pictureBase64Len();                         // Calculate length of Base64 content
+            size_t b64len = net.pictureBase64Len(); // Calculate length of Base64 content
             // Copy Base64 content in PSRAM
             char* b64 = (char*) heap_caps_malloc(b64len + 1, MALLOC_CAP_SPIRAM);    // Allcate PSRAM for Base64 content
             if (!b64) {
@@ -485,7 +485,6 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             memcpy(b64, b64src, b64len + 1);    // Copy Base64 content in PSRAM
 
             // Set image buffer in PSRAM
-            //size_t imgSize = getdisplay().width() * getdisplay().height();
             size_t imgSize = (numPix > 0) ? (size_t)numPix : requiredBytesMono;    // Calculate image size
             if (imgSize < requiredBytesMono){
                 imgSize = requiredBytesMono;
@@ -538,7 +537,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             }
             #endif
 
-            // Copy actual navigation man to ackup map
+            // Copy actual navigation map to backup map
             imageBackupWidth  = imgWidth;
             imageBackupHeight = imgHeight;
             imageBackupSize   = imgSize;
