@@ -9,7 +9,6 @@
 #include <NMEA0183.h>                   // NMEA0183
 #include <NMEA0183Msg.h>
 #include <NMEA0183Messages.h>
-#include <GxEPD2_BW.h>                  // GxEPD2 lib for b/w E-Ink displays
 #include "OBP60Extensions.h"            // Functions lib for extension board
 #include "OBP60Keypad.h"                // Functions for keypad
 #include "OBPDataOperations.h"          // Functions lib for data operations such as true wind calculation

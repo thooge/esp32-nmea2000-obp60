@@ -5,18 +5,22 @@
 #include "OBP60Hardware.h"
 #include "LedSpiTask.h"
 #include "Graphics.h"
-#include <GxEPD2_BW.h>                  // E-paper lib V2
+#include <GxEPD2_BW.h>                  // GxEPD2 lib for b/w E-Ink displays
 #include <Adafruit_FRAM_I2C.h>          // I2C FRAM
 #include <math.h>
 
 #ifdef DISPLAY_ST7796
-#include <LovyanGFX.hpp>                // TFT LCD lib for ST7796
+    #include <LovyanGFX.hpp>            // TFT LCD lib for ST7796 color displays
+    #undef GxEPD_WHITE
+    #define GxEPD_WHITE  TFT_WHITE      // Replacement color for white on TFT (OBPHardware.h)
+    #undef GxEPD_BLACK
+    #define GxEPD_BLACK  TFT_BLACK      // Replacement color for black on TFT (OBPHardware.h)
 #endif
 
 #ifdef BOARD_OBP40S3
-#include "esp_vfs_fat.h"
-#include "sdmmc_cmd.h"
-#define MOUNT_POINT "/sdcard"
+    #include "esp_vfs_fat.h"
+    #include "sdmmc_cmd.h"
+    #define MOUNT_POINT "/sdcard"
 #endif
 
 // FRAM address reservations 32kB: 0x0000 - 0x7FFF
