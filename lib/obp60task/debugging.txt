@@ -3,4 +3,7 @@ Debugging tool
 
 log.txt = text file with error messages from terminal console
 
+cd /home/norbert/esp32-nmea2000-obp60
 tools/decoder.py -p ESP32S3 -t ~/.platformio/packages/toolchain-xtensa-esp32s3/ -e .pio/build/obp60_s3/firmware.elf log.txt
+
+tools/decoder.py -p ESP32S3 -t ~/.platformio/packages/toolchain-xtensa-esp32s3/ -e .pio/build/obp70_s3/firmware.elf /home/norbert/Dokumente/Multifunktionsdisplay_OBP60/Crashes/20260313/log.txt
