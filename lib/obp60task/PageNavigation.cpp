@@ -456,10 +456,9 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             failCount = 0;
             nextAllowedMs = now + 1000; // keep 1 Hz on success
 
-            auto& json = net.json();                // Extract JSON content
-            int numPix = json["number_pixels"] | 0; // Read number of pixels
-            imgWidth = json["width"] | 0;           // Read width of image
-            imgHeight = json["height"] | 0;         // Read height og image
+            int numPix = net.numberPixels(); // Read number of pixels
+            imgWidth = net.imageWidth();     // Read width of image
+            imgHeight = net.imageHeight();   // Read height of image
             size_t requiredBytesMono = 0;
             size_t requiredBytesRgb565 = 0;
             if (imgWidth > 0 && imgHeight > 0){
@@ -471,12 +470,12 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
                 return PAGE_UPDATE;
             }
 
-            const char* b64src = json["picture_base64"].as<const char*>();  // Read picture as Base64 content
+            const char* b64src = net.pictureBase64();  // Read picture as Base64 content
             if (b64src == nullptr){
                 LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: picture_base64 missing");
                 return PAGE_UPDATE;
             }
-            size_t b64len = strlen(b64src);                                 // Calculate length of Base64 content
+            size_t b64len = net.pictureBase64Len(); // Calculate length of Base64 content
             // Copy Base64 content in PSRAM
             char* b64 = (char*) heap_caps_malloc(b64len + 1, MALLOC_CAP_SPIRAM);    // Allcate PSRAM for Base64 content
             if (!b64) {
@@ -486,7 +485,6 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             memcpy(b64, b64src, b64len + 1);    // Copy Base64 content in PSRAM
 
             // Set image buffer in PSRAM
-            //size_t imgSize = getdisplay().width() * getdisplay().height();
             size_t imgSize = (numPix > 0) ? (size_t)numPix : requiredBytesMono;    // Calculate image size
             if (imgSize < requiredBytesMono){
                 imgSize = requiredBytesMono;
@@ -539,7 +537,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             }
             #endif
 
-            // Copy actual navigation man to ackup map
+            // Copy actual navigation map to backup map
             imageBackupWidth  = imgWidth;
             imageBackupHeight = imgHeight;
             imageBackupSize   = imgSize;

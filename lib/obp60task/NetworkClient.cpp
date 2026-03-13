@@ -7,12 +7,29 @@ extern "C" {
     #include "puff.h"
 }
 
+static uint32_t crc32_update(uint32_t crc, const uint8_t* data, size_t len) {
+    crc = ~crc;
+    for (size_t i = 0; i < len; ++i) {
+        crc ^= data[i];
+        for (int bit = 0; bit < 8; ++bit) {
+            uint32_t mask = -(int32_t)(crc & 1U);
+            crc = (crc >> 1) ^ (0xEDB88320U & mask);
+        }
+    }
+    return ~crc;
+}
+
 // Constructor
 NetworkClient::NetworkClient(size_t reserveSize)
     : _doc(reserveSize),
       _valid(false),
       _jsonRaw(nullptr),
-      _jsonRawLen(0)
+      _jsonRawLen(0),
+      _imageWidth(0),
+      _imageHeight(0),
+      _numberPixels(0),
+      _pictureBase64(nullptr),
+      _pictureBase64Len(0)
 {
 }
 
@@ -22,6 +39,100 @@ NetworkClient::~NetworkClient() {
         _jsonRaw = nullptr;
         _jsonRawLen = 0;
     }
+}
+
+bool NetworkClient::findJsonIntField(const char* json, size_t len, const char* key, int& outValue) {
+    if (json == nullptr || key == nullptr || len == 0) {
+        return false;
+    }
+
+    char pattern[64];
+    int plen = snprintf(pattern, sizeof(pattern), "\"%s\"", key);
+    if (plen <= 0 || (size_t)plen >= sizeof(pattern)) {
+        return false;
+    }
+
+    const char* keyPos = strstr(json, pattern);
+    if (keyPos == nullptr) {
+        return false;
+    }
+
+    const char* end = json + len;
+    const char* colon = strchr(keyPos + plen, ':');
+    if (colon == nullptr || colon >= end) {
+        return false;
+    }
+
+    const char* p = colon + 1;
+    while (p < end && (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')) {
+        ++p;
+    }
+    if (p >= end) {
+        return false;
+    }
+
+    char* parseEnd = nullptr;
+    long value = strtol(p, &parseEnd, 10);
+    if (parseEnd == p) {
+        return false;
+    }
+    outValue = (int)value;
+    return true;
+}
+
+bool NetworkClient::extractJsonStringInPlace(char* json, size_t len, const char* key, char*& outValue, size_t& outLen) {
+    outValue = nullptr;
+    outLen = 0;
+
+    if (json == nullptr || key == nullptr || len == 0) {
+        return false;
+    }
+
+    char pattern[64];
+    int plen = snprintf(pattern, sizeof(pattern), "\"%s\"", key);
+    if (plen <= 0 || (size_t)plen >= sizeof(pattern)) {
+        return false;
+    }
+
+    char* keyPos = strstr(json, pattern);
+    if (keyPos == nullptr) {
+        return false;
+    }
+
+    char* end = json + len;
+    char* colon = strchr(keyPos + plen, ':');
+    if (colon == nullptr || colon >= end) {
+        return false;
+    }
+
+    char* p = colon + 1;
+    while (p < end && (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')) {
+        ++p;
+    }
+    if (p >= end || *p != '"') {
+        return false;
+    }
+
+    char* valueStart = p + 1;
+    char* cur = valueStart;
+    while (cur < end) {
+        if (*cur == '\\') {
+            ++cur;
+            if (cur < end) {
+                ++cur;
+            }
+            continue;
+        }
+        if (*cur == '"') {
+            *cur = '\0';
+            outValue = valueStart;
+            outLen = (size_t)(cur - valueStart);
+            return true;
+        }
+        ++cur;
+    }
+
+    return false;
 }
 
 // Skip GZIP Header an goto DEFLATE content
@@ -207,8 +318,16 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
             return false;
         }
 
+        if (total > 0 && (int)len != total) {
+            Serial.printf("Plain response incomplete: got=%d expected=%d\n", (int)len, total);
+            if (stream) stream->stop();
+            http.end();
+            free(buffer);
+            return false;
+        }
+
         // Return plain body to caller
-        outData = (uint8_t*)malloc(len);
+        outData = (uint8_t*)malloc(len + 1);
         if (!outData) {
             Serial.println("Malloc failed outData (plain).");
             // --- Added: Force-close connection only if aborted to avoid TCP RST storms ---
@@ -218,6 +337,7 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
             return false;
         }
         memcpy(outData, buffer, len);
+        outData[len] = 0;
         outLen = len;
 
         http.end();
@@ -285,6 +405,13 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
         // NEW: only attempt gzip parse/decompress after we have a complete body (when Content-Length is known)
         // This avoids wasting heap with repeated malloc/free and reduces fragmentation over long runtimes.
         if (!aborting) {
+            if (total > 0 && (int)len != total) {
+                Serial.printf("GZIP response incomplete: got=%d expected=%d\n", (int)len, total);
+                aborting = true;
+            }
+        }
+
+        if (!aborting) {
             if (len < 20) {
                 aborting = true;
             } else {
@@ -308,7 +435,7 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
                         }
                         aborting = true;
                     } else {
-                        uint8_t* test = (uint8_t*)malloc((size_t)outNeeded);
+                        uint8_t* test = (uint8_t*)malloc((size_t)outNeeded + 1);
                         if (!test) {
                             Serial.println("Malloc failed test buffer, aborting.");
                             aborting = true;
@@ -318,10 +445,36 @@ bool NetworkClient::httpGetGzip(const String& url, uint8_t*& outData, size_t& ou
                             int res = puff(test, &testLen, buffer + headerOffset, &srcLen);
 
                             if (res == 0) {
-                                if (DEBUGING) {Serial.printf("Decompress OK! Size: %lu bytes\n", testLen);}
-                                outData = test;
-                                outLen = (size_t)testLen;
-                                complete = true;
+                                uint32_t trailerCrc =
+                                    (uint32_t)buffer[len - 8] |
+                                    ((uint32_t)buffer[len - 7] << 8) |
+                                    ((uint32_t)buffer[len - 6] << 16) |
+                                    ((uint32_t)buffer[len - 5] << 24);
+                                uint32_t trailerIsize =
+                                    (uint32_t)buffer[len - 4] |
+                                    ((uint32_t)buffer[len - 3] << 8) |
+                                    ((uint32_t)buffer[len - 2] << 16) |
+                                    ((uint32_t)buffer[len - 1] << 24);
+                                uint32_t calcCrc = crc32_update(0, test, (size_t)testLen);
+                                uint32_t calcIsize = (uint32_t)testLen;
+
+                                if (calcCrc != trailerCrc || calcIsize != trailerIsize) {
+                                    Serial.printf(
+                                        "GZIP CRC/ISIZE mismatch crc=%08lx/%08lx isize=%lu/%lu\n",
+                                        (unsigned long)calcCrc,
+                                        (unsigned long)trailerCrc,
+                                        (unsigned long)calcIsize,
+                                        (unsigned long)trailerIsize
+                                    );
+                                    free(test);
+                                    aborting = true;
+                                } else {
+                                    test[testLen] = 0;
+                                    if (DEBUGING) {Serial.printf("Decompress OK! Size: %lu bytes\n", testLen);}
+                                    outData = test;
+                                    outLen = (size_t)testLen;
+                                    complete = true;
+                                }
                             } else {
                                 if (DEBUGING) {
                                     Serial.printf("Decompress failed: res=%d out=%lu src=%lu\n", res, testLen, srcLen);
@@ -355,6 +508,11 @@ bool NetworkClient::fetchAndDecompressJson(const String& url) {
 
     _valid = false;
     _doc.clear();
+    _imageWidth = 0;
+    _imageHeight = 0;
+    _numberPixels = 0;
+    _pictureBase64 = nullptr;
+    _pictureBase64Len = 0;
 
     if (_jsonRaw != nullptr) {
         free(_jsonRaw);
@@ -370,11 +528,24 @@ bool NetworkClient::fetchAndDecompressJson(const String& url) {
         return false;
     }
 
-    // Parse in zero-copy mode and keep the backing buffer alive in the class.
-    DeserializationError err = deserializeJson(_doc, reinterpret_cast<char*>(raw), rawLen);
+    char* json = reinterpret_cast<char*>(raw);
+    bool ok = true;
+    ok = findJsonIntField(json, rawLen, "number_pixels", _numberPixels) && ok;
+    ok = findJsonIntField(json, rawLen, "width", _imageWidth) && ok;
+    ok = findJsonIntField(json, rawLen, "height", _imageHeight) && ok;
+    ok = extractJsonStringInPlace(json, rawLen, "picture_base64", _pictureBase64, _pictureBase64Len) && ok;
 
-    if (err) {
-        Serial.printf("JSON ERROR: %s\n", err.c_str());
+    if (!ok) {
+        Serial.println("JSON field extraction failed.");
+        free(raw);
+        return false;
+    }
+
+    if (_imageWidth <= 0 || _imageHeight <= 0 || _pictureBase64Len == 0) {
+        Serial.printf("JSON invalid geometry/data w=%d h=%d b64=%u\n",
+                      _imageWidth,
+                      _imageHeight,
+                      (unsigned int)_pictureBase64Len);
         free(raw);
         return false;
     }
@@ -382,13 +553,39 @@ bool NetworkClient::fetchAndDecompressJson(const String& url) {
     _jsonRaw = raw;
     _jsonRawLen = rawLen;
 
-    if (DEBUGING) {Serial.println("JSON OK!");}
+    if (DEBUGING) {
+        Serial.printf("JSON fields OK: num=%d w=%d h=%d b64=%u\n",
+                      _numberPixels,
+                      _imageWidth,
+                      _imageHeight,
+                      (unsigned int)_pictureBase64Len);
+    }
     _valid = true;
     return true;
 }
 
 JsonDocument& NetworkClient::json() {
     return _doc;
+}
+
+int NetworkClient::imageWidth() const {
+    return _imageWidth;
+}
+
+int NetworkClient::imageHeight() const {
+    return _imageHeight;
+}
+
+int NetworkClient::numberPixels() const {
+    return _numberPixels;
+}
+
+const char* NetworkClient::pictureBase64() const {
+    return _pictureBase64;
+}
+
+size_t NetworkClient::pictureBase64Len() const {
+    return _pictureBase64Len;
 }
 
 bool NetworkClient::isValid() const {
