@@ -350,6 +350,18 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             mType = 9;
             dType = 1;
         }
+        else if(mapType == "C-Map"){
+            mType = 103486987;
+            dType = 1;
+        }
+        else if(mapType == "Garmin Fish"){
+            mType = 113486987;
+            dType = 1;
+        }
+        else if(mapType == "Garmin Nav"){
+            mType = 123486987;
+            dType = 1;
+        }
         else{
             mType = 1;
             dType = 1;

@@ -1104,7 +1104,10 @@
             "Google Street",
             "Open Topo Map",
             "Stadimaps Toner",
-            "Free Nautical Chart"
+            "Free Nautical Chart",
+            "C-Map",
+            "Garmin Fish",
+            "Garmin Nav"
         ],
         "category": "OBP70 Navigation",
         "capabilities": {
