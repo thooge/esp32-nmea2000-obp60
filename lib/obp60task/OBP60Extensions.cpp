@@ -2,9 +2,9 @@
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
 #include <Arduino.h>
-#include <PCF8574.h>      // Driver for PCF8574 output modul from Horter
 #include <Wire.h>         // I2C
 #include <RTClib.h>       // Driver for DS1388 RTC
+#include <PCF8574.h>      // PCF8574 modules from Horter
 #include "SunRise.h"      // Lib for sunrise and sunset calculation
 #include "Pagedata.h"
 #include "OBP60Hardware.h"
@@ -26,6 +26,7 @@
 #include "fonts/Ubuntu_Bold32pt8b.h"
 #include "fonts/Atari16px8b.h" // Key label font
 #include "fonts/Atari6px8b.h"  // Very small (6x6) font
+#include "fonts/IBM8x8px.h"
 
 // E-Ink Display
 #define GxEPD_WIDTH 400     // Display width
@@ -50,7 +51,7 @@ GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> display(GxEPD2_4
 gxepd2display *epd = &display;
 
 // Horter I2C moduls
-PCF8574 pcf8574_Out(PCF8574_I2C_ADDR1); // First digital output modul PCF8574 from Horter
+PCF8574 pcf8574_Modul1(PCF8574_I2C_ADDR1); // First digital IO modul PCF8574 from Horter
 
 // FRAM
 Adafruit_FRAM_I2C fram;
@@ -82,10 +83,11 @@ void hardwareInit(GwApi *api)
 
     Wire.begin();
     // Init PCF8574 digital outputs
-    Wire.setClock(I2C_SPEED);       // Set I2C clock as defined
-    if(pcf8574_Out.begin()){        // Initialize PCF8574
-        pcf8574_Out.write8(255);    // Clear all outputs
+    Wire.setClock(I2C_SPEED_LOW);      // Set I2C clock to low for external devices
+    if (pcf8574_Modul1.begin()) {      // Initialize PCF8574
+        pcf8574_Modul1.write8(255);    // Clear all outputs (low activ)
     }
+    Wire.setClock(I2C_SPEED);          // Set I2C clock to normal
     fram = Adafruit_FRAM_I2C();
     if (esp_reset_reason() ==  ESP_RST_POWERON) {
         // help initialize FRAM
@@ -185,6 +187,28 @@ void powerInit(String powermode) {
 #endif
     }
 }
+
+void setPCF8574PortPinModul1(uint8_t pin, uint8_t value)
+{
+  static bool firstRunFinished;
+  static uint8_t port1;                      // Retained data for port bits 
+  // If fisrt run then set all outputs to low
+  if(firstRunFinished == false){
+    port1 = 255;                             // Low active
+    firstRunFinished = true;
+  }
+  if (pin > 7) return;
+  Wire.setClock(I2C_SPEED_LOW);              // Set I2C clock on 10 kHz for longer wires
+  // Set bit
+  if (pcf8574_Modul1.begin(port1))           // Check module availability and start it
+  {
+    if (value == LOW)  port1 &= ~(1 << pin); // Set bit
+    else               port1 |=  (1 << pin);
+    pcf8574_Modul1.write8(port1);            // Write byte
+  }
+  Wire.setClock(I2C_SPEED);                  // Set I2C clock on 100 kHz
+}
+
 
 void setPortPin(uint pin, bool value){
     pinMode(pin, OUTPUT);
@@ -302,8 +326,46 @@ void toggleBacklightLED(uint brightness, const Color &color) {
     ledTaskData->setLedData(current); 
 }
 
+void stepsBacklightLED(uint brightness, const Color &color) {
+    static uint step = 0;
+    uint actBrightness = 0;
+    // Different brightness steps
+    if (step == 0){
+        actBrightness = brightness;         // 100% from brightness
+        statusBacklightLED = true;
+    }
+    else if (step == 1) {
+        actBrightness = brightness * 0.5;   // 50% from brighntess
+        statusBacklightLED = true;
+    }
+    else if (step == 2) {
+        actBrightness = brightness * 0.2;   // 20% from brightness
+        statusBacklightLED = true;
+    }
+    else if (step == 3) {
+        actBrightness = 0;                  // 0%
+        statusBacklightLED = false;
+    }
+    if (actBrightness < 5) {                  // Limiter if values too low
+        actBrightness = 5;
+    }
+    step = step + 1;      // Increment step counter
+    if (step == 4) {      // Reset counter
+        step = 0;
+    }
+    if (ledTaskData == nullptr) {
+        return;
+    }
+    Color nv = setBrightness(statusBacklightLED ? color:COLOR_BLACK, actBrightness);
+    LedInterface current = ledTaskData->getLedData();
+    current.setBacklight(nv);
+    ledTaskData->setLedData(current); 
+}
+
 void setFlashLED(bool status) {
-    if (ledTaskData == nullptr) return;
+    if (ledTaskData == nullptr) {
+        return;
+    }
     Color c = status ? COLOR_RED : COLOR_BLACK;
     LedInterface current = ledTaskData->getLedData();
     current.setFlash(c);
@@ -422,6 +484,27 @@ void drawTextCenter(int16_t cx, int16_t cy, String text) {
     epd->getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
     epd->setCursor(cx - w / 2, cy + h / 2);
     epd->print(text);
+}
+
+// Draw centered botton with centered text
+void drawButtonCenter(int16_t cx, int16_t cy, int8_t sx, int8_t sy, String text, uint16_t fg, uint16_t bg, bool inverted) {
+    int16_t x1, y1;
+    uint16_t w, h;
+    epd->getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
+    int16_t cursorX = cx - (x1 + static_cast<int16_t>(w / 2));
+    int16_t cursorY = cy - (y1 + static_cast<int16_t>(h / 2));
+    //epd->drawPixel(cx, cy, fg);                         // Debug pixel for center position
+    if (inverted) {
+        epd->fillRoundRect(cx - sx / 2, cy - sy / 2, sx, sy, 5, fg);
+        epd->setTextColor(bg);
+        epd->setCursor(cursorX, cursorY);
+        epd->print(text);
+     } else {
+        epd->drawRoundRect(cx - sx / 2, cy - sy / 2, sx, sy, 5, fg); // Draw button
+        epd->setTextColor(fg);
+        epd->setCursor(cursorX, cursorY);
+        epd->print(text);
+     }
 }
 
 // Draw right aligned text
@@ -890,6 +973,79 @@ void generatorGraphic(uint x, uint y, int pcolor, int bcolor){
         epd->setFont(&Ubuntu_Bold32pt8b);
         epd->setCursor(xb-22, yb+20);
         epd->print("G");
+}
+
+// Display rudder position as horizontal bargraph with configurable +/- range (degrees)
+void displayRudderPosition(int rudderPosition, uint8_t rangeDeg, uint16_t cx, uint16_t cy, uint16_t fg, uint16_t bg) {
+    const int w = 360;
+    const int h = 20;
+    const int t = 3; // Line thickness
+    const int halfw = w/2;
+    const int halfh = h/2;
+    // Calculate top-left of bar (cx,cy are center of 0°)
+    int left = int(cx) - halfw;
+    int top = int(cy) - halfh;
+
+    // clamp provided range to allowed bounds [10,45]
+    if (rangeDeg < 10) {
+        rangeDeg = 10;
+    } else if (rangeDeg > 45) {
+        rangeDeg = 45;
+    }
+
+    // Pixels per degree for +/-rangeDeg -> total span = 2*rangeDeg
+    const float pxPerDeg = float(w) / (2.0f * float(rangeDeg));
+
+    // Draw outer border (thickness t)
+    for (int i = 0; i < t; i++) {
+        epd->drawRect(left + i, top + i, w - 2 * i, h - 2 * i, fg);
+    }
+
+    // Fill inner area with background
+    epd->fillRect(left + t, top + t, w - 2 * t, h - 2 * t, bg);
+
+    // Draw center line
+    epd->drawRect(cx - 1, top + 1, 3 , h - 2, fg);
+
+    // Clamp rudder position to -rangeDeg..rangeDeg
+    if (rudderPosition > (int)rangeDeg) {
+        rudderPosition = (int)rangeDeg;
+    } else if (rudderPosition < -((int)rangeDeg)) {
+        rudderPosition = -((int)rangeDeg);
+    }
+
+    // Compute fill width in pixels
+    int fillPx = int(round(rudderPosition * pxPerDeg)); // positive -> right
+
+    // Fill area from center to position (if non-zero)
+    int centerx = cx;
+    int innerTop = top + t;
+    int innerH = h - 2 * t;
+    if (fillPx > 0) {
+        // Right side
+        epd->fillRect(centerx, innerTop, fillPx, innerH, fg);
+    } else if (fillPx < 0) {
+        // Left side
+        epd->fillRect(centerx + fillPx, innerTop, -fillPx, innerH, fg);
+    }
+
+    // Draw tick marks every 5° and labels outside the bar
+    epd->setTextColor(fg);
+    epd->setFont(&Ubuntu_Bold8pt8b);
+    for (int angle = -((int)rangeDeg); angle <= (int)rangeDeg; angle += 5) {
+        int xpos = int(round(centerx + angle * pxPerDeg));
+        // Vertical tick inside bar
+        epd->drawLine(xpos, top, xpos, top + h + 2, fg);
+        // Label outside: below the bar
+        String lbl = String(angle);
+        int16_t bx, by;
+        uint16_t bw, bh;
+        epd->getTextBounds(lbl, 0, 0, &bx, &by, &bw, &bh);
+        int16_t tx = xpos - bw/2;
+        int16_t ty = top + h + bh + 5; // A little spacing
+        epd->setCursor(tx, ty);
+        epd->print(lbl);
+    }
 }
 
 // Function to handle HTTP image request

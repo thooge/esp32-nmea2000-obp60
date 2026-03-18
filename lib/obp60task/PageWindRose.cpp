@@ -4,10 +4,6 @@
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
 
-#ifdef ENABLE_CALIBRATION
-#include "BoatDataCalibration.h"
-#endif
-
 class PageWindRose : public Page
 {
 private:
@@ -45,20 +41,18 @@ public:
 
     int displayPage(PageData &pageData) {
 
-        // storage for hold valued
+        // storage for hold values
         static FormattedData bvf_awa_old;
         static FormattedData bvf_aws_old;
         static FormattedData bvf_twd_old;
         static FormattedData bvf_tws_old;
         static FormattedData bvf_dbt_old;
         static FormattedData bvf_stw_old;
+        // units? why?
 
         // Get boat value for AWA
         GwApi::BoatValue *bv_awa = pageData.values[0];     // First element in list
         String name_awa = xdrDelete(bv_awa->getName(), 6); // get name without prefix and limit length
-#ifdef ENABLE_CALIBRATION
-        calibrationData.calibrateInstance(bv_awa, logger); // Check if boat data value is to be calibrated
-#endif
         FormattedData bvf_awa = commonData->fmt->formatValue(bv_awa, *commonData);
         if (bv_awa->valid) { // Save formatted data for hold feature
             bvf_awa_old = bvf_awa;
@@ -67,9 +61,6 @@ public:
         // Get boat value for AWS
         GwApi::BoatValue *bv_aws = pageData.values[1]; // Second element in list
         String name_aws = xdrDelete(bv_aws->getName(), 6); // get name without prefix and limit length
-#ifdef ENABLE_CALIBRATION
-        calibrationData.calibrateInstance(bv_aws, logger); // Check if boat data value is to be calibrated
-#endif
         FormattedData bvf_aws = commonData->fmt->formatValue(bv_aws, *commonData);
         if (bv_aws->valid) { // Save formatted data for hold feature
             bvf_aws_old = bvf_aws;

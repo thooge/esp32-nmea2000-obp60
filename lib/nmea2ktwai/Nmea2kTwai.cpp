@@ -162,8 +162,6 @@ bool Nmea2kTwai::checkRecovery(){
     return strt;
 }
 
-
-
 void Nmea2kTwai::loop(){
     if (disabled) return;
     timers.loop();

@@ -130,9 +130,10 @@ enum class fmtTemp {KELVIN, CELSUIS, FAHRENHEIT};
 
 // Structure for formatted boat values
 typedef struct {
-    double value;
-    String svalue;
-    String unit;
+    double value;  // SI value of boat data value
+    double cvalue; // value converted to target unit
+    String svalue; // value converted to target unit and formatted
+    String unit;   // target value unit
 } FormattedData;
 
 // Formatter for boat values
@@ -159,7 +160,10 @@ public:
     fmtType stringToFormat(const char* formatStr);
     fmtDate getDateFormat(String sformat);
     fmtTime getTimeFormat(String sformat);
+    FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata, bool ignoreSimuDataSetting);
     FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata);
+    double convertValue(const double &value, const String &name, const String &format, CommonData &commondata);
+    double convertValue(const double &value, const String &format, CommonData &commondata);
     String placeholder = "---";
 };
 

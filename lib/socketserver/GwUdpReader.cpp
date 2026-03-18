@@ -6,7 +6,6 @@
 #include "GwSocketHelper.h"
 #include "GWWifi.h"
 
-
 GwUdpReader::GwUdpReader(const GwConfigHandler *config, GwLog *logger, int minId)
 {
     this->config = config;

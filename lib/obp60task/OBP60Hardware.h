@@ -1,11 +1,12 @@
     // General hardware definitions
     // CAN and RS485 bus pin definitions see obp60task.h
 
-#ifdef HARDWARE_V21
+#if defined HARDWARE_V20 || HARDWARE_V21
     // Direction pin for RS485 NMEA0183
     #define OBP_DIRECTION_PIN 18
     // I2C
     #define I2C_SPEED 10000UL       // 10kHz clock speed on I2C bus
+    #define I2C_SPEED_LOW 1000UL    // 10kHz clock speed on I2C bus for external bus
     #define OBP_I2C_SDA 47
     #define OBP_I2C_SCL 21
     // DS1388 RTC
@@ -22,8 +23,8 @@
     #define AS5600_I2C_ADDR 0x36    // Addr. 0x36 (fix)
     // INA219
     #define SHUNT_VOLTAGE 0.075     // Shunt voltage in V by max. current (75mV)
-    #define INA219_I2C_ADDR1 0x40   // Addr. 0x41 (fix A0 = 5V, A1 = GND) for battery
-    #define INA219_I2C_ADDR2 0x41   // Addr. 0x44 (fix A0 = GND, A1 = 5V) for solar panels
+    #define INA219_I2C_ADDR1 0x41   // Addr. 0x41 (fix A0 = 5V, A1 = GND) for battery
+    #define INA219_I2C_ADDR2 0x44   // Addr. 0x44 (fix A0 = GND, A1 = 5V) for solar panels
     #define INA219_I2C_ADDR3 0x45   // Addr. 0x45 (fix A0 = 5V, A1 = 5V) for generator
     // INA226
     #define INA226_I2C_ADDR1 0x41   // Addr. 0x41 (fix A0 = 5V, A1 = GND) for battery
@@ -82,7 +83,8 @@
     // Direction pin for RS485 NMEA0183
     #define OBP_DIRECTION_PIN 8
     // I2C
-    #define I2C_SPEED 100000UL       // 100kHz clock speed on I2C bus
+    #define I2C_SPEED 100000UL      // 100kHz clock speed on I2C bus
+    #define I2C_SPEED_LOW 1000UL    // 10kHz clock speed on I2C bus for external bus
     #define OBP_I2C_SDA 21
     #define OBP_I2C_SCL 38
     // DS1388 RTC
@@ -99,8 +101,8 @@
     #define AS5600_I2C_ADDR 0x36    // Addr. 0x36 (fix)
     // INA219
     #define SHUNT_VOLTAGE 0.075     // Shunt voltage in V by max. current (75mV)
-    #define INA219_I2C_ADDR1 0x40   // Addr. 0x41 (fix A0 = 5V, A1 = GND) for battery
-    #define INA219_I2C_ADDR2 0x41   // Addr. 0x44 (fix A0 = GND, A1 = 5V) for solar panels
+    #define INA219_I2C_ADDR1 0x41   // Addr. 0x41 (fix A0 = 5V, A1 = GND) for battery
+    #define INA219_I2C_ADDR2 0x44   // Addr. 0x44 (fix A0 = GND, A1 = 5V) for solar panels
     #define INA219_I2C_ADDR3 0x45   // Addr. 0x45 (fix A0 = 5V, A1 = 5V) for generator
     // INA226
     #define INA226_I2C_ADDR1 0x41   // Addr. 0x41 (fix A0 = 5V, A1 = GND) for battery

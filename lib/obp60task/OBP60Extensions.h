@@ -87,13 +87,14 @@ uint8_t getLastPage();
 void hardwareInit(GwApi *api);
 void powerInit(String powermode);
 
+void setPCF8574PortPinModul1(uint8_t pin, uint8_t value);// Set PCF8574 port pin
 void setPortPin(uint pin, bool value);          // Set port pin for extension port
-
 void togglePortPin(uint pin);                   // Toggle extension port pin
 
 Color colorMapping(const String &colorString);          // Color mapping string to CHSV colors
 void setBacklightLED(uint brightness, const Color &color);// Set backlight LEDs
 void toggleBacklightLED(uint brightness,const Color &color);// Toggle backlight LEDs
+void stepsBacklightLED(uint brightness, const Color &color);// Set backlight LEDs in 4 steps (100%, 50%, 10%, 0%)
 BacklightMode backlightMapping(const String &backlightString);// Configuration string to value
 
 void setFlashLED(bool status);                  // Set flash LED
@@ -106,6 +107,7 @@ void setBuzzerPower(uint power);                // Set buzzer power
 String xdrDelete(String input, uint8_t maxlen = 0); // Delete xdr prefix from string and optional limit length
 
 void drawTextCenter(int16_t cx, int16_t cy, String text);
+void drawButtonCenter(int16_t cx, int16_t cy, int8_t sx, int8_t sy, String text, uint16_t fg, uint16_t bg, bool inverted);
 void drawTextRalign(int16_t x, int16_t y, String text);
 void drawTextBoxed(Rect box, String text, uint16_t fg, uint16_t bg, bool inverted, bool border);
 
@@ -123,6 +125,10 @@ void batteryGraphic(uint x, uint y, float percent, int pcolor, int bcolor); // B
 void solarGraphic(uint x, uint y, int pcolor, int bcolor);                  // Solar graphic
 void generatorGraphic(uint x, uint y, int pcolor, int bcolor);              // Generator graphic
 void startLedTask(GwApi *api);
+
+// Display rudder position as horizontal bargraph with configurable +/- range (degrees)
+// 'rangeDeg' is unsigned and will be clamped to [10,45]
+void displayRudderPosition(int rudderPosition, uint8_t rangeDeg, uint16_t cx, uint16_t cy, uint16_t fg, uint16_t bg);
 
 void doImageRequest(GwApi *api, int *pageno, const PageStruct pages[MAX_PAGE_NUMBER], AsyncWebServerRequest *request);
 

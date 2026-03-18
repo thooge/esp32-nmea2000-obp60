@@ -27,29 +27,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _tNMEA0183AISMessages_H_
 #define _tNMEA0183AISMessages_H_
 
+
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
 #include <N2kTypes.h>
-#include <NMEA0183AISMsg.h>
+#include "NMEA0183AISMsg.h"
 #include <stddef.h>
 #include <vector>
 #include <string>
 
-#define MAX_SHIP_IN_VECTOR 200
-class ship {
-public:
-    uint32_t _userID;
-    std::string _shipName;
-
-    ship(uint32_t UserID, std::string ShipName) :  _userID(UserID), _shipName(ShipName) {}
-};
-
 
 // Types 1, 2 and 3: Position Report Class A or B
 bool SetAISClassABMessage1(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageType, uint8_t Repeat,
-                          uint32_t UserID, double Latitude, double Longitude, bool Accuracy, bool RAIM, uint8_t Seconds,
-                          double COG, double SOG, double Heading, double ROT, uint8_t NavStatus);
+			   uint32_t UserID, double Latitude, double Longitude, bool Accuracy, bool RAIM, uint8_t Seconds,
+			   double COG, double SOG, double Heading, double ROT, uint8_t NavStatus);
 
 //*****************************************************************************
 // AIS Class A Static and Voyage Related Data Message Type 5
@@ -57,14 +49,15 @@ bool SetAISClassAMessage5(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, ui
                           uint32_t UserID, uint32_t IMONumber, char *Callsign, char *Name,
                           uint8_t VesselType, double Length, double Beam, double PosRefStbd,
                           double PosRefBow, uint16_t ETAdate,  double ETAtime, double Draught,
-                          char *Destination, tN2kGNSStype GNSStype, uint8_t DTE );
+                          char *Destination, tN2kGNSStype GNSStype, uint8_t DTE,
+                          tN2kAISVersion AISversion);
 
 //*****************************************************************************
 // AIS position report (class B 129039) -> Standard Class B CS Position Report Message Type 18 Part B
 bool SetAISClassBMessage18(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, uint8_t Repeat, uint32_t UserID,
-                                  double Latitude, double Longitude, bool Accuracy, bool RAIM,
-                                  uint8_t Seconds, double COG, double SOG, double Heading, tN2kAISUnit Unit,
-                                  bool Display, bool DSC, bool Band, bool Msg22, bool Mode, bool State);
+			   double Latitude, double Longitude, bool Accuracy, bool RAIM,
+			   uint8_t Seconds, double COG, double SOG, double Heading, tN2kAISUnit Unit,
+			   bool Display, bool DSC, bool Band, bool Msg22, bool Mode, bool State);
 
 //*****************************************************************************
 // Static Data Report Class B, Message Type 24
@@ -73,11 +66,19 @@ bool SetAISClassBMessage24PartA(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t Message
 
 //*****************************************************************************
 // Static Data Report Class B, Message Type 24
-bool  SetAISClassBMessage24(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, uint8_t Repeat,
+bool  SetAISClassBMessage24PartB(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t MessageID, uint8_t Repeat,
                           uint32_t UserID, uint8_t VesselType, char *VendorID, char *Callsign,
                            double Length, double Beam, double PosRefStbd,  double PosRefBow, uint32_t MothershipID );
 
-int numShips();
+//*****************************************************************************
+// Aton class 21
+bool SetAISMessage21(tNMEA0183AISMsg &NMEA0183AISMsg, uint8_t Repeat, uint32_t UserID,
+			   double Latitude, double Longitude, bool Accuracy, bool RAIM,
+			   uint8_t Seconds, double Length, double Beam, double PositionReferenceStarboard,
+         double PositionReferenceTrueNord, tN2kAISAtoNType Type, bool OffPositionIndicator,
+         bool VirtualAtoNFlag, bool AssignedModeFlag, tN2kGNSStype GNSSType, uint8_t AtoNStatus,
+         char * atonName );
+
 inline int32_t aRoundToInt(double x) {
   return x >= 0
       ? (int32_t) floor(x + 0.5)

@@ -6,11 +6,13 @@
 #include <functional>
 #include <vector>
 #include "LedSpiTask.h"
-#include "OBPDataOperations.h"
+// #include "OBPDataOperations.h"
 
 #define MAX_PAGE_NUMBER 10    // Max number of pages for show data
 
 typedef std::vector<GwApi::BoatValue *> ValueList;
+
+class HstryBuffers;
 
 typedef struct{
   GwApi *api;
@@ -18,7 +20,7 @@ typedef struct{
   uint8_t pageNumber; // page number in sequence of visible pages
   //the values will always contain the user defined values first
   ValueList values;
-  HstryBuf* boatHstry;
+  HstryBuffers* hstryBuffers; // list of all boat history buffers
 } PageData;
 
 // Sensor data structure (only for extended sensors, not for NMEA bus sensors)

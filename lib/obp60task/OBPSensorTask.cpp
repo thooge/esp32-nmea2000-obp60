@@ -457,6 +457,7 @@ void sensorTask(void *param){
         // Get current RTC date and time all 500ms
         if (millis() > starttime12 + 500) {
             starttime12 = millis();
+            // Send date and time from RTC chip if GPS not ready
             if (rtcOn == "DS1388" && RTC_ready) {
                 DateTime dt = ds1388.now();
                 sensors.rtcTime.tm_year  = dt.year() - 1900; // Save values in SensorData
@@ -496,7 +497,31 @@ void sensorTask(void *param){
             }
         }
 
-        // Send supply voltage value all 1s
+        // Send 1Wire data for all temperature sensors to N2K all 2s
+        if(millis() > starttime13 + 2000 && String(oneWireOn) == "DS18B20" && oneWire_ready == true){
+            starttime13 = millis();
+            float tempC;
+            ds18b20.requestTemperatures();  // Collect all temperature values (max.8)
+            for(int i=0;i<numberOfDevices; i++){
+                // Send only one 1Wire data per loop step (time reduction)
+                if(i == loopCounter % numberOfDevices){
+                    if(ds18b20.getAddress(tempDeviceAddress, i)){
+                        // Read temperature value in Celsius
+                        tempC = ds18b20.getTempC(tempDeviceAddress); 
+                    }
+                    // Send to NMEA200 bus for each sensor with instance number
+                    if(!isnan(tempC)){
+                        sensors.onewireTemp[i] = tempC; // Save values in SensorData
+                        api->getLogger()->logDebug(GwLog::DEBUG,"DS18B20-%1d Temp: %.1f",i,tempC);
+                        SetN2kPGN130316(N2kMsg, 0, i, N2kts_OutsideTemperature, CToKelvin(tempC), N2kDoubleNA);
+                        api->sendN2kMessage(N2kMsg);
+                    }
+                }    
+            }
+            loopCounter++;
+        }
+
+        // Send supply voltage value to N2K all 1s
         if(millis() > starttime5 + 1000 && String(powsensor1) == "off"){
             starttime5 = millis();
             float rawVoltage = 0;       // Default value
@@ -566,7 +591,7 @@ void sensorTask(void *param){
 #endif
         }
 
-        // Send data from environment sensor all 2s
+        // Send data from environment sensor to N2K all 2s
         if(millis() > starttime6 + 2000){
             starttime6 = millis();
 
@@ -636,7 +661,7 @@ void sensorTask(void *param){
             }                
         }
 
-        // Send rotation angle all 500ms
+        // Send rotation angle to N2K all 500ms
         if(millis() > starttime7 + 500){
             starttime7 = millis();
             double rotationAngle=0;
@@ -684,7 +709,7 @@ void sensorTask(void *param){
             }    
         }
 
-        // Send battery power value all 1s
+        // Send battery power value to N2K all 1s
         if(millis() > starttime8 + 1000 && (String(powsensor1) == "INA219" || String(powsensor1) == "INA226")){
             starttime8 = millis();
             if(String(powsensor1) == "INA226" && INA226_1_ready == true){
@@ -726,7 +751,7 @@ void sensorTask(void *param){
             }
         }
 
-        // Send solar power value all 1s
+        // Send solar power value to N2K all 1s
         if(millis() > starttime9 + 1000 && (String(powsensor2) == "INA219" || String(powsensor2) == "INA226")){
             starttime9 = millis();
             if(String(powsensor2) == "INA226" && INA226_2_ready == true){
@@ -756,7 +781,7 @@ void sensorTask(void *param){
             }
         }
 
-        // Send generator power value all 1s
+        // Send generator power value to N2K all 1s
         if(millis() > starttime10 + 1000 && (String(powsensor3) == "INA219" || String(powsensor3) == "INA226")){
             starttime10 = millis();
             if(String(powsensor3) == "INA226" && INA226_3_ready == true){

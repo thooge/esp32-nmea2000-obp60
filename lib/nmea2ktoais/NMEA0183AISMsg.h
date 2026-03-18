@@ -45,43 +45,48 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define BITSET_LENGTH 120
 
-typedef std::bitset<BITSET_LENGTH> AISBitSet;
 class tNMEA0183AISMsg : public tNMEA0183Msg {
 
   protected:  // AIS-NMEA
+    std::bitset<BITSET_LENGTH> bset;
     static const char *EmptyAISField;  // 6bits 0      not used yet.....
     static const char *AsciChar;
 
     uint16_t iAddPldBin;
     char Payload[AIS_MSG_MAX_LEN];
     uint8_t  iAddPld;
-
+    char talker[4]="VDM";
+    char channel[2]="A";
+    std::bitset<AIS_BIN_MAX_LEN> PayloadBin;
   public:
-    char PayloadBin[AIS_BIN_MAX_LEN];
-    char PayloadBin2[AIS_BIN_MAX_LEN];
     // Clear message
     void ClearAIS();
 
   public:
     tNMEA0183AISMsg();
-    const char *GetPayload();
-    const char *GetPayloadType5_Part1();
-    const char *GetPayloadType5_Part2();
-    const char *GetPayloadType24_PartA();
-    const char *GetPayloadType24_PartB();
-    const char *GetPayloadBin() const { return  PayloadBin; }
+    const char *GetPayloadFix(int &padBits,uint16_t fixLen=168);
+    const char *GetPayload(int &padBits,uint16_t offset=0,uint16_t bitLen=0);
 
-    const tNMEA0183AISMsg& BuildMsg5Part1(tNMEA0183AISMsg &AISMsg);
-    const tNMEA0183AISMsg& BuildMsg5Part2(tNMEA0183AISMsg &AISMsg);
-    const tNMEA0183AISMsg& BuildMsg24PartA(tNMEA0183AISMsg &AISMsg);
-    const tNMEA0183AISMsg& BuildMsg24PartB(tNMEA0183AISMsg &AISMsg);
+    bool BuildMsg5Part1();
+    bool BuildMsg5Part2();
+    bool InitAis(int max=1,int number=1,int sequence=-1);
 
     // Generally Used
     bool AddIntToPayloadBin(int32_t ival, uint16_t countBits);
-    bool AddBoolToPayloadBin(bool &bval, uint8_t size);
+    bool AddBoolToPayloadBin(bool &bval);
     bool AddEncodedCharToPayloadBin(char *sval, size_t Length);
-    bool AddEmptyFieldToPayloadBin(uint8_t iBits);
-    bool ConvertBinaryAISPayloadBinToAscii(const char *payloadbin);
+    /**
+     * @param channelA - if set A, otherwise B
+     * @param own - if set VDO, else VDM
+     */
+    void SetChannelAndTalker(bool channelA,bool own=false);
+    /**
+     * convert the payload to ascii
+     * return the number of padding bits
+     * @param bitSize the number of bits to be used, 0 - use all bits
+     */
+    template  <unsigned int SZ>
+    int ConvertBinaryAISPayloadBinToAscii(std::bitset<SZ> &src,uint16_t maxSize, uint16_t bitSize,uint16_t offset=0);
 
   // AIS Helper functions
   protected:

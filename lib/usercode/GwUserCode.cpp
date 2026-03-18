@@ -220,6 +220,10 @@ public:
     {
         return api->getNMEA2000();
     }
+    virtual tN2kDeviceList *getN2kDeviceList()
+    {
+        return api->getN2kDeviceList();
+    }
     virtual GwBoatData *getBoatData()
     {
         return api->getBoatData();

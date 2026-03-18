@@ -47,6 +47,8 @@ static uint8_t mulcolor(uint8_t f1, uint8_t f2){
 }
 
 Color setBrightness(const Color &color,uint8_t brightness){
+    if (brightness > 100) brightness = 100;
+
     uint16_t br255=brightness*255;
     br255=br255/100;
     //very simple for now

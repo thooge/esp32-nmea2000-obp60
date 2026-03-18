@@ -23,7 +23,7 @@ static std::vector<IICGrove> iicGroveList;
 #include "GwBME280.h"
 #include "GwBMP280.h"
 #include "GwQMP6988.h"
-#include "GwSHT3X.h"
+#include "GwSHTXX.h"
 #include <map>
 
 #include "GwTimer.h"
@@ -91,6 +91,7 @@ void initIicTask(GwApi *api){
     GwConfigHandler *config=api->getConfig();
     std::vector<SensorBase::Creator> creators;
     creators.push_back(registerSHT3X(api));
+    creators.push_back(registerSHT4X(api));
     creators.push_back(registerQMP6988(api));
     creators.push_back(registerBME280(api));
     creators.push_back(registerBMP280(api));
@@ -147,13 +148,13 @@ bool initWire(GwLog *logger, TwoWire &wire, int num){
         #ifdef _GWI_IIC1
             return initWireDo(logger,wire,num,_GWI_IIC1);
         #endif
-        return initWireDo(logger,wire,num,"",GWIIC_SDA,GWIIC_SCL);
+        return initWireDo(logger,wire,num,"",GWIIC_SCL,GWIIC_SDA);
     }
     if (num == 2){
         #ifdef _GWI_IIC2
             return initWireDo(logger,wire,num,_GWI_IIC2);
         #endif
-        return initWireDo(logger,wire,num,"",GWIIC_SDA2,GWIIC_SCL2);
+        return initWireDo(logger,wire,num,"",GWIIC_SCL2,GWIIC_SDA2);
     }
     return false;
 }

@@ -30,6 +30,7 @@
 #include <esp32/clk.h>
 #include "qrcode.h"
 #include "Nmea2kTwai.h"
+#include <vector>
 
 #ifdef BOARD_OBP40S3
 #include "dirent.h"
@@ -58,6 +59,7 @@ private:
     String buzzer_mode;
     uint8_t buzzer_power;
     String cpuspeed;
+    String powermode;
     String rtc_module;
     String gps_module;
     String env_module;
@@ -79,6 +81,15 @@ private:
     int8_t editmode = -1; // marker for menu/edit/set function
 
     ConfigMenu *menu;
+
+    struct device {
+        uint64_t NAME;
+        uint8_t id;
+        char hex_name[17];
+        uint16_t manuf_code;
+        const char *model;
+    };
+    std::vector<device> devicelist;
 
     void incMode() {
         if (mode == 'N') {        // Normal
@@ -102,9 +113,9 @@ private:
     void decMode() {
         if (mode == 'N') {
             if (hasSDCard) {
-                mode = 'A';
+                mode = 'A';       // SD-Card
             } else {
-                mode = 'D';
+                mode = 'D';       // Device list
             }
         } else if (mode == 'S') { // Settings
             mode = 'N';
@@ -344,6 +355,11 @@ private:
         epd->setCursor(x0, y0 + 144);
         epd->print("Home Lon.:");
         drawTextRalign(230, y0 + 144, formatLongitude(homelon));
+        // Power
+        epd->setCursor(x0, y0 + 176);
+        epd->print("Power mode:");
+        epd->setCursor(120, y0 + 176);
+        epd->print(powermode);
 
         // right column
         epd->setCursor(202, y0);
@@ -362,6 +378,15 @@ private:
         epd->print("Gen. sensor:");
         epd->setCursor(320, y0 + 32);
         epd->print(gen_sensor);
+        // TODO
+        // Gyro sensor (rotation)
+        epd->setCursor(202, y0 + 48);
+        epd->print("Rot. sensor:");
+        epd->setCursor(320, y0 + 48);
+        epd->print(rot_sensor);
+
+        // Temp.-sensor
+        // Power Mode
 
 #ifdef BOARD_OBP60S3
         // Backlight infos
@@ -532,6 +557,42 @@ private:
         epd->setCursor(20, 140);
         epd->printf("N2k source address: %d", NMEA2000->GetN2kSource());
 
+        uint16_t x0 = 20;
+        uint16_t y0 = 100;
+
+        epd->setFont(&Ubuntu_Bold10pt8b);
+        epd->setCursor(x0, y0);
+        epd->print("ID");
+        epd->setCursor(x0 + 50, y0);
+        epd->print("Model");
+        epd->setCursor(x0 + 250, y0);
+        epd->print("Manuf.");
+        epd->drawLine(18, y0 + 4, 360 , y0 + 4 , commonData->fgcolor);
+
+        epd->setFont(&Ubuntu_Bold8pt8b);
+        y0 = 120;
+        uint8_t n_dev = 0;
+        for (const device& item : devicelist) {
+            if (n_dev > 8) {
+                break;
+            }
+            epd->setCursor(x0, y0 + n_dev * 20);
+            epd->print(item.id);
+            epd->setCursor(x0 + 50, y0 + n_dev * 20);
+            epd->print(item.model);
+            epd->setCursor(x0 + 250, y0 + n_dev * 20);
+            epd->print(item.manuf_code);
+            n_dev++;
+        }
+        epd->setCursor(x0, y0 + (n_dev + 1) * 20);
+        if (n_dev == 0) {
+            epd->printf("no devices found on bus");
+
+        } else {
+            epd->drawLine(18, y0 + n_dev * 20, 360 , y0 + n_dev * 20, commonData->fgcolor);
+            epd->printf("%d devices of %d in total", n_dev, devicelist.size());
+        }
+
     }
 
    void storeConfig() {
@@ -556,6 +617,7 @@ public:
         buzzer_mode.toLowerCase();
         buzzer_power = config->getInt(config->buzzerPower);
         cpuspeed = config->getString(config->cpuSpeed);
+        powermode = config->getString(config->powerMode);
         env_module = config->getString(config->useEnvSensor);
         rtc_module = config->getString(config->useRTC);
         gps_module = config->getString(config->useGPS);
@@ -681,6 +743,28 @@ public:
         // Get references from API
         logger->logDebug(GwLog::LOG, "New page display: PageSystem");
         NMEA2000 = pageData.api->getNMEA2000();
+
+        // load current device list
+        tN2kDeviceList *pDevList = pageData.api->getN2kDeviceList();
+        // TODO check if changed
+        if (pDevList->ReadResetIsListUpdated()) {
+            // only reload if changed
+            devicelist.clear();
+            for (uint8_t i = 0; i <= 252; i++) {
+                const tNMEA2000::tDevice *d = pDevList->FindDeviceBySource(i);
+                if (d == nullptr) {
+                    continue;
+                }
+                device dev;
+                dev.id = i;
+                dev.NAME = d->GetName();
+                snprintf(dev.hex_name, sizeof(dev.hex_name), "%08X%08X", (uint32_t)(dev.NAME >> 32), (uint32_t)(dev.NAME & 0xFFFFFFFF));
+                dev.manuf_code = d->GetManufacturerCode();
+                dev.model = d->GetModelID();
+                devicelist.push_back(dev);
+            }
+        }
+
     };
 
     int displayPage(PageData &pageData) {

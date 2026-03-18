@@ -3,6 +3,7 @@
 #include "GwMessage.h"
 #include "N2kMsg.h"
 #include "Nmea2kTwai.h"
+#include "N2kDeviceList.h"
 #include "NMEA0183Msg.h"
 #include "GWConfig.h"
 #include "GwBoatData.h"
@@ -225,6 +226,7 @@ class GwApi{
          * you need to use the request pattern as shown in GwExampleTask.cpp
          */
         virtual Nmea2kTwai *getNMEA2000()=0;
+        virtual tN2kDeviceList *getN2kDeviceList()=0;
         virtual GwBoatData *getBoatData()=0;
         virtual ~GwApi(){}
 };

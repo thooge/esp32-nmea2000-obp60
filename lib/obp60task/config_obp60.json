@@ -37,7 +37,7 @@
         "name": "homeLAT",
         "label": "Home latitude",
         "type": "number",
-        "default": "",
+        "default": "0.00000",
         "check": "checkMinMax",
         "min": -90.0,
         "max": 90.0,
@@ -51,7 +51,7 @@
         "name": "homeLON",
         "label": "Home longitude",
         "type": "number",
-        "default": "",
+        "default": "0.00000",
         "check": "checkMinMax",
         "min": -180.0,
         "max": 180.0,
@@ -238,7 +238,7 @@
         "label": "Calculate True Wind",
         "type": "boolean",
         "default": "false",
-        "description": "If not available, calculate true wind data from appearant wind and other boat data",
+        "description": "If not available, calculate true wind data from apparent wind and other boat data",
         "category": "OBP60 Settings",
         "capabilities": {
             "obp60": "true"
@@ -676,6 +676,61 @@
         }
     },
     {
+        "name": "mod1Out1",
+        "label": "Name1",
+        "type": "string",
+        "default": "text1",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "mod1Out2",
+        "label": "Name2",
+        "type": "string",
+        "default": "text2",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "mod1Out3",
+        "label": "Name3",
+        "type": "string",
+        "default": "text3",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "mod1Out4",
+        "label": "Name4",
+        "type": "string",
+        "default": "text4",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "mod1Out5",
+        "label": "Name5",
+        "type": "string",
+        "default": "text5",
+        "description": "Button name",
+        "category": "OBP60 IO-Modul1",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
         "name": "tSensitivity",
         "label": "Touch Sensitivity [%]",
         "type": "number",
@@ -722,8 +777,10 @@
             "AWA",
             "AWS",
             "COG",
+            "DBS",
             "DBT",
             "HDM",
+            "HDT",
             "PRPOS",
             "RPOS",
             "SOG",
@@ -749,44 +806,22 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance1": "AWA" },
-            { "calInstance1": "AWS" },
-            { "calInstance1": "COG" },
-            { "calInstance1": "DBT" },
-            { "calInstance1": "HDM" },
-            { "calInstance1": "PRPOS" },
-            { "calInstance1": "RPOS" },
-            { "calInstance1": "SOG" },
-            { "calInstance1": "STW" },
-            { "calInstance1": "TWA" },
-            { "calInstance1": "TWS" },
-            { "calInstance1": "TWD" },
-            { "calInstance1": "WTemp" } ]
+            { "calInstance1": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSlope1",
         "label": "Data Instance 1 Calibration Slope",
         "type": "number",
         "default": "1.00",
-        "description": "Slope for data instance 1",
+        "description": "Slope for data instance 1; Default: 1(!)",
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
         },
         "condition": [
-            { "calInstance1": "AWA" },
-            { "calInstance1": "AWS" },
-            { "calInstance1": "COG" },
-            { "calInstance1": "DBT" },
-            { "calInstance1": "HDM" },
-            { "calInstance1": "PRPOS" },
-            { "calInstance1": "RPOS" },
-            { "calInstance1": "SOG" },
-            { "calInstance1": "STW" },
-            { "calInstance1": "TWA" },
-            { "calInstance1": "TWS" },
-            { "calInstance1": "TWD" },
-            { "calInstance1": "WTemp" }  ]
+            { "calInstance1": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSmooth1",
@@ -802,19 +837,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance1": "AWA" },
-            { "calInstance1": "AWS" },
-            { "calInstance1": "COG" },
-            { "calInstance1": "DBT" },
-            { "calInstance1": "HDM" },
-            { "calInstance1": "PRPOS" },
-            { "calInstance1": "RPOS" },
-            { "calInstance1": "SOG" },
-            { "calInstance1": "STW" },
-            { "calInstance1": "TWA" },
-            { "calInstance1": "TWS" },
-            { "calInstance1": "TWD" },
-            { "calInstance1": "WTemp" }  ]
+            { "calInstance1": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calInstance2",
@@ -827,8 +851,10 @@
             "AWA",
             "AWS",
             "COG",
+            "DBS",
             "DBT",
             "HDM",
+            "HDT",
             "PRPOS",
             "RPOS",
             "SOG",
@@ -854,44 +880,22 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance2": "AWA" },
-            { "calInstance2": "AWS" },
-            { "calInstance2": "COG" },
-            { "calInstance2": "DBT" },
-            { "calInstance2": "HDM" },
-            { "calInstance2": "PRPOS" },
-            { "calInstance2": "RPOS" },
-            { "calInstance2": "SOG" },
-            { "calInstance2": "STW" },
-            { "calInstance2": "TWA" },
-            { "calInstance2": "TWS" },
-            { "calInstance2": "TWD" },
-            { "calInstance2": "WTemp" } ]
+            { "calInstance2": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSlope2",
         "label": "Data Instance 2 Calibration Slope",
         "type": "number",
         "default": "1.00",
-        "description": "Slope for data instance 2",
+        "description": "Slope for data instance 2; Default: 1(!)",
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
         },
         "condition": [
-            { "calInstance2": "AWA" },
-            { "calInstance2": "AWS" },
-            { "calInstance2": "COG" },
-            { "calInstance2": "DBT" },
-            { "calInstance2": "HDM" },
-            { "calInstance2": "PRPOS" },
-            { "calInstance2": "RPOS" },
-            { "calInstance2": "SOG" },
-            { "calInstance2": "STW" },
-            { "calInstance2": "TWA" },
-            { "calInstance2": "TWS" },
-            { "calInstance2": "TWD" },
-            { "calInstance2": "WTemp" } ]
+            { "calInstance2": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSmooth2",
@@ -907,19 +911,8 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance2": "AWA" },
-            { "calInstance2": "AWS" },
-            { "calInstance2": "COG" },
-            { "calInstance2": "DBT" },
-            { "calInstance2": "HDM" },
-            { "calInstance2": "PRPOS" },
-            { "calInstance2": "RPOS" },
-            { "calInstance2": "SOG" },
-            { "calInstance2": "STW" },
-            { "calInstance2": "TWA" },
-            { "calInstance2": "TWS" },
-            { "calInstance2": "TWD" },
-            { "calInstance2": "WTemp" } ]
+            { "calInstance2": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calInstance3",
@@ -932,8 +925,10 @@
             "AWA",
             "AWS",
             "COG",
+            "DBS",
             "DBT",
             "HDM",
+            "HDT",
             "PRPOS",
             "RPOS",
             "SOG",
@@ -959,44 +954,22 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance3": "AWA" },
-            { "calInstance3": "AWS" },
-            { "calInstance3": "COG" },
-            { "calInstance3": "DBT" },
-            { "calInstance3": "HDM" },
-            { "calInstance3": "PRPOS" },
-            { "calInstance3": "RPOS" },
-            { "calInstance3": "SOG" },
-            { "calInstance3": "STW" },
-            { "calInstance3": "TWA" },
-            { "calInstance3": "TWS" },
-            { "calInstance3": "TWD" },
-            { "calInstance3": "WTemp" } ]
+            { "calInstance3": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSlope3",
         "label": "Data Instance 3 Calibration Slope",
         "type": "number",
         "default": "1.00",
-        "description": "Slope for data instance 3",
+        "description": "Slope for data instance 3; Default: 1(!)",
         "category": "OBP60 Calibrations",
         "capabilities": {
             "obp60":"true"
         },
         "condition": [
-            { "calInstance3": "AWA" },
-            { "calInstance3": "AWS" },
-            { "calInstance3": "COG" },
-            { "calInstance3": "DBT" },
-            { "calInstance3": "HDM" },
-            { "calInstance3": "PRPOS" },
-            { "calInstance3": "RPOS" },
-            { "calInstance3": "SOG" },
-            { "calInstance3": "STW" },
-            { "calInstance3": "TWA" },
-            { "calInstance3": "TWS" },
-            { "calInstance3": "TWD" },
-            { "calInstance3": "WTemp" } ]
+            { "calInstance3": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
     },
     {
         "name": "calSmooth3",
@@ -1012,19 +985,221 @@
             "obp60":"true"
         },
         "condition": [
-            { "calInstance3": "AWA" },
-            { "calInstance3": "AWS" },
-            { "calInstance3": "COG" },
-            { "calInstance3": "DBT" },
-            { "calInstance3": "HDM" },
-            { "calInstance3": "PRPOS" },
-            { "calInstance3": "RPOS" },
-            { "calInstance3": "SOG" },
-            { "calInstance3": "STW" },
-            { "calInstance3": "TWA" },
-            { "calInstance3": "TWS" },
-            { "calInstance3": "TWD" },
-            { "calInstance3": "WTemp" } ]
+            { "calInstance3": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calInstance4",
+        "label": "Calibration Data Instance 4",
+        "type": "list",
+        "default": "---",
+        "description": "Data instance for calibration",
+        "list": [
+            "---",
+            "AWA",
+            "AWS",
+            "COG",
+            "DBS",
+            "DBT",
+            "HDM",
+            "HDT",
+            "PRPOS",
+            "RPOS",
+            "SOG",
+            "STW",
+            "TWA",
+            "TWS",
+            "TWD",
+            "WTemp"
+        ],
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "calOffset4",
+        "label": "Data Instance 4 Calibration Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 4",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        },
+        "condition": [
+            { "calInstance4": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSlope4",
+        "label": "Data Instance 4 Calibration Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 3; Default: 1(!)",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        },
+        "condition": [
+            { "calInstance4": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSmooth4",
+        "label": "Data Instance 4 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 10,
+        "description": "Smoothing factor [0..10]; 0 = no smoothing",
+        "category": "OBP60 Calibrations",
+        "capabilities": {
+            "obp60":"true"
+        },
+        "condition": [
+            { "calInstance4": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "mapsource",
+        "label": "Map Source",
+        "type": "list",
+        "default": "OBP Service",
+        "description": "Type of map source, cloud service or local service",
+        "list": [
+            "OBP Service",
+            "Local Service"
+        ],
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "ipAddress",
+        "label": "IP Address",
+        "type": "string",
+        "default": "192.168.15.10",
+        "check": "checkIpAddress",
+        "description": "IP address for local map service e.g. 192.168.15.10\nor an MDNS name like Raspi.local",
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60":"true"
+        },
+        "condition": [
+            { "mapsource": ["Local Service"] }
+        ]
+    },
+    {
+        "name": "localPort",
+        "label": "Port",
+        "type": "number",
+        "default": "8080",
+        "check":"checkPort",
+        "description": "TCP port for local map server",
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60":"true"
+        },
+        "condition": [
+            { "mapsource": ["Local Service"] }
+        ]
+    },
+    {
+        "name": "maptype",
+        "label": "Map Type",
+        "type": "list",
+        "default": "Open Street Map",
+        "description": "Type of base navigation map with sea marks overlay",
+        "list": [
+            "Open Street Map",
+            "Google Street",
+            "Open Topo Map",
+            "Stadimaps Toner",
+            "Free Nautical Chart"
+        ],
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "refreshDistance",
+        "label": "Refresh Distance [m]",
+        "type": "number",
+        "default": "15",
+        "check": "checkMinMax",
+        "min": 1,
+        "max": 50,
+        "description": "Refresh distance between updates [1..50 m], 15 m = default",
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "zoomlevel",
+        "label": "Default Zoom Level",
+        "type": "number",
+        "default": "15",
+        "check": "checkMinMax",
+        "min": 7,
+        "max": 17,
+        "description": "Start zoom level for map [7..17]; 15 = default",
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "orientation",
+        "label": "Map Orientation",
+        "type": "list",
+        "default": "North Dirirection",
+        "description": "Map orientation for navigation",
+        "list": [
+            "North Direction",
+            "Travel Direction"
+        ],
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60":"true"
+        }
+    },
+    {
+        "name": "grid",
+        "label": "Show Grid",
+        "type": "boolean",
+        "default": "false",
+        "description": "Show the grid for latutude and longitude",
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60": "true"
+        }
+    },
+    {
+        "name": "showvalues",
+        "label": "Show Values",
+        "type": "boolean",
+        "default": "false",
+        "description": "Show boat data values in the left upper map corner",
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60": "true"
+        }
+    },
+    {
+        "name": "ownheading",
+        "label": "Alternativ Heading",
+        "type": "boolean",
+        "default": "false",
+        "description": "Calculating an alternative travel direction for\na better and calmer map orientation",
+        "category": "OBP60 Navigation",
+        "capabilities": {
+            "obp60": "true"
+        }
     },
     {
         "name": "display",
@@ -1207,9 +1382,9 @@
         "type": "number",
         "default": "50",
         "check": "checkMinMax",
-        "min": 20,
+        "min": 5,
         "max": 100,
-        "description": "Backlight brightness [20...100%]",
+        "description": "Backlight brightness [5...100%]",
         "category": "OBP60 Display",
         "capabilities": {
             "obp60":"true"
@@ -1355,12 +1530,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -1382,38 +1559,20 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "visiblePages": 1
-            },
-            {
-                "visiblePages": 2
-            },
-            {
-                "visiblePages": 3
-            },
-            {
-                "visiblePages": 4
-            },
-            {
-                "visiblePages": 5
-            },
-            {
-                "visiblePages": 6
-            },
-            {
-                "visiblePages": 7
-            },
-            {
-                "visiblePages": 8
-            },
-            {
-                "visiblePages": 9
-            },
-            {
-                "visiblePages": 10
-            }
-        ]
+        "condition": {
+            "visiblePages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ]
+        }
     },
     {
         "name": "page1value1",
@@ -1646,11 +1805,21 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page1type": "Fluid"
-            }
-        ]
+        "condition": {
+            "page1type": "Fluid",
+            "visiblePages": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page2type",
@@ -1667,12 +1836,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -1694,35 +1865,19 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "visiblePages": 2
-            },
-            {
-                "visiblePages": 3
-            },
-            {
-                "visiblePages": 4
-            },
-            {
-                "visiblePages": 5
-            },
-            {
-                "visiblePages": 6
-            },
-            {
-                "visiblePages": 7
-            },
-            {
-                "visiblePages": 8
-            },
-            {
-                "visiblePages": 9
-            },
-            {
-                "visiblePages": 10
-            }
-        ]
+        "condition": {
+            "visiblePages": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page2value1",
@@ -1949,11 +2104,20 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page2type": "Fluid"
-            }
-        ]
+        "condition": {
+            "page2type": "Fluid",
+            "visiblePages": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page3type",
@@ -1970,12 +2134,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -2243,11 +2409,19 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page3type": "Fluid"
-            }
-        ]
+        "condition": {
+            "page3type": "Fluid",
+            "visiblePages": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page4type",
@@ -2264,12 +2438,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -2291,29 +2467,17 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "visiblePages": 4
-            },
-            {
-                "visiblePages": 5
-            },
-            {
-                "visiblePages": 6
-            },
-            {
-                "visiblePages": 7
-            },
-            {
-                "visiblePages": 8
-            },
-            {
-                "visiblePages": 9
-            },
-            {
-                "visiblePages": 10
-            }
-        ]
+        "condition": {
+            "visiblePages": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page4value1",
@@ -2528,11 +2692,18 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page4type": "Fluid"
-            }
-        ]
+        "condition": {
+            "page4type": "Fluid",
+            "visiblePages": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page5type",
@@ -2549,12 +2720,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -2576,26 +2749,16 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "visiblePages": 5
-            },
-            {
-                "visiblePages": 6
-            },
-            {
-                "visiblePages": 7
-            },
-            {
-                "visiblePages": 8
-            },
-            {
-                "visiblePages": 9
-            },
-            {
-                "visiblePages": 10
-            }
-        ]
+        "condition": {
+            "visiblePages": [
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page5value1",
@@ -2804,11 +2967,17 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page5type": "Fluid"
-            }
-        ]
+        "condition": {
+            "page5type": "Fluid",
+            "visiblePages": [
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page6type",
@@ -2825,12 +2994,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -2852,23 +3023,15 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "visiblePages": 6
-            },
-            {
-                "visiblePages": 7
-            },
-            {
-                "visiblePages": 8
-            },
-            {
-                "visiblePages": 9
-            },
-            {
-                "visiblePages": 10
-            }
-        ]
+        "condition": {
+            "visiblePages": [
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page6value1",
@@ -3071,11 +3234,16 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page6type": "Fluid"
-            }
-        ]
+        "condition": {
+            "page6type": "Fluid",
+            "visiblePages": [
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page7type",
@@ -3092,12 +3260,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -3119,20 +3289,14 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "visiblePages": 7
-            },
-            {
-                "visiblePages": 8
-            },
-            {
-                "visiblePages": 9
-            },
-            {
-                "visiblePages": 10
-            }
-        ]
+        "condition": {
+            "visiblePages": [
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page7value1",
@@ -3329,11 +3493,15 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page7type": "Fluid"
-            }
-        ]
+        "condition": {
+            "page7type": "Fluid",
+            "visiblePages": [
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page8type",
@@ -3350,12 +3518,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -3377,17 +3547,13 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "visiblePages": 8
-            },
-            {
-                "visiblePages": 9
-            },
-            {
-                "visiblePages": 10
-            }
-        ]
+        "condition": {
+            "visiblePages": [
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page8value1",
@@ -3578,11 +3744,14 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page8type": "Fluid"
-            }
-        ]
+        "condition": {
+            "page8type": "Fluid",
+            "visiblePages": [
+                "8",
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page9type",
@@ -3599,12 +3768,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -3626,14 +3797,12 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "visiblePages": 9
-            },
-            {
-                "visiblePages": 10
-            }
-        ]
+        "condition": {
+            "visiblePages": [
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page9value1",
@@ -3818,11 +3987,13 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page9type": "Fluid"
-            }
-        ]
+        "condition": {
+            "page9type": "Fluid",
+            "visiblePages": [
+                "9",
+                "10"
+            ]
+        }
     },
     {
         "name": "page10type",
@@ -3839,12 +4010,14 @@
             "Battery2",
             "Clock",
             "Compass",
+            "DigitalOut",
             "DST810",
             "Fluid",
             "FourValues",
             "FourValues2",
             "Generator",
             "KeelPosition",
+            "Navigation",
             "OneValue",
             "RollPitch",
             "RudderPosition",
@@ -4049,10 +4222,11 @@
         "capabilities": {
             "obp60": "true"
         },
-        "condition": [
-            {
-                "page10type": "Fluid"
-            }
-        ]
+        "condition": {
+            "page10type": "Fluid",
+            "visiblePages": [
+                "10"
+            ]
+        }
     }
 ]

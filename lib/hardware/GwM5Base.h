@@ -2,7 +2,7 @@
   This code is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
+  version 2 of the License, or (at your option) any later version.
   This code is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -35,7 +35,12 @@
 #ifdef M5_GPS_KIT
   GWRESOURCE_USE(BASE,M5_GPS_KIT)
   GWRESOURCE_USE(SERIAL1,M5_GPS_KIT)
-  #define _GWI_SERIAL1 BOARD_LEFT1,-1,GWSERIAL_TYPE_UNI,9600
+  #define _GWI_SERIAL1 BOARD_LEFT1,-1,GWSERIAL_TYPE_RX,9600
+#endif
+#ifdef M5_GPSV2_KIT
+  GWRESOURCE_USE(BASE,M5_GPSV2_KIT)
+  GWRESOURCE_USE(SERIAL1,M5_GPSV2_KIT)
+  #define _GWI_SERIAL1 BOARD_LEFT1,-1,GWSERIAL_TYPE_RX,115200
 #endif
 
 //M5 ProtoHub
@@ -61,7 +66,7 @@
 #endif
 
 //can kit for M5 Atom
-#ifdef M5_CAN_KIT
+#if defined (M5_CAN_KIT) 
   GWRESOURCE_USE(BASE,M5_CAN_KIT)
   GWRESOURCE_USE(CAN,M5_CANKIT)
   #define ESP32_CAN_TX_PIN BOARD_LEFT1
