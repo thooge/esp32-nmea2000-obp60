@@ -41,8 +41,8 @@
     #define OBP_SPI_BUSY 42
     #define OBP_SPI_CLK 38
     #define OBP_SPI_DIN 48
-    #define OBP_TFT_OFFSET_X 10   // ST7796 operating x-offset for centered 400x300 content
-    #define OBP_TFT_OFFSET_Y -20  // ST7796 operating y-offset for centered 400x300 content
+    #define OBP_TFT_OFFSET_X 10   // ST7796, ILI9488 operating x-offset for centered 400x300 content
+    #define OBP_TFT_OFFSET_Y -20  // ST7796, ILI9488 operating y-offset for centered 400x300 content
     #define TFT_BLACK 0x0109      // Replacement color for black on TFT (RGB565)
     #define TFT_WHITE 0xFFFF      // Replacement color for white on TFT (RGB565)
     #define SHOW_TIME 6000        // Show time in [ms] for logo and WiFi QR code
