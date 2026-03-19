@@ -94,16 +94,13 @@ class LGFX : public lgfx::LGFX_Device {
 public:
   lgfx::Bus_SPI _bus_instance;
 
+  #ifdef TFT_320x480_ST7796
   LGFX(void) {
     {
       auto cfg = _bus_instance.config();
       cfg.spi_host = SPI2_HOST;
       cfg.spi_mode = 0;
-    #if defined(TFT_320x480_ILI9488)
-    cfg.freq_write = 40000000;
-    #else
-    cfg.freq_write = 80000000;
-    #endif
+      cfg.freq_write = 80000000;    // High speed ST7796
       cfg.freq_read  = 16000000;
       cfg.pin_sclk = OBP_SPI_CLK;
       cfg.pin_mosi = OBP_SPI_DIN;
@@ -121,7 +118,7 @@ public:
       cfg.panel_height = 480;       // Native hight resolution
       cfg.offset_x     = 0;         // No panel offset: full framebuffer mapping
       cfg.offset_y     = 0;         // No panel offset: full framebuffer mapping
-      cfg.offset_rotation = 3;      // Rotate display content conter clock wise 90 deg
+      cfg.offset_rotation = 3;      // Rotate display content conter clock wise 90 deg ST7796
       cfg.dummy_read_pixel = 8;
       cfg.dummy_read_bits  = 1;
       cfg.memory_width     = 320;
@@ -139,6 +136,51 @@ public:
         // Match Adafruit GFX cursor semantics: y coordinate is text baseline.
         setTextDatum(textdatum_t::baseline_left);
   }
+  #endif
+
+  #ifdef TFT_320x480_ILI9488
+  LGFX(void) {
+    {
+      auto cfg = _bus_instance.config();
+      cfg.spi_host = SPI2_HOST;
+      cfg.spi_mode = 0;
+      cfg.freq_write = 40000000;    // Slow speed ILI9488
+      cfg.freq_read  = 16000000;
+      cfg.pin_sclk = OBP_SPI_CLK;
+      cfg.pin_mosi = OBP_SPI_DIN;
+      cfg.pin_miso = -1;
+      cfg.pin_dc   = OBP_SPI_DC;
+      _bus_instance.config(cfg);
+      _panel_instance.setBus(&_bus_instance);
+    }
+    {
+      auto cfg = _panel_instance.config();
+      cfg.pin_cs  = OBP_SPI_CS;
+      cfg.pin_rst = OBP_SPI_RST;
+      cfg.pin_busy = -1;
+      cfg.panel_width  = 320;       // Native width resolution
+      cfg.panel_height = 480;       // Native hight resolution
+      cfg.offset_x     = 0;         // No panel offset: full framebuffer mapping
+      cfg.offset_y     = 0;         // No panel offset: full framebuffer mapping
+      cfg.offset_rotation = 1;      // Rotate display content clock wise 90 deg ILI9488
+      cfg.dummy_read_pixel = 8;
+      cfg.dummy_read_bits  = 1;
+      cfg.memory_width     = 320;
+      cfg.memory_height    = 480;
+      // cfg.pwm_control not available in this LovyanGFX version
+      cfg.invert = false;
+      cfg.rgb_order = false;
+      cfg.dlen_16bit = false;
+      cfg.bus_shared = true;
+      _panel_instance.config(cfg);
+    }
+        // No dedicated TFT PWM backlight pin configured on this board.
+        // Keep backlight handling outside LovyanGFX to avoid LEDC init on invalid GPIO.
+    setPanel(&_panel_instance);
+        // Match Adafruit GFX cursor semantics: y coordinate is text baseline.
+        setTextDatum(textdatum_t::baseline_left);
+  }
+  #endif
 
   // compatibility helpers --------------------------------------------------
     using lgfx::LGFX_Device::setFont;
