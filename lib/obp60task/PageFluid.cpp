@@ -1,27 +1,25 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
+/***************************************************************************
+ * Analog fluid display for different types
+ *   0: Fuel
+ *   1: Water
+ *   2: Gray Water
+ *   3: Live Well
+ *   4: Oil
+ *   5: Black Water
+ *   6: Fuel Gasoline
+ *   14: Error
+ *   15: Unavailable
+ * 
+ * TODO 
+ *   - Check fluid type against connected XDR-value
+ */
+
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
 #include "GwXDRMappings.h"
-
-/*
-  Fluid level view
-
-    0: "Fuel",
-    1: "Water",
-    2: "Gray Water",
-    3: "Live Well",
-    4: "Oil",
-    5: "Black Water",
-    6: "Fuel Gasoline",
-    14: "Error",
-    15: "Unavailable"
-
-TODO 
-  - Check fluid type against connected XDR-value
-
-*/
 
 #define fuel_width 16
 #define fuel_height 16

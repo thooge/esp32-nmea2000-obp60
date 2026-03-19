@@ -1,6 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
+/***************************************************************************
+ * Page to display internal environment data
+ *   - Internal device temperature
+ *   - Athmospheric pressure
+ *   - Humidity
+ * 
+ * Supportet Sensors: BME280, BMP280, BMP180
+ * 
+ */
+
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
 
@@ -29,6 +39,16 @@ public:
         return key;
     }
 
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+    };
+
     int displayPage(PageData &pageData){
 
         double value1 = 0;
@@ -40,63 +60,52 @@ public:
         
         // Get sensor values #1
         String name1 = "Temp";                          // Value name
-        name1 = name1.substring(0, 6);                  // String length limit for value name
-        if(simulation == false){
+        if (simulation == false) {
             value1 = commonData->data.airTemperature;    // Value as double in SI unit
-        }
-        else{
+        } else {
             value1 = 23.0 + float(random(0, 10)) / 10.0;
         }
         // Display data when sensor activated
-        if((useenvsensor == "BME280") or (useenvsensor == "BMP280") or (useenvsensor == "BMP180")){
+        if ((useenvsensor == "BME280") or (useenvsensor == "BMP280")
+            or (useenvsensor == "BMP180"))
+        {
             svalue1 = String(value1, 1);                // Formatted value as string including unit conversion and switching decimal places
-        }
-        else{
-            svalue1 = "---";
+        } else {
+            svalue1 = commonData->fmt->placeholder;
         }
         String unit1 = "Deg C";                         // Unit of value
 
         // Get sensor values #2
         String name2 = "Humid";                         // Value name
-        name2 = name2.substring(0, 6);                  // String length limit for value name
-        if(simulation == false){
+        if (simulation == false) {
             value2 = commonData->data.airHumidity;       // Value as double in SI unit
-        }
-        else{
+        } else {
             value2 = 43 + float(random(0, 4));
         }
         // Display data when sensor activated
-        if(useenvsensor == "BME280"){
+        if (useenvsensor == "BME280") {
             svalue2 = String(value2, 0);                // Formatted value as string including unit conversion and switching decimal places
-        }
-        else{
-            svalue2 = "---";
+        } else {
+            svalue2 = commonData->fmt->placeholder;
         }
         String unit2 = "%";                             // Unit of value
 
         // Get sensor values #3
         String name3 = "Press";                         // Value name
-        name3 = name3.substring(0, 6);                  // String length limit for value name
-         if(simulation == false){
+        if (simulation == false) {
             value3 = commonData->data.airPressure;       // Value as double in SI unit
-        }
-        else{
+        } else {
             value3 = 1006 + float(random(0, 5));
         }
         // Display data when sensor activated
-        if((useenvsensor == "BME280") or (useenvsensor == "BMP280") or (useenvsensor == "BMP180")){
+        if ((useenvsensor == "BME280") or (useenvsensor == "BMP280")
+            or (useenvsensor == "BMP180"))
+        {
             svalue3 = String(value3 / 100, 1);          // Formatted value as string including unit conversion and switching decimal places
-        }
-        else{
-            svalue3 = "---";
+        } else {
+            svalue3 = commonData->fmt->placeholder;
         }
         String unit3 = "hPa";                          // Unit of value
-
-        // Optical warning by limit violation (unused)
-        if(String(flashLED) == "Limit Violation"){
-            setBlinkingLED(false);
-            setFlashLED(false); 
-        }
 
         // Logging boat values
         logger->logDebug(GwLog::LOG, "Drawing at PageBME280, %s: %f, %s: %f, %s: %f", name1.c_str(), value1, name2.c_str(), value2, name3.c_str(), value3);

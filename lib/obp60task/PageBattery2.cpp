@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
+/***************************************************************************
+ * External battery sensors
+ */
+
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
 #include "movingAvg.h"              // Lib for moving average building
@@ -56,6 +60,16 @@ public:
         return key;
     }
 
+    void displayNew(PageData &pageData) {
+#ifdef BOARD_OBP60S3
+        // Clear optical warning
+        if (flashLED == "Limit Violation") {
+            setBlinkingLED(false);
+            setFlashLED(false);
+        }
+#endif
+    };
+
     int displayPage(PageData &pageData) {
         // Polynominal coefficients second order for battery energy level calculation
         // index 0 = Pb, 1 = Gel, 2 = AGM, 3 = LiFePo4
@@ -74,11 +88,11 @@ public:
         String name1 = "VBat";
 
         // Create trend value
-        if(init == false){          // Load start values for first page run
+        if (init == false) {         // Load start values for first page run
             valueTrend = commonData->data.batteryVoltage10;
             init = true;
         }
-        else{                       // Reading trend value
+        else {                       // Reading trend value
             valueTrend = commonData->data.batteryVoltage10;
         }
 
@@ -116,28 +130,35 @@ public:
         bool valid1 = true;
 
         // Battery energy level calculation
-        if(String(batType) == "Pb"){
+        if (String(batType) == "Pb") {
             batPercentage = (value1 * value1 * x2[0]) + (value1 * x1[0]) + x0[0];
-        }
-        if(String(batType) == "Gel"){
+        } else if (String(batType) == "Gel") {
             batPercentage = (value1 * value1 * x2[1]) + (value1 * x1[1]) + x0[1];
-        }
-        if(String(batType) == "AGM"){
+        } else if (String(batType) == "AGM") {
             batPercentage = (value1 * value1 * x2[2]) + (value1 * x1[2]) + x0[2];
-        }
-        if(String(batType) == "LiFePo4"){
+        } else if (String(batType) == "LiFePo4") {
             batPercentage = (value1 * value1 * x2[3]) + (value1 * x1[3]) + x0[3];
         }
+
         // Limits for battery level
-        if(batPercentage < 0) batPercentage = 0;
-        if(batPercentage > 99) batPercentage = 99;
+        if (batPercentage < 0) {
+            batPercentage = 0;
+        } else if (batPercentage > 99) {
+            batPercentage = 99;
+        }
 
         // Battery range calculation
-        if(value2 <= 0) value2 = 0.0000001; // Limiting current
+        if (value2 <= 0) {
+            value2 = 0.0000001; // Limiting current
+        }
         batRange = batCapacity * batPercentage / 100 / value2;
+
         // Limits for battery range
-        if(batRange < 0) batRange = 0;
-        if(batRange > 99) batRange = 99;
+        if (batRange < 0) {
+            batRange = 0;
+        } else if (batRange > 99) {
+            batRange = 99;
+        }
 
         // Optical warning by limit violation
         if (flashLED == "Limit Violation") {
@@ -158,7 +179,7 @@ public:
                 setFlashLED(false);
             }
         }
-        
+
         // Logging voltage value
         logger->logDebug(GwLog::LOG, "Drawing at PageBattery2, Type:%s %s:=%f", batType.c_str(), name1.c_str(), raw);
 
@@ -183,21 +204,22 @@ public:
         // Show voltage type
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(10, 140);
-        int bvoltage = 0;
-        if(String(batVoltage) == "12V") bvoltage = 12;
-        else bvoltage = 24;
-        epd->print(bvoltage);
+        epd->print(batVoltage == "12V" ? "12" : "24");
         epd->setFont(&Ubuntu_Bold16pt8b);
         epd->print("V");
 
         // Show battery capacity
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(10, 200);
-        if(batCapacity <= 999) epd->print(batCapacity, 0);
-        if(batCapacity > 999) epd->print(float(batCapacity/1000.0), 1);
+        String unit = "Ah";
+        if (batCapacity <= 999) {
+            epd->print(batCapacity, 0);
+        } else if (batCapacity > 999) {
+            epd->print(float(batCapacity/1000.0), 1);
+            unit = "kAh";
+        }
         epd->setFont(&Ubuntu_Bold16pt8b);
-        if(batCapacity <= 999) epd->print("Ah");
-        if(batCapacity > 999) epd->print("kAh");
+        epd->print(unit);
 
         // Show info
         epd->setFont(&Ubuntu_Bold8pt8b);
@@ -240,11 +262,15 @@ public:
         // Show time to full discharge
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(150, 260);
-        if((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false){
-            if(batRange < 9.9) epd->print(batRange, 1);
-            else epd->print(batRange, 0);
+        if ((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false) {
+            if (batRange < 9.9) {
+                epd->print(batRange, 1);
+            } else {
+                epd->print(batRange, 0);
+            }
+        } else {
+            epd->print("--");
         }
-        else  epd->print("--");
         epd->setFont(&Ubuntu_Bold16pt8b);
         epd->print("h");
 
@@ -252,11 +278,11 @@ public:
         String i2cAddr = "";
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(270, 60);
-        if(powerSensor == "off") epd->print("Internal");
-        if(powerSensor == "INA219"){
+        if (powerSensor == "off") {
+            epd->print("Internal");
+        } else if (powerSensor == "INA219") {
             epd->print("INA219");
-        }
-        if(powerSensor == "INA226"){
+        } else if(powerSensor == "INA226") {
             epd->print("INA226");
             i2cAddr = " (0x" + String(INA226_I2C_ADDR1, HEX) + ")";
         }
@@ -267,25 +293,22 @@ public:
         // Reading bus data or using simulation data
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(260, 140);
-        if(simulation == true){
-            if(batVoltage == "12V"){
-                value1 = 12.0;
-            }
-            if(batVoltage == "24V"){
-                value1 = 24.0;
-            }
+        if (simulation == true) {
+            value1 = batVoltage == "12V" ? 12.0 : 24.0;
             value1 += float(random(0, 5)) / 10;         // Simulation data
             epd->print(value1,1);
-        }
-        else{
+        } else {
             // Check for valid real data, display also if hold values activated
-            if(valid1 == true || holdvalues == true){
+            if (valid1 == true || holdvalues == true) {
                 // Resolution switching
-                if(value1 <= 9.9) epd->print(value1, 2);
-                if(value1 > 9.9 && value1 <= 99.9)epd->print(value1, 1);
-                if(value1 > 99.9) epd->print(value1, 0);
-            }
-            else{
+                if (value1 <= 9.9) {
+                    epd->print(value1, 2);
+                } else if (value1 > 9.9 && value1 <= 99.9) {
+                    epd->print(value1, 1);
+                } else if (value1 > 99.9) {
+                    epd->print(value1, 0);
+                }
+            } else {
                 epd->print(commonData->fmt->placeholder); // Missing bus data
             }
         }
@@ -295,12 +318,15 @@ public:
         // Show actual current in A
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(260, 200);
-        if((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false){
-            if(value2 <= 9.9) epd->print(value2, 2);
-            if(value2 > 9.9 && value2 <= 99.9)epd->print(value2, 1);
-            if(value2 > 99.9) epd->print(value2, 0);
-        }
-        else {
+        if ((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false) {
+            if (value2 <= 9.9) {
+                epd->print(value2, 2);
+            } else if (value2 > 9.9 && value2 <= 99.9) {
+                epd->print(value2, 1);
+            } else if (value2 > 99.9) {
+                epd->print(value2, 0);
+            }
+        } else {
             epd->print(commonData->fmt->placeholder);
         }
         epd->setFont(&Ubuntu_Bold16pt8b);
@@ -309,12 +335,15 @@ public:
         // Show actual consumption in W
         epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
         epd->setCursor(260, 260);
-        if((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false){
-            if(value3 <= 9.9) epd->print(value3, 2);
-            if(value3 > 9.9 && value3 <= 99.9)epd->print(value3, 1);
-            if(value3 > 99.9) epd->print(value3, 0);
-        }
-        else {
+        if ((powerSensor == "INA219" || powerSensor == "INA226") && simulation == false) {
+            if(value3 <= 9.9) {
+                epd->print(value3, 2);
+            } else if (value3 > 9.9 && value3 <= 99.9) {
+                epd->print(value3, 1);
+            } else if (value3 > 99.9) {
+                epd->print(value3, 0);
+            }
+        } else {
             epd->print(commonData->fmt->placeholder);
         }
         epd->setFont(&Ubuntu_Bold16pt8b);

@@ -1,21 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
+/***************************************************************************
+ * Electric propulsion (WIP)
+ *
+ *  - Current, voltage, power 
+ *  - 12, 24, 48 etc. Voltage
+ *  - rpm
+ *  - throttle position
+ *  - controller state
+ *  - error codes
+ *  - temperature engine, controller, batteries
+ */
+
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
-
-/*
-  Electric propulsion
-
-  - Current, voltage, power 
-  - 12, 24, 48 etc. Voltage
-  - rpm
-  - throttle position
-  - controller state
-  - error codes
-  - temperature engine, controller, batteries
-
-*/
 
 class PageEPropulsion : public Page
 {

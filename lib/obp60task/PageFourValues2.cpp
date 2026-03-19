@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
 
+/***************************************************************************
+ * Display four values in alternative format
+ */
+
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
 
@@ -20,9 +24,9 @@ public:
 
     int handleKey(int key) {
         // Code for keylock
-        if(key == 11){
-            commonData->keylock = !commonData->keylock;         // Toggle keylock
-            return 0;                   // Commit the key
+        if (key == 11) {
+            commonData->keylock = !commonData->keylock; // Toggle keylock
+            return 0;
         }
         return key;
     }
@@ -102,40 +106,38 @@ public:
         // Show name
         epd->setFont(&Ubuntu_Bold20pt8b);
         epd->setCursor(20, 55);
-        epd->print(name1);                           // Page name
+        epd->print(name1);
 
         // Show unit
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(20, 90);
-        if(holdvalues == false){
-            epd->print(unit1);                       // Unit
-        }
-        else{
+        if (holdvalues == false) {
+            epd->print(unit1);
+        } else {
             epd->print(unit1old);
         }
 
         // Switch font if format for any values
-        if(bvalue1->getFormat() == "formatLatitude" || bvalue1->getFormat() == "formatLongitude"){
+        if (bvalue1->getFormat() == "formatLatitude" || bvalue1->getFormat() == "formatLongitude") {
             epd->setFont(&Ubuntu_Bold12pt8b);
             epd->setCursor(100, 90);
         }
-        else if(bvalue1->getFormat() == "formatTime" || bvalue1->getFormat() == "formatDate"){
+        else if (bvalue1->getFormat() == "formatTime" || bvalue1->getFormat() == "formatDate") {
             epd->setFont(&Ubuntu_Bold12pt8b);
             epd->setCursor(180, 77);
         }
-        else{
+        else {
             epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
             epd->setCursor(180, 90);
         }
 
         // Show bus data
-        if(holdvalues == false){
+        if (holdvalues == false) {
             epd->print(svalue1);                                     // Real value as formated string
-        }
-        else{
+        } else {
             epd->print(svalue1old);                                  // Old value as formated string
         }
-        if(valid1 == true){
+        if (valid1 == true) {
             svalue1old = svalue1;                                       // Save the old value
             unit1old = unit1;                                           // Save the old unit
         }
@@ -150,40 +152,38 @@ public:
         // Show name
         epd->setFont(&Ubuntu_Bold20pt8b);
         epd->setCursor(20, 145);
-        epd->print(name2);                           // Page name
+        epd->print(name2);
 
         // Show unit
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(20, 180);
-        if(holdvalues == false){
-            epd->print(unit2);                       // Unit
-        }
-        else{
+        if (holdvalues == false) {
+            epd->print(unit2);
+        } else{
             epd->print(unit2old);
         }
 
         // Switch font if format for any values
-        if(bvalue2->getFormat() == "formatLatitude" || bvalue2->getFormat() == "formatLongitude"){
+        if (bvalue2->getFormat() == "formatLatitude" || bvalue2->getFormat() == "formatLongitude") {
             epd->setFont(&Ubuntu_Bold12pt8b);
             epd->setCursor(100, 180);
         }
-        else if(bvalue2->getFormat() == "formatTime" || bvalue2->getFormat() == "formatDate"){
+        else if (bvalue2->getFormat() == "formatTime" || bvalue2->getFormat() == "formatDate") {
             epd->setFont(&Ubuntu_Bold12pt8b);
             epd->setCursor(180, 158);
         }
-        else{
+        else {
             epd->setFont(&DSEG7Classic_BoldItalic30pt7b);
             epd->setCursor(180, 180);
         }
 
         // Show bus data
-        if(holdvalues == false){
+        if (holdvalues == false) {
             epd->print(svalue2);                                     // Real value as formated string
-        }
-        else{
+        } else {
             epd->print(svalue2old);                                  // Old value as formated string
         }
-        if(valid2 == true){
+        if (valid2 == true) {
             svalue2old = svalue2;                                       // Save the old value
             unit2old = unit2;                                           // Save the old unit
         }
@@ -198,28 +198,28 @@ public:
         // Show name
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(20, 220);
-        epd->print(name3);                           // Page name
+        epd->print(name3);
 
         // Show unit
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(20, 240);
-        if(holdvalues == false){
-            epd->print(unit3);                       // Unit
+        if (holdvalues == false) {
+            epd->print(unit3);
         }
         else{
             epd->print(unit3old);
         }
 
         // Switch font if format for any values
-        if(bvalue3->getFormat() == "formatLatitude" || bvalue3->getFormat() == "formatLongitude"){
+        if (bvalue3->getFormat() == "formatLatitude" || bvalue3->getFormat() == "formatLongitude") {
             epd->setFont(&Ubuntu_Bold8pt8b);
             epd->setCursor(50, 240);
         }
-        else if(bvalue3->getFormat() == "formatTime" || bvalue3->getFormat() == "formatDate"){
+        else if (bvalue3->getFormat() == "formatTime" || bvalue3->getFormat() == "formatDate") {
             epd->setFont(&Ubuntu_Bold8pt8b);
             epd->setCursor(100, 240);
         }
-        else{
+        else {
             epd->setFont(&DSEG7Classic_BoldItalic20pt7b);
             epd->setCursor(80, 270);
         }
@@ -246,24 +246,23 @@ public:
         // Show name
         epd->setFont(&Ubuntu_Bold12pt8b);
         epd->setCursor(220, 220);
-        epd->print(name4);                           // Page name
+        epd->print(name4);
 
         // Show unit
         epd->setFont(&Ubuntu_Bold8pt8b);
         epd->setCursor(220, 240);
-        if(holdvalues == false){
-            epd->print(unit4);                       // Unit
-        }
-        else{
+        if (holdvalues == false) {
+            epd->print(unit4);
+        } else {
             epd->print(unit4old);
         }
 
         // Switch font if format for any values
-        if(bvalue4->getFormat() == "formatLatitude" || bvalue4->getFormat() == "formatLongitude"){
+        if (bvalue4->getFormat() == "formatLatitude" || bvalue4->getFormat() == "formatLongitude") {
             epd->setFont(&Ubuntu_Bold8pt8b);
             epd->setCursor(250, 240);
         }
-        else if(bvalue4->getFormat() == "formatTime" || bvalue4->getFormat() == "formatDate"){
+        else if (bvalue4->getFormat() == "formatTime" || bvalue4->getFormat() == "formatDate") {
             epd->setFont(&Ubuntu_Bold8pt8b);
             epd->setCursor(300, 240);
         }
@@ -273,13 +272,12 @@ public:
         }
 
         // Show bus data
-        if(holdvalues == false){
+        if (holdvalues == false) {
             epd->print(svalue4);                                     // Real value as formated string
-        }
-        else{
+        } else {
             epd->print(svalue4old);                                  // Old value as formated string
         }
-        if(valid4 == true){
+        if (valid4 == true) {
             svalue4old = svalue4;                                       // Save the old value
             unit4old = unit4;                                           // Save the old unit
         }
