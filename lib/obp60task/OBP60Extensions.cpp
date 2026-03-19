@@ -141,7 +141,7 @@ void hardwareInit(GwApi *api)
     GwLog *logger = api->getLogger();
     GwConfigHandler *config = api->getConfig();
 
-    Wire.begin();
+    Wire.begin(OBP_I2C_SDA, OBP_I2C_SCL);
     // Init PCF8574 digital outputs
     Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
     if(pcf8574_Modul1.begin()){        // Initialize PCF8574
