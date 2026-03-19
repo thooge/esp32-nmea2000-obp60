@@ -29,7 +29,7 @@ Chart::Chart(RingBuffer<uint16_t>& dataBuf, double dfltRng, CommonData& common, 
     bgColor = commonData->bgcolor;
 
     // display dimensions (avoid calling width()/height() on incomplete LGFX type)
-    #ifdef DISPLAY_ST7796
+    #ifdef TFT_DISPLAY
         dWidth = 480;
         dHeight = 320;
     #else

@@ -13,7 +13,7 @@
 NetworkClient net(JSON_BUFFER); // Define network client
 ImageDecoder decoder;           // Define image decoder        
 
-#ifdef DISPLAY_ST7796
+#ifdef TFT_DISPLAY
 // Set to true to render a generated RGB565 color-bar test image.
 static constexpr bool kShowRgb565StripeTestImage = false;
 
@@ -82,7 +82,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         commonData = &common;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageNavigation");
         imageBackupCapacity = (size_t)GxEPD_WIDTH * (size_t)GxEPD_HEIGHT;
-        #ifdef DISPLAY_ST7796
+        #ifdef TFT_DISPLAY
         imageBackupCapacity *= 2U;
         #endif
         imageBackupData = (uint8_t*)heap_caps_malloc(imageBackupCapacity, MALLOC_CAP_SPIRAM);
@@ -415,7 +415,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         // For more details see: https://github.com/norbert-walter/maps-converter
         String url = String("http://") + server + ":" + port +  // OBP Server
                     String("/get_image_json?") +                // Service: Output B&W picture as JSON (Base64 + gzip)
-                    #ifdef DISPLAY_ST7796
+                    #ifdef TFT_DISPLAY
                     "oformat=3" +       // Image output format in JSON: 3=RGB565 format
                     #else
                     "oformat=4" +       // Image output format in JSON: 4=b/w 1-Bit format
@@ -425,7 +425,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
                     "&lon=" + String(longitude, 6) +  // Longitude
                     "&mrot=" + mapRot + // Rotation angle navigation map in degree
                     "&mtype=" + mType + // Default Map: Open Street Map
-                    #ifdef DISPLAY_ST7796
+                    #ifdef TFT_DISPLAY
                     "&itype=1" +        // Image type: 1=Color
                     #else
                     "&itype=4" +        // Image type: 4=b/w with dithering
@@ -501,7 +501,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             if (imgSize < requiredBytesMono){
                 imgSize = requiredBytesMono;
             }
-            #ifdef DISPLAY_ST7796
+            #ifdef TFT_DISPLAY
             if (imgSize < requiredBytesRgb565){
                 imgSize = requiredBytesRgb565;
             }
@@ -537,11 +537,11 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             }
 
             bool imageIsRgb565 = false;
-            #ifdef DISPLAY_ST7796
+            #ifdef TFT_DISPLAY
             imageIsRgb565 = (decodedSize >= requiredBytesRgb565);
             #endif
 
-            #ifdef DISPLAY_ST7796
+            #ifdef TFT_DISPLAY
             if (kShowRgb565StripeTestImage) {
                 createRgb565StripeImage(reinterpret_cast<uint16_t*>(imageData), imgWidth, imgHeight);
                 decodedSize = requiredBytesRgb565;
@@ -563,7 +563,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             lostCounter = 0;
 
             // Show image (navigation map)
-            #ifdef DISPLAY_ST7796
+            #ifdef TFT_DISPLAY
             if (imageIsRgb565) {
                 drawRgb565Image(0, 25, reinterpret_cast<const uint16_t*>(imageData), imgWidth, imgHeight);
             } else {
@@ -594,7 +594,7 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
 
             // Show backup image (backup navigation map)
             if (hasImageBackup) {
-                #ifdef DISPLAY_ST7796
+                #ifdef TFT_DISPLAY
                 if (imageBackupIsRgb565) {
                     drawRgb565Image(0, 25, reinterpret_cast<const uint16_t*>(imageBackupData), imageBackupWidth, imageBackupHeight);
                 } else {

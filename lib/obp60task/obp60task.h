@@ -35,19 +35,19 @@
     // OBP60 Task
     void OBP60Task(GwApi *param);
     DECLARE_USERTASK_PARAM(OBP60Task, 35000);   // Need 35k RAM as stack size
-    #if defined(BOARD_OBP60S3) && defined(HARDWARE_V21) && defined(DISPLAY_ST7796)
+    #if defined(BOARD_OBP60S3) && defined(HARDWARE_V21) && defined(TFT_DISPLAY)
     DECLARE_CAPABILITY(obp70,true);
     #endif
-    #if defined(BOARD_OBP60S3) && defined(HARDWARE_V21) && !defined(DISPLAY_ST7796)
+    #if defined(BOARD_OBP60S3) && defined(HARDWARE_V21) && !defined(TFT_DISPLAY)
     DECLARE_CAPABILITY(obp60,true);
     #endif
     #ifdef BOARD_OBP40S3
     DECLARE_CAPABILITY(obp40,true)
     #endif
-    #if defined(BOARD_OBP60S3) && defined(HARDWARE_V21) && defined(DISPLAY_ST7796)
+    #if defined(BOARD_OBP60S3) && defined(HARDWARE_V21) && defined(TFT_DISPLAY)
     DECLARE_STRING_CAPABILITY(HELP_URL, "https://obp60-v2-docu.readthedocs.io/en/latest/"); // Link to help pages
     #endif
-    #if defined(BOARD_OBP60S3) && defined(HARDWARE_V21) && !defined(DISPLAY_ST7796)
+    #if defined(BOARD_OBP60S3) && defined(HARDWARE_V21) && !defined(TFT_DISPLAY)
     DECLARE_STRING_CAPABILITY(HELP_URL, "https://obp60-v2-docu.readthedocs.io/en/latest/"); // Link to help pages
     #endif
     #ifdef BOARD_OBP40S3

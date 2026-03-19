@@ -56,7 +56,7 @@ GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> display(GxEPD2_4
 GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay(){return display;}
 #endif
 
-#ifdef DISPLAY_ST7796
+#ifdef TFT_DISPLAY
 // panel device + offscreen shadow framebuffer
 static LGFX panelDisplay;
 static LGFXCanvas shadowDisplay(&panelDisplay);
@@ -307,7 +307,7 @@ void deepSleep(CommonData &common){
     getdisplay().setCursor(65, 175);
     getdisplay().print("To wake up press key and wait 5s");
     displayNextPage();                // Update display contents
-    #ifdef DISPLAY_ST7796
+    #ifdef TFT_DISPLAY
     getpaneldisplay().powerSave(true);      // Display power save
     #else
     getdisplay().powerOff();                // Display power off
@@ -336,7 +336,7 @@ void deepSleep(CommonData &common){
     getdisplay().setCursor(65, 175);
     getdisplay().print("To wake up press wheel and wait 5s");
     displayNextPage();                // Partial update
-    #ifdef DISPLAY_ST7796
+    #ifdef TFT_DISPLAY
     getpaneldisplay().powerSave(true);      // Display power save
     #else
     getdisplay().powerOff();                // Display power off
@@ -575,7 +575,7 @@ void drawButtonCenter(int16_t cx, int16_t cy, int8_t sx, int8_t sy, String text,
 void drawTextRalign(int16_t x, int16_t y, String text) {
     int16_t x1, y1;
     uint16_t w, h;
-#ifdef DISPLAY_ST7796
+#ifdef TFT_DISPLAY
     w = getdisplay().textWidth(text);
     h = getdisplay().fontHeight();
 #else
@@ -1071,7 +1071,7 @@ void displayRudderPosition(int rudderPosition, uint8_t rangeDeg, uint16_t cx, ui
         String lbl = String(angle);
         int16_t bx, by;
         uint16_t bw, bh;
-        #ifdef DISPLAY_ST7796
+        #ifdef TFT_DISPLAY
             // LovyanGFX: compute width/height manually
             bw = getdisplay().textWidth(lbl);
             bh = getdisplay().fontHeight();
@@ -1100,7 +1100,7 @@ void doImageRequest(GwApi *api, int *pageno, const PageStruct pages[MAX_PAGE_NUM
     uint8_t *fb = nullptr; // EPD framebuffer
     std::vector<uint8_t> imageBuffer;       // image in webserver transferbuffer
     String mimetype;
-    #ifndef DISPLAY_ST7796
+    #ifndef TFT_DISPLAY
         fb = getdisplay().getBuffer(); // available only for EPD
     #endif
     if (!fb) {

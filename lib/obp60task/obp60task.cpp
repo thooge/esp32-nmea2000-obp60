@@ -284,7 +284,7 @@ void underVoltageError(CommonData &common) {
     getdisplay().setCursor(65, 175);
     getdisplay().print("Charge battery and restart system");
     displayNextPage();                // Partial update
-    #ifdef DISPLAY_ST7796
+    #ifdef TFT_DISPLAY
     getpaneldisplay().powerSave(true);      // Display power save
     #else
     getdisplay().powerOff();                // Display power off
@@ -308,7 +308,7 @@ void underVoltageError(CommonData &common) {
     getdisplay().setCursor(65, 175);
     getdisplay().print("To wake up repower system");
     displayNextPage();                // Partial update
-    #ifdef DISPLAY_ST7796
+    #ifdef TFT_DISPLAY
     getpaneldisplay().powerSave(true);      // Display power save
     #else
     getdisplay().powerOff();                // Display power off
@@ -382,13 +382,13 @@ void OBP60Task(GwApi *api){
 
     #ifdef DISPLAY_GDEY042T81
         getdisplay().init(115200, true, 2, false);  // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
-    #elif defined DISPLAY_ST7796
-        getpaneldisplay().init();                   // Init for ST7796 TFT LCD panel
+    #elif defined(TFT_DISPLAY)
+        getpaneldisplay().init();                   // Init for TFT LCD panel
     #else
         getdisplay().init(115200);                  // Init for normal displays
     #endif
 
-    #ifdef DISPLAY_ST7796
+    #ifdef TFT_DISPLAY
     getpaneldisplay().setRotation(0);            // Set display orientation (horizontal)
     getpaneldisplay().setPanelOffset(0, 0);      // Use full native framebuffer coordinates
     getpaneldisplay().fillScreen(0x0000);        // Initialize full TFT screen to black (native RGB565)
@@ -741,7 +741,7 @@ void OBP60Task(GwApi *api){
                 starttime1 = millis();
                 starttime2 = millis();
                 displaySetFullWindow();            // Set full update
-                #ifdef DISPLAY_ST7796
+                #ifdef TFT_DISPLAY
                 // TFT LCD doesn't need refresh operations
                 #else
                 if(fastrefresh == "true"){
@@ -773,7 +773,7 @@ void OBP60Task(GwApi *api){
                 starttime2 = millis();
                 LOG_DEBUG(GwLog::DEBUG,"E-Ink full refresh first 5 min");
                 displaySetFullWindow();            // Set full update
-                #ifdef DISPLAY_ST7796
+                #ifdef TFT_DISPLAY
                 // TFT LCD doesn't need refresh operations
                 #else
                 if(fastrefresh == "true"){
@@ -801,7 +801,7 @@ void OBP60Task(GwApi *api){
             if(millis() > starttime2 + fullrefreshtime * 60 * 1000){
                 starttime2 = millis();
                 LOG_DEBUG(GwLog::DEBUG,"E-Ink full refresh");
-                #ifdef DISPLAY_ST7796
+                #ifdef TFT_DISPLAY
                 // TFT LCD: no special refresh
                 #else
                 getdisplay().setFullWindow();    // Set full update
@@ -905,7 +905,7 @@ void OBP60Task(GwApi *api){
                             displayNextPage(); // Partial update (fast)
                         }
                         if (ret & PAGE_HIBERNATE) {
-    #ifndef DISPLAY_ST7796
+    #ifndef TFT_DISPLAY
                             getdisplay().hibernate();
     #endif
                         }
