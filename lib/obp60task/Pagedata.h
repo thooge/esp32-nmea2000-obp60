@@ -126,7 +126,7 @@ class Page{
     virtual void displayNew(PageData &pageData){}
     virtual void leavePage(PageData &pageData){}
     virtual void setupKeys() {
-#ifdef HARDWARE_V21
+#ifdef BOARD_OBP60S3
         commonData->keydata[0].label = "";
         commonData->keydata[1].label = "";
         commonData->keydata[2].label = "#LEFT";

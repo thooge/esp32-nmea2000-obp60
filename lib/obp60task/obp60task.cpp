@@ -323,7 +323,7 @@ inline bool underVoltageDetection(float voffset, float vslope) {
     // Read supply voltage
 #if defined VOLTAGE_SENSOR && defined LIPO_ACCU_1200
     float actVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.53) * 2;   // Vin = 1/2 for OBP40
-    float minVoltage = 3.65;  // Absolut minimum volatge for 3,7V LiPo accu
+    float minVoltage = 3.65;  // Absolut minimum voltage for 3,7V LiPo accu
 #else
     float actVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.17) * 20;   // Vin = 1/20 for OBP60
     float minVoltage = MIN_VOLTAGE;
@@ -332,6 +332,7 @@ inline bool underVoltageDetection(float voffset, float vslope) {
     return (calVoltage < minVoltage);
 }
 
+
 // OBP60 Task
 //####################################################################################
 void OBP60Task(GwApi *api){
@@ -339,7 +340,7 @@ void OBP60Task(GwApi *api){
 //    return;
     GwLog *logger=api->getLogger();
     GwConfigHandler *config=api->getConfig();
-#if defined HARDWARE_V20 || HARDWARE_V21
+#ifdef BOARD_OBP60S3
     startLedTask(api);
 #endif
     PageList allPages;
@@ -348,7 +349,7 @@ void OBP60Task(GwApi *api){
     commonData.logger=logger;
     commonData.config=config;
 
-#if defined HARDWARE_V20 || HARDWARE_V21
+#ifdef BOARD_OBP60S3
     // Keyboard coordinates for page footer
     initKeys(commonData);
 #endif

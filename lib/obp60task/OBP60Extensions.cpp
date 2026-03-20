@@ -230,7 +230,7 @@ void hardwareInit(GwApi *api)
 void powerInit(String powermode) {
     // Max Power | Only 5.0V | Min Power
     if (powermode == "Max Power" || powermode == "Only 5.0V") {
-#ifdef HARDWARE_V21
+#ifdef BOARD_OBP60S3
         setPortPin(OBP_POWER_50, true); // Power on 5.0V rail
 #endif
 #ifdef BOARD_OBP40S3
@@ -238,7 +238,7 @@ void powerInit(String powermode) {
         setPortPin(OBP_POWER_SD, true); // Power on SD card
 #endif
     } else { // Min Power
-#ifdef HARDWARE_V21
+#ifdef BOARD_OBP60S3
         setPortPin(OBP_POWER_50, false); // Power off 5.0V rail
 #endif
 #ifdef BOARD_OBP40S3
@@ -666,7 +666,7 @@ void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatVa
         usbRxOld = commonData.status.usbRx;
         usbTxOld = commonData.status.usbTx;
 
-#ifdef HARDWARE_V21
+#ifdef BOARD_OBP60S3
         // Display key lock status
         if (commonData.keylock) {
             getdisplay().drawXBitmap(170, 1, lock_bits, icon_width, icon_height, commonData.fgcolor);
@@ -759,7 +759,7 @@ void displayFooter(CommonData &commonData) {
     getdisplay().setFont(&Atari16px);
     getdisplay().setTextColor(commonData.fgcolor);
 
-#ifdef HARDWARE_V21
+#ifdef BOARD_OBP60S3
     // Frame around key icon area
     if (! commonData.keylock) {
         // horizontal elements
