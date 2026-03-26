@@ -6,9 +6,9 @@
 std::map<String, ChartProps> Chart::dfltChrtDta = {
     { "formatWind", { 60.0 * DEG_TO_RAD, 10.0 * DEG_TO_RAD } }, // default course range 60 degrees
     { "formatCourse", { 60.0 * DEG_TO_RAD, 10.0 * DEG_TO_RAD } }, // default course range 60 degrees
-    { "formatKnots", { 7.71, 2.56 } }, // default speed range in m/s
-    { "formatDepth", { 15.0, 5.0 } }, // default depth range in m
-    { "kelvinToC", { 30.0, 5.0 } } // default temp range in °C/K
+    { "formatKnots", { 2.57, 2.57 } }, // default speed range in m/s
+    { "formatDepth", { 10.0, 5.0 } }, // default depth range in m
+    { "kelvinToC", { 20.0, 5.0 } } // default temp range in °C/K
 };
 
 // --- Class Chart ---------------
