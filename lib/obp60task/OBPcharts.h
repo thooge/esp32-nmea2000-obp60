@@ -2,6 +2,7 @@
 #pragma once
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
+#include "movingAvg.h"
 
 struct Pos {
     int x;
@@ -44,12 +45,11 @@ protected:
     static constexpr bool NO_SIMUDATA = true; // switch off simulation feature of <formatValue> function
 
     RingBuffer<uint16_t>& dataBuf; // Buffer to display
-    //char chrtDir; // Chart timeline direction: 'H' = horizontal, 'V' = vertical
-    //int8_t chrtSz; // Chart size: [0] = full size, [1] = half size left/top, [2] half size right/bottom
     double dfltRng; // Default range of chart, e.g. 30 = [0..30]
     uint16_t fgColor; // color code for any screen writing
     uint16_t bgColor; // color code for screen background
     bool useSimuData; // flag to indicate if simulation data is active
+    bool smoothCharts; // flag to indicate if charts shall be printed with smoothed gradient
     String tempFormat; // user defined format for temperature
     double zeroValue; // "0" SI value for temperature
 
@@ -84,6 +84,7 @@ protected:
     bool bufDataValid = false; // Flag to indicate if buffer data is valid
     int oldChrtIntv = 0; // remember recent user selection of data interval
 
+    movingAvg<double> chrtAvg{7}; // Store average of the last 7 chart values if chart gradient shall be smoothed
     double chrtPrevVal; // Last data value in chart area
     int x, y; // x and y coordinates for drawing
     int prevX, prevY; // Last x and y coordinates for drawing

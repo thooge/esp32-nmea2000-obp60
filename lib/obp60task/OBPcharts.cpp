@@ -42,6 +42,11 @@ Chart::Chart(RingBuffer<uint16_t>& dataBuf, double dfltRng, CommonData& common, 
     dbMAX_VAL = dataBuf.getMaxVal();
     bufSize = dataBuf.getCapacity();
 
+    smoothCharts = common.config->getBool(common.config->smoothCharts);
+    if (smoothCharts) {
+        chrtAvg.begin();
+    }
+
     // Initialize chart data format; shorter version of standard format indicator
     if (dbFormat == "formatCourse" || dbFormat == "formatWind" || dbFormat == "formatRot") {
         chrtDataFmt = WIND; // Chart is showing data of course / wind <degree> format
@@ -337,6 +342,23 @@ void Chart::drawChartLines(const char direction, const int8_t chrtIntv, const do
     double chrtVal; // Current data value
     Pos point, prevPoint; // current and previous chart point
 
+    if (smoothCharts) {
+        // prime moving average filter to ensure the first plotted point is already averaged
+
+        chrtAvg.reset();
+
+        // Feed the filter the 10 values preceding bufStart
+        for (int p = 10; p > 0; p--) {
+            // Calculate index with wrapping: (start - offset + size) % size
+            int primeIdx = (bufStart - (p * chrtIntv));
+            double primeVal = dataBuf.get(primeIdx);
+            
+            if (primeVal != dbMAX_VAL) {
+                chrtAvg.reading(primeVal);
+            }
+        }
+    }
+
     for (int i = 0; i < (numBufVals / chrtIntv); i++) {
 
         chrtVal = dataBuf.get(bufStart + (i * chrtIntv)); // show the latest wind values in buffer; keep 1st value constant in a rolling buffer
@@ -344,6 +366,11 @@ void Chart::drawChartLines(const char direction, const int8_t chrtIntv, const do
         if (chrtVal == dbMAX_VAL) {
             chrtPrevVal = dbMAX_VAL;
         } else {
+
+            if (smoothCharts) {
+                // if chart lines shall be smoothed, apply moving average filter of the last 10 values
+                chrtVal = chrtAvg.reading(chrtVal);
+            }
 
             point = setCurrentChartPoint(i, direction, chrtVal, chrtScale);
 
@@ -399,7 +426,7 @@ void Chart::drawChartLines(const char direction, const int8_t chrtIntv, const do
 
             if (chrtDataFmt == WIND) { // degree of course or wind
                 recalcRngMid = true;
-                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: chart end: timAxis: %d, i: %d, bufStart: %d, numBufVals: %d, recalcRngCntr: %d", timAxis, i, bufStart, numBufVals, recalcRngMid);
+                // LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: chart end: timAxis: %d, i: %d, bufStart: %d, numBufVals: %d, recalcRngCntr: %d", timAxis, i, bufStart, numBufVals, recalcRngMid);
             }
             break;
         }
@@ -454,7 +481,7 @@ void Chart::drawChrtTimeAxis(const char chrtDir, const int8_t chrtSz, const int8
     if (chrtDir == HORIZONTAL) {
         getdisplay().fillRect(0, cRoot.y, dWidth, 2, fgColor);
 
-    LOG_DEBUG(GwLog::DEBUG, "Chart::drawChrtTimeAxis: intv: %d, axSlots: %d, timAxis: %d, chrtIntv: %d", intv, axSlots, timAxis, chrtIntv);
+        // LOG_DEBUG(GwLog::DEBUG, "Chart::drawChrtTimeAxis: intv: %d, axSlots: %d, timAxis: %d, chrtIntv: %d", intv, axSlots, timAxis, chrtIntv);
         for (int j = intv; j < timAxis - 1; j += intv) { // fill time axis with values but keep area free on right hand side for value label
 
             // draw text with appropriate offset

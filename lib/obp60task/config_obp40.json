@@ -231,6 +231,17 @@
         }
     },
     {
+        "name": "smoothCharts",
+        "label": "Smooth chart lines",
+        "type": "boolean",
+        "default": "false",
+        "description": "Print chart lines with a smoothed gradient",
+        "category": "OBP40 Settings",
+        "capabilities": {
+            "obp40": "true"
+        }
+    },
+    {
         "name": "lengthFormat",
         "label": "Length Format",
         "type": "list",

@@ -37,7 +37,7 @@ private:
     bool oldShowTruW = false; // remember recent user selection of wind data type
 
     int8_t dataIntv = 1; // Update interval for wind history chart:
-                         // (1)|(2)|(3)|(4)|(8) x 240 seconds for 4, 8, 12, 16, 32 min. history chart
+                         // (1)|(2)|(3)|(4)|(8) seconds for up to 32 min. history chart
     bool useSimuData;
     // bool holdValues;
     String flashLED;
