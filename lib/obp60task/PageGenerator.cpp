@@ -2,7 +2,6 @@
 
 #include "Pagedata.h"
 #include "OBP60Extensions.h"
-#include "movingAvg.h"              // Lib for moving average building
 
 class PageGenerator : public Page
 {
