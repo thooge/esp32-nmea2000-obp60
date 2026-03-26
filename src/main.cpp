@@ -767,7 +767,7 @@ void loopFunction(void *){
     //if(Serial1.available()) {}
     //if(Serial.available()) {}
     //if(Serial2.available()) {}
-    //delay(1);
+    vTaskDelay(1);
   }
 }
 const String USERPREFIX="/api/user/";

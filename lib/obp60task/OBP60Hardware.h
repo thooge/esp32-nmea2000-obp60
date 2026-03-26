@@ -1,7 +1,7 @@
     // General hardware definitions
     // CAN and RS485 bus pin definitions see obp60task.h
 
-#if defined HARDWARE_V20 || HARDWARE_V21
+#if defined BOARD_OBP60S3 || defined BOARD_OBP70S3
     // Direction pin for RS485 NMEA0183
     #define OBP_DIRECTION_PIN 18
     // I2C
@@ -34,13 +34,17 @@
     #define PCF8574_I2C_ADDR1 0x20  // First digital out module
     // FRAM (e.g. MB85RC256V)
     #define FRAM_I2C_ADDR 0x50
-    // SPI (E-Ink display, Extern Bus)
+    // SPI (E-paper display, TFT display Extern Bus)
     #define OBP_SPI_CS 39
     #define OBP_SPI_DC 40
     #define OBP_SPI_RST 41
     #define OBP_SPI_BUSY 42
     #define OBP_SPI_CLK 38
     #define OBP_SPI_DIN 48
+    #define OBP_TFT_OFFSET_X 10   // ST7796, ILI9488 operating x-offset for centered 400x300 content
+    #define OBP_TFT_OFFSET_Y -20  // ST7796, ILI9488 operating y-offset for centered 400x300 content
+    #define TFT_BLACK 0x0109      // Replacement color for black on TFT (RGB565)
+    #define TFT_WHITE 0xFFFF      // Replacement color for white on TFT (RGB565)
     #define SHOW_TIME 6000        // Show time in [ms] for logo and WiFi QR code
     #define FULL_REFRESH_TIME 600 // Refresh cycle time in [s][600...3600] for full display update (very important healcy function)
     #define GxEPD_WIDTH 400       // Display width

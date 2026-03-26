@@ -2,6 +2,14 @@
 
 import subprocess
 
+def cleanup_patches(source, target, env):
+    for p in patchfiles:
+        patch = os.path.join(patchdir, p)
+        print(f"removing {patch}")
+        res = subprocess.run(["git", "apply", "-R", patch], capture_output=True, text=True)
+        if res.returncode != 0:
+            print(res.stderr)
+
 patching = False
 
 epdtype = "unknown"
@@ -46,11 +54,13 @@ if patching:
         print("patchdir not found, no patches applied")
     else:
         patchfiles = [f for f in os.listdir(patchdir)]
-        for p in patchfiles:
-            patch = os.path.join(patchdir, p)
-            print(f"applying {patch}")
-            res = subprocess.run(["git", "apply", patch], capture_output=True, text=True)
-            if res.returncode != 0:
-                print(res.stderr)
+        if len(patchfiles) > 0:
+            for p in patchfiles:
+                patch = os.path.join(patchdir, p)
+                print(f"applying {patch}")
+                res = subprocess.run(["git", "apply", patch], capture_output=True, text=True)
+                if res.returncode != 0:
+                    print(res.stderr)
+            env.AddPostAction("$PROGPATH", cleanup_patches)
         else:
             print("no patches found")

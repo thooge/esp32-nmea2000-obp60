@@ -1,0 +1,4144 @@
+[
+    {
+        "name": "deviceName",
+        "label": "system name",
+        "type": "string",
+        "default": "OBP70",
+        "check": "checkSystemName",
+        "description": "system name, used for the access point and for services",
+        "category": "system"
+    },
+    {
+        "name": "timeServer",
+        "label": "time server",
+        "type": "string",
+        "default": "pool.ntp.org",
+        "description": "NTP time server. Use only one hostname or IP address",
+        "category": "wifi client",
+        "capabilities": {
+            "obp70": "true"
+        }
+    },
+    {
+        "name": "timeZone",
+        "label": "Time Zone",
+        "type": "number",
+        "default": "0.00",
+        "check": "checkMinMax",
+        "min": -12.00,
+        "max": 14.00,
+        "description": "Time zone [UTC -12...+14]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "homeLAT",
+        "label": "Home latitude",
+        "type": "number",
+        "default": "0.00000",
+        "check": "checkMinMax",
+        "min": -90.0,
+        "max": 90.0,
+        "description": "Latitude of boat home location [-90.0...+90.0]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "homeLON",
+        "label": "Home longitude",
+        "type": "number",
+        "default": "0.00000",
+        "check": "checkMinMax",
+        "min": -180.0,
+        "max": 180.0,
+        "description": "Longitude of boat home location [-180.0...+180.0]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "draft",
+        "label": "Boat Draft [m]",
+        "type": "number",
+        "default": "0.00",
+        "check": "checkMinMax",
+        "min": 0.00,
+        "max": 50.00,
+        "description": "The draft of the boat [0...50m]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "fuelTank",
+        "label": "Fuel Tank [l]",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 5000,
+        "description": "Fuel tank capacity [0...5000l]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "fuelConsumption",
+        "label": "Fuel Consuption [l/h]",
+        "type": "number",
+        "default": "0.00",
+        "check": "checkMinMax",
+        "min": 0.00,
+        "max": 1000.00,
+        "description": "Medium fuel consumption [0...1000l/h]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "waterTank",
+        "label": "Water Tank [l]",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 5000,
+        "description": "Water tank capacity [0...5000l]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "wasteTank",
+        "label": "Waste Tank [l]",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 5000,
+        "description": "Waste tank capacity [0...5000l]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "batteryVoltage",
+        "label": "Battery Voltage [V]",
+        "type": "list",
+        "default": "12V",
+        "description": "Battery Voltage [12V|24V]",
+        "list": [
+            "12V",
+            "24V"
+        ],
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "batteryType",
+        "label": "Battery Type",
+        "type": "list",
+        "default": "Pb",
+        "description": "Type of battery [Pb|Gel|AGM|LiFePo4]",
+        "list": [
+            "Pb",
+            "Gel",
+            "AGM",
+            "LiFePo4"
+        ],
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "batteryCapacity",
+        "label": "Battery Capacity [Ah]",
+        "type": "number",
+        "default": "0.0",
+        "check": "checkMinMax",
+        "min": 0.0,
+        "max": 10000.0,
+        "description": "Battery capacity [0...10000Ah]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "solarPower",
+        "label": "Solar Power [W]",
+        "type": "number",
+        "default": "0.0",
+        "check": "checkMinMax",
+        "min": 0.0,
+        "max": 10000.0,
+        "description": "Solar power [0...10000W]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "genPower",
+        "label": "Genarator Power [W]",
+        "type": "number",
+        "default": "0.0",
+        "check": "checkMinMax",
+        "min": 0.0,
+        "max": 10000.0,
+        "description": "Generator power [0...10000W]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "trackStep",
+        "label": "angle [deg]",
+        "type": "number",
+        "default": "3.0",
+        "check": "checkMinMax",
+        "min": 1.0,
+        "max": 12.0,
+        "description": "track step offset [1...12deg]",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "calcTrueWnds",
+        "label": "Calculate True Wind",
+        "type": "boolean",
+        "default": "false",
+        "description": "If not available, calculate true wind data from apparent wind and other boat data",
+        "category": "OBP70 Settings",
+        "capabilities": {
+            "obp70": "true"
+        }
+    },
+    {
+        "name": "lengthFormat",
+        "label": "Length Format",
+        "type": "list",
+        "default": "m",
+        "description": "Length format [m|ft]",
+        "list": [
+            "m",
+            "ft"
+        ],
+        "category": "OBP70 Units",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "distanceFormat",
+        "label": "Distance Format",
+        "type": "list",
+        "default": "nm",
+        "description": "Distance format [m|km|nm]",
+        "list": [
+            "m",
+            "km",
+            "nm"
+        ],
+        "category": "OBP70 Units",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "speedFormat",
+        "label": "Speed Format",
+        "type": "list",
+        "default": "kn",
+        "description": "Distance format [m/s|km/h|kn]",
+        "list": [
+            "m/s",
+            "km/h",
+            "kn"
+        ],
+        "category": "OBP70 Units",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "windspeedFormat",
+        "label": "Wind Speed Format",
+        "type": "list",
+        "default": "kn",
+        "description": "Wind speed format [m/s|km/h|kn|bft]",
+        "list": [
+            "m/s",
+            "km/h",
+            "kn",
+            "bft"
+        ],
+        "category": "OBP70 Units",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "tempFormat",
+        "label": "Temperature Format",
+        "type": "list",
+        "default": "C",
+        "description": "Temperature format [K|C|F]",
+        "list": [
+            "K",
+            "C",
+            "F"
+        ],
+        "category": "OBP70 Units",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "dateFormat",
+        "label": "Date Format",
+        "type": "list",
+        "default": "DE",
+        "description": "Date format [DE|GB|US|ISO] DE: 31.12.2022, GB: 31/12/2022, US: 12/31/2022, ISO: 2022-12-31",
+        "list": [
+            "DE",
+            "GB",
+            "US",
+            "ISO"
+        ],
+        "category": "OBP70 Units",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "cpuSpeed",
+        "label": "CPU Speed [MHz]",
+        "type": "list",
+        "default": "160",
+        "description": "CPU speed in MHz [80|160|240]",
+        "list": [
+            "80",
+            "160",
+            "240"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "useRTC",
+        "label": "RTC Modul",
+        "type": "list",
+        "default": "DS1388",
+        "description": "Use internal RTC module type [off|DS1388]",
+        "list": [
+            "off",
+            "DS1388"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "useGPS",
+        "label": "GPS Sensor",
+        "type": "list",
+        "default": "ATGM336H",
+        "description": "Use internal GPS module type [off|NEO-6M|NEO-M8N|ATGM336H]",
+        "list": [
+            "off",
+            "NEO-6M",
+            "NEO-M8N",
+            "ATGM336H"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "hdopAccuracy",
+        "label": "HDOP Accuracy [m]",
+        "type": "number",
+        "default": "20",
+        "check": "checkMinMax",
+        "min": 1,
+        "max": 50,
+        "description": "HDOP ccuracy in m for a valid GPS signal [1...50]",
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "useEnvSensor",
+        "label": "Env. Sensor",
+        "type": "list",
+        "default": "BMP280",
+        "description": "Use internal or external environment sensor via I2C bus [off|BME280|BMP280|BMP180|BMP085|HTU21|SHT21]",
+        "list": [
+            "off",
+            "BME280",
+            "BMP280",
+            "BMP180",
+            "BMP085",
+            "HTU21",
+            "SHT21"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "usePowSensor1",
+        "label": "Battery Sensor",
+        "type": "list",
+        "default": "off",
+        "description": "Use external power management sensor via I2C bus for battery [off|INA219|INA226|]",
+        "list": [
+            "off",
+            "INA219",
+            "INA226"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "shunt1",
+        "label": "Battery Shunt",
+        "type": "list",
+        "default": "10",
+        "description": "Shunt current value [10A|50A|100A|200A|300A|400A|500A]",
+        "list": [
+            "10",
+            "50",
+            "100",
+            "200",
+            "300",
+            "400",
+            "500"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "usePowSensor2",
+        "label": "Solar Sensor",
+        "type": "list",
+        "default": "off",
+        "description": "Use external power management sensor via I2C bus for solar panels [off|INA219|INA226|]",
+        "list": [
+            "off",
+            "INA219",
+            "INA226"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "shunt2",
+        "label": "Solar Shunt",
+        "type": "list",
+        "default": "10",
+        "description": "Shunt current value [10A|50A|100A|200A|300A|400A|500A]",
+        "list": [
+            "10",
+            "50",
+            "100",
+            "200",
+            "300",
+            "400",
+            "500"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "usePowSensor3",
+        "label": "Gen. Sensor",
+        "type": "list",
+        "default": "off",
+        "description": "Use external power management sensor via I2C bus for generator [off|INA219|INA226|]",
+        "list": [
+            "off",
+            "INA219",
+            "INA226"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "shunt3",
+        "label": "Gen. Shunt",
+        "type": "list",
+        "default": "10",
+        "description": "Shunt current value [10A|50A|100A|200A|300A|400A|500A] @ 75mV",
+        "list": [
+            "10",
+            "50",
+            "100",
+            "200",
+            "300",
+            "400",
+            "500"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "useRotSensor",
+        "label": "Rot. Sensor",
+        "type": "list",
+        "default": "off",
+        "description": "Use external rotation sensor via I2C bus [off|AS5600]",
+        "list": [
+            "off",
+            "AS5600"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "rotFunction",
+        "label": "Rot. Function",
+        "type": "list",
+        "default": "off",
+        "description": "Function for rotation sensor [off|Rudder|Wind|Mast|Keel|Trim|Boom]",
+        "list": [
+            "off",
+            "Rudder",
+            "Wind",
+            "Mast",
+            "Keel",
+            "Trim",
+            "Boom"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "rotOffset",
+        "label": "Rot. Offset",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": -180,
+        "max": 180,
+        "description": "Offset for rotation sensor [-180°...+180°]",
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "rollLimit",
+        "label": "Roll Limit",
+        "type": "number",
+        "default": "25",
+        "check": "checkMinMax",
+        "min": -90,
+        "max": 90,
+        "description": "Limit violation for roll angle [-90°...+90°]",
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "rollOffset",
+        "label": "Roll Offset",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": -45,
+        "max": 45,
+        "description": "Roll offset angle [-45°...+45°]",
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "pitchOffset",
+        "label": "Pitch Offset",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": -45,
+        "max": 45,
+        "description": "Pitch offset angle [-45°...+45°]",
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "useTempSensor",
+        "label": "Temp. Sensor",
+        "type": "boolean",
+        "default": "off",
+        "description": "Use max. 8 external 1Wire devices [off|DS18B20]",
+        "list": [
+            "off",
+            "DS18B20"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "powerMode",
+        "label": "Power Mode",
+        "type": "list",
+        "default": "Max Power",
+        "description": "Settings for power mode",
+        "list": [
+            "Max Power",
+            "Only 5.0V",
+            "Min Power"
+        ],
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "underVoltage",
+        "label": "Undervoltage",
+        "type": "boolean",
+        "default": "false",
+        "description": "Switch off device if voltage drops below 9V [on|off]",
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "useSimuData",
+        "label": "Simulation Data",
+        "type": "boolean",
+        "default": "false",
+        "description": "Use simulation data when bus data are missing [on|off]",
+        "category": "OBP70 Hardware",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "mod1Out1",
+        "label": "Name1",
+        "type": "string",
+        "default": "text1",
+        "description": "Button name",
+        "category": "OBP70 IO-Modul1",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "mod1Out2",
+        "label": "Name2",
+        "type": "string",
+        "default": "text2",
+        "description": "Button name",
+        "category": "OBP70 IO-Modul1",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "mod1Out3",
+        "label": "Name3",
+        "type": "string",
+        "default": "text3",
+        "description": "Button name",
+        "category": "OBP70 IO-Modul1",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "mod1Out4",
+        "label": "Name4",
+        "type": "string",
+        "default": "text4",
+        "description": "Button name",
+        "category": "OBP70 IO-Modul1",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "mod1Out5",
+        "label": "Name5",
+        "type": "string",
+        "default": "text5",
+        "description": "Button name",
+        "category": "OBP70 IO-Modul1",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "tSensitivity",
+        "label": "Touch Sensitivity [%]",
+        "type": "number",
+        "default": "100",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 100,
+        "description": "Touch sensitivity [0...100%] for sensor buttons",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "vOffset",
+        "label": "VSensor Offset",
+        "type": "number",
+        "default": "-1.00",
+        "description": "Offset for internal voltage sensor (ESP32)",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "vSlope",
+        "label": "VSensor Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for internal voltage sensor (ESP32)",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "calInstance1",
+        "label": "Calibration Data Instance 1",
+        "type": "list",
+        "default": "---",
+        "description": "Data instance for calibration",
+        "list": [
+            "---",
+            "AWA",
+            "AWS",
+            "COG",
+            "DBS",
+            "DBT",
+            "HDM",
+            "HDT",
+            "PRPOS",
+            "RPOS",
+            "SOG",
+            "STW",
+            "TWA",
+            "TWS",
+            "TWD",
+            "WTemp"
+        ],
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "calOffset1",
+        "label": "Data Instance 1 Calibration Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 1",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance1": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSlope1",
+        "label": "Data Instance 1 Calibration Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 1; Default: 1(!)",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance1": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSmooth1",
+        "label": "Data Instance 1 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 10,
+        "description": "Smoothing factor [0..10]; 0 = no smoothing",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance1": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calInstance2",
+        "label": "Calibration Data Instance 2",
+        "type": "list",
+        "default": "---",
+        "description": "Data instance for calibration",
+        "list": [
+            "---",
+            "AWA",
+            "AWS",
+            "COG",
+            "DBS",
+            "DBT",
+            "HDM",
+            "HDT",
+            "PRPOS",
+            "RPOS",
+            "SOG",
+            "STW",
+            "TWA",
+            "TWS",
+            "TWD",
+            "WTemp"
+        ],
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "calOffset2",
+        "label": "Data Instance 2 Calibration Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 2",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance2": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSlope2",
+        "label": "Data Instance 2 Calibration Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 2; Default: 1(!)",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance2": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSmooth2",
+        "label": "Data Instance 2 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 10,
+        "description": "Smoothing factor [0..10]; 0 = no smoothing",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance2": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calInstance3",
+        "label": "Calibration Data Instance 3",
+        "type": "list",
+        "default": "---",
+        "description": "Data instance for calibration",
+        "list": [
+            "---",
+            "AWA",
+            "AWS",
+            "COG",
+            "DBS",
+            "DBT",
+            "HDM",
+            "HDT",
+            "PRPOS",
+            "RPOS",
+            "SOG",
+            "STW",
+            "TWA",
+            "TWS",
+            "TWD",
+            "WTemp"
+        ],
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "calOffset3",
+        "label": "Data Instance 3 Calibration Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 3",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance3": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSlope3",
+        "label": "Data Instance 3 Calibration Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 3; Default: 1(!)",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance3": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSmooth3",
+        "label": "Data Instance 3 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 10,
+        "description": "Smoothing factor [0..10]; 0 = no smoothing",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance3": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calInstance4",
+        "label": "Calibration Data Instance 4",
+        "type": "list",
+        "default": "---",
+        "description": "Data instance for calibration",
+        "list": [
+            "---",
+            "AWA",
+            "AWS",
+            "COG",
+            "DBS",
+            "DBT",
+            "HDM",
+            "HDT",
+            "PRPOS",
+            "RPOS",
+            "SOG",
+            "STW",
+            "TWA",
+            "TWS",
+            "TWD",
+            "WTemp"
+        ],
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "calOffset4",
+        "label": "Data Instance 4 Calibration Offset",
+        "type": "number",
+        "default": "0.00",
+        "description": "Offset for data instance 4",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance4": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSlope4",
+        "label": "Data Instance 4 Calibration Slope",
+        "type": "number",
+        "default": "1.00",
+        "description": "Slope for data instance 3; Default: 1(!)",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance4": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "calSmooth4",
+        "label": "Data Instance 4 Smoothing",
+        "type": "number",
+        "default": "0",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 10,
+        "description": "Smoothing factor [0..10]; 0 = no smoothing",
+        "category": "OBP70 Calibrations",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "calInstance4": ["AWA", "AWS", "COG", "DBS", "DBT", "HDM", "HDT", "PRPOS", "RPOS", "SOG", "STW", "TWA", "TWS", "TWD", "WTemp" ] }
+        ]
+    },
+    {
+        "name": "mapsource",
+        "label": "Map Source",
+        "type": "list",
+        "default": "OBP Service",
+        "description": "Type of map source, cloud service or local service",
+        "list": [
+            "OBP Service",
+            "Local Service"
+        ],
+        "category": "OBP70 Navigation",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "ipAddress",
+        "label": "IP Address",
+        "type": "string",
+        "default": "192.168.15.10",
+        "check": "checkIpAddress",
+        "description": "IP address for local map service e.g. 192.168.15.10\nor an MDNS name like Raspi.local",
+        "category": "OBP70 Navigation",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "mapsource": ["Local Service"] }
+        ]
+    },
+    {
+        "name": "localPort",
+        "label": "Port",
+        "type": "number",
+        "default": "8080",
+        "check":"checkPort",
+        "description": "TCP port for local map server",
+        "category": "OBP70 Navigation",
+        "capabilities": {
+            "obp70":"true"
+        },
+        "condition": [
+            { "mapsource": ["Local Service"] }
+        ]
+    },
+    {
+        "name": "maptype",
+        "label": "Map Type",
+        "type": "list",
+        "default": "Open Street Map",
+        "description": "Type of base navigation map with sea marks overlay",
+        "list": [
+            "Open Street Map",
+            "Google Street",
+            "Open Topo Map",
+            "Stadimaps Toner",
+            "Free Nautical Chart",
+            "C-Map",
+            "Garmin Fish",
+            "Garmin Nav"
+        ],
+        "category": "OBP70 Navigation",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "refreshDistance",
+        "label": "Refresh Distance [m]",
+        "type": "number",
+        "default": "15",
+        "check": "checkMinMax",
+        "min": 1,
+        "max": 50,
+        "description": "Refresh distance between updates [1..50 m], 15 m = default",
+        "category": "OBP70 Navigation",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "zoomlevel",
+        "label": "Default Zoom Level",
+        "type": "number",
+        "default": "15",
+        "check": "checkMinMax",
+        "min": 7,
+        "max": 17,
+        "description": "Start zoom level for map [7..17]; 15 = default",
+        "category": "OBP70 Navigation",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "orientation",
+        "label": "Map Orientation",
+        "type": "list",
+        "default": "North Dirirection",
+        "description": "Map orientation for navigation",
+        "list": [
+            "North Direction",
+            "Travel Direction"
+        ],
+        "category": "OBP70 Navigation",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "grid",
+        "label": "Show Grid",
+        "type": "boolean",
+        "default": "false",
+        "description": "Show the grid for latutude and longitude",
+        "category": "OBP70 Navigation",
+        "capabilities": {
+            "obp70": "true"
+        }
+    },
+    {
+        "name": "showvalues",
+        "label": "Show Values",
+        "type": "boolean",
+        "default": "false",
+        "description": "Show boat data values in the left upper map corner",
+        "category": "OBP70 Navigation",
+        "capabilities": {
+            "obp70": "true"
+        }
+    },
+    {
+        "name": "ownheading",
+        "label": "Alternativ Heading",
+        "type": "boolean",
+        "default": "false",
+        "description": "Calculating an alternative travel direction for\na better and calmer map orientation",
+        "category": "OBP70 Navigation",
+        "capabilities": {
+            "obp70": "true"
+        }
+    },
+    {
+        "name": "display",
+        "label": "Display Mode",
+        "type": "list",
+        "default": "Logo + QR Code",
+        "description": "Settings for startup display",
+        "list": [
+            "White Screen",
+            "Logo",
+            "Logo + QR Code",
+            "Off"
+        ],
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "displaycolor",
+        "label": "Inverted Display Mode",
+        "type": "list",
+        "default": "Normal",
+        "description": "Invert display to white letters on black background [Normal|Inverse]",
+        "list": [
+            "Normal",
+            "Inverse"
+        ],
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "statusLine",
+        "label": "Status Line",
+        "type": "boolean",
+        "default": "true",
+        "description": "Show status line [on|off]",
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "timeSource",
+        "label": "Status Time Source",
+        "type": "list",
+        "default": "GPS",
+        "description": "Data source for date and time display in status line [iRTC|RTC|GPS]",
+        "list": [
+            {"l":"Internal real time clock (iRTC)","v":"iRTC"},
+            {"l":"Real time clock (RTC)","v":"RTC"},
+            {"l":"Time via bus (GPS)","v":"GPS"}
+        ],
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "refresh",
+        "label": "Refresh",
+        "type": "boolean",
+        "default": "true",
+        "description": "Refresh e-paper display after each new page request to reduce ghost effects [on|off]",
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "fastRefresh",
+        "label": "Fast Refresh",
+        "type": "boolean",
+        "default": "false",
+        "description": "Fast refresh for e-paper display [on|off]",
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "fullRefreshTime",
+        "label": "Full Refresh Time [min]",
+        "type": "number",
+        "default": "1",
+        "check": "checkMinMax",
+        "min": 1,
+        "max": 10,
+        "description": "E-Paper full refresh time all [1...10 min]",
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "holdvalues",
+        "label": "Hold Values",
+        "type": "boolean",
+        "default": "false",
+        "description": "Retain old values when data stream stops [on|off]",
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "valueprecision",
+        "label": "Display value precision",
+        "type": "list",
+        "default": "2",
+        "description": "Maximum number of decimal places to display [1|2]",
+        "list": [
+            "1",
+            "2"
+        ],
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "backlight",
+        "label": "Backlight Mode",
+        "type": "list",
+        "default": "Control by Key",
+        "description": "Settings for automatic backlight mode",
+        "list": [
+            "Off",
+            "Control by Sun",
+            "Control by Bus",
+            "Control by Time",
+            "Control by Key",
+            "On"
+        ],
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "blColor",
+        "label": "Backlight Color",
+        "type": "list",
+        "default": "Red",
+        "description": "Backlight color",
+        "list": [
+            "Red",
+            "Orange",
+            "Yellow",
+            "Green",
+            "Blue",
+            "Aqua",
+            "Violet",
+            "White"
+        ],
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "blBrightness",
+        "label": "Brightness [%]",
+        "type": "number",
+        "default": "50",
+        "check": "checkMinMax",
+        "min": 5,
+        "max": 100,
+        "description": "Backlight brightness [5...100%]",
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "flashLED",
+        "label": "Flash LED Mode",
+        "type": "list",
+        "default": "Limit Violation",
+        "description": "Settings for flash LED",
+        "list": [
+            "Off",
+            "Bus Data",
+            "GPS Fix Lost",
+            "Limit Violation"
+        ],
+        "category": "OBP70 Display",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "buzzerError",
+        "label": "Buzzer Error",
+        "type": "boolean",
+        "default": "false",
+        "description": "Sound on error [on|off]",
+        "category": "OBP70 Buzzer",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "buzzerGps",
+        "label": "Buzzer GPS Fix",
+        "type": "boolean",
+        "default": "false",
+        "description": "Sound on missing or lost GPS fix",
+        "category": "OBP70 Buzzer",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "buzzerLim",
+        "label": "Buzzer by Limits",
+        "type": "boolean",
+        "default": "false",
+        "description": "Sound on limit violation",
+        "category": "OBP70 Buzzer",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "buzzerMode",
+        "label": "Buzzer Mode",
+        "type": "list",
+        "default": "Off",
+        "description": "Settings for buzzer behaviour",
+        "list": [
+            "Off",
+            "Short Single Beep",
+            "Longer Single Beep",
+            "Beep until Confirmation"
+        ],
+        "category": "OBP70 Buzzer",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "buzzerPower",
+        "label": "Buzzer Power [%]",
+        "type": "number",
+        "default": "50",
+        "check": "checkMinMax",
+        "min": 0,
+        "max": 100,
+        "description": "Buzzer loudness [0...100%]",
+        "category": "OBP70 Buzzer",
+        "capabilities": {
+            "obp70":"true"
+        }
+      },
+      {
+        "name": "visiblePages",
+        "label": "Number of Pages",
+        "type": "number",
+        "check": "checkMinMax",
+        "min": 1,
+        "max": 10,
+        "default":"10",
+        "description": "Number of visible data pages [1...10]",
+        "category":"OBP70 Pages",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "startPage",
+        "label": "Start Page",
+        "type": "number",
+        "check": "checkMinMax",
+        "min": 1,
+        "max": 10,
+        "default":"1",
+        "description": "First page number to display after device startup",
+        "category":"OBP70 Pages",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+    {
+        "name": "imageFormat",
+        "label": "Screenshot Format",
+        "type": "list",
+        "default":"PBM",
+        "description": "Graphics file format for screenshots [GIF|PBM|BMP]",
+        "list": [
+            {"l":"Compressed image (GIF)","v":"GIF"},
+            {"l":"Portable bitmap (PBM)","v":"PBM"},
+            {"l":"Windows bitmap (BMP)","v":"BMP"}
+        ],
+        "category":"OBP70 Pages",
+        "capabilities": {
+            "obp70":"true"
+        }
+    },
+
+    {
+        "name": "page1type",
+        "label": "Type",
+        "type": "list",
+        "default": "Voltage",
+        "description": "Type of page for page 1",
+        "list": [
+            "Autopilot",
+            "BME280",
+            "Battery",
+            "Battery2",
+            "Clock",
+            "Compass",
+            "DigitalOut",
+            "DST810",
+            "Fluid",
+            "FourValues",
+            "FourValues2",
+            "Generator",
+            "KeelPosition",
+            "Navigation",
+            "OneValue",
+            "RollPitch",
+            "RudderPosition",
+            "SixValues",
+            "SkyView",
+            "Solar",
+            "ThreeValues",
+            "TwoValues",
+            "Voltage",
+            "WhitePage",
+            "Wind",
+            "WindPlot",
+            "WindRose",
+            "WindRoseFlex",
+            "XTETrack"
+        ],
+        "category": "OBP70 Page 1",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "visiblePages": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page1value1",
+        "label": "Field 1",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field one",
+        "category": "OBP70 Page 1",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page1type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page1value2",
+        "label": "Field 2",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field two",
+        "category": "OBP70 Page 1",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page1type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page1value3",
+        "label": "Field 3",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field three",
+        "category": "OBP70 Page 1",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page1type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page1value4",
+        "label": "Field 4",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field four",
+        "category": "OBP70 Page 1",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page1type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page1value5",
+        "label": "Field 5",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field five",
+        "category": "OBP70 Page 1",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page1type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page1value6",
+        "label": "Field 6",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field six",
+        "category": "OBP70 Page 1",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page1type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page1fluid",
+        "label": "Fluid type",
+        "type": "list",
+        "default": "0",
+        "list": [
+            {
+                "l": "Fuel (0)",
+                "v": "0"
+            },
+            {
+                "l": "Water (1)",
+                "v": "1"
+            },
+            {
+                "l": "Gray Water (2)",
+                "v": "2"
+            },
+            {
+                "l": "Live Well (3)",
+                "v": "3"
+            },
+            {
+                "l": "Oil (4)",
+                "v": "4"
+            },
+            {
+                "l": "Black Water (5)",
+                "v": "5"
+            },
+            {
+                "l": "Fuel Gasoline (6)",
+                "v": "6"
+            }
+        ],
+        "description": "Fluid type in tank",
+        "category": "OBP70 Page 1",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page1type": "Fluid",
+            "visiblePages": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page2type",
+        "label": "Type",
+        "type": "list",
+        "default": "WindRose",
+        "description": "Type of page for page 2",
+        "list": [
+            "Autopilot",
+            "BME280",
+            "Battery",
+            "Battery2",
+            "Clock",
+            "Compass",
+            "DigitalOut",
+            "DST810",
+            "Fluid",
+            "FourValues",
+            "FourValues2",
+            "Generator",
+            "KeelPosition",
+            "Navigation",
+            "OneValue",
+            "RollPitch",
+            "RudderPosition",
+            "SixValues",
+            "SkyView",
+            "Solar",
+            "ThreeValues",
+            "TwoValues",
+            "Voltage",
+            "WhitePage",
+            "Wind",
+            "WindPlot",
+            "WindRose",
+            "WindRoseFlex",
+            "XTETrack"
+        ],
+        "category": "OBP70 Page 2",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "visiblePages": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page2value1",
+        "label": "Field 1",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field one",
+        "category": "OBP70 Page 2",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page2type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page2value2",
+        "label": "Field 2",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field two",
+        "category": "OBP70 Page 2",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page2type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page2value3",
+        "label": "Field 3",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field three",
+        "category": "OBP70 Page 2",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page2type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page2value4",
+        "label": "Field 4",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field four",
+        "category": "OBP70 Page 2",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page2type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page2value5",
+        "label": "Field 5",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field five",
+        "category": "OBP70 Page 2",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page2type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page2value6",
+        "label": "Field 6",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field six",
+        "category": "OBP70 Page 2",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page2type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page2fluid",
+        "label": "Fluid type",
+        "type": "list",
+        "default": "0",
+        "list": [
+            {
+                "l": "Fuel (0)",
+                "v": "0"
+            },
+            {
+                "l": "Water (1)",
+                "v": "1"
+            },
+            {
+                "l": "Gray Water (2)",
+                "v": "2"
+            },
+            {
+                "l": "Live Well (3)",
+                "v": "3"
+            },
+            {
+                "l": "Oil (4)",
+                "v": "4"
+            },
+            {
+                "l": "Black Water (5)",
+                "v": "5"
+            },
+            {
+                "l": "Fuel Gasoline (6)",
+                "v": "6"
+            }
+        ],
+        "description": "Fluid type in tank",
+        "category": "OBP70 Page 2",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page2type": "Fluid",
+            "visiblePages": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page3type",
+        "label": "Type",
+        "type": "list",
+        "default": "OneValue",
+        "description": "Type of page for page 3",
+        "list": [
+            "Autopilot",
+            "BME280",
+            "Battery",
+            "Battery2",
+            "Clock",
+            "Compass",
+            "DigitalOut",
+            "DST810",
+            "Fluid",
+            "FourValues",
+            "FourValues2",
+            "Generator",
+            "KeelPosition",
+            "Navigation",
+            "OneValue",
+            "RollPitch",
+            "RudderPosition",
+            "SixValues",
+            "SkyView",
+            "Solar",
+            "ThreeValues",
+            "TwoValues",
+            "Voltage",
+            "WhitePage",
+            "Wind",
+            "WindPlot",
+            "WindRose",
+            "WindRoseFlex",
+            "XTETrack"
+        ],
+        "category": "OBP70 Page 3",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "visiblePages": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page3value1",
+        "label": "Field 1",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field one",
+        "category": "OBP70 Page 3",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page3type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page3value2",
+        "label": "Field 2",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field two",
+        "category": "OBP70 Page 3",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page3type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page3value3",
+        "label": "Field 3",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field three",
+        "category": "OBP70 Page 3",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page3type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page3value4",
+        "label": "Field 4",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field four",
+        "category": "OBP70 Page 3",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page3type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page3value5",
+        "label": "Field 5",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field five",
+        "category": "OBP70 Page 3",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page3type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page3value6",
+        "label": "Field 6",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field six",
+        "category": "OBP70 Page 3",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page3type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page3fluid",
+        "label": "Fluid type",
+        "type": "list",
+        "default": "0",
+        "list": [
+            {
+                "l": "Fuel (0)",
+                "v": "0"
+            },
+            {
+                "l": "Water (1)",
+                "v": "1"
+            },
+            {
+                "l": "Gray Water (2)",
+                "v": "2"
+            },
+            {
+                "l": "Live Well (3)",
+                "v": "3"
+            },
+            {
+                "l": "Oil (4)",
+                "v": "4"
+            },
+            {
+                "l": "Black Water (5)",
+                "v": "5"
+            },
+            {
+                "l": "Fuel Gasoline (6)",
+                "v": "6"
+            }
+        ],
+        "description": "Fluid type in tank",
+        "category": "OBP70 Page 3",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page3type": "Fluid",
+            "visiblePages": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page4type",
+        "label": "Type",
+        "type": "list",
+        "default": "TwoValues",
+        "description": "Type of page for page 4",
+        "list": [
+            "Autopilot",
+            "BME280",
+            "Battery",
+            "Battery2",
+            "Clock",
+            "Compass",
+            "DigitalOut",
+            "DST810",
+            "Fluid",
+            "FourValues",
+            "FourValues2",
+            "Generator",
+            "KeelPosition",
+            "Navigation",
+            "OneValue",
+            "RollPitch",
+            "RudderPosition",
+            "SixValues",
+            "SkyView",
+            "Solar",
+            "ThreeValues",
+            "TwoValues",
+            "Voltage",
+            "WhitePage",
+            "Wind",
+            "WindPlot",
+            "WindRose",
+            "WindRoseFlex",
+            "XTETrack"
+        ],
+        "category": "OBP70 Page 4",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "visiblePages": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page4value1",
+        "label": "Field 1",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field one",
+        "category": "OBP70 Page 4",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page4type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page4value2",
+        "label": "Field 2",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field two",
+        "category": "OBP70 Page 4",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page4type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page4value3",
+        "label": "Field 3",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field three",
+        "category": "OBP70 Page 4",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page4type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page4value4",
+        "label": "Field 4",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field four",
+        "category": "OBP70 Page 4",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page4type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page4value5",
+        "label": "Field 5",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field five",
+        "category": "OBP70 Page 4",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page4type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page4value6",
+        "label": "Field 6",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field six",
+        "category": "OBP70 Page 4",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page4type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page4fluid",
+        "label": "Fluid type",
+        "type": "list",
+        "default": "0",
+        "list": [
+            {
+                "l": "Fuel (0)",
+                "v": "0"
+            },
+            {
+                "l": "Water (1)",
+                "v": "1"
+            },
+            {
+                "l": "Gray Water (2)",
+                "v": "2"
+            },
+            {
+                "l": "Live Well (3)",
+                "v": "3"
+            },
+            {
+                "l": "Oil (4)",
+                "v": "4"
+            },
+            {
+                "l": "Black Water (5)",
+                "v": "5"
+            },
+            {
+                "l": "Fuel Gasoline (6)",
+                "v": "6"
+            }
+        ],
+        "description": "Fluid type in tank",
+        "category": "OBP70 Page 4",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page4type": "Fluid",
+            "visiblePages": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page5type",
+        "label": "Type",
+        "type": "list",
+        "default": "ThreeValues",
+        "description": "Type of page for page 5",
+        "list": [
+            "Autopilot",
+            "BME280",
+            "Battery",
+            "Battery2",
+            "Clock",
+            "Compass",
+            "DigitalOut",
+            "DST810",
+            "Fluid",
+            "FourValues",
+            "FourValues2",
+            "Generator",
+            "KeelPosition",
+            "Navigation",
+            "OneValue",
+            "RollPitch",
+            "RudderPosition",
+            "SixValues",
+            "SkyView",
+            "Solar",
+            "ThreeValues",
+            "TwoValues",
+            "Voltage",
+            "WhitePage",
+            "Wind",
+            "WindPlot",
+            "WindRose",
+            "WindRoseFlex",
+            "XTETrack"
+        ],
+        "category": "OBP70 Page 5",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "visiblePages": [
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page5value1",
+        "label": "Field 1",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field one",
+        "category": "OBP70 Page 5",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page5type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page5value2",
+        "label": "Field 2",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field two",
+        "category": "OBP70 Page 5",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page5type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page5value3",
+        "label": "Field 3",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field three",
+        "category": "OBP70 Page 5",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page5type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page5value4",
+        "label": "Field 4",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field four",
+        "category": "OBP70 Page 5",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page5type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page5value5",
+        "label": "Field 5",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field five",
+        "category": "OBP70 Page 5",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page5type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page5value6",
+        "label": "Field 6",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field six",
+        "category": "OBP70 Page 5",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page5type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page5fluid",
+        "label": "Fluid type",
+        "type": "list",
+        "default": "0",
+        "list": [
+            {
+                "l": "Fuel (0)",
+                "v": "0"
+            },
+            {
+                "l": "Water (1)",
+                "v": "1"
+            },
+            {
+                "l": "Gray Water (2)",
+                "v": "2"
+            },
+            {
+                "l": "Live Well (3)",
+                "v": "3"
+            },
+            {
+                "l": "Oil (4)",
+                "v": "4"
+            },
+            {
+                "l": "Black Water (5)",
+                "v": "5"
+            },
+            {
+                "l": "Fuel Gasoline (6)",
+                "v": "6"
+            }
+        ],
+        "description": "Fluid type in tank",
+        "category": "OBP70 Page 5",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page5type": "Fluid",
+            "visiblePages": [
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page6type",
+        "label": "Type",
+        "type": "list",
+        "default": "FourValues",
+        "description": "Type of page for page 6",
+        "list": [
+            "Autopilot",
+            "BME280",
+            "Battery",
+            "Battery2",
+            "Clock",
+            "Compass",
+            "DigitalOut",
+            "DST810",
+            "Fluid",
+            "FourValues",
+            "FourValues2",
+            "Generator",
+            "KeelPosition",
+            "Navigation",
+            "OneValue",
+            "RollPitch",
+            "RudderPosition",
+            "SixValues",
+            "SkyView",
+            "Solar",
+            "ThreeValues",
+            "TwoValues",
+            "Voltage",
+            "WhitePage",
+            "Wind",
+            "WindPlot",
+            "WindRose",
+            "WindRoseFlex",
+            "XTETrack"
+        ],
+        "category": "OBP70 Page 6",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "visiblePages": [
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page6value1",
+        "label": "Field 1",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field one",
+        "category": "OBP70 Page 6",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page6type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page6value2",
+        "label": "Field 2",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field two",
+        "category": "OBP70 Page 6",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page6type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page6value3",
+        "label": "Field 3",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field three",
+        "category": "OBP70 Page 6",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page6type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page6value4",
+        "label": "Field 4",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field four",
+        "category": "OBP70 Page 6",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page6type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page6value5",
+        "label": "Field 5",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field five",
+        "category": "OBP70 Page 6",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page6type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page6value6",
+        "label": "Field 6",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field six",
+        "category": "OBP70 Page 6",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page6type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page6fluid",
+        "label": "Fluid type",
+        "type": "list",
+        "default": "0",
+        "list": [
+            {
+                "l": "Fuel (0)",
+                "v": "0"
+            },
+            {
+                "l": "Water (1)",
+                "v": "1"
+            },
+            {
+                "l": "Gray Water (2)",
+                "v": "2"
+            },
+            {
+                "l": "Live Well (3)",
+                "v": "3"
+            },
+            {
+                "l": "Oil (4)",
+                "v": "4"
+            },
+            {
+                "l": "Black Water (5)",
+                "v": "5"
+            },
+            {
+                "l": "Fuel Gasoline (6)",
+                "v": "6"
+            }
+        ],
+        "description": "Fluid type in tank",
+        "category": "OBP70 Page 6",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page6type": "Fluid",
+            "visiblePages": [
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page7type",
+        "label": "Type",
+        "type": "list",
+        "default": "FourValues2",
+        "description": "Type of page for page 7",
+        "list": [
+            "Autopilot",
+            "BME280",
+            "Battery",
+            "Battery2",
+            "Clock",
+            "Compass",
+            "DigitalOut",
+            "DST810",
+            "Fluid",
+            "FourValues",
+            "FourValues2",
+            "Generator",
+            "KeelPosition",
+            "Navigation",
+            "OneValue",
+            "RollPitch",
+            "RudderPosition",
+            "SixValues",
+            "SkyView",
+            "Solar",
+            "ThreeValues",
+            "TwoValues",
+            "Voltage",
+            "WhitePage",
+            "Wind",
+            "WindPlot",
+            "WindRose",
+            "WindRoseFlex",
+            "XTETrack"
+        ],
+        "category": "OBP70 Page 7",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "visiblePages": [
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page7value1",
+        "label": "Field 1",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field one",
+        "category": "OBP70 Page 7",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page7type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page7value2",
+        "label": "Field 2",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field two",
+        "category": "OBP70 Page 7",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page7type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page7value3",
+        "label": "Field 3",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field three",
+        "category": "OBP70 Page 7",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page7type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page7value4",
+        "label": "Field 4",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field four",
+        "category": "OBP70 Page 7",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page7type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page7value5",
+        "label": "Field 5",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field five",
+        "category": "OBP70 Page 7",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page7type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page7value6",
+        "label": "Field 6",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field six",
+        "category": "OBP70 Page 7",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page7type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page7fluid",
+        "label": "Fluid type",
+        "type": "list",
+        "default": "0",
+        "list": [
+            {
+                "l": "Fuel (0)",
+                "v": "0"
+            },
+            {
+                "l": "Water (1)",
+                "v": "1"
+            },
+            {
+                "l": "Gray Water (2)",
+                "v": "2"
+            },
+            {
+                "l": "Live Well (3)",
+                "v": "3"
+            },
+            {
+                "l": "Oil (4)",
+                "v": "4"
+            },
+            {
+                "l": "Black Water (5)",
+                "v": "5"
+            },
+            {
+                "l": "Fuel Gasoline (6)",
+                "v": "6"
+            }
+        ],
+        "description": "Fluid type in tank",
+        "category": "OBP70 Page 7",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page7type": "Fluid",
+            "visiblePages": [
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page8type",
+        "label": "Type",
+        "type": "list",
+        "default": "Clock",
+        "description": "Type of page for page 8",
+        "list": [
+            "Autopilot",
+            "BME280",
+            "Battery",
+            "Battery2",
+            "Clock",
+            "Compass",
+            "DigitalOut",
+            "DST810",
+            "Fluid",
+            "FourValues",
+            "FourValues2",
+            "Generator",
+            "KeelPosition",
+            "Navigation",
+            "OneValue",
+            "RollPitch",
+            "RudderPosition",
+            "SixValues",
+            "SkyView",
+            "Solar",
+            "ThreeValues",
+            "TwoValues",
+            "Voltage",
+            "WhitePage",
+            "Wind",
+            "WindPlot",
+            "WindRose",
+            "WindRoseFlex",
+            "XTETrack"
+        ],
+        "category": "OBP70 Page 8",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "visiblePages": [
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page8value1",
+        "label": "Field 1",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field one",
+        "category": "OBP70 Page 8",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page8type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page8value2",
+        "label": "Field 2",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field two",
+        "category": "OBP70 Page 8",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page8type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page8value3",
+        "label": "Field 3",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field three",
+        "category": "OBP70 Page 8",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page8type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page8value4",
+        "label": "Field 4",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field four",
+        "category": "OBP70 Page 8",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page8type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page8value5",
+        "label": "Field 5",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field five",
+        "category": "OBP70 Page 8",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page8type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page8value6",
+        "label": "Field 6",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field six",
+        "category": "OBP70 Page 8",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page8type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page8fluid",
+        "label": "Fluid type",
+        "type": "list",
+        "default": "0",
+        "list": [
+            {
+                "l": "Fuel (0)",
+                "v": "0"
+            },
+            {
+                "l": "Water (1)",
+                "v": "1"
+            },
+            {
+                "l": "Gray Water (2)",
+                "v": "2"
+            },
+            {
+                "l": "Live Well (3)",
+                "v": "3"
+            },
+            {
+                "l": "Oil (4)",
+                "v": "4"
+            },
+            {
+                "l": "Black Water (5)",
+                "v": "5"
+            },
+            {
+                "l": "Fuel Gasoline (6)",
+                "v": "6"
+            }
+        ],
+        "description": "Fluid type in tank",
+        "category": "OBP70 Page 8",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page8type": "Fluid",
+            "visiblePages": [
+                "8",
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page9type",
+        "label": "Type",
+        "type": "list",
+        "default": "RollPitch",
+        "description": "Type of page for page 9",
+        "list": [
+            "Autopilot",
+            "BME280",
+            "Battery",
+            "Battery2",
+            "Clock",
+            "Compass",
+            "DigitalOut",
+            "DST810",
+            "Fluid",
+            "FourValues",
+            "FourValues2",
+            "Generator",
+            "KeelPosition",
+            "Navigation",
+            "OneValue",
+            "RollPitch",
+            "RudderPosition",
+            "SixValues",
+            "SkyView",
+            "Solar",
+            "ThreeValues",
+            "TwoValues",
+            "Voltage",
+            "WhitePage",
+            "Wind",
+            "WindPlot",
+            "WindRose",
+            "WindRoseFlex",
+            "XTETrack"
+        ],
+        "category": "OBP70 Page 9",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "visiblePages": [
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page9value1",
+        "label": "Field 1",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field one",
+        "category": "OBP70 Page 9",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page9type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page9value2",
+        "label": "Field 2",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field two",
+        "category": "OBP70 Page 9",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page9type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page9value3",
+        "label": "Field 3",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field three",
+        "category": "OBP70 Page 9",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page9type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page9value4",
+        "label": "Field 4",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field four",
+        "category": "OBP70 Page 9",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page9type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page9value5",
+        "label": "Field 5",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field five",
+        "category": "OBP70 Page 9",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page9type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page9value6",
+        "label": "Field 6",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field six",
+        "category": "OBP70 Page 9",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page9type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page9fluid",
+        "label": "Fluid type",
+        "type": "list",
+        "default": "0",
+        "list": [
+            {
+                "l": "Fuel (0)",
+                "v": "0"
+            },
+            {
+                "l": "Water (1)",
+                "v": "1"
+            },
+            {
+                "l": "Gray Water (2)",
+                "v": "2"
+            },
+            {
+                "l": "Live Well (3)",
+                "v": "3"
+            },
+            {
+                "l": "Oil (4)",
+                "v": "4"
+            },
+            {
+                "l": "Black Water (5)",
+                "v": "5"
+            },
+            {
+                "l": "Fuel Gasoline (6)",
+                "v": "6"
+            }
+        ],
+        "description": "Fluid type in tank",
+        "category": "OBP70 Page 9",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page9type": "Fluid",
+            "visiblePages": [
+                "9",
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page10type",
+        "label": "Type",
+        "type": "list",
+        "default": "Battery2",
+        "description": "Type of page for page 10",
+        "list": [
+            "Autopilot",
+            "BME280",
+            "Battery",
+            "Battery2",
+            "Clock",
+            "Compass",
+            "DigitalOut",
+            "DST810",
+            "Fluid",
+            "FourValues",
+            "FourValues2",
+            "Generator",
+            "KeelPosition",
+            "Navigation",
+            "OneValue",
+            "RollPitch",
+            "RudderPosition",
+            "SixValues",
+            "SkyView",
+            "Solar",
+            "ThreeValues",
+            "TwoValues",
+            "Voltage",
+            "WhitePage",
+            "Wind",
+            "WindPlot",
+            "WindRose",
+            "WindRoseFlex",
+            "XTETrack"
+        ],
+        "category": "OBP70 Page 10",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "visiblePages": [
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page10value1",
+        "label": "Field 1",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field one",
+        "category": "OBP70 Page 10",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page10type": [
+                "Fluid",
+                "FourValues",
+                "FourValues2",
+                "OneValue",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page10value2",
+        "label": "Field 2",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field two",
+        "category": "OBP70 Page 10",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page10type": [
+                "FourValues",
+                "FourValues2",
+                "RollPitch",
+                "SixValues",
+                "ThreeValues",
+                "TwoValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page10value3",
+        "label": "Field 3",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field three",
+        "category": "OBP70 Page 10",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page10type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "ThreeValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page10value4",
+        "label": "Field 4",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field four",
+        "category": "OBP70 Page 10",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page10type": [
+                "FourValues",
+                "FourValues2",
+                "SixValues",
+                "WindRoseFlex"
+            ],
+            "visiblePages": [
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page10value5",
+        "label": "Field 5",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field five",
+        "category": "OBP70 Page 10",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page10type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page10value6",
+        "label": "Field 6",
+        "type": "boatData",
+        "default": "",
+        "description": "The display for field six",
+        "category": "OBP70 Page 10",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page10type": [
+                "SixValues"
+            ],
+            "visiblePages": [
+                "10"
+            ]
+        }
+    },
+    {
+        "name": "page10fluid",
+        "label": "Fluid type",
+        "type": "list",
+        "default": "0",
+        "list": [
+            {
+                "l": "Fuel (0)",
+                "v": "0"
+            },
+            {
+                "l": "Water (1)",
+                "v": "1"
+            },
+            {
+                "l": "Gray Water (2)",
+                "v": "2"
+            },
+            {
+                "l": "Live Well (3)",
+                "v": "3"
+            },
+            {
+                "l": "Oil (4)",
+                "v": "4"
+            },
+            {
+                "l": "Black Water (5)",
+                "v": "5"
+            },
+            {
+                "l": "Fuel Gasoline (6)",
+                "v": "6"
+            }
+        ],
+        "description": "Fluid type in tank",
+        "category": "OBP70 Page 10",
+        "capabilities": {
+            "obp70": "true"
+        },
+        "condition": {
+            "page10type": "Fluid",
+            "visiblePages": [
+                "10"
+            ]
+        }
+    }
+]

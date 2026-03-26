@@ -158,7 +158,7 @@ class PageBattery : public Page
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        displaySetPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
 
         // Show average settings
         getdisplay().setTextColor(commonData->fgcolor);

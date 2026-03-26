@@ -4,6 +4,7 @@
 #include "OBP60Extensions.h"
 #include "NetworkClient.h"      // Network connection
 #include "ImageDecoder.h"       // Image decoder for navigation map
+#include <mbedtls/base64.h>
 
 #include "Logo_OBP_400x300_sw.h"
 
@@ -11,6 +12,54 @@
 #define JSON_BUFFER 30000       // Max buffer size for JSON content (30 kB picture + values)
 NetworkClient net(JSON_BUFFER); // Define network client
 ImageDecoder decoder;           // Define image decoder        
+
+#ifdef TFT_DISPLAY
+// Set to true to render a generated RGB565 color-bar test image.
+static constexpr bool kShowRgb565StripeTestImage = false;
+
+static void drawRgb565Image(int16_t x, int16_t y, const uint16_t *img, int16_t w, int16_t h) {
+    if (img == nullptr || w <= 0 || h <= 0) {
+        return;
+    }
+    for (int16_t yy = 0; yy < h; ++yy) {
+        const uint16_t *row = img + ((size_t)yy * (size_t)w);
+        for (int16_t xx = 0; xx < w; ++xx) {
+            getdisplay().drawPixel(x + xx, y + yy, row[xx]);
+        }
+        if ((yy & 0x0F) == 0) {
+            yield();
+        }
+    }
+}
+
+static void createRgb565StripeImage(uint16_t *img, int16_t w, int16_t h) {
+    if (img == nullptr || w <= 0 || h <= 0) {
+        return;
+    }
+    static const uint16_t stripes[] = {
+        0xF800, // red
+        0xFD20, // orange
+        0xFFE0, // yellow
+        0x07E0, // green
+        0x07FF, // cyan
+        0x001F, // blue
+        0xF81F, // magenta
+        0xFFFF  // white
+    };
+    const int stripeCount = (int)(sizeof(stripes) / sizeof(stripes[0]));
+
+    for (int16_t y = 0; y < h; ++y) {
+        uint16_t *row = img + ((size_t)y * (size_t)w);
+        for (int16_t x = 0; x < w; ++x) {
+            int idx = ((int)x * stripeCount) / (int)w;
+            if (idx >= stripeCount) {
+                idx = stripeCount - 1;
+            }
+            row[x] = stripes[idx];
+        }
+    }
+}
+#endif
 
 class PageNavigation : public Page
 {
@@ -24,13 +73,19 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
     int imageBackupWidth = 0;
     int imageBackupHeight = 0;
     size_t imageBackupSize = 0;
+    size_t imageBackupCapacity = 0;
     bool hasImageBackup = false;
+    bool imageBackupIsRgb565 = false;
 
     public:
     PageNavigation(CommonData &common){
         commonData = &common;
         common.logger->logDebug(GwLog::LOG,"Instantiate PageNavigation");
-        imageBackupData = (uint8_t*)heap_caps_malloc((GxEPD_WIDTH * GxEPD_HEIGHT), MALLOC_CAP_SPIRAM);
+        imageBackupCapacity = (size_t)GxEPD_WIDTH * (size_t)GxEPD_HEIGHT;
+        #ifdef TFT_DISPLAY
+        imageBackupCapacity *= 2U;
+        #endif
+        imageBackupData = (uint8_t*)heap_caps_malloc(imageBackupCapacity, MALLOC_CAP_SPIRAM);
     }
 
     // Set botton labels
@@ -295,6 +350,18 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             mType = 9;
             dType = 1;
         }
+        else if(mapType == "C-Map"){
+            mType = 103486987;
+            dType = 1;
+        }
+        else if(mapType == "Garmin Fish"){
+            mType = 113486987;
+            dType = 1;
+        }
+        else if(mapType == "Garmin Nav"){
+            mType = 123486987;
+            dType = 1;
+        }
         else{
             mType = 1;
             dType = 1;
@@ -347,22 +414,33 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         // URL to OBP Maps Converter
         // For more details see: https://github.com/norbert-walter/maps-converter
         String url = String("http://") + server + ":" + port +  // OBP Server
-                    String("/get_image_json?") +               // Service: Output B&W picture as JSON (Base64 + gzip)
-                    "zoom=" + zoom +   // Default zoom level: 15
+                    String("/get_image_json?") +                // Service: Output B&W picture as JSON (Base64 + gzip)
+                    #ifdef TFT_DISPLAY
+                    "oformat=3" +       // Image output format in JSON: 3=RGB565 format
+                    #else
+                    "oformat=4" +       // Image output format in JSON: 4=b/w 1-Bit format
+                    #endif                 
+                    "&zoom=" + zoom +    // Default zoom level: 15
                     "&lat=" + String(latitude, 6) +   // Latitude
                     "&lon=" + String(longitude, 6) +  // Longitude
                     "&mrot=" + mapRot + // Rotation angle navigation map in degree
                     "&mtype=" + mType + // Default Map: Open Street Map
-                    "&dtype=" + dType + // Dithering type: Atkinson dithering
-                    "&width=400" +     // With navigation map
-                    "&height=250" +    // Height navigation map
-                    "&cutout=0" +      // No picture cutouts
-                    "&tab=0" +         // No tab size
-                    "&border=2" +      // Border line size: 2 pixel
-                    "&symbol=2" +      // Symbol: Triangle
+                    #ifdef TFT_DISPLAY
+                    "&itype=1" +        // Image type: 1=Color
+                    #else
+                    "&itype=4" +        // Image type: 4=b/w with dithering
+                    #endif              
+                    "&dtype=" + dType + // Dithering type: Atkinson dithering (only activ when itype=4 otherwise inactive)                   
+                    "&width=400" +      // With navigation map
+                    "&height=250" +     // Height navigation map
+                    "&cutout=0" +       // No picture cutouts (tab, border and alpha are unused when cutout=0)
+                    "&tab=0" +          // No tab size (only available when sqare cutouts selected coutout=3...7)
+                    "&border=2" +       // Border line size: 2 pixel (only available when sqare cutouts selected)
+                    "&alpha=80" +       // Alpha for tabs: 80% visible (only available when sqare cutouts selected)
+                    "&symbol=2" +       // Symbol: Triangle
                     "&srot=" + symbolRot + // Symbol rotation angle
-                    "&ssize=15" +      // Symbole size: 15 pixel
-                    "&grid=" + mapGrid // Show grid: On
+                    "&ssize=15" +       // Symbole size: 15 pixel (center pointer)
+                    "&grid=" + mapGrid  // Show grid: On
                     ;         
         
         // Draw page
@@ -371,19 +449,45 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         // ############### Draw Navigation Map ################
         
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        displaySetPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
         getdisplay().setTextColor(commonData->fgcolor);
 
+        // NEW: simple exponential backoff for 1 Hz polling (prevents connection-refused storms)
+        static uint32_t nextAllowedMs = 0;
+        static uint8_t  failCount = 0;
+
+        uint32_t now = millis();
+
+        // NEW: if we are in backoff window, skip network call and use backup immediately
+        bool allowFetch = ((int32_t)(now - nextAllowedMs) >= 0);
+        
         // If a network connection to URL then load the navigation map
-        if (net.fetchAndDecompressJson(url)) {
+        if (allowFetch && net.fetchAndDecompressJson(url)) {
 
-            auto& json = net.json();                // Extract JSON content
-            int numPix = json["number_pixels"] | 0; // Read number of pixels
-            imgWidth = json["width"] | 0;           // Read width of image
-            imgHeight = json["height"] | 0;         // Read height og image
+            // NEW: reset backoff on success
+            failCount = 0;
+            nextAllowedMs = now + 1000; // keep 1 Hz on success
 
-            const char* b64src = json["picture_base64"].as<const char*>();  // Read picture as Base64 content
-            size_t b64len = strlen(b64src);                                 // Calculate length of Base64 content
+            int numPix = net.numberPixels(); // Read number of pixels
+            imgWidth = net.imageWidth();     // Read width of image
+            imgHeight = net.imageHeight();   // Read height of image
+            size_t requiredBytesMono = 0;
+            size_t requiredBytesRgb565 = 0;
+            if (imgWidth > 0 && imgHeight > 0){
+                requiredBytesMono = (size_t)((imgWidth + 7) / 8) * (size_t)imgHeight;
+                requiredBytesRgb565 = (size_t)imgWidth * (size_t)imgHeight * 2U;
+            }
+            if (requiredBytesMono == 0){
+                LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: invalid image geometry w=%d h=%d",imgWidth,imgHeight);
+                return PAGE_UPDATE;
+            }
+
+            const char* b64src = net.pictureBase64();  // Read picture as Base64 content
+            if (b64src == nullptr){
+                LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: picture_base64 missing");
+                return PAGE_UPDATE;
+            }
+            size_t b64len = net.pictureBase64Len(); // Calculate length of Base64 content
             // Copy Base64 content in PSRAM
             char* b64 = (char*) heap_caps_malloc(b64len + 1, MALLOC_CAP_SPIRAM);    // Allcate PSRAM for Base64 content
             if (!b64) {
@@ -393,32 +497,81 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
             memcpy(b64, b64src, b64len + 1);    // Copy Base64 content in PSRAM
 
             // Set image buffer in PSRAM
-            //size_t imgSize = getdisplay().width() * getdisplay().height();
-            size_t imgSize = numPix;    // Calculate image size
+            size_t imgSize = (numPix > 0) ? (size_t)numPix : requiredBytesMono;    // Calculate image size
+            if (imgSize < requiredBytesMono){
+                imgSize = requiredBytesMono;
+            }
+            #ifdef TFT_DISPLAY
+            if (imgSize < requiredBytesRgb565){
+                imgSize = requiredBytesRgb565;
+            }
+            #endif
             uint8_t* imageData = (uint8_t*) heap_caps_malloc(imgSize, MALLOC_CAP_SPIRAM);           // Allocate PSRAM for image
             if (!imageData) {
-                LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: PPSRAM alloc image buffer failed");
+                LOG_DEBUG(GwLog::ERROR,"Error PageNavigation: PSRAM alloc image buffer failed");
                 free(b64);
                 return PAGE_UPDATE;
             }
 
             // Decode Base64 content to image
             size_t decodedSize = 0;
-            decoder.decodeBase64(b64, imageData, imgSize, decodedSize);
+            bool decodeOk = decoder.decodeBase64(b64, b64len, imageData, imgSize, decodedSize);
+            if (!decodeOk || decodedSize < requiredBytesMono){
+                int base64Ret = mbedtls_base64_decode(
+                    nullptr,
+                    0,
+                    &decodedSize,
+                    (const unsigned char*)b64,
+                    b64len
+                );
+                LOG_DEBUG(GwLog::ERROR,
+                    "Error PageNavigation: decode failed (ok=%d, decoded=%u, required=%u, b64ret=%d)",
+                    decodeOk ? 1 : 0,
+                    (unsigned int)decodedSize,
+                    (unsigned int)requiredBytesMono,
+                    base64Ret
+                );
+                free(b64);
+                free(imageData);
+                return PAGE_UPDATE;
+            }
 
-            // Copy actual navigation man to ackup map
+            bool imageIsRgb565 = false;
+            #ifdef TFT_DISPLAY
+            imageIsRgb565 = (decodedSize >= requiredBytesRgb565);
+            #endif
+
+            #ifdef TFT_DISPLAY
+            if (kShowRgb565StripeTestImage) {
+                createRgb565StripeImage(reinterpret_cast<uint16_t*>(imageData), imgWidth, imgHeight);
+                decodedSize = requiredBytesRgb565;
+                imageIsRgb565 = true;
+            }
+            #endif
+
+            // Copy actual navigation map to backup map
             imageBackupWidth  = imgWidth;
             imageBackupHeight = imgHeight;
             imageBackupSize   = imgSize;
-            if (decodedSize > 0) {
-                memcpy(imageBackupData, imageData, decodedSize);
-                imageBackupSize = decodedSize;
+            if (decodedSize > 0 && imageBackupData != nullptr) {
+                size_t copySize = (decodedSize > imageBackupCapacity) ? imageBackupCapacity : decodedSize;
+                memcpy(imageBackupData, imageData, copySize);
+                imageBackupSize = copySize;
             }
-            hasImageBackup = true;
+            imageBackupIsRgb565 = imageIsRgb565;
+            hasImageBackup = (imageBackupData != nullptr);
             lostCounter = 0;
 
             // Show image (navigation map)
-            getdisplay().drawBitmap(0, 25, imageData, imgWidth, imgHeight, commonData->fgcolor);
+            #ifdef TFT_DISPLAY
+            if (imageIsRgb565) {
+                drawRgb565Image(0, 25, reinterpret_cast<const uint16_t*>(imageData), imgWidth, imgHeight);
+            } else {
+                displayDrawBitmap(0, 25, imageData, imgWidth, imgHeight, commonData->fgcolor);
+            }
+            #else
+            displayDrawBitmap(0, 25, imageData, imgWidth, imgHeight, commonData->fgcolor);
+            #endif
 
             // Clean PSRAM
             free(b64);
@@ -426,12 +579,33 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
         }
         // If no network connection then use backup navigation map
         else{
+
+            // NEW: update backoff only if we actually attempted a fetch (not when skipping due to backoff)
+            if (allowFetch) {
+                // NEW: exponential backoff: 1s,2s,4s,8s,16s,30s (capped)
+                if (failCount < 6) failCount++;
+                uint32_t backoffMs = 1000u << failCount;
+                if (backoffMs > 30000u) backoffMs = 30000u;
+                nextAllowedMs = now + backoffMs;
+            } else {
+                // NEW: we are currently backing off; do not increase failCount further
+                // nextAllowedMs stays unchanged
+            }
+
             // Show backup image (backup navigation map)
             if (hasImageBackup) {
-                getdisplay().drawBitmap(0, 25, imageBackupData, imageBackupWidth, imageBackupHeight, commonData->fgcolor);
+                #ifdef TFT_DISPLAY
+                if (imageBackupIsRgb565) {
+                    drawRgb565Image(0, 25, reinterpret_cast<const uint16_t*>(imageBackupData), imageBackupWidth, imageBackupHeight);
+                } else {
+                    displayDrawBitmap(0, 25, imageBackupData, imageBackupWidth, imageBackupHeight, commonData->fgcolor);
+                }
+                #else
+                displayDrawBitmap(0, 25, imageBackupData, imageBackupWidth, imageBackupHeight, commonData->fgcolor);
+                #endif
             }    
 
-            // Show info: Connection lost when 5 page refreshes has a connection lost to the map server
+            // Show connection lost info when 5 page refreshes has a connection lost to the map server
             // Short connection losts are uncritical
             if(lostCounter >= 5){
                 getdisplay().setFont(&Ubuntu_Bold12pt8b);
@@ -443,7 +617,6 @@ bool showValues = false; // Show values HDT, SOG, DBT in navigation map
 
             lostCounter++; // Increment lost counter
         }
-
 
         // ############### Draw Values ################
         getdisplay().setFont(&Ubuntu_Bold12pt8b);

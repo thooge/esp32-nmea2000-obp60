@@ -221,7 +221,7 @@ public:
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, width, height); // Set partial update
+        displaySetPartialWindow(0, 0, width, height); // Set partial update
         getdisplay().setTextColor(commonData->fgcolor);
 
         if (chrtMode == DIRECTION) {

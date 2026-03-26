@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# This script compile the software für OBP40-S3
+# This script compile the software für OBP60-S3
 
 # Attention! Start this cript only in the Gitpod Docker container.
 # Start the script with: bash run
 
 # Compile the firmware
 echo "Compiling Firmware"
-platformio run -e obp40_s3
+platformio run -e obp70_s3

@@ -28,8 +28,14 @@ Chart::Chart(RingBuffer<uint16_t>& dataBuf, double dfltRng, CommonData& common, 
     fgColor = commonData->fgcolor;
     bgColor = commonData->bgcolor;
 
-    dWidth = getdisplay().width();
-    dHeight = getdisplay().height();
+    // display dimensions (avoid calling width()/height() on incomplete LGFX type)
+    #ifdef TFT_DISPLAY
+        dWidth = 480;
+        dHeight = 320;
+    #else
+        dWidth = getdisplay().width();
+        dHeight = getdisplay().height();
+    #endif
 
     dataBuf.getMetaData(dbName, dbFormat);
     dbMIN_VAL = dataBuf.getMinVal();

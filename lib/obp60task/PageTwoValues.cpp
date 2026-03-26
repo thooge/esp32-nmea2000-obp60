@@ -281,7 +281,7 @@ public:
         // Draw page
         //***********************************************************
 
-        getdisplay().setPartialWindow(0, 0, width, height); // Set partial update
+        displaySetPartialWindow(0, 0, width, height); // Set partial update
 
         if (pageMode == VALUES || (dataHstryBuf[0] == nullptr && dataHstryBuf[1] == nullptr)) {
             // show only data value; ignore other pageMode options if no chart supported boat data history buffer is available

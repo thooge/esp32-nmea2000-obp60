@@ -63,7 +63,7 @@ public:
         if (mode == 'W') {
             getdisplay().setFullWindow();
         } else {
-            getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+            displaySetPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
         }
 
         if (mode == 'L') {

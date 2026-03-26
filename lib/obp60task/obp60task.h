@@ -3,7 +3,7 @@
 //we only compile for some boards
 #if defined BOARD_OBP60S3 || defined BOARD_OBP40S3
     #define USBSerial Serial
-    #ifdef HARDWARE_V21
+    #ifdef BOARD_OBP60S3
         // CAN NMEA2000
         #define ESP32_CAN_TX_PIN 46
         #define ESP32_CAN_RX_PIN 3
@@ -35,13 +35,19 @@
     // OBP60 Task
     void OBP60Task(GwApi *param);
     DECLARE_USERTASK_PARAM(OBP60Task, 35000);   // Need 35k RAM as stack size
-    #ifdef HARDWARE_V21
+    #if defined(BOARD_OBP60S3) && defined(TFT_DISPLAY)
+    DECLARE_CAPABILITY(obp70,true);
+    #endif
+    #if defined(BOARD_OBP60S3) && !defined(TFT_DISPLAY)
     DECLARE_CAPABILITY(obp60,true);
     #endif
     #ifdef BOARD_OBP40S3
     DECLARE_CAPABILITY(obp40,true)
     #endif
-    #ifdef BOARD_OBP60S3
+    #if defined(BOARD_OBP60S3) && defined(TFT_DISPLAY)
+    DECLARE_STRING_CAPABILITY(HELP_URL, "https://obp60-v2-docu.readthedocs.io/en/latest/"); // Link to help pages
+    #endif
+    #if defined(BOARD_OBP60S3) && !defined(TFT_DISPLAY)
     DECLARE_STRING_CAPABILITY(HELP_URL, "https://obp60-v2-docu.readthedocs.io/en/latest/"); // Link to help pages
     #endif
     #ifdef BOARD_OBP40S3

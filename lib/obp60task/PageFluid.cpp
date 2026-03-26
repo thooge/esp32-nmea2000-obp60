@@ -138,7 +138,7 @@ class PageFluid : public Page
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height());
+        displaySetPartialWindow(0, 0, getdisplay().width(), getdisplay().height());
 
         getdisplay().setTextColor(commonData->fgcolor);
 

@@ -9,7 +9,6 @@
 #include <NMEA0183.h>                   // NMEA0183
 #include <NMEA0183Msg.h>
 #include <NMEA0183Messages.h>
-#include <GxEPD2_BW.h>                  // GxEPD2 lib for b/w E-Ink displays
 #include "OBP60Extensions.h"            // Functions lib for extension board
 #include "OBP60Keypad.h"                // Functions for keypad
 #include "OBPDataOperations.h"          // Functions lib for data operations such as true wind calculation
@@ -284,8 +283,12 @@ void underVoltageError(CommonData &common) {
     getdisplay().setFont(&Ubuntu_Bold8pt8b);
     getdisplay().setCursor(65, 175);
     getdisplay().print("Charge battery and restart system");
-    getdisplay().nextPage();                // Partial update
+    displayNextPage();                // Partial update
+    #ifdef TFT_DISPLAY
+    getpaneldisplay().powerSave(true);      // Display power save
+    #else
     getdisplay().powerOff();                // Display power off
+    #endif
     setPortPin(OBP_POWER_EPD, false);       // Power off ePaper display
     setPortPin(OBP_POWER_SD, false);        // Power off SD card
 #else
@@ -295,7 +298,7 @@ void underVoltageError(CommonData &common) {
     buzzer(TONE4, 20);                      // Buzzer tone 4kHz 20ms
     setPortPin(OBP_POWER_50, false);        // Power rail 5.0V Off
     // Shutdown EInk display
-    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+    displaySetPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
     getdisplay().fillScreen(common.bgcolor);// Clear screen
     getdisplay().setTextColor(common.fgcolor);
     getdisplay().setFont(&Ubuntu_Bold20pt8b);
@@ -304,8 +307,12 @@ void underVoltageError(CommonData &common) {
     getdisplay().setFont(&Ubuntu_Bold8pt8b);
     getdisplay().setCursor(65, 175);
     getdisplay().print("To wake up repower system");
-    getdisplay().nextPage();                // Partial update
+    displayNextPage();                // Partial update
+    #ifdef TFT_DISPLAY
+    getpaneldisplay().powerSave(true);      // Display power save
+    #else
     getdisplay().powerOff();                // Display power off
+    #endif
 #endif
     while (true) {
         esp_deep_sleep_start(); // Deep Sleep without wakeup. Wakeup only after power cycle (restart).
@@ -316,7 +323,7 @@ inline bool underVoltageDetection(float voffset, float vslope) {
     // Read supply voltage
 #if defined VOLTAGE_SENSOR && defined LIPO_ACCU_1200
     float actVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.53) * 2;   // Vin = 1/2 for OBP40
-    float minVoltage = 3.65;  // Absolut minimum volatge for 3,7V LiPo accu
+    float minVoltage = 3.65;  // Absolut minimum voltage for 3,7V LiPo accu
 #else
     float actVoltage = (float(analogRead(OBP_ANALOG0)) * 3.3 / 4096 + 0.17) * 20;   // Vin = 1/20 for OBP60
     float minVoltage = MIN_VOLTAGE;
@@ -325,6 +332,7 @@ inline bool underVoltageDetection(float voffset, float vslope) {
     return (calVoltage < minVoltage);
 }
 
+
 // OBP60 Task
 //####################################################################################
 void OBP60Task(GwApi *api){
@@ -332,7 +340,7 @@ void OBP60Task(GwApi *api){
 //    return;
     GwLog *logger=api->getLogger();
     GwConfigHandler *config=api->getConfig();
-#if defined HARDWARE_V20 || HARDWARE_V21
+#ifdef BOARD_OBP60S3
     startLedTask(api);
 #endif
     PageList allPages;
@@ -341,7 +349,7 @@ void OBP60Task(GwApi *api){
     commonData.logger=logger;
     commonData.config=config;
 
-#if defined HARDWARE_V20 || HARDWARE_V21
+#ifdef BOARD_OBP60S3
     // Keyboard coordinates for page footer
     initKeys(commonData);
 #endif
@@ -375,36 +383,47 @@ void OBP60Task(GwApi *api){
 
     #ifdef DISPLAY_GDEY042T81
         getdisplay().init(115200, true, 2, false);  // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
+    #elif defined(TFT_DISPLAY)
+        getpaneldisplay().init();                   // Init for TFT LCD panel
     #else
         getdisplay().init(115200);                  // Init for normal displays
     #endif
 
+    #ifdef TFT_DISPLAY
+    getpaneldisplay().setRotation(0);            // Set display orientation (horizontal)
+    getpaneldisplay().setPanelOffset(0, 0);      // Use full native framebuffer coordinates
+    getpaneldisplay().fillScreen(0x0000);        // Initialize full TFT screen to black (native RGB565)
+    getpaneldisplay().setPanelOffset(OBP_TFT_OFFSET_X, OBP_TFT_OFFSET_Y); // Restore configured operating panel offset
+    #else
     getdisplay().setRotation(0);                 // Set display orientation (horizontal)
-    getdisplay().setFullWindow();                // Set full Refresh
-    getdisplay().firstPage();                    // set first page
+    #endif
+    displaySetFullWindow();                       // Set full Refresh (E-Ink only)
+    displayFirstPage();                           // set first page
     getdisplay().fillScreen(commonData.bgcolor);
     getdisplay().setTextColor(commonData.fgcolor);
-    getdisplay().nextPage();                     // Full Refresh
-    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+    displayNextPage();                            // Full Refresh
+    displaySetPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update (E-Ink only)
     getdisplay().fillScreen(commonData.bgcolor);
-    getdisplay().nextPage();                     // Fast Refresh
-    getdisplay().nextPage();                     // Fast Refresh
+    displayNextPage();                            // Fast Refresh
+    displayNextPage();                            // Fast Refresh
     if(String(displaymode) == "Logo + QR Code" || String(displaymode) == "Logo"){
         getdisplay().fillScreen(commonData.bgcolor);
-        getdisplay().drawBitmap(0, 0, gImage_Logo_OBP_400x300_sw, getdisplay().width(), getdisplay().height(), commonData.fgcolor); // Draw start logo
-        getdisplay().nextPage();                 // Fast Refresh
-        getdisplay().nextPage();                 // Fast Refresh
+        // draw the fixed-size logo via generic display wrapper
+        displayDrawBitmap(0, 0, gImage_Logo_OBP_400x300_sw,
+                          400, 300, commonData.fgcolor);
+        displayNextPage();                 // Fast Refresh
+        displayNextPage();                 // Fast Refresh
         delay(SHOW_TIME);                        // Logo show time
         if(String(displaymode) == "Logo + QR Code"){
             getdisplay().fillScreen(commonData.bgcolor);
             qrWiFi(systemname, wifipass, commonData.fgcolor, commonData.bgcolor);  // Show QR code for WiFi connection
-            getdisplay().nextPage();             // Fast Refresh
-            getdisplay().nextPage();             // Fast Refresh
+            displayNextPage();             // Fast Refresh
+            displayNextPage();             // Fast Refresh
             delay(SHOW_TIME);                    // QR code show time
         }
         getdisplay().fillScreen(commonData.bgcolor);
-        getdisplay().nextPage();                 // Fast Refresh
-        getdisplay().nextPage();                 // Fast Refresh
+        displayNextPage();                 // Fast Refresh
+        displayNextPage();                 // Fast Refresh
     }
     
     // Init pages
@@ -432,7 +451,7 @@ void OBP60Task(GwApi *api){
 #endif
     LOG_DEBUG(GwLog::LOG,"...done");
 
-    int lastPage=-1; // initialize with an impiossible value, so we can detect wether we are during startup and no page has been displayed yet
+    int lastPage=-1; // initialize with an impossible value, so we can detect wether we are during startup and no page has been displayed yet
 
     BoatValueList boatValues; //all the boat values for the api query
     HstryBuffers hstryBufferList(1920, &boatValues, logger);  // Create empty list of boat data history buffers (1.920 values = seconds = 32 min.)
@@ -723,25 +742,29 @@ void OBP60Task(GwApi *api){
             if(millis() > starttime4 + 8000 && delayedDisplayUpdate == true){
                 starttime1 = millis();
                 starttime2 = millis();
-                getdisplay().setFullWindow();    // Set full update
+                displaySetFullWindow();            // Set full update
+                #ifdef TFT_DISPLAY
+                // TFT LCD doesn't need refresh operations
+                #else
                 if(fastrefresh == "true"){
-                    getdisplay().nextPage();                     // Full update
+                    displayNextPage();                     // Full update
                 }
                 else{
                     getdisplay().fillScreen(commonData.fgcolor); // Clear display
                     #ifdef DISPLAY_GDEY042T81
-                        getdisplay().hibernate();                  // Set display in hybenate mode
+                        getdisplay().hibernate();                  // Set display in hibenate mode
                         getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
                     #else
                         getdisplay().init(115200);               // Init for normal displays
                     #endif
-                    getdisplay().firstPage();                    // Full update
-                    getdisplay().nextPage();                     // Full update
+                    displayFirstPage();                    // Full update
+                    displayNextPage();                     // Full update
 //                    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
 //                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
 //                    getdisplay().nextPage();                     // Partial update
 //                    getdisplay().nextPage();                     // Partial update
                 }
+                #endif
                 delayedDisplayUpdate = false;
             }
 
@@ -751,31 +774,38 @@ void OBP60Task(GwApi *api){
                 starttime1 = millis();
                 starttime2 = millis();
                 LOG_DEBUG(GwLog::DEBUG,"E-Ink full refresh first 5 min");
-                getdisplay().setFullWindow();    // Set full update
+                displaySetFullWindow();            // Set full update
+                #ifdef TFT_DISPLAY
+                // TFT LCD doesn't need refresh operations
+                #else
                 if(fastrefresh == "true"){
-                    getdisplay().nextPage();                     // Full update
+                    displayNextPage();                     // Full update
                 }
                 else{
                     getdisplay().fillScreen(commonData.fgcolor); // Clear display
                     #ifdef DISPLAY_GDEY042T81
-                        getdisplay().hibernate();                  // Set display in hybenate mode
+                        getdisplay().hibernate();                  // Set display in hibernate mode
                         getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
                     #else
                         getdisplay().init(115200);               // Init for normal displays
                     #endif
-                    getdisplay().firstPage();                    // Full update
-                    getdisplay().nextPage();                     // Full update
+                    displayFirstPage();                    // Full update
+                    displayNextPage();                     // Full update
 //                    getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
 //                    getdisplay().fillScreen(commonData.bgcolor); // Clear display
 //                    getdisplay().nextPage();                     // Partial update
 //                    getdisplay().nextPage();                     // Partial update
                 }
+                #endif
             }
 
             // Subtask E-Ink full refresh
             if(millis() > starttime2 + fullrefreshtime * 60 * 1000){
                 starttime2 = millis();
                 LOG_DEBUG(GwLog::DEBUG,"E-Ink full refresh");
+                #ifdef TFT_DISPLAY
+                // TFT LCD: no special refresh
+                #else
                 getdisplay().setFullWindow();    // Set full update
                 if(fastrefresh == "true"){
                     getdisplay().nextPage();                     // Full update
@@ -783,7 +813,7 @@ void OBP60Task(GwApi *api){
                 else{
                     getdisplay().fillScreen(commonData.fgcolor); // Clear display
                     #ifdef DISPLAY_GDEY042T81
-                        getdisplay().hibernate();                  // Set display in hybenate mode
+                        getdisplay().hibernate();                  // Set display in hibernate mode
                         getdisplay().init(115200, true, 2, false); // Init for Waveshare boards with "clever" reset circuit, 2ms reset pulse
                     #else
                         getdisplay().init(115200);               // Init for normal displays
@@ -795,6 +825,7 @@ void OBP60Task(GwApi *api){
 //                    getdisplay().nextPage();                     // Partial update
 //                    getdisplay().nextPage();                     // Partial update
                 }
+                #endif
             }        
                 
             // Refresh display data, default all 1s
@@ -807,6 +838,7 @@ void OBP60Task(GwApi *api){
             if(millis() > starttime3 + pagetime){
                 LOG_DEBUG(GwLog::DEBUG,"Page with refreshtime=%d", pagetime);
                 starttime3 = millis();
+                bool pageChanged = (lastPage != pageNumber);
 
                 //refresh data from api
                 api->getBoatDataValues(boatValues.numValues,boatValues.allBoatValues);
@@ -841,16 +873,16 @@ void OBP60Task(GwApi *api){
                     if (currentPage == NULL){
                         LOG_DEBUG(GwLog::ERROR,"page number %d not found", pageNumber);
                         // Error handling for missing page
-                        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+                        displaySetPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
                         getdisplay().fillScreen(commonData.bgcolor);  // Clear display
                         getdisplay().drawXBitmap(200 - unknown_width / 2, 150 - unknown_height / 2, unknown_bits, unknown_width, unknown_height, commonData.fgcolor);
                         getdisplay().setCursor(140, 250);
                         getdisplay().setFont(&Atari16px);
                         getdisplay().print("Here be dragons!");
-                        getdisplay().nextPage(); // Partial update (fast)
+                        displayNextPage(); // Partial update (fast)
                     }
                     else{
-                        if (lastPage != pageNumber){
+                        if (pageChanged){
 			    if (lastPage != -1){ // skip cleanup if we are during startup, and no page has been displayed yet. 
                                 pages[lastPage].page->leavePage(pages[lastPage].parameters); // call page cleanup code
                                 if (hasFRAM) fram.write(FRAM_PAGE_NO, pageNumber); // remember new page for device restart
@@ -870,10 +902,12 @@ void OBP60Task(GwApi *api){
                             displayAlarm(commonData);
                         }
                         if (ret & PAGE_UPDATE) {
-                            getdisplay().nextPage(); // Partial update (fast)
+                            displayNextPage(); // Partial update (fast)
                         }
                         if (ret & PAGE_HIBERNATE) {
+    #ifndef TFT_DISPLAY
                             getdisplay().hibernate();
+    #endif
                         }
                     }
 

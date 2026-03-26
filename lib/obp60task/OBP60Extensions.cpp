@@ -56,6 +56,61 @@ GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> display(GxEPD2_4
 GxEPD2_BW<GxEPD2_420_SE0420NQ04, GxEPD2_420_SE0420NQ04::HEIGHT> & getdisplay(){return display;}
 #endif
 
+#ifdef TFT_DISPLAY
+// panel device + offscreen shadow framebuffer
+static LGFX panelDisplay;
+static LGFXCanvas shadowDisplay(&panelDisplay);
+static LGFXCanvas scaleDisplay(&panelDisplay);
+static bool shadowDisplayInitialized = false;
+static bool scaleDisplayInitialized = false;
+static uint16_t scaleDisplayWidth = 0;
+static uint16_t scaleDisplayHeight = 0;
+
+LGFXCanvas & getdisplay(){return shadowDisplay;}
+LGFX & getpaneldisplay(){return panelDisplay;}
+LGFXCanvas & getscaleddisplay(){return scaleDisplay;}
+
+bool initDisplayShadowBuffer(){
+    if (shadowDisplayInitialized) return true;
+
+    shadowDisplay.setPsram(true);
+    shadowDisplay.setColorDepth(16);
+    shadowDisplay.setTextDatum(textdatum_t::baseline_left);
+
+    if (shadowDisplay.createSprite(GxEPD_WIDTH, GxEPD_HEIGHT) == nullptr) {
+        shadowDisplayInitialized = false;
+        return false;
+    }
+
+    shadowDisplay.fillScreen(GxEPD_BLACK);
+    shadowDisplayInitialized = true;
+    return true;
+}
+
+bool initDisplayScaleBuffer(uint16_t width, uint16_t height){
+    if (scaleDisplayInitialized && scaleDisplayWidth == width && scaleDisplayHeight == height) {
+        return true;
+    }
+
+    scaleDisplay.deleteSprite();
+    scaleDisplay.setPsram(true);
+    scaleDisplay.setColorDepth(16);
+    scaleDisplay.setTextDatum(textdatum_t::baseline_left);
+
+    if (scaleDisplay.createSprite(width, height) == nullptr) {
+        scaleDisplayInitialized = false;
+        scaleDisplayWidth = 0;
+        scaleDisplayHeight = 0;
+        return false;
+    }
+
+    scaleDisplayWidth = width;
+    scaleDisplayHeight = height;
+    scaleDisplayInitialized = true;
+    return true;
+}
+#endif
+
 // Horter I2C moduls
 PCF8574 pcf8574_Modul1(PCF8574_I2C_ADDR1); // First digital IO modul PCF8574 from Horter
 
@@ -86,7 +141,7 @@ void hardwareInit(GwApi *api)
     GwLog *logger = api->getLogger();
     GwConfigHandler *config = api->getConfig();
 
-    Wire.begin();
+    Wire.begin(OBP_I2C_SDA, OBP_I2C_SCL);
     // Init PCF8574 digital outputs
     Wire.setClock(I2C_SPEED_LOW);   // Set I2C clock on 10 kHz
     if(pcf8574_Modul1.begin()){        // Initialize PCF8574
@@ -175,7 +230,7 @@ void hardwareInit(GwApi *api)
 void powerInit(String powermode) {
     // Max Power | Only 5.0V | Min Power
     if (powermode == "Max Power" || powermode == "Only 5.0V") {
-#ifdef HARDWARE_V21
+#ifdef BOARD_OBP60S3
         setPortPin(OBP_POWER_50, true); // Power on 5.0V rail
 #endif
 #ifdef BOARD_OBP40S3
@@ -183,7 +238,7 @@ void powerInit(String powermode) {
         setPortPin(OBP_POWER_SD, true); // Power on SD card
 #endif
     } else { // Min Power
-#ifdef HARDWARE_V21
+#ifdef BOARD_OBP60S3
         setPortPin(OBP_POWER_50, false); // Power off 5.0V rail
 #endif
 #ifdef BOARD_OBP40S3
@@ -251,8 +306,12 @@ void deepSleep(CommonData &common){
     getdisplay().setFont(&Ubuntu_Bold8pt8b);
     getdisplay().setCursor(65, 175);
     getdisplay().print("To wake up press key and wait 5s");
-    getdisplay().nextPage();                // Update display contents
+    displayNextPage();                // Update display contents
+    #ifdef TFT_DISPLAY
+    getpaneldisplay().powerSave(true);      // Display power save
+    #else
     getdisplay().powerOff();                // Display power off
+    #endif
     setPortPin(OBP_POWER_50, false);        // Power off ePaper display
     // Stop system
     esp_deep_sleep_start();                 // Deep Sleep with weakup via touch pin
@@ -276,8 +335,12 @@ void deepSleep(CommonData &common){
     getdisplay().setFont(&Ubuntu_Bold8pt8b);
     getdisplay().setCursor(65, 175);
     getdisplay().print("To wake up press wheel and wait 5s");
-    getdisplay().nextPage();                // Partial update
+    displayNextPage();                // Partial update
+    #ifdef TFT_DISPLAY
+    getpaneldisplay().powerSave(true);      // Display power save
+    #else
     getdisplay().powerOff();                // Display power off
+    #endif
     setPortPin(OBP_POWER_EPD, false);       // Power off ePaper display
     setPortPin(OBP_POWER_SD, false);        // Power off SD card
     // Stop system
@@ -479,8 +542,10 @@ std::vector<String> wordwrap(String &line, uint16_t maxwidth) {
 void drawTextCenter(int16_t cx, int16_t cy, String text) {
     int16_t x1, y1;
     uint16_t w, h;
-    getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
-    getdisplay().setCursor(cx - w / 2, cy + h / 2);
+    displayGetTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+    int16_t cursorX = cx - (x1 + static_cast<int16_t>(w / 2));
+    int16_t cursorY = cy - (y1 + static_cast<int16_t>(h / 2));
+    getdisplay().setCursor(cursorX, cursorY);
     getdisplay().print(text);
 }
 
@@ -488,19 +553,20 @@ void drawTextCenter(int16_t cx, int16_t cy, String text) {
 void drawButtonCenter(int16_t cx, int16_t cy, int8_t sx, int8_t sy, String text, uint16_t fg, uint16_t bg, bool inverted) {
     int16_t x1, y1;
     uint16_t w, h;
-    uint16_t color;
-
-    getdisplay().getTextBounds(text, cx, cy, &x1, &y1, &w, &h); // Find text center
-    getdisplay().setCursor(cx - w/2, cy + h/2);                 // Set cursor to center
+    displayGetTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+    int16_t cursorX = cx - (x1 + static_cast<int16_t>(w / 2));
+    int16_t cursorY = cy - (y1 + static_cast<int16_t>(h / 2));
     //getdisplay().drawPixel(cx, cy, fg);                         // Debug pixel for center position
     if (inverted) {
         getdisplay().fillRoundRect(cx - sx / 2, cy - sy / 2, sx, sy, 5, fg); // Draw button
         getdisplay().setTextColor(bg);
+        getdisplay().setCursor(cursorX, cursorY);                 // Set cursor to center
         getdisplay().print(text);                               // Draw text
      }
      else{
         getdisplay().drawRoundRect(cx - sx / 2, cy - sy / 2, sx, sy, 5, fg); // Draw button
         getdisplay().setTextColor(fg);
+        getdisplay().setCursor(cursorX, cursorY);                 // Set cursor to center
         getdisplay().print(text);                               // Draw text
      }
 }
@@ -509,7 +575,12 @@ void drawButtonCenter(int16_t cx, int16_t cy, int8_t sx, int8_t sy, String text,
 void drawTextRalign(int16_t x, int16_t y, String text) {
     int16_t x1, y1;
     uint16_t w, h;
+#ifdef TFT_DISPLAY
+    w = getdisplay().textWidth(text);
+    h = getdisplay().fontHeight();
+#else
     getdisplay().getTextBounds(text, 0, 150, &x1, &y1, &w, &h);
+#endif
     getdisplay().setCursor(x - w - 1, y); // '-1' required since some strings wrap around w/o it
     getdisplay().print(text);
 }
@@ -595,7 +666,7 @@ void displayHeader(CommonData &commonData, GwApi::BoatValue *date, GwApi::BoatVa
         usbRxOld = commonData.status.usbRx;
         usbTxOld = commonData.status.usbTx;
 
-#ifdef HARDWARE_V21
+#ifdef BOARD_OBP60S3
         // Display key lock status
         if (commonData.keylock) {
             getdisplay().drawXBitmap(170, 1, lock_bits, icon_width, icon_height, commonData.fgcolor);
@@ -688,7 +759,7 @@ void displayFooter(CommonData &commonData) {
     getdisplay().setFont(&Atari16px);
     getdisplay().setTextColor(commonData.fgcolor);
 
-#ifdef HARDWARE_V21
+#ifdef BOARD_OBP60S3
     // Frame around key icon area
     if (! commonData.keylock) {
         // horizontal elements
@@ -1000,7 +1071,14 @@ void displayRudderPosition(int rudderPosition, uint8_t rangeDeg, uint16_t cx, ui
         String lbl = String(angle);
         int16_t bx, by;
         uint16_t bw, bh;
-        getdisplay().getTextBounds(lbl, 0, 0, &bx, &by, &bw, &bh);
+        #ifdef TFT_DISPLAY
+            // LovyanGFX: compute width/height manually
+            bw = getdisplay().textWidth(lbl);
+            bh = getdisplay().fontHeight();
+            bx = 0; by = 0;
+        #else
+            getdisplay().getTextBounds(lbl, 0, 0, &bx, &by, &bw, &bh);
+        #endif
         int16_t tx = xpos - bw/2;
         int16_t ty = top + h + bh + 5; // A little spacing
         getdisplay().setCursor(tx, ty);
@@ -1019,9 +1097,16 @@ void doImageRequest(GwApi *api, int *pageno, const PageStruct pages[MAX_PAGE_NUM
 
     logger->logDebug(GwLog::LOG,"handle image request [%s]: %s", imgformat, filename);
 
-    uint8_t *fb = getdisplay().getBuffer(); // EPD framebuffer
+    uint8_t *fb = nullptr; // EPD framebuffer
     std::vector<uint8_t> imageBuffer;       // image in webserver transferbuffer
     String mimetype;
+    #ifndef TFT_DISPLAY
+        fb = getdisplay().getBuffer(); // available only for EPD
+    #endif
+    if (!fb) {
+        request->send(500, "text/plain", "screenshot not available");
+        return;
+    }
 
     if (imgformat == "gif") {
         // GIF is commpressed with LZW, so small

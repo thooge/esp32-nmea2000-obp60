@@ -89,7 +89,7 @@ class PageXTETrack : public Page
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        displaySetPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
 
         getdisplay().setTextColor(commonData->fgcolor);
 
@@ -112,25 +112,25 @@ class PageXTETrack : public Page
 
         GwApi::BoatValue *bv_xte = pageData.values[0]; // XTE
         String sval_xte = formatValue(bv_xte, *commonData).svalue;
-        getdisplay().getTextBounds(sval_xte, 0, 0, &x, &y, &w, &h);
+        displayGetTextBounds(sval_xte, 0, 0, &x, &y, &w, &h);
         getdisplay().setCursor(160-w, 170);
         getdisplay().print(sval_xte);
 
         GwApi::BoatValue *bv_cog = pageData.values[1]; // COG
         String sval_cog = formatValue(bv_cog, *commonData).svalue;
-        getdisplay().getTextBounds(sval_cog, 0, 0, &x, &y, &w, &h);
+        displayGetTextBounds(sval_cog, 0, 0, &x, &y, &w, &h);
         getdisplay().setCursor(360-w, 170);
         getdisplay().print(sval_cog);
 
         GwApi::BoatValue *bv_dtw = pageData.values[2]; // DTW
         String sval_dtw = formatValue(bv_dtw, *commonData).svalue;
-        getdisplay().getTextBounds(sval_dtw, 0, 0, &x, &y, &w, &h);
+        displayGetTextBounds(sval_dtw, 0, 0, &x, &y, &w, &h);
         getdisplay().setCursor(160-w, 257);
         getdisplay().print(sval_dtw);
 
         GwApi::BoatValue *bv_btw = pageData.values[3]; // BTW
         String sval_btw = formatValue(bv_btw, *commonData).svalue;
-        getdisplay().getTextBounds(sval_btw, 0, 0, &x, &y, &w, &h);
+        displayGetTextBounds(sval_btw, 0, 0, &x, &y, &w, &h);
         getdisplay().setCursor(360-w, 257);
         getdisplay().print(sval_btw);
 
@@ -149,7 +149,7 @@ class PageXTETrack : public Page
         }
 
         getdisplay().setFont(&Ubuntu_Bold10pt8b);
-        getdisplay().getTextBounds(sval_wpname, 0, 150, &x, &y, &w, &h);
+        displayGetTextBounds(sval_wpname, 0, 150, &x, &y, &w, &h);
         // TODO if text don't fix use smaller font size.
         // if smallest size does not fit use 2 lines
         // last resort: clip with ellipsis

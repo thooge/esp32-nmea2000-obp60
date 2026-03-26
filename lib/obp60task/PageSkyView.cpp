@@ -73,7 +73,7 @@ public:
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        displaySetPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
 
         // current position
         getdisplay().setFont(&Ubuntu_Bold8pt8b);
@@ -105,19 +105,19 @@ public:
         uint16_t w, h;
         getdisplay().setFont(&Ubuntu_Bold12pt8b);
 
-		getdisplay().getTextBounds("N", 0, 150, &x1, &y1, &w, &h);
+		displayGetTextBounds("N", 0, 150, &x1, &y1, &w, &h);
         getdisplay().setCursor(c.x - w / 2, c.y - r + h + 3);
         getdisplay().print("N");
 
-		getdisplay().getTextBounds("S", 0, 150, &x1, &y1, &w, &h);
+		displayGetTextBounds("S", 0, 150, &x1, &y1, &w, &h);
         getdisplay().setCursor(c.x - w / 2, c.y + r - 3);
         getdisplay().print("S");
 
-		getdisplay().getTextBounds("E", 0, 150, &x1, &y1, &w, &h);
+		displayGetTextBounds("E", 0, 150, &x1, &y1, &w, &h);
         getdisplay().setCursor(c.x + r - w - 3, c.y + h / 2);
         getdisplay().print("E");
         
-		getdisplay().getTextBounds("W", 0, 150, &x1, &y1, &w, &h);
+		displayGetTextBounds("W", 0, 150, &x1, &y1, &w, &h);
         getdisplay().setCursor(c.x - r + 3 , c.y + h / 2);
         getdisplay().print("W");
 

@@ -835,7 +835,7 @@ FormattedData formatValue(GwApi::BoatValue *value, CommonData &commondata, bool 
         result.cvalue = dplace;
     }
     //########################################################
-    else if (value->getFormat() == "formatXdr:A:D"){
+    else if ((value->getFormat() == "formatXdr:A:D") || ((value->getFormat() == "formatXdr:A:rd"))){
         double angle = 0;
         if (usesimudata == false) {
             angle = value->value;

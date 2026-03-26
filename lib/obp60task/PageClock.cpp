@@ -375,7 +375,7 @@ public:
         //***********************************************************
 
         // Set display in partial refresh mode
-        getdisplay().setPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
+        displaySetPartialWindow(0, 0, getdisplay().width(), getdisplay().height()); // Set partial update
 
         getdisplay().setTextColor(commonData->fgcolor);
 
@@ -442,8 +442,8 @@ public:
             uint16_t wDigit, hDigit;
             uint16_t wColon, hColon;
 
-            getdisplay().getTextBounds("00", 0, 0, &x0, &y0, &wDigit, &hDigit);
-            getdisplay().getTextBounds(":", 0, 0, &x0, &y0, &wColon, &hColon);
+displayGetTextBounds("00", 0, 0, &x0, &y0, &wDigit, &hDigit);
+displayGetTextBounds(":", 0, 0, &x0, &y0, &wColon, &hColon);
 
             uint16_t totalWidth = 3 * wDigit + 2 * wColon;
 
@@ -453,7 +453,7 @@ public:
             // Draw time string centered
             int16_t x1b, y1b;
             uint16_t wb, hb;
-            getdisplay().getTextBounds(timeStr, 0, 0, &x1b, &y1b, &wb, &hb);
+            displayGetTextBounds(timeStr, 0, 0, &x1b, &y1b, &wb, &hb);
             int16_t textX = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(wb)) / 2;
             int16_t textY = centerY + hb / 2;
 
@@ -520,7 +520,7 @@ public:
 
             int16_t x1b, y1b;
             uint16_t wb, hb;
-            getdisplay().getTextBounds(timeStr, 0, 0, &x1b, &y1b, &wb, &hb);
+            displayGetTextBounds(timeStr, 0, 0, &x1b, &y1b, &wb, &hb);
 
             int16_t x = (static_cast<int16_t>(getdisplay().width()) - static_cast<int16_t>(wb)) / 2;
             int16_t y = 150 + hb / 2;
@@ -665,7 +665,7 @@ public:
                 // Print text centered on position x, y
                 int16_t x1c, y1c;     // Return values of getTextBounds
                 uint16_t wc, hc;      // Return values of getTextBounds
-                getdisplay().getTextBounds(ii, int(x), int(y), &x1c, &y1c, &wc, &hc); // Calc width of new string
+                displayGetTextBounds(ii, int(x), int(y), &x1c, &y1c, &wc, &hc); // Calc width of new string
                 getdisplay().setCursor(x - wc / 2, y + hc / 2);
                 if (i % 90 == 0) {
                     getdisplay().setFont(&Ubuntu_Bold12pt8b);

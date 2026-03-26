@@ -1,5 +1,13 @@
 #pragma once
 #include <Arduino.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
+static inline int64_t gwMonotonicUs(){
+  TickType_t ticks=xTaskGetTickCount();
+  return ((int64_t)ticks) * ((int64_t)portTICK_PERIOD_MS) * 1000;
+}
+
 class TimeAverage{
   double factor=0.3;
   double current=0;
@@ -70,7 +78,7 @@ class TimeMonitor{
     }
     void reset(){
       if (last != 0 && start != 0) loop->add(last-start);
-      start=esp_timer_get_time();
+      start=gwMonotonicUs();
       for (size_t i=0;i<len;i++) current[i]=0;
       count++;
       
@@ -114,7 +122,7 @@ class TimeMonitor{
       for (size_t i=0;i<index;i++){
         if (current[i] != 0) sv=current[i];
       }
-      int64_t now=esp_timer_get_time();
+      int64_t now=gwMonotonicUs();
       last=now;
       current[index]=now;
       int64_t currentv=now-sv;

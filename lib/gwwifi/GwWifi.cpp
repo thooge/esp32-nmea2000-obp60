@@ -132,18 +132,40 @@ void GwWifi::loop(){
             {
                 LOG_DEBUG(GwLog::LOG,"wifiClient: retry connect to %s", wifiSSID->asCString());
 
-                // CRITICAL SECTION: WiFi-Operationen müssen serialisiert werden
+                // Keep locked sections short to avoid cross-core stalls/WDT.
                 if (acquireMutex()){
-                    WiFi.disconnect(true); 
-                    delay(300);
-                    esp_wifi_stop();
-                    delay(100);
-                    esp_wifi_start();
+                    WiFi.disconnect(true);
                     releaseMutex();
+                }
+                else{
+                    LOG_DEBUG(GwLog::ERROR,"GwWifi: mutex timeout in loop (disconnect)");
+                }
+
+                delay(300);
+
+                if (acquireMutex()){
+                    esp_err_t stopErr=esp_wifi_stop();
+                    releaseMutex();
+                    if (stopErr != ESP_OK){
+                        LOG_DEBUG(GwLog::ERROR,"GwWifi: esp_wifi_stop failed: %d",(int)stopErr);
+                    }
+                }
+                else{
+                    LOG_DEBUG(GwLog::ERROR,"GwWifi: mutex timeout in loop (stop)");
+                }
+
+                delay(100);
+
+                if (acquireMutex()){
+                    esp_err_t startErr=esp_wifi_start();
+                    releaseMutex();
+                    if (startErr != ESP_OK){
+                        LOG_DEBUG(GwLog::ERROR,"GwWifi: esp_wifi_start failed: %d",(int)startErr);
+                    }
                     connectInternal();
                 }
                 else{
-                    LOG_DEBUG(GwLog::ERROR,"GwWifi: mutex timeout in loop");
+                    LOG_DEBUG(GwLog::ERROR,"GwWifi: mutex timeout in loop (start)");
                 }
             }
         }
