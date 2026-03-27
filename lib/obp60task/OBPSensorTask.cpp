@@ -66,8 +66,8 @@ void sensorTask(void *param){
     const int avgsize = 300;
     constexpr int arrayBatV{avgsize};
     constexpr int arrayBatC{avgsize};
-    movingAvg batV(arrayBatV);
-    movingAvg batC(arrayBatC);
+    movingAvg<int> batV(arrayBatV);
+    movingAvg<int> batC(arrayBatC);
     batV.begin();
     batC.begin();
 

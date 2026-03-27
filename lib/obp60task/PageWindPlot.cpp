@@ -37,7 +37,7 @@ private:
     bool oldShowTruW = false; // remember recent user selection of wind data type
 
     int8_t dataIntv = 1; // Update interval for wind history chart:
-                         // (1)|(2)|(3)|(4)|(8) x 240 seconds for 4, 8, 12, 16, 32 min. history chart
+                         // (1)|(2)|(3)|(4)|(8) seconds for up to 32 min. history chart
     bool useSimuData;
     // bool holdValues;
     String flashLED;
@@ -231,6 +231,9 @@ public:
 
         } else if (chrtMode == SPEED) {
             if (wsChart) {
+                if (dataIntv == 8) {
+                    dataIntv = 1; // horizontal charts show max. 4 x 7 min. only; no factor 8 multiplier
+                }
                 wsChart->showChrt(HORIZONTAL, FULL_SIZE, dataIntv, PRNT_NAME, PRNT_VALUE, *wsBVal);
             }
 

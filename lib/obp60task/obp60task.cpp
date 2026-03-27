@@ -498,7 +498,8 @@ void OBP60Task(GwApi *api){
             pages[i].parameters.values.push_back(value); 
        }
 
-       // Read the specified boat data types of relevant pages and create a history buffer for each type
+       // Read the specified boat data types of relevant pages and create a history buffer for each type for later use in charts
+       // applies only for pages that uses charts
        if (pages[i].parameters.pageName == "OneValue" || pages[i].parameters.pageName == "TwoValues" || pages[i].parameters.pageName == "WindPlot") {
            for (auto pVal : pages[i].parameters.values) {
                 hstryBufferList.addBuffer(pVal->getName());
@@ -843,11 +844,9 @@ void OBP60Task(GwApi *api){
                 api->getBoatDataValues(boatValues.numValues,boatValues.allBoatValues);
                 api->getStatus(commonData.status);
 
-                if (calcTrueWnds) {
-                    trueWind.addWinds(); // calculate true wind data from apparent wind values
-                }
+                trueWind.handleWinds(calcTrueWnds); // calculate true wind data from apparent wind values
                 calibrationDataList.handleCalibration(&boatValues); // Process calibration for all boat data in <calibrationDataList>
-                hstryBufferList.handleHstryBufs(useSimuData, commonData); // Handle history buffers for certain boat data for windplot page and other usage
+                hstryBufferList.handleHstryBufs(useSimuData, commonData); // Handle history buffers for certain boat data for charts and other usage
 
                 // Clear display
                 // getdisplay().fillRect(0, 0, getdisplay().width(), getdisplay().height(), commonData.bgcolor);

@@ -6,9 +6,9 @@
 std::map<String, ChartProps> Chart::dfltChrtDta = {
     { "formatWind", { 60.0 * DEG_TO_RAD, 10.0 * DEG_TO_RAD } }, // default course range 60 degrees
     { "formatCourse", { 60.0 * DEG_TO_RAD, 10.0 * DEG_TO_RAD } }, // default course range 60 degrees
-    { "formatKnots", { 7.71, 2.56 } }, // default speed range in m/s
-    { "formatDepth", { 15.0, 5.0 } }, // default depth range in m
-    { "kelvinToC", { 30.0, 5.0 } } // default temp range in °C/K
+    { "formatKnots", { 2.57, 2.57 } }, // default speed range in m/s
+    { "formatDepth", { 10.0, 5.0 } }, // default depth range in m
+    { "kelvinToC", { 20.0, 5.0 } } // default temp range in °C/K
 };
 
 // --- Class Chart ---------------
@@ -41,6 +41,11 @@ Chart::Chart(RingBuffer<uint16_t>& dataBuf, double dfltRng, CommonData& common, 
     dbMIN_VAL = dataBuf.getMinVal();
     dbMAX_VAL = dataBuf.getMaxVal();
     bufSize = dataBuf.getCapacity();
+
+    smoothCharts = common.config->getBool(common.config->smoothCharts);
+    if (smoothCharts) {
+        chrtAvg.begin();
+    }
 
     // Initialize chart data format; shorter version of standard format indicator
     if (dbFormat == "formatCourse" || dbFormat == "formatWind" || dbFormat == "formatRot") {
@@ -337,6 +342,23 @@ void Chart::drawChartLines(const char direction, const int8_t chrtIntv, const do
     double chrtVal; // Current data value
     Pos point, prevPoint; // current and previous chart point
 
+    if (smoothCharts) {
+        // prime moving average filter to ensure the first plotted point is already averaged
+
+        chrtAvg.reset();
+
+        // Feed the filter the 10 values preceding bufStart
+        for (int p = 10; p > 0; p--) {
+            // Calculate index with wrapping: (start - offset + size) % size
+            int primeIdx = (bufStart - (p * chrtIntv));
+            double primeVal = dataBuf.get(primeIdx);
+            
+            if (primeVal != dbMAX_VAL) {
+                chrtAvg.reading(primeVal);
+            }
+        }
+    }
+
     for (int i = 0; i < (numBufVals / chrtIntv); i++) {
 
         chrtVal = dataBuf.get(bufStart + (i * chrtIntv)); // show the latest wind values in buffer; keep 1st value constant in a rolling buffer
@@ -344,6 +366,11 @@ void Chart::drawChartLines(const char direction, const int8_t chrtIntv, const do
         if (chrtVal == dbMAX_VAL) {
             chrtPrevVal = dbMAX_VAL;
         } else {
+
+            if (smoothCharts) {
+                // if chart lines shall be smoothed, apply moving average filter of the last 10 values
+                chrtVal = chrtAvg.reading(chrtVal);
+            }
 
             point = setCurrentChartPoint(i, direction, chrtVal, chrtScale);
 
@@ -399,7 +426,7 @@ void Chart::drawChartLines(const char direction, const int8_t chrtIntv, const do
 
             if (chrtDataFmt == WIND) { // degree of course or wind
                 recalcRngMid = true;
-                LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: chart end: timAxis: %d, i: %d, bufStart: %d, numBufVals: %d, recalcRngCntr: %d", timAxis, i, bufStart, numBufVals, recalcRngMid);
+                // LOG_DEBUG(GwLog::DEBUG, "PageWindPlot: chart end: timAxis: %d, i: %d, bufStart: %d, numBufVals: %d, recalcRngCntr: %d", timAxis, i, bufStart, numBufVals, recalcRngMid);
             }
             break;
         }
@@ -440,46 +467,47 @@ Pos Chart::setCurrentChartPoint(const int i, const char direction, const double 
 // chart time axis label + lines
 void Chart::drawChrtTimeAxis(const char chrtDir, const int8_t chrtSz, const int8_t chrtIntv)
 {
-    float axSlots, intv, i;
+    int axSlots, intv, i, timeRng;
     char sTime[6];
-    int timeRng = chrtIntv * 4; // chart time interval: [1] 4 min., [2] 8 min., [3] 12 min., [4] 16 min., [8] 32 min.
+    int tOffset;
 
     getdisplay().setFont(&Ubuntu_Bold8pt8b);
     getdisplay().setTextColor(fgColor);
 
-    axSlots = 5; // number of axis labels
-    intv = timAxis / (axSlots - 1); // minutes per chart axis interval (interval is 1 less than axSlots)
-    i = timeRng; // Chart axis label start at -32, -16, -12, ... minutes
+    intv = 60; // print axis label each 60 pixels = seconds
+    axSlots = timAxis / intv; // number of axis labels; value will be truncated to full number
+    i = axSlots * chrtIntv * -1; // current minute label
 
     if (chrtDir == HORIZONTAL) {
         getdisplay().fillRect(0, cRoot.y, dWidth, 2, fgColor);
 
-        for (float j = 0; j < timAxis - 1; j += intv) { // fill time axis with values but keep area free on right hand side for value label
+        // LOG_DEBUG(GwLog::DEBUG, "Chart::drawChrtTimeAxis: intv: %d, axSlots: %d, timAxis: %d, chrtIntv: %d", intv, axSlots, timAxis, chrtIntv);
+        for (int j = intv; j < timAxis - 1; j += intv) { // fill time axis with values but keep area free on right hand side for value label
 
             // draw text with appropriate offset
-            int tOffset = j == 0 ? 13 : -4;
-            snprintf(sTime, sizeof(sTime), "-%.0f", i);
+            tOffset = j == 0 ? 13 : -4;
+            snprintf(sTime, sizeof(sTime), "%d", i);
             drawTextCenter(cRoot.x + j + tOffset, cRoot.y - 8, sTime);
             getdisplay().drawLine(cRoot.x + j, cRoot.y, cRoot.x + j, cRoot.y + 5, fgColor); // draw short vertical time mark
 
-            i -= chrtIntv;
+            i += chrtIntv;
         }
 
     } else { // vertical chart
 
         for (float j = intv; j < timAxis - 1; j += intv) { // don't print time label at upper and lower end of time axis
 
-            i -= chrtIntv; // we start not at top chart position
-            snprintf(sTime, sizeof(sTime), "-%.0f", i);
+            snprintf(sTime, sizeof(sTime), "%d", i);
             getdisplay().drawLine(cRoot.x, cRoot.y + j, cRoot.x + valAxis, cRoot.y + j, fgColor); // Grid line
 
             if (chrtSz == FULL_SIZE) { // full size chart
                 getdisplay().fillRect(0, cRoot.y + j - 9, 32, 15, bgColor); // clear small area to remove potential chart lines
                 getdisplay().setCursor((4 - strlen(sTime)) * 7, cRoot.y + j + 3); // time value; print left screen; value right-formated
-                getdisplay().printf("%s", sTime); // Range value
+                getdisplay().printf("%s", sTime); // time value
             } else if (chrtSz == HALF_SIZE_RIGHT) { // half size chart; right side
                 drawTextCenter(dWidth / 2, cRoot.y + j, sTime); // time value; print mid screen
             }
+            i += chrtIntv;
         }
     }
 }
@@ -497,11 +525,11 @@ void Chart::drawChrtValAxis(const char chrtDir, const int8_t chrtSz, bool prntNa
 
         if (chrtSz == FULL_SIZE) {
 
+            // print buffer data name on left hand side of time axis (max. size 5 characters)
             font = &Ubuntu_Bold12pt8b;
-
-            // print buffer data name on right hand side of time axis (max. size 5 characters)
             getdisplay().setFont(font);
-            drawTextRalign(cRoot.x + timAxis, cRoot.y - 3, dbName.substring(0, 5));
+            getdisplay().fillRect(cRoot.x + timAxis - 57, cRoot.y + 2, 58, 20, bgColor); // clear small area to remove potential chart lines
+            drawTextRalign(cRoot.x + timAxis, cRoot.y + 19, dbName.substring(0, 5));
 
             if (chrtDataFmt == WIND) {
                 prntHorizChartThreeValueAxisLabel(font);
@@ -515,11 +543,11 @@ void Chart::drawChrtValAxis(const char chrtDir, const int8_t chrtSz, bool prntNa
         } else { // half size chart -> just print edge values + middle chart line
 
             font = &Ubuntu_Bold10pt8b;
-
             if (prntName) {
                 // print buffer data name on right hand side of time axis (max. size 5 characters)
                 getdisplay().setFont(font);
-                drawTextRalign(cRoot.x + timAxis, cRoot.y - 3, dbName.substring(0, 5));
+                getdisplay().fillRect(cRoot.x + timAxis - 57, cRoot.y + 2, 58, 20, bgColor); // clear small area to remove potential chart lines
+                drawTextRalign(cRoot.x + timAxis, cRoot.y + 16, dbName.substring(0, 5));
             }
 
             prntHorizChartThreeValueAxisLabel(font);

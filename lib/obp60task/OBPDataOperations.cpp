@@ -1,5 +1,4 @@
 #include "OBPDataOperations.h"
-//#include "BoatDataCalibration.h" // Functions lib for data instance calibration
 
 // --- Class CalibrationData ---------------
 CalibrationData::CalibrationData(GwLog* log)
@@ -155,8 +154,7 @@ bool CalibrationData::calibrateInstance(GwApi::BoatValue* boatDataValue)
 
     if (format == "formatWind") { // instance is of type angle
         dataValue = (dataValue * slope) + offset;
-        // dataValue = WindUtils::toPI(dataValue);
-        dataValue = WindUtils::to2PI(dataValue); // we should call <toPI> for format of [-180..180], but pages cannot display negative values properly yet
+        dataValue = WindUtils::to2PI(dataValue); // wind angle data is stored in [0..2PI] format
 
     } else if (format == "formatCourse") { // instance is of type direction
         dataValue = (dataValue * slope) + offset;
@@ -168,7 +166,6 @@ bool CalibrationData::calibrateInstance(GwApi::BoatValue* boatDataValue)
     } else {
         dataValue = (dataValue * slope) + offset;
     }
-
 
     boatDataValue->value = dataValue; // update boat data value with calibrated value
     calibrationMap[instance].value = dataValue; // store the calibrated value in the list
@@ -247,23 +244,15 @@ void HstryBuf::add(double value)
 
 void HstryBuf::handle(bool useSimuData, CommonData& common)
 {
-    // GwApi::BoatValue* tmpBVal;
     std::unique_ptr<GwApi::BoatValue> tmpBVal; // Temp variable to get formatted and converted data value from OBP60Formatter
 
-    // create temporary boat value for calibration purposes and retrieval of simulation value
-    // tmpBVal = new GwApi::BoatValue(boatDataName.c_str());
-    tmpBVal = std::unique_ptr<GwApi::BoatValue>(new GwApi::BoatValue(boatDataName));
-    tmpBVal->setFormat(boatValue->getFormat());
-    tmpBVal->value = boatValue->value;
-    tmpBVal->valid = boatValue->valid;
-
     if (boatValue->valid) {
-        // Calibrate boat value before adding it to history buffer
-        //calibrationData.calibrateInstance(tmpBVal.get(), logger);
-        //add(tmpBVal->value);
         add(boatValue->value);
-
     } else if (useSimuData) { // add simulated value to history buffer
+        tmpBVal = std::unique_ptr<GwApi::BoatValue>(new GwApi::BoatValue(boatDataName)); // create temporary boat value for retrieval of simulation value
+        tmpBVal->setFormat(boatValue->getFormat());
+        tmpBVal->value = boatValue->value;
+        tmpBVal->valid = boatValue->valid;
         double simSIValue = formatValue(tmpBVal.get(), common).value; // simulated value is generated at <formatValue>; here: retreive SI value
         add(simSIValue);
     } else {
@@ -276,20 +265,7 @@ void HstryBuf::handle(bool useSimuData, CommonData& common)
 HstryBuffers::HstryBuffers(int size, BoatValueList* boatValues, GwLog* log)
     : size(size)
     , boatValueList(boatValues)
-    , logger(log)
-{
-
-    // collect boat values for true wind calculation
-    // should all have been already created at true wind object initialization
-    // potentially to be moved to history buffer handling
-    awaBVal = boatValueList->findValueOrCreate("AWA");
-    hdtBVal = boatValueList->findValueOrCreate("HDT");
-    hdmBVal = boatValueList->findValueOrCreate("HDM");
-    varBVal = boatValueList->findValueOrCreate("VAR");
-    cogBVal = boatValueList->findValueOrCreate("COG");
-    sogBVal = boatValueList->findValueOrCreate("SOG");
-    awdBVal = boatValueList->findValueOrCreate("AWD");
-}
+    , logger(log) { };
 
 // Create history buffer for boat data type
 void HstryBuffers::addBuffer(const String& name)
@@ -301,8 +277,6 @@ void HstryBuffers::addBuffer(const String& name)
         return;
     }
 
-    hstryBuffers[name] = std::unique_ptr<HstryBuf>(new HstryBuf(name, size, boatValueList, logger));
-
     // Initialize metadata for buffer
     String valueFormat = bufferParams[name].format; // Data format of boat data type
     // String valueFormat = boatValueList->findValueOrCreate(name)->getFormat().c_str(); // Unfortunately, format is not yet available during system initialization
@@ -311,6 +285,7 @@ void HstryBuffers::addBuffer(const String& name)
     double bufferMinVal = bufferParams[name].bufferMinVal; // Min value for this history buffer
     double bufferMaxVal = bufferParams[name].bufferMaxVal; // Max value for this history buffer
 
+    hstryBuffers[name] = std::unique_ptr<HstryBuf>(new HstryBuf(name, size, boatValueList, logger));
     hstryBuffers[name]->init(valueFormat, hstryUpdFreq, mltplr, bufferMinVal, bufferMaxVal);
     LOG_DEBUG(GwLog::DEBUG, "HstryBuffers: new buffer added: name: %s, format: %s, multiplier: %d, min value: %.2f, max value: %.2f", name, valueFormat, mltplr, bufferMinVal, bufferMaxVal);
 }
@@ -329,8 +304,9 @@ RingBuffer<uint16_t>* HstryBuffers::getBuffer(const String& name)
     auto it = hstryBuffers.find(name);
     if (it != hstryBuffers.end()) {
         return &it->second->hstryBuf;
+    } else {
+        return nullptr;
     }
-    return nullptr;
 }
 // --- End Class HstryBuffers ---------------
 
@@ -396,56 +372,75 @@ void WindUtils::addPolar(const double* phi1, const double* r1,
     toPol(&x1, &y1, phi, r);
 }
 
-void WindUtils::calcTwdSA(const double* AWA, const double* AWS,
-    const double* CTW, const double* STW, const double* HDT,
-    double* TWD, double* TWS, double* TWA, double* AWD)
+void WindUtils::calcTwdSA(const double* AWA, const double* AWS, const double* AWD, const double* CTW, const double* STW, const double* HDT,
+    double* TWA, double* TWS, double* TWD)
 {
-    *AWD = *AWA + *HDT;
-    *AWD = to2PI(*AWD);
     double stw = -*STW;
     addPolar(AWD, AWS, CTW, &stw, TWD, TWS);
 
-    // Normalize TWD to [0..360°] (2PI) and TWA to [-180..180] (PI)
+    // Normalize to [0..2PI]
     *TWD = to2PI(*TWD);
-    *TWA = toPI(*TWD - *HDT);
+    *TWA = to2PI(*TWD - *HDT); // for internal storage we normalize wind angle to [0..2PI], as well
 }
 
-double WindUtils::calcHDT(const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal)
+// calculate HDT from either HDM + VAR, HDM only, or COG
+bool WindUtils::calcHDT(const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal, double* hdtVal)
 {
-    double hdt;
-    double minSogVal = 0.1; // SOG below this value (m/s) is assumed to be  data noise from GPS sensor
-
-    if (*hdmVal != DBL_MAX) {
-        hdt = *hdmVal + (*varVal != DBL_MAX ? *varVal : 0.0); // Use corrected HDM if HDT is not available (or just HDM if VAR is not available)
-        hdt = to2PI(hdt);
-    } else if (*cogVal != DBL_MAX && *sogVal >= minSogVal) {
-        hdt = *cogVal; // Use COG as fallback if HDT and HDM are not available, and SOG is not data noise
-    } else {
-        hdt = DBL_MAX; // Cannot calculate HDT without valid HDM or HDM+VAR or COG
-    }
-
-    return hdt;
-}
-
-bool WindUtils::calcWinds(const double* awaVal, const double* awsVal,
-    const double* cogVal, const double* stwVal, const double* sogVal, const double* hdtVal,
-    const double* hdmVal, const double* varVal, double* twdVal, double* twsVal, double* twaVal, double* awdVal)
-{
-    double stw, hdt, ctw;
-    double twd, tws, twa, awd;
     double minSogVal = 0.1; // SOG below this value (m/s) is assumed to be  data noise from GPS sensor
 
     if (*hdtVal != DBL_MAX) {
-        hdt = *hdtVal; // Use HDT if available
+        // HDT already available-> nothing to do
+        return true;
+    }
+
+    if (*hdmVal != DBL_MAX) {
+        *hdtVal = *hdmVal + (*varVal != DBL_MAX ? *varVal : 0.0); // Use corrected HDM if HDT is not available (or just HDM if VAR is not available)
+        *hdtVal = to2PI(*hdtVal);
+    } else if (*cogVal != DBL_MAX && *sogVal >= minSogVal) {
+        *hdtVal = *cogVal; // Use COG as fallback if HDT and HDM are not available, and SOG is not data noise
     } else {
-        hdt = calcHDT(hdmVal, varVal, cogVal, sogVal);
+        *hdtVal = DBL_MAX; // Cannot calculate HDT without valid HDM or HDM+VAR or COG
+        return false;
+    }
+    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:calcHDT: HDT: %.1f, HDM %.1f, VAR %.1f, COG %.1f, SOG %.1f", *hdtVal * RAD_TO_DEG, *hdmVal * RAD_TO_DEG, *varVal * RAD_TO_DEG,
+    //      *cogVal * RAD_TO_DEG, *sogVal * 3.6 / 1.852);
+
+    return true;
+}
+
+// calculate wind direction (either TWD or AWD) from wind angle (TWA or AWA) and HDT
+bool WindUtils::calcWD(const double* waVal, const double* hdtVal, double* wdVal)
+{
+    if (*waVal != DBL_MAX && *hdtVal != DBL_MAX) {
+        *wdVal = *waVal + *hdtVal;
+        *wdVal = to2PI(*wdVal);
+    } else {
+        *wdVal = DBL_MAX; // Cannot calculate wind direction WD without valid wind angle WA and HDT
+        return false;
+    }
+
+    return true;
+}
+
+// calculate full set of true winds (TWA, TWS, TWD) apparent winds and more data
+bool WindUtils::calcTrueWinds(const double* awaVal, const double* awsVal, const double* awd,
+    const double* cogVal, const double* stwVal, const double* sogVal, const double* hdtVal,
+    double* twaVal, double* twsVal, double* twdVal)
+{
+    double stw, ctw;
+    double twd, tws, twa;
+    double minSogVal = 0.1; // SOG below this value (m/s) is assumed to be  data noise from GPS sensor
+
+    if ((*awaVal == DBL_MAX) || (*awsVal == DBL_MAX)) {
+        // Cannot calculate true winds at all without valid AWA, AWS
+        return false;
     }
 
     if (*cogVal != DBL_MAX && *sogVal >= minSogVal) { // if SOG is data noise, we don't trust COG
 
         ctw = *cogVal; // Use COG for CTW if available
     } else {
-        ctw = hdt; // 2nd approximation for CTW; hdt must exist if we reach this part of the code
+        ctw = *hdtVal; // 2nd approximation for CTW; HDT must exist if we reach this part of code
     }
 
     if (*stwVal != DBL_MAX) {
@@ -456,28 +451,21 @@ bool WindUtils::calcWinds(const double* awaVal, const double* awsVal,
         // If STW and SOG are not available, we cannot calculate true wind
         return false;
     }
-    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:calcWinds: HDT: %.1f, CTW %.1f, STW %.1f", hdt, ctw, stw);
+    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:calcTrueWinds: HDT: %.1f, CTW %.1f, STW %.1f", *hdtVal * RAD_TO_DEG, ctw * RAD_TO_DEG, stw * 3.6 / 1.852);
 
-    if ((*awaVal == DBL_MAX) || (*awsVal == DBL_MAX)) {
-        // Cannot calculate true wind without valid AWA, AWS; other checks are done earlier
-        return false;
-    } else {
-        calcTwdSA(awaVal, awsVal, &ctw, &stw, &hdt, &twd, &tws, &twa, &awd);
-        *twdVal = twd;
-        *twsVal = tws;
-        *twaVal = twa;
-        *awdVal = awd;
+    calcTwdSA(awaVal, awsVal, awd, &ctw, &stw, hdtVal, &twa, &tws, &twd);
+    *twaVal = twa;
+    *twsVal = tws;
+    *twdVal = twd;
 
-        return true;
-    }
+    return true;
 }
 
 // Calculate true wind data and add to obp60task boat data list
-bool WindUtils::addWinds()
+bool WindUtils::handleWinds(bool calcWinds)
 {
-    double twd, tws, twa, awd, hdt;
+    double twd, tws, twa, awd;
     bool twCalculated = false;
-    bool awdCalculated = false;
 
     double awaVal = awaBVal->valid ? awaBVal->value : DBL_MAX;
     double awsVal = awsBVal->valid ? awsBVal->value : DBL_MAX;
@@ -487,48 +475,61 @@ bool WindUtils::addWinds()
     double hdtVal = hdtBVal->valid ? hdtBVal->value : DBL_MAX;
     double hdmVal = hdmBVal->valid ? hdmBVal->value : DBL_MAX;
     double varVal = varBVal->valid ? varBVal->value : DBL_MAX;
-    //LOG_DEBUG(GwLog::DEBUG, "WindUtils:addWinds: AWA %.1f, AWS %.1f, COG %.1f, STW %.1f, SOG %.2f, HDT %.1f, HDM %.1f, VAR %.1f", awaBVal->value * RAD_TO_DEG, awsBVal->value * 3.6 / 1.852,
-    //     cogBVal->value * RAD_TO_DEG, stwBVal->value * 3.6 / 1.852, sogBVal->value * 3.6 / 1.852, hdtBVal->value * RAD_TO_DEG, hdmBVal->value * RAD_TO_DEG, varBVal->value * RAD_TO_DEG);
+    double twaVal = twaBVal->valid ? twaBVal->value : DBL_MAX;
+    double twsVal = twsBVal->valid ? twsBVal->value : DBL_MAX;
+    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:handleWinds: AWA %.1f, AWS %.1f, AWD %.1f, COG %.1f, STW %.1f, SOG %.2f, HDT %.1f, HDM %.1f, VAR %.1f", awaVal * RAD_TO_DEG, awsVal * 3.6 / 1.852,
+    //     awd * RAD_TO_DEG, cogVal * RAD_TO_DEG, stwVal * 3.6 / 1.852, sogVal * 3.6 / 1.852, hdtVal * RAD_TO_DEG, hdmVal * RAD_TO_DEG, varVal * RAD_TO_DEG);
 
-    // Check if TWD can be calculated from TWA and HDT/HDM
-    if (twaBVal->valid) {
-        if (!twdBVal->valid) {
-            if (hdtVal != DBL_MAX) {
-                hdt = hdtVal; // Use HDT if available
-            } else {
-                hdt = calcHDT(&hdmVal, &varVal, &cogVal, &sogVal);
-            }
-            twd = twaBVal->value + hdt;
-            twd = to2PI(twd);
+    if (calcHDT(&hdmVal, &varVal, &cogVal, &sogVal, &hdtVal)) {
+        hdtBVal->value = hdtVal;
+        hdtBVal->valid = true;
+    } else {
+        // determination of HDT was not possible due to missing prerequisite data
+        hdtBVal->valid = false;
+        return false;
+    }
+
+    // calculate AWD if not existing and if possible
+    if (!awdBVal->valid) {
+        if (calcWD(&awaVal, &hdtVal, &awd)) {
+            awdBVal->value = awd;
+            awdBVal->valid = true;
+        } else {
+            awdBVal->valid = false;
+            return false;
+        }
+    }
+
+    // calculate TWD if not existing and if possible
+    if (!twdBVal->valid) {
+        // calculate TWD if it does not exist yet and TWA is available
+        if (calcWD(&twaVal, &hdtVal, &twd)) {
             twdBVal->value = twd;
             twdBVal->valid = true;
+        } else {
+            twdBVal->valid = false;
         }
+    }
 
-    } else {
-        // Calculate true winds and AWD; if true winds exist, use at least AWD calculation
-        twCalculated = calcWinds(&awaVal, &awsVal, &cogVal, &stwVal, &sogVal, &hdtVal, &hdmVal, &varVal, &twd, &tws, &twa, &awd);
-
+    if (calcWinds && (!twaBVal->valid || !twsBVal->valid || !twdBVal->valid)) {
+        // calculate true winds if user setting and at least one of three true wind values does not exist
+        twCalculated = calcTrueWinds(&awaVal, &awsVal, &awd, &cogVal, &stwVal, &sogVal, &hdtVal, &twa, &tws, &twd);
         if (twCalculated) { // Replace values only, if successfully calculated and not already available
-            if (!twdBVal->valid) {
-                twdBVal->value = twd;
-                twdBVal->valid = true;
+            if (!twaBVal->valid) {
+                twaBVal->value = twa;
+                twaBVal->valid = true;
             }
             if (!twsBVal->valid) {
                 twsBVal->value = tws;
                 twsBVal->valid = true;
             }
-            if (!twaBVal->valid) {
-                //twaBVal->value = twa;
-                twaBVal->value = to2PI(twa); // convert to [0..360], because pages cannot display negative values properly yet
-                twaBVal->valid = true;
-            }
-            if (!awdBVal->valid) {
-                awdBVal->value = awd;
-                awdBVal->valid = true;
+            if (!twdBVal->valid) {
+                twdBVal->value = twd;
+                twdBVal->valid = true;
             }
         }
     }
-    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:addWinds: twCalculated %d, TWD %.1f, TWA %.1f, TWS %.2f kn, AWD: %.1f", twCalculated, twdBVal->value * RAD_TO_DEG,
+    // LOG_DEBUG(GwLog::DEBUG, "WindUtils:handleWinds: twCalculated %d, TWD %.1f, TWA %.1f, TWS %.2f kn, AWD: %.1f", twCalculated, twdBVal->value * RAD_TO_DEG,
     //     twaBVal->value * RAD_TO_DEG, twsBVal->value * 3.6 / 1.852, awdBVal->value * RAD_TO_DEG);
 
     return twCalculated;

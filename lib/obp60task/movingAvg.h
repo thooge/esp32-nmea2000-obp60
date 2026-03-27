@@ -3,27 +3,37 @@
 // Copyright (C) 2018 by Jack Christensen and licensed under
 // GNU GPL v3.0, https://www.gnu.org/licenses/gpl.html
 
+// Extended to template class for handling of multiple data types
+
 #ifndef MOVINGAVG_H_INCLUDED
 #define MOVINGAVG_H_INCLUDED
 
+template <typename T>
 class movingAvg
 {
     public:
         movingAvg(int interval)
-            : m_interval{interval}, m_nbrReadings{0}, m_sum{0}, m_next{0} {}
+            : m_interval{interval}, m_nbrReadings{0}, m_sum{0}, m_next{0}, m_readings{nullptr} {}
+        ~movingAvg() { delete[] m_readings; }
         void begin();
-        int reading(int newReading);
-        int getAvg();
-        int getAvg(int nPoints);
-        int getCount() {return m_nbrReadings;}
+        T reading(T newReading);
+        T getAvg();
+        T getAvg(int nPoints);
+        int getCount() { return m_nbrReadings; }
         void reset();
-        int* getReadings() {return m_readings;}
+        T* getReadings() { return m_readings; }
 
     private:
         int m_interval;     // number of data points for the moving average
         int m_nbrReadings;  // number of readings
-        long m_sum;         // sum of the m_readings array
+        // Sum type adapts to T: long for integers, T for floating point
+        using SumType = typename std::conditional<std::is_floating_point<T>::value, T, long>::type;
+        SumType m_sum;
         int m_next;         // index to the next reading
-        int* m_readings;    // pointer to the dynamically allocated interval array
+        T* m_readings;      // pointer to the dynamically allocated interval array
 };
+
+// Include the implementation to satisfy template instantiation requirements
+#include "movingAvg.tpp"
+
 #endif

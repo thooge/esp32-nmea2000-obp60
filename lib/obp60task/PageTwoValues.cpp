@@ -211,8 +211,6 @@ public:
                     dataIntv = 3;
                 } else if (dataIntv == 3) {
                     dataIntv = 4;
-                } else if (dataIntv == 4) {
-                    dataIntv = 8;
                 } else {
                     dataIntv = 1;
                 }

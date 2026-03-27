@@ -19,7 +19,7 @@ private:
     } tCalibrationData;
 
     std::unordered_map<std::string, tCalibrationData> calibrationMap; // list of calibration data instances
-    std::unordered_map<std::string, double> lastValue; // array for last smoothed values of boat data values
+    std::unordered_map<std::string, double> lastValue; // array for last smoothed value of boat data values
     GwLog* logger;
 
     static constexpr int8_t MAX_CALIBRATION_DATA = 4; // maximum number of calibration data instances
@@ -32,6 +32,7 @@ public:
     bool smoothInstance(GwApi::BoatValue* boatDataValue); // Smooth single boat data value
 };
 
+// Class for a single history buffer of boat values
 class HstryBuf {
 private:
     RingBuffer<uint16_t> hstryBuf; // Circular buffer to store history values
@@ -50,13 +51,13 @@ public:
     void handle(bool useSimuData, CommonData& common);
 };
 
+// Manage list of history buffers for supported boat data; used by boat data charts
 class HstryBuffers {
 private:
     std::map<String, std::unique_ptr<HstryBuf>> hstryBuffers;
     int size; // size of all history buffers
     BoatValueList* boatValueList;
     GwLog* logger;
-    GwApi::BoatValue *awaBVal, *hdtBVal, *hdmBVal, *varBVal, *cogBVal, *sogBVal, *awdBVal; // boat values for true wind calculation
 
     struct HistoryParams {
         int hstryUpdFreq; // update frequency of history buffer (documentation only)
@@ -97,7 +98,8 @@ public:
 class WindUtils {
 private:
     GwApi::BoatValue *twaBVal, *twsBVal, *twdBVal;
-    GwApi::BoatValue *awaBVal, *awsBVal, *awdBVal, *cogBVal, *stwBVal, *sogBVal, *hdtBVal, *hdmBVal, *varBVal;
+    GwApi::BoatValue *awaBVal, *awsBVal, *awdBVal;
+    GwApi::BoatValue *cogBVal, *stwBVal, *sogBVal, *hdtBVal, *hdmBVal, *varBVal;
     static constexpr double DBL_MAX = std::numeric_limits<double>::max();
     GwLog* logger;
 
@@ -128,12 +130,12 @@ public:
     void addPolar(const double* phi1, const double* r1,
         const double* phi2, const double* r2,
         double* phi, double* r);
-    void calcTwdSA(const double* AWA, const double* AWS,
-        const double* CTW, const double* STW, const double* HDT,
-        double* TWD, double* TWS, double* TWA, double* AWD);
-    static double calcHDT(const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal);
-    bool calcWinds(const double* awaVal, const double* awsVal,
+    void calcTwdSA(const double* AWA, const double* AWS, const double* AWD, const double* CTW, const double* STW, const double* HDT,
+        double* TWA, double* TWS, double* TWD);
+    bool calcHDT(const double* hdmVal, const double* varVal, const double* cogVal, const double* sogVal, double* hdtVal);
+    bool calcWD(const double* waVal, const double* hdtVal, double* wdVal);
+    bool calcTrueWinds(const double* awaVal, const double* awsVal, const double* awd,
         const double* cogVal, const double* stwVal, const double* sogVal, const double* hdtVal,
-        const double* hdmVal, const double* varVal, double* twdVal, double* twsVal, double* twaVal, double* awdVal);
-    bool addWinds();
+        double* twdVal, double* twsVal, double* twaVal);
+    bool handleWinds(bool calcWinds);
 };
