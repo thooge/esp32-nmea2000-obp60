@@ -476,7 +476,6 @@ void Chart::drawChrtTimeAxis(const char chrtDir, const int8_t chrtSz, const int8
 
     intv = 60; // print axis label each 60 pixels = seconds
     axSlots = timAxis / intv; // number of axis labels; value will be truncated to full number
-//    i = axSlots * chrtIntv * -1; // current minute label
 
     if (chrtDir == HORIZONTAL) {
         getdisplay().fillRect(0, cRoot.y, dWidth, 2, fgColor);
@@ -509,7 +508,6 @@ void Chart::drawChrtTimeAxis(const char chrtDir, const int8_t chrtSz, const int8
             } else if (chrtSz == HALF_SIZE_RIGHT) { // half size chart; right side
                 drawTextCenter(dWidth / 2, cRoot.y + j, sTime); // time value; print mid screen
             }
-//            i += chrtIntv;
             i -= chrtIntv;
         }
     }
