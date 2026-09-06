@@ -1,8 +1,8 @@
 diff --git a/lib/api/GwApi.h b/lib/api/GwApi.h
-index 88f9690..bde7670 100644
+index 9663a65..901ee5a 100644
 --- a/lib/api/GwApi.h
 +++ b/lib/api/GwApi.h
-@@ -137,6 +137,7 @@ class GwApi{
+@@ -139,6 +139,7 @@ class GwApi{
           * thread safe methods - can directly be called from a user task
           */
          virtual GwRequestQueue *getQueue()=0;
@@ -11,7 +11,7 @@ index 88f9690..bde7670 100644
          /**
           * deprecated - sourceId will be ignored
 diff --git a/lib/config/GwConverterConfig.h b/lib/config/GwConverterConfig.h
-index 4a93a71..34ed7bf 100644
+index 25ca39e..569bc34 100644
 --- a/lib/config/GwConverterConfig.h
 +++ b/lib/config/GwConverterConfig.h
 @@ -71,6 +71,7 @@ class GwConverterConfig{
@@ -30,16 +30,16 @@ index 4a93a71..34ed7bf 100644
 \ No newline at end of file
 +#endif
 diff --git a/lib/nmea2kto0183/N2kDataToNMEA0183.cpp b/lib/nmea2kto0183/N2kDataToNMEA0183.cpp
-index dbf6af5..9fe405b 100644
+index 0c0e68c..508d849 100644
 --- a/lib/nmea2kto0183/N2kDataToNMEA0183.cpp
 +++ b/lib/nmea2kto0183/N2kDataToNMEA0183.cpp
-@@ -1572,6 +1572,29 @@ private:
+@@ -1449,6 +1449,29 @@ private:
          finalizeXdr();
      }
  
 +    void Handle127502(const tN2kMsg &msg){
 +        // switch bank control / receive remote key strokes
-+        unsigned char instance=-1;
++        unsigned char instance=0;
 +        tN2kBinaryStatus bankstatus;
 +        LOG_DEBUG(GwLog::LOG,"received switch bank control");
 +        // check if we are addressed and our configured instance is used
@@ -63,7 +63,7 @@ index dbf6af5..9fe405b 100644
      void registerConverters()
      {
        //register all converter functions
-@@ -1607,6 +1630,7 @@ private:
+@@ -1484,6 +1507,7 @@ private:
        converters.registerConverter(127488UL, &N2kToNMEA0183Functions::Handle127488);
        converters.registerConverter(130316UL, &N2kToNMEA0183Functions::Handle130316);
        converters.registerConverter(127257UL, &N2kToNMEA0183Functions::Handle127257);
@@ -71,7 +71,7 @@ index dbf6af5..9fe405b 100644
  #define HANDLE_AIS
  #ifdef HANDLE_AIS
        converters.registerConverter(129038UL, &N2kToNMEA0183Functions::HandleAISClassAPosReport);  // AIS Class A Position Report, Message Type 1
-@@ -1620,13 +1644,15 @@ private:
+@@ -1498,13 +1522,15 @@ private:
    public:
      N2kToNMEA0183Functions(GwLog *logger, GwBoatData *boatData, 
          SendNMEA0183MessageCallback callback,
@@ -88,7 +88,7 @@ index dbf6af5..9fe405b 100644
          registerConverters();
      }
      virtual void loop(unsigned long lastExtRmc) override
-@@ -1642,8 +1668,8 @@ private:
+@@ -1520,8 +1546,8 @@ private:
  
  N2kDataToNMEA0183* N2kDataToNMEA0183::create(GwLog *logger, GwBoatData *boatData, 
      SendNMEA0183MessageCallback callback, String talkerId, GwXDRMappings *xdrMappings,
@@ -130,10 +130,10 @@ index 61e8ee2..f7d8c75 100644
 \ No newline at end of file
 +#endif
 diff --git a/lib/obp60task/obp60task.cpp b/lib/obp60task/obp60task.cpp
-index 1058ae0..ae11a81 100644
+index 6a24c3b..81ac5e3 100644
 --- a/lib/obp60task/obp60task.cpp
 +++ b/lib/obp60task/obp60task.cpp
-@@ -348,6 +348,8 @@ void OBP60Task(GwApi *api){
+@@ -360,6 +360,8 @@ void OBP60Task(GwApi *api){
  
      tN2kMsg N2kMsg;
  
@@ -142,7 +142,7 @@ index 1058ae0..ae11a81 100644
      LOG_DEBUG(GwLog::LOG,"obp60task started");
      for (auto it=allPages.pages.begin();it != allPages.pages.end();it++){
          LOG_DEBUG(GwLog::LOG,"found registered page %s",(*it)->pageName.c_str());
-@@ -622,7 +624,16 @@ void OBP60Task(GwApi *api){
+@@ -645,7 +647,16 @@ void OBP60Task(GwApi *api){
              if((String(gpsFix) == "GPS Fix Lost" && hdop->value > hdopAccuracy && hdop->valid == true) || (String(gpsFix) == "GPS Fix Lost" && hdop->valid == false)){
                  setFlashLED(true);
              }
@@ -161,7 +161,7 @@ index 1058ae0..ae11a81 100644
              int keyboardMessage=0;
              while (xQueueReceive(allParameters.queue,&keyboardMessage,0)){
 diff --git a/lib/usercode/GwUserCode.cpp b/lib/usercode/GwUserCode.cpp
-index 1b007f8..b891422 100644
+index 90087d4..9d8e3db 100644
 --- a/lib/usercode/GwUserCode.cpp
 +++ b/lib/usercode/GwUserCode.cpp
 @@ -189,6 +189,10 @@ public:
@@ -175,18 +175,11 @@ index 1b007f8..b891422 100644
      virtual void sendN2kMessage(const tN2kMsg &msg,bool convert)
      {
          GWSYNCHRONIZED(mainLock);
-@@ -428,4 +432,4 @@ void GwUserCode::handleWebRequest(const String &url,AsyncWebServerRequest *req){
-     }
-     LOG_DEBUG(GwLog::DEBUG,"no task found for web request %s[%s]",url.c_str(),tname.c_str());
-     req->send(404, "text/plain", "not found");
--}
-\ No newline at end of file
-+}
 diff --git a/src/main.cpp b/src/main.cpp
-index 6daaa51..50625d8 100644
+index 01fcd32..ff353fb 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
-@@ -158,6 +158,8 @@ GwCounter<unsigned long> countNMEA2KIn("countNMEA2000in");
+@@ -160,6 +160,8 @@ GwCounter<unsigned long> countNMEA2KIn("countNMEA2000in");
  GwCounter<unsigned long> countNMEA2KOut("countNMEA2000out");
  GwIntervalRunner timers;
  
@@ -195,7 +188,7 @@ index 6daaa51..50625d8 100644
  bool checkPass(String hash){
    return config.checkPass(hash);
  }
-@@ -269,6 +271,10 @@ public:
+@@ -271,6 +273,10 @@ public:
    {
      return &mainQueue;
    }
@@ -206,7 +199,7 @@ index 6daaa51..50625d8 100644
    virtual void sendN2kMessage(const tN2kMsg &msg,bool convert)
    {
      handleN2kMessage(msg,sourceId,!convert);
-@@ -860,6 +866,8 @@ void setup() {
+@@ -868,6 +874,8 @@ void setup() {
    webserver.begin();
    xdrMappings.begin();
    logger.flush();
@@ -215,7 +208,7 @@ index 6daaa51..50625d8 100644
    GwConverterConfig converterConfig;
    converterConfig.init(&config,&logger);
    nmea0183Converter= N2kDataToNMEA0183::create(&logger, &boatData, 
-@@ -869,7 +877,8 @@ void setup() {
+@@ -877,7 +885,8 @@ void setup() {
      , 
      config.getString(config.talkerId,String("GP")),
      &xdrMappings,
